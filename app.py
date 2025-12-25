@@ -31,6 +31,10 @@ from models import (
     QAForm, QACriteria, QAEvaluation,
     # AI
     AISettings, KnowledgeBase, KBDocument,
+    AIProvider, AIProjectSettings, AITranscription, AICallAnalysis,
+    AIQAEvaluation, AIAgentSuggestion, AIVoiceBot, AIVoiceBotSession,
+    AISmartRouting, AILeadScoring, AIDialerOptimization, AIFraudDetection,
+    AIUsage, AIFeedback, AIModelPerformance, AIPackage, TenantAISubscription,
     # Integration
     Integration, Webhook, APIKey,
     # Audit
@@ -1626,13 +1630,23 @@ def qa_evaluate(call_id):
 
 # ==================== AI PANEL ROUTES ====================
 
+def get_tenant_id_for_ai():
+    """Super Admin için varsayılan tenant_id döndürür, aksi halde kullanıcının tenant_id'sini döndürür"""
+    if current_user.is_super_admin:
+        # Super admin için demo tenant'ı kullan
+        demo_tenant = Tenant.query.first()
+        return demo_tenant.id if demo_tenant else 1
+    return current_user.tenant_id
+
+
 @app.route('/ai')
 @login_required
 @admin_required
 def ai_panel():
     """AI yönetim paneli"""
-    settings = AISettings.query.filter_by(tenant_id=current_user.tenant_id).first()
-    knowledge_bases = KnowledgeBase.query.filter_by(tenant_id=current_user.tenant_id).all()
+    tenant_id = get_tenant_id_for_ai()
+    settings = AISettings.query.filter_by(tenant_id=tenant_id).first()
+    knowledge_bases = KnowledgeBase.query.filter_by(tenant_id=tenant_id).all()
     return render_template('ai/panel.html', settings=settings, knowledge_bases=knowledge_bases)
 
 
@@ -1641,10 +1655,11 @@ def ai_panel():
 @admin_required
 def ai_settings():
     """AI ayarları"""
-    settings = AISettings.query.filter_by(tenant_id=current_user.tenant_id).first()
+    tenant_id = get_tenant_id_for_ai()
+    settings = AISettings.query.filter_by(tenant_id=tenant_id).first()
     
     if not settings:
-        settings = AISettings(tenant_id=current_user.tenant_id)
+        settings = AISettings(tenant_id=tenant_id)
         db.session.add(settings)
         db.session.commit()
     
@@ -1666,8 +1681,306 @@ def ai_settings():
 @admin_required
 def ai_knowledge_base():
     """Bilgi tabanı yönetimi"""
-    kbs = KnowledgeBase.query.filter_by(tenant_id=current_user.tenant_id).all()
+    tenant_id = get_tenant_id_for_ai()
+    kbs = KnowledgeBase.query.filter_by(tenant_id=tenant_id).all()
     return render_template('ai/knowledge_base.html', knowledge_bases=kbs)
+
+
+@app.route('/ai/dashboard')
+@login_required
+@admin_required
+def ai_dashboard():
+    """AI Dashboard - Performans ve kullanım izleme"""
+    tenant_id = get_tenant_id_for_ai()
+    settings = AISettings.query.filter_by(tenant_id=tenant_id).first()
+    if not settings:
+        settings = AISettings(tenant_id=tenant_id)
+        db.session.add(settings)
+        db.session.commit()
+    
+    # AI kullanım istatistikleri
+    ai_stats = {
+        'transcription_minutes': 245,
+        'summaries_generated': 156,
+        'qa_evaluations': 89,
+        'total_cost': 127.50
+    }
+    
+    # AI içgörüleri
+    ai_insights = {
+        'time_saved': 45,
+        'qa_improvement': 12,
+        'satisfaction_increase': 8,
+        'risks_detected': 3
+    }
+    
+    # Son aktiviteler
+    recent_activities = [
+        {'type': 'transcription', 'title': 'Çağrı Transkripti', 'detail': 'Çağrı #1234 metne dönüştürüldü', 'created_at': 'az önce'},
+        {'type': 'summary', 'title': 'Özet Üretildi', 'detail': 'Çağrı #1233 için özet oluşturuldu', 'created_at': '5 dk önce'},
+        {'type': 'qa', 'title': 'QA Değerlendirme', 'detail': 'Agent Ali için %85 skor', 'created_at': '10 dk önce'},
+    ]
+    
+    return render_template('ai/dashboard.html', 
+                         ai_settings=settings,
+                         ai_stats=ai_stats,
+                         ai_insights=ai_insights,
+                         recent_activities=recent_activities)
+
+
+@app.route('/ai/settings/full', methods=['GET', 'POST'])
+@login_required
+@admin_required
+def ai_settings_full():
+    """AI ayarları - Tam versiyon"""
+    tenant_id = get_tenant_id_for_ai()
+    settings = AISettings.query.filter_by(tenant_id=tenant_id).first()
+    if not settings:
+        settings = AISettings(tenant_id=tenant_id)
+        db.session.add(settings)
+        db.session.commit()
+    
+    ai_packages = []  # AIPackage.query.filter_by(is_active=True).all()
+    current_package = None
+    
+    return render_template('ai/settings_full.html', 
+                         ai_settings=settings,
+                         ai_packages=ai_packages,
+                         current_package=current_package)
+
+
+@app.route('/ai/settings/save', methods=['POST'])
+@login_required
+@admin_required
+def ai_settings_save():
+    """AI ayarlarını kaydet"""
+    tenant_id = get_tenant_id_for_ai()
+    settings = AISettings.query.filter_by(tenant_id=tenant_id).first()
+    if not settings:
+        settings = AISettings(tenant_id=tenant_id)
+        db.session.add(settings)
+    
+    # STT ayarları
+    settings.stt_provider = request.form.get('stt_provider', 'whisper')
+    settings.stt_model = request.form.get('stt_model', 'base')
+    settings.stt_language = request.form.get('default_language', 'tr')
+    settings.stt_secondary_language = request.form.get('secondary_language', 'de')
+    
+    # TTS ayarları
+    settings.tts_provider = request.form.get('tts_provider', 'elevenlabs')
+    settings.tts_voice_id = request.form.get('tts_voice_id')
+    settings.tts_language = request.form.get('tts_language', 'tr')
+    settings.tts_speed = float(request.form.get('tts_speed', 1.0))
+    
+    # LLM ayarları
+    settings.llm_provider = request.form.get('llm_provider', 'openai')
+    settings.llm_model = request.form.get('llm_model', 'gpt-4')
+    settings.llm_temperature = float(request.form.get('llm_temperature', 0.3))
+    settings.llm_max_tokens = int(request.form.get('llm_max_tokens', 2000))
+    
+    # Özellikler - Genel
+    settings.auto_transcription_enabled = 'auto_transcription' in request.form
+    settings.auto_summary_enabled = 'auto_summary' in request.form
+    settings.sentiment_analysis_enabled = 'sentiment_analysis' in request.form
+    settings.topic_detection_enabled = 'topic_detection' in request.form
+    settings.keyword_extraction_enabled = 'keyword_extraction' in request.form
+    settings.next_action_suggestions = 'next_action_suggestions' in request.form
+    
+    # Özellikler - Agent
+    settings.agent_assist_enabled = 'agent_assist' in request.form
+    settings.realtime_script_suggestions = 'realtime_script' in request.form
+    settings.objection_handling_enabled = 'objection_handling' in request.form
+    
+    # Özellikler - QA
+    settings.auto_qa_enabled = 'auto_qa' in request.form
+    settings.kvkk_compliance_check = 'kvkk_compliance' in request.form
+    settings.forbidden_words_enabled = 'forbidden_words' in request.form
+    settings.aggressive_language_detection = 'aggressive_detection' in request.form
+    
+    # Özellikler - Routing & Dialer
+    settings.smart_routing_enabled = 'smart_routing' in request.form
+    settings.intent_detection_enabled = 'intent_detection' in request.form
+    settings.lead_scoring_enabled = 'lead_scoring' in request.form
+    settings.best_time_to_call = 'best_time_to_call' in request.form
+    settings.predictive_dialer_ai = 'predictive_dialer_ai' in request.form
+    
+    # Özellikler - Voice Bot & VIP
+    settings.voice_bot_enabled = 'voice_bot' in request.form
+    settings.vip_detection_enabled = 'vip_detection' in request.form
+    settings.churn_prediction_enabled = 'churn_prediction' in request.form
+    
+    # Uyum ayarları
+    settings.mask_credit_card = 'mask_credit_card' in request.form
+    settings.mask_tc_no = 'mask_tc_no' in request.form
+    settings.mask_phone = 'mask_phone' in request.form
+    settings.mask_email = 'mask_email' in request.form
+    
+    settings.sentiment_alert_threshold = float(request.form.get('sentiment_alert_threshold', -0.5))
+    settings.qa_auto_fail_threshold = float(request.form.get('qa_auto_fail_threshold', 50))
+    settings.confidence_threshold = float(request.form.get('confidence_threshold', 0.7))
+    
+    # Yasaklı kelimeler
+    forbidden_words_list = request.form.get('forbidden_words_list', '')
+    if forbidden_words_list:
+        settings.forbidden_words = [w.strip() for w in forbidden_words_list.split('\n') if w.strip()]
+    
+    # Promptlar
+    settings.summary_template = request.form.get('summary_template')
+    settings.agent_assist_prompt = request.form.get('agent_assist_prompt')
+    
+    db.session.commit()
+    flash('AI ayarları başarıyla kaydedildi.', 'success')
+    return redirect(url_for('ai_settings_full'))
+
+
+@app.route('/ai/logs')
+@login_required
+@admin_required
+def ai_logs():
+    """AI işlem logları"""
+    page = request.args.get('page', 1, type=int)
+    per_page = 20
+    tenant_id = get_tenant_id_for_ai()
+    
+    # AIUsage modelinden logları çek
+    query = AIUsage.query.filter_by(tenant_id=tenant_id)
+    
+    # Filtreler
+    usage_type = request.args.get('type')
+    if usage_type:
+        query = query.filter_by(usage_type=usage_type)
+    
+    date_from = request.args.get('date_from')
+    if date_from:
+        query = query.filter(AIUsage.usage_date >= date_from)
+    
+    date_to = request.args.get('date_to')
+    if date_to:
+        query = query.filter(AIUsage.usage_date <= date_to)
+    
+    ai_logs = query.order_by(AIUsage.created_at.desc()).paginate(page=page, per_page=per_page, error_out=False)
+    
+    # Kullanım dağılımı
+    usage_distribution = {
+        'transcription': 35,
+        'summary': 25,
+        'qa': 15,
+        'suggestion': 10,
+        'routing': 10,
+        'voice_bot': 5
+    }
+    
+    # Maliyet özeti
+    cost_summary = {
+        'transcription': 45.20,
+        'llm': 62.30,
+        'voice_bot': 20.00,
+        'total': 127.50
+    }
+    
+    return render_template('ai/logs.html',
+                         ai_logs=ai_logs.items,
+                         pagination=ai_logs,
+                         usage_distribution=usage_distribution,
+                         cost_summary=cost_summary)
+
+
+@app.route('/ai/voice-bot')
+@login_required
+@admin_required
+def ai_voice_bot():
+    """Voice Bot yönetimi"""
+    tenant_id = get_tenant_id_for_ai()
+    voice_bots = AIVoiceBot.query.filter_by(tenant_id=tenant_id).all()
+    active_bots = len([b for b in voice_bots if b.is_active])
+    
+    recent_sessions = AIVoiceBotSession.query.filter_by(
+        tenant_id=tenant_id
+    ).order_by(AIVoiceBotSession.started_at.desc()).limit(20).all()
+    
+    projects = Project.query.filter_by(tenant_id=tenant_id).all()
+    queues = Queue.query.filter_by(tenant_id=tenant_id).all()
+    knowledge_bases = KnowledgeBase.query.filter_by(tenant_id=tenant_id).all()
+    
+    return render_template('ai/voice_bot.html',
+                         voice_bots=voice_bots,
+                         active_bots=active_bots,
+                         today_sessions=len(recent_sessions),
+                         resolution_rate=72,
+                         recent_sessions=recent_sessions,
+                         projects=projects,
+                         queues=queues,
+                         knowledge_bases=knowledge_bases)
+
+
+@app.route('/ai/voice-bot/save', methods=['POST'])
+@login_required
+@admin_required
+def ai_voice_bot_save():
+    """Voice Bot kaydet"""
+    tenant_id = get_tenant_id_for_ai()
+    bot_id = request.form.get('bot_id')
+    
+    if bot_id:
+        bot = AIVoiceBot.query.get(bot_id)
+    else:
+        bot = AIVoiceBot(tenant_id=tenant_id)
+        db.session.add(bot)
+    
+    bot.name = request.form.get('name')
+    bot.description = request.form.get('description')
+    bot.language = request.form.get('language', 'tr')
+    bot.voice_id = request.form.get('voice_id')
+    bot.voice_name = request.form.get('voice_name')
+    bot.speed = float(request.form.get('speed', 1.0))
+    
+    bot.greeting_message = request.form.get('greeting_message')
+    bot.fallback_message = request.form.get('fallback_message')
+    bot.transfer_message = request.form.get('transfer_message')
+    bot.goodbye_message = request.form.get('goodbye_message')
+    
+    bot.max_turns = int(request.form.get('max_turns', 5))
+    bot.transfer_on_frustration = 'transfer_on_frustration' in request.form
+    
+    transfer_queue_id = request.form.get('transfer_queue_id')
+    if transfer_queue_id:
+        bot.transfer_queue_id = int(transfer_queue_id)
+    
+    knowledge_base_id = request.form.get('knowledge_base_id')
+    if knowledge_base_id:
+        bot.knowledge_base_id = int(knowledge_base_id)
+    
+    project_id = request.form.get('project_id')
+    if project_id:
+        bot.project_id = int(project_id)
+    
+    bot.active_hours_start = request.form.get('active_hours_start')
+    bot.active_hours_end = request.form.get('active_hours_end')
+    
+    db.session.commit()
+    flash('Voice Bot kaydedildi.', 'success')
+    return redirect(url_for('ai_voice_bot'))
+
+
+@app.route('/ai/voice-bot/sessions')
+@login_required
+@admin_required
+def ai_voice_bot_sessions():
+    """Voice Bot oturumları"""
+    sessions = AIVoiceBotSession.query.filter_by(
+        tenant_id=current_user.tenant_id
+    ).order_by(AIVoiceBotSession.started_at.desc()).all()
+    
+    return render_template('ai/voice_bot_sessions.html', sessions=sessions)
+
+
+@app.route('/ai/packages')
+@login_required
+@admin_required
+def ai_packages():
+    """AI paketleri"""
+    packages = AIPackage.query.filter_by(is_active=True).all()
+    return render_template('ai/packages.html', packages=packages)
 
 
 # ==================== REPORTS ROUTES ====================

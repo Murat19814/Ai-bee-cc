@@ -1,0 +1,478 @@
+{% extends "base.html" %}
+
+{% block title %}AI Logları - {{ config.APP_NAME }}{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <div class="header-content">
+        <h1><i class="ti ti-file-analytics"></i> AI Logları</h1>
+        <p class="subtitle">Tüm AI işlemlerinin detaylı kayıtları</p>
+    </div>
+    <div class="header-actions">
+        <button class="btn btn-outline" onclick="exportLogs()">
+            <i class="ti ti-download"></i> Dışa Aktar
+        </button>
+    </div>
+</div>
+
+<!-- Filters -->
+<div class="card mb-4">
+    <div class="card-body">
+        <form method="GET" class="filter-form">
+            <div class="filter-grid">
+                <div class="form-group">
+                    <label>İşlem Tipi</label>
+                    <select name="type" class="form-control">
+                        <option value="">Tümü</option>
+                        <option value="transcription" {{ 'selected' if request.args.get('type') == 'transcription' else '' }}>Transkripsiyon</option>
+                        <option value="summary" {{ 'selected' if request.args.get('type') == 'summary' else '' }}>Özet</option>
+                        <option value="qa_evaluation" {{ 'selected' if request.args.get('type') == 'qa_evaluation' else '' }}>QA Değerlendirme</option>
+                        <option value="agent_suggestion" {{ 'selected' if request.args.get('type') == 'agent_suggestion' else '' }}>Agent Öneri</option>
+                        <option value="routing" {{ 'selected' if request.args.get('type') == 'routing' else '' }}>Akıllı Yönlendirme</option>
+                        <option value="voice_bot" {{ 'selected' if request.args.get('type') == 'voice_bot' else '' }}>Voice Bot</option>
+                        <option value="lead_scoring" {{ 'selected' if request.args.get('type') == 'lead_scoring' else '' }}>Lead Skorlama</option>
+                    </select>
+                </div>
+                
+                <div class="form-group">
+                    <label>Durum</label>
+                    <select name="status" class="form-control">
+                        <option value="">Tümü</option>
+                        <option value="completed" {{ 'selected' if request.args.get('status') == 'completed' else '' }}>Tamamlandı</option>
+                        <option value="processing" {{ 'selected' if request.args.get('status') == 'processing' else '' }}>İşleniyor</option>
+                        <option value="failed" {{ 'selected' if request.args.get('status') == 'failed' else '' }}>Hata</option>
+                    </select>
+                </div>
+                
+                <div class="form-group">
+                    <label>Tarih Aralığı</label>
+                    <input type="date" name="date_from" class="form-control" 
+                           value="{{ request.args.get('date_from', '') }}">
+                </div>
+                
+                <div class="form-group">
+                    <label>&nbsp;</label>
+                    <input type="date" name="date_to" class="form-control"
+                           value="{{ request.args.get('date_to', '') }}">
+                </div>
+                
+                <div class="form-group">
+                    <label>&nbsp;</label>
+                    <button type="submit" class="btn btn-primary">
+                        <i class="ti ti-filter"></i> Filtrele
+                    </button>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Logs Table -->
+<div class="card">
+    <div class="card-body">
+        <div class="table-responsive">
+            <table class="data-table">
+                <thead>
+                    <tr>
+                        <th>Tarih/Saat</th>
+                        <th>Tip</th>
+                        <th>Referans</th>
+                        <th>Model</th>
+                        <th>Süre</th>
+                        <th>Token/Dakika</th>
+                        <th>Maliyet</th>
+                        <th>Durum</th>
+                        <th>İşlem</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for log in ai_logs %}
+                    <tr>
+                        <td>
+                            <div class="datetime-cell">
+                                <span class="date">{{ log.created_at.strftime('%d.%m.%Y') if log.created_at else '-' }}</span>
+                                <span class="time">{{ log.created_at.strftime('%H:%M:%S') if log.created_at else '' }}</span>
+                            </div>
+                        </td>
+                        <td>
+                            <span class="log-type {{ log.usage_type }}">
+                                {% if log.usage_type == 'transcription' %}
+                                <i class="ti ti-microphone"></i> Transkripsiyon
+                                {% elif log.usage_type == 'summary' %}
+                                <i class="ti ti-file-text"></i> Özet
+                                {% elif log.usage_type == 'qa_evaluation' %}
+                                <i class="ti ti-clipboard-check"></i> QA
+                                {% elif log.usage_type == 'agent_suggestion' %}
+                                <i class="ti ti-bulb"></i> Öneri
+                                {% elif log.usage_type == 'routing' %}
+                                <i class="ti ti-route"></i> Yönlendirme
+                                {% elif log.usage_type == 'voice_bot' %}
+                                <i class="ti ti-robot"></i> Voice Bot
+                                {% elif log.usage_type == 'lead_scoring' %}
+                                <i class="ti ti-chart-dots"></i> Lead Skor
+                                {% else %}
+                                <i class="ti ti-brain"></i> {{ log.usage_type }}
+                                {% endif %}
+                            </span>
+                        </td>
+                        <td>
+                            {% if log.reference_type == 'call' %}
+                            <a href="{{ url_for('call_detail', id=log.reference_id) }}">
+                                Çağrı #{{ log.reference_id }}
+                            </a>
+                            {% elif log.reference_type == 'lead' %}
+                            Lead #{{ log.reference_id }}
+                            {% else %}
+                            {{ log.reference_type }} #{{ log.reference_id if log.reference_id else '-' }}
+                            {% endif %}
+                        </td>
+                        <td>
+                            <span class="model-badge">{{ log.model or log.provider or '-' }}</span>
+                        </td>
+                        <td>{{ log.processing_time | default(0) | round(2) }}s</td>
+                        <td>
+                            {% if log.unit == 'minute' %}
+                            {{ log.quantity | round(2) }} dk
+                            {% elif log.unit == 'token' %}
+                            {{ log.quantity | int }} token
+                            {% else %}
+                            {{ log.quantity }}
+                            {% endif %}
+                        </td>
+                        <td>
+                            {% if log.total_cost %}
+                            ₺{{ log.total_cost | round(4) }}
+                            {% else %}
+                            -
+                            {% endif %}
+                        </td>
+                        <td>
+                            <span class="badge 
+                                {{ 'badge-success' if log.status == 'completed' else '' }}
+                                {{ 'badge-warning' if log.status == 'processing' else '' }}
+                                {{ 'badge-danger' if log.status == 'failed' else '' }}">
+                                {% if log.status == 'completed' %}Tamamlandı
+                                {% elif log.status == 'processing' %}İşleniyor
+                                {% elif log.status == 'failed' %}Hata
+                                {% else %}{{ log.status or 'Tamamlandı' }}{% endif %}
+                            </span>
+                        </td>
+                        <td>
+                            <button class="btn btn-sm btn-outline" onclick="viewLogDetail({{ log.id }})">
+                                <i class="ti ti-eye"></i>
+                            </button>
+                        </td>
+                    </tr>
+                    {% else %}
+                    <tr>
+                        <td colspan="9" class="text-center">
+                            <div class="empty-state-inline">
+                                <i class="ti ti-file-analytics"></i>
+                                <span>Kayıt bulunamadı</span>
+                            </div>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        
+        <!-- Pagination -->
+        {% if pagination %}
+        <div class="pagination">
+            {% if pagination.has_prev %}
+            <a href="?page={{ pagination.prev_num }}&{{ request.query_string.decode() }}" class="page-btn">
+                <i class="ti ti-chevron-left"></i>
+            </a>
+            {% endif %}
+            
+            <span class="page-info">
+                Sayfa {{ pagination.page }} / {{ pagination.pages }}
+            </span>
+            
+            {% if pagination.has_next %}
+            <a href="?page={{ pagination.next_num }}&{{ request.query_string.decode() }}" class="page-btn">
+                <i class="ti ti-chevron-right"></i>
+            </a>
+            {% endif %}
+        </div>
+        {% endif %}
+    </div>
+</div>
+
+<!-- Usage Summary -->
+<div class="content-grid mt-4">
+    <div class="card">
+        <div class="card-header">
+            <h3><i class="ti ti-chart-pie"></i> Kullanım Dağılımı</h3>
+        </div>
+        <div class="card-body">
+            <div class="usage-chart">
+                <canvas id="usageChart"></canvas>
+            </div>
+        </div>
+    </div>
+    
+    <div class="card">
+        <div class="card-header">
+            <h3><i class="ti ti-currency-lira"></i> Maliyet Özeti</h3>
+        </div>
+        <div class="card-body">
+            <div class="cost-summary">
+                <div class="cost-item">
+                    <span class="cost-label">Transkripsiyon</span>
+                    <span class="cost-value">₺{{ cost_summary.transcription | default(0) | round(2) }}</span>
+                </div>
+                <div class="cost-item">
+                    <span class="cost-label">LLM (Özet/QA)</span>
+                    <span class="cost-value">₺{{ cost_summary.llm | default(0) | round(2) }}</span>
+                </div>
+                <div class="cost-item">
+                    <span class="cost-label">Voice Bot</span>
+                    <span class="cost-value">₺{{ cost_summary.voice_bot | default(0) | round(2) }}</span>
+                </div>
+                <div class="cost-item total">
+                    <span class="cost-label">Toplam</span>
+                    <span class="cost-value">₺{{ cost_summary.total | default(0) | round(2) }}</span>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Log Detail Modal -->
+<div class="modal" id="logDetailModal">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h3><i class="ti ti-file-analytics"></i> Log Detayı</h3>
+            <button class="modal-close" onclick="closeLogDetail()">&times;</button>
+        </div>
+        <div class="modal-body" id="logDetailContent">
+            <!-- Dynamic content -->
+        </div>
+    </div>
+</div>
+
+<style>
+.filter-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+    gap: 1rem;
+    align-items: end;
+}
+
+.datetime-cell {
+    display: flex;
+    flex-direction: column;
+}
+
+.datetime-cell .date {
+    font-weight: 600;
+}
+
+.datetime-cell .time {
+    font-size: 0.85rem;
+    color: var(--text-secondary);
+}
+
+.log-type {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.25rem 0.75rem;
+    border-radius: 20px;
+    font-size: 0.85rem;
+    font-weight: 500;
+}
+
+.log-type.transcription { background: rgba(59, 130, 246, 0.1); color: #3B82F6; }
+.log-type.summary { background: rgba(16, 185, 129, 0.1); color: #10B981; }
+.log-type.qa_evaluation { background: rgba(139, 92, 246, 0.1); color: #8B5CF6; }
+.log-type.agent_suggestion { background: rgba(245, 158, 11, 0.1); color: #F59E0B; }
+.log-type.routing { background: rgba(236, 72, 153, 0.1); color: #EC4899; }
+.log-type.voice_bot { background: rgba(99, 102, 241, 0.1); color: #6366F1; }
+.log-type.lead_scoring { background: rgba(34, 197, 94, 0.1); color: #22C55E; }
+
+.model-badge {
+    padding: 0.2rem 0.5rem;
+    background: var(--border-color);
+    border-radius: 4px;
+    font-size: 0.8rem;
+    font-family: monospace;
+}
+
+.usage-chart {
+    height: 250px;
+}
+
+.cost-summary {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+}
+
+.cost-item {
+    display: flex;
+    justify-content: space-between;
+    padding: 0.75rem;
+    background: var(--card-bg);
+    border-radius: 8px;
+    border: 1px solid var(--border-color);
+}
+
+.cost-item.total {
+    background: linear-gradient(135deg, rgba(245, 166, 35, 0.1), rgba(245, 166, 35, 0.2));
+    border-color: var(--primary-color);
+}
+
+.cost-label {
+    color: var(--text-secondary);
+}
+
+.cost-value {
+    font-weight: 600;
+    color: var(--text-primary);
+}
+
+.cost-item.total .cost-value {
+    color: var(--primary-color);
+    font-size: 1.25rem;
+}
+
+.empty-state-inline {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    color: var(--text-secondary);
+    padding: 2rem;
+}
+
+.empty-state-inline i {
+    font-size: 1.5rem;
+}
+
+.pagination {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 1rem;
+    margin-top: 1.5rem;
+}
+
+.page-btn {
+    width: 40px;
+    height: 40px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 8px;
+    background: var(--card-bg);
+    border: 1px solid var(--border-color);
+    color: var(--text-primary);
+    text-decoration: none;
+    transition: all 0.3s ease;
+}
+
+.page-btn:hover {
+    background: var(--primary-color);
+    color: white;
+    border-color: var(--primary-color);
+}
+
+.page-info {
+    color: var(--text-secondary);
+}
+</style>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+// Usage distribution chart
+const ctx = document.getElementById('usageChart');
+if (ctx) {
+    new Chart(ctx, {
+        type: 'doughnut',
+        data: {
+            labels: ['Transkripsiyon', 'Özet', 'QA', 'Agent Öneri', 'Yönlendirme', 'Voice Bot'],
+            datasets: [{
+                data: [
+                    {{ usage_distribution.transcription | default(35) }},
+                    {{ usage_distribution.summary | default(25) }},
+                    {{ usage_distribution.qa | default(15) }},
+                    {{ usage_distribution.suggestion | default(10) }},
+                    {{ usage_distribution.routing | default(10) }},
+                    {{ usage_distribution.voice_bot | default(5) }}
+                ],
+                backgroundColor: [
+                    '#3B82F6',
+                    '#10B981',
+                    '#8B5CF6',
+                    '#F59E0B',
+                    '#EC4899',
+                    '#6366F1'
+                ]
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: {
+                    position: 'bottom'
+                }
+            }
+        }
+    });
+}
+
+function viewLogDetail(logId) {
+    fetch('/api/ai-logs/' + logId)
+        .then(response => response.json())
+        .then(data => {
+            document.getElementById('logDetailContent').innerHTML = `
+                <div class="log-detail">
+                    <div class="detail-row">
+                        <span class="label">Tip:</span>
+                        <span class="value">${data.usage_type}</span>
+                    </div>
+                    <div class="detail-row">
+                        <span class="label">Provider:</span>
+                        <span class="value">${data.provider || '-'}</span>
+                    </div>
+                    <div class="detail-row">
+                        <span class="label">Model:</span>
+                        <span class="value">${data.model || '-'}</span>
+                    </div>
+                    <div class="detail-row">
+                        <span class="label">İşlem Süresi:</span>
+                        <span class="value">${data.processing_time || 0}s</span>
+                    </div>
+                    <div class="detail-row">
+                        <span class="label">Kullanım:</span>
+                        <span class="value">${data.quantity} ${data.unit}</span>
+                    </div>
+                    <div class="detail-row">
+                        <span class="label">Maliyet:</span>
+                        <span class="value">₺${data.total_cost || 0}</span>
+                    </div>
+                    ${data.error_message ? `
+                    <div class="detail-row error">
+                        <span class="label">Hata:</span>
+                        <span class="value">${data.error_message}</span>
+                    </div>
+                    ` : ''}
+                </div>
+            `;
+            document.getElementById('logDetailModal').classList.add('active');
+        });
+}
+
+function closeLogDetail() {
+    document.getElementById('logDetailModal').classList.remove('active');
+}
+
+function exportLogs() {
+    window.location.href = '/ai/logs/export?' + new URLSearchParams(window.location.search).toString();
+}
+</script>
+{% endblock %}
+

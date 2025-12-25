@@ -1,0 +1,337 @@
+{% extends "base.html" %}
+
+{% block title %}AI Paketleri - {{ config.APP_NAME }}{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <div class="header-content">
+        <h1><i class="ti ti-package"></i> AI Paketleri</h1>
+        <p class="subtitle">Yapay Zeka özellik paketlerini yönetin</p>
+    </div>
+    <div class="header-actions">
+        {% if current_user.is_super_admin %}
+        <button class="btn btn-primary" onclick="openPackageModal()">
+            <i class="ti ti-plus"></i> Yeni Paket
+        </button>
+        {% endif %}
+    </div>
+</div>
+
+<div class="package-grid">
+    <!-- Basic Package -->
+    <div class="package-card">
+        <div class="package-badge basic">Basic</div>
+        <h3 class="package-name">Başlangıç</h3>
+        <div class="package-price">
+            <span class="price">₺499</span>
+            <span class="period">/ay</span>
+        </div>
+        <p class="package-desc">Küçük çağrı merkezleri için temel AI özellikleri</p>
+        
+        <ul class="package-features">
+            <li><i class="ti ti-check"></i> 100 dk/ay Transkripsiyon</li>
+            <li><i class="ti ti-check"></i> 50 Özet/ay</li>
+            <li><i class="ti ti-check"></i> 25 QA Değerlendirme/ay</li>
+            <li><i class="ti ti-check"></i> Duygu Analizi</li>
+            <li><i class="ti ti-check"></i> Konu Tespiti</li>
+            <li class="disabled"><i class="ti ti-x"></i> Agent Asistan</li>
+            <li class="disabled"><i class="ti ti-x"></i> Voice Bot</li>
+            <li class="disabled"><i class="ti ti-x"></i> Akıllı Yönlendirme</li>
+        </ul>
+        
+        <button class="btn btn-outline btn-block">Paket Seç</button>
+    </div>
+    
+    <!-- Pro Package -->
+    <div class="package-card featured">
+        <div class="package-badge pro">Pro</div>
+        <div class="featured-badge">En Popüler</div>
+        <h3 class="package-name">Profesyonel</h3>
+        <div class="package-price">
+            <span class="price">₺1.499</span>
+            <span class="period">/ay</span>
+        </div>
+        <p class="package-desc">Orta ölçekli operasyonlar için gelişmiş AI</p>
+        
+        <ul class="package-features">
+            <li><i class="ti ti-check"></i> 500 dk/ay Transkripsiyon</li>
+            <li><i class="ti ti-check"></i> 250 Özet/ay</li>
+            <li><i class="ti ti-check"></i> 100 QA Değerlendirme/ay</li>
+            <li><i class="ti ti-check"></i> Duygu Analizi</li>
+            <li><i class="ti ti-check"></i> Konu Tespiti</li>
+            <li><i class="ti ti-check"></i> Agent Asistan</li>
+            <li><i class="ti ti-check"></i> Lead Skorlama</li>
+            <li class="disabled"><i class="ti ti-x"></i> Voice Bot</li>
+        </ul>
+        
+        <button class="btn btn-primary btn-block">Paket Seç</button>
+    </div>
+    
+    <!-- Enterprise Package -->
+    <div class="package-card">
+        <div class="package-badge enterprise">Enterprise</div>
+        <h3 class="package-name">Kurumsal</h3>
+        <div class="package-price">
+            <span class="price">₺4.999</span>
+            <span class="period">/ay</span>
+        </div>
+        <p class="package-desc">Büyük operasyonlar için tam AI paketi</p>
+        
+        <ul class="package-features">
+            <li><i class="ti ti-check"></i> Sınırsız Transkripsiyon</li>
+            <li><i class="ti ti-check"></i> Sınırsız Özet</li>
+            <li><i class="ti ti-check"></i> Sınırsız QA Değerlendirme</li>
+            <li><i class="ti ti-check"></i> Duygu Analizi</li>
+            <li><i class="ti ti-check"></i> Agent Asistan</li>
+            <li><i class="ti ti-check"></i> Voice Bot</li>
+            <li><i class="ti ti-check"></i> Akıllı Yönlendirme</li>
+            <li><i class="ti ti-check"></i> Predictive Dialer AI</li>
+        </ul>
+        
+        <button class="btn btn-outline btn-block">İletişime Geç</button>
+    </div>
+</div>
+
+<!-- Feature Comparison -->
+<div class="card mt-4">
+    <div class="card-header">
+        <h3><i class="ti ti-list-check"></i> Özellik Karşılaştırması</h3>
+    </div>
+    <div class="card-body">
+        <div class="table-responsive">
+            <table class="data-table comparison-table">
+                <thead>
+                    <tr>
+                        <th>Özellik</th>
+                        <th class="text-center">Basic</th>
+                        <th class="text-center">Pro</th>
+                        <th class="text-center">Enterprise</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td><strong>Transkripsiyon</strong></td>
+                        <td class="text-center">100 dk/ay</td>
+                        <td class="text-center">500 dk/ay</td>
+                        <td class="text-center">Sınırsız</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Otomatik Özet</strong></td>
+                        <td class="text-center">50/ay</td>
+                        <td class="text-center">250/ay</td>
+                        <td class="text-center">Sınırsız</td>
+                    </tr>
+                    <tr>
+                        <td><strong>QA Değerlendirme</strong></td>
+                        <td class="text-center">25/ay</td>
+                        <td class="text-center">100/ay</td>
+                        <td class="text-center">Sınırsız</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Duygu Analizi</strong></td>
+                        <td class="text-center"><i class="ti ti-check text-success"></i></td>
+                        <td class="text-center"><i class="ti ti-check text-success"></i></td>
+                        <td class="text-center"><i class="ti ti-check text-success"></i></td>
+                    </tr>
+                    <tr>
+                        <td><strong>Konu Tespiti</strong></td>
+                        <td class="text-center"><i class="ti ti-check text-success"></i></td>
+                        <td class="text-center"><i class="ti ti-check text-success"></i></td>
+                        <td class="text-center"><i class="ti ti-check text-success"></i></td>
+                    </tr>
+                    <tr>
+                        <td><strong>Agent Asistan</strong></td>
+                        <td class="text-center"><i class="ti ti-x text-danger"></i></td>
+                        <td class="text-center"><i class="ti ti-check text-success"></i></td>
+                        <td class="text-center"><i class="ti ti-check text-success"></i></td>
+                    </tr>
+                    <tr>
+                        <td><strong>Gerçek Zamanlı Script Önerisi</strong></td>
+                        <td class="text-center"><i class="ti ti-x text-danger"></i></td>
+                        <td class="text-center"><i class="ti ti-check text-success"></i></td>
+                        <td class="text-center"><i class="ti ti-check text-success"></i></td>
+                    </tr>
+                    <tr>
+                        <td><strong>Lead Skorlama</strong></td>
+                        <td class="text-center"><i class="ti ti-x text-danger"></i></td>
+                        <td class="text-center"><i class="ti ti-check text-success"></i></td>
+                        <td class="text-center"><i class="ti ti-check text-success"></i></td>
+                    </tr>
+                    <tr>
+                        <td><strong>Voice Bot</strong></td>
+                        <td class="text-center"><i class="ti ti-x text-danger"></i></td>
+                        <td class="text-center"><i class="ti ti-x text-danger"></i></td>
+                        <td class="text-center"><i class="ti ti-check text-success"></i></td>
+                    </tr>
+                    <tr>
+                        <td><strong>Akıllı Yönlendirme</strong></td>
+                        <td class="text-center"><i class="ti ti-x text-danger"></i></td>
+                        <td class="text-center"><i class="ti ti-x text-danger"></i></td>
+                        <td class="text-center"><i class="ti ti-check text-success"></i></td>
+                    </tr>
+                    <tr>
+                        <td><strong>Predictive Dialer AI</strong></td>
+                        <td class="text-center"><i class="ti ti-x text-danger"></i></td>
+                        <td class="text-center"><i class="ti ti-x text-danger"></i></td>
+                        <td class="text-center"><i class="ti ti-check text-success"></i></td>
+                    </tr>
+                    <tr>
+                        <td><strong>Churn Tahmini</strong></td>
+                        <td class="text-center"><i class="ti ti-x text-danger"></i></td>
+                        <td class="text-center"><i class="ti ti-x text-danger"></i></td>
+                        <td class="text-center"><i class="ti ti-check text-success"></i></td>
+                    </tr>
+                    <tr>
+                        <td><strong>KVKK Uyum Kontrolü</strong></td>
+                        <td class="text-center"><i class="ti ti-check text-success"></i></td>
+                        <td class="text-center"><i class="ti ti-check text-success"></i></td>
+                        <td class="text-center"><i class="ti ti-check text-success"></i></td>
+                    </tr>
+                    <tr>
+                        <td><strong>Destek</strong></td>
+                        <td class="text-center">E-posta</td>
+                        <td class="text-center">Öncelikli</td>
+                        <td class="text-center">Özel Temsilci</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<style>
+.package-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+    gap: 2rem;
+    margin-top: 1rem;
+}
+
+.package-card {
+    background: var(--card-bg);
+    border-radius: 20px;
+    padding: 2rem;
+    border: 2px solid var(--border-color);
+    position: relative;
+    transition: all 0.3s ease;
+}
+
+.package-card:hover {
+    transform: translateY(-8px);
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+}
+
+.package-card.featured {
+    border-color: var(--primary-color);
+    background: linear-gradient(135deg, rgba(245, 166, 35, 0.05), rgba(245, 166, 35, 0.1));
+}
+
+.package-badge {
+    display: inline-block;
+    padding: 0.35rem 1rem;
+    border-radius: 20px;
+    font-size: 0.8rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    margin-bottom: 1rem;
+}
+
+.package-badge.basic { background: #E5E7EB; color: #374151; }
+.package-badge.pro { background: linear-gradient(135deg, var(--primary-color), var(--primary-dark)); color: white; }
+.package-badge.enterprise { background: linear-gradient(135deg, #8B5CF6, #6D28D9); color: white; }
+
+.featured-badge {
+    position: absolute;
+    top: -12px;
+    right: 20px;
+    background: var(--primary-color);
+    color: white;
+    padding: 0.35rem 1rem;
+    border-radius: 20px;
+    font-size: 0.75rem;
+    font-weight: 600;
+}
+
+.package-name {
+    font-size: 1.5rem;
+    margin-bottom: 0.5rem;
+    color: var(--text-primary);
+}
+
+.package-price {
+    margin-bottom: 1rem;
+}
+
+.package-price .price {
+    font-size: 2.5rem;
+    font-weight: 700;
+    color: var(--primary-color);
+}
+
+.package-price .period {
+    color: var(--text-secondary);
+    font-size: 1rem;
+}
+
+.package-desc {
+    color: var(--text-secondary);
+    margin-bottom: 1.5rem;
+    line-height: 1.5;
+}
+
+.package-features {
+    list-style: none;
+    padding: 0;
+    margin: 0 0 2rem 0;
+}
+
+.package-features li {
+    padding: 0.75rem 0;
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    border-bottom: 1px solid var(--border-color);
+}
+
+.package-features li:last-child {
+    border-bottom: none;
+}
+
+.package-features li i {
+    font-size: 1.25rem;
+}
+
+.package-features li i.ti-check {
+    color: var(--success-color);
+}
+
+.package-features li i.ti-x {
+    color: var(--danger-color);
+}
+
+.package-features li.disabled {
+    color: var(--text-secondary);
+    opacity: 0.6;
+}
+
+.btn-block {
+    width: 100%;
+}
+
+.comparison-table th,
+.comparison-table td {
+    padding: 1rem;
+}
+
+.comparison-table .text-success {
+    color: var(--success-color);
+    font-size: 1.25rem;
+}
+
+.comparison-table .text-danger {
+    color: var(--danger-color);
+    font-size: 1.25rem;
+}
+</style>
+{% endblock %}
+

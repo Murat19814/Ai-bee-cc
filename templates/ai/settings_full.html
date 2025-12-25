@@ -1,0 +1,872 @@
+{% extends "base.html" %}
+
+{% block title %}AI Ayarları - {{ config.APP_NAME }}{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <div class="header-content">
+        <h1><i class="ti ti-settings-automation"></i> AI Ayarları</h1>
+        <p class="subtitle">Yapay Zeka modüllerini yapılandırın</p>
+    </div>
+    <div class="header-actions">
+        <a href="{{ url_for('ai_dashboard') }}" class="btn btn-outline">
+            <i class="ti ti-arrow-left"></i> Dashboard
+        </a>
+        <button type="submit" form="ai-settings-form" class="btn btn-primary">
+            <i class="ti ti-device-floppy"></i> Kaydet
+        </button>
+    </div>
+</div>
+
+<form id="ai-settings-form" method="POST" action="{{ url_for('ai_settings_save') }}">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() if csrf_token else '' }}">
+    
+    <div class="settings-tabs">
+        <button type="button" class="tab-btn active" data-tab="general">
+            <i class="ti ti-adjustments"></i> Genel
+        </button>
+        <button type="button" class="tab-btn" data-tab="stt">
+            <i class="ti ti-microphone"></i> STT
+        </button>
+        <button type="button" class="tab-btn" data-tab="tts">
+            <i class="ti ti-volume"></i> TTS
+        </button>
+        <button type="button" class="tab-btn" data-tab="llm">
+            <i class="ti ti-brain"></i> LLM
+        </button>
+        <button type="button" class="tab-btn" data-tab="features">
+            <i class="ti ti-puzzle"></i> Özellikler
+        </button>
+        <button type="button" class="tab-btn" data-tab="compliance">
+            <i class="ti ti-shield-check"></i> Uyum
+        </button>
+        <button type="button" class="tab-btn" data-tab="packages">
+            <i class="ti ti-package"></i> Paketler
+        </button>
+    </div>
+    
+    <!-- General Settings Tab -->
+    <div class="tab-content active" id="tab-general">
+        <div class="card">
+            <div class="card-header">
+                <h3><i class="ti ti-adjustments"></i> Genel AI Ayarları</h3>
+            </div>
+            <div class="card-body">
+                <div class="form-grid">
+                    <div class="form-group">
+                        <label>AI Modülü Durumu</label>
+                        <div class="toggle-switch">
+                            <input type="checkbox" id="ai_enabled" name="ai_enabled" 
+                                   {{ 'checked' if ai_settings.is_active else '' }}>
+                            <label for="ai_enabled">AI Modülü Aktif</label>
+                        </div>
+                        <small class="form-hint">Tüm AI özelliklerini açıp kapatır</small>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label>Varsayılan Dil</label>
+                        <select name="default_language" class="form-control">
+                            <option value="tr" {{ 'selected' if ai_settings.stt_language == 'tr' else '' }}>Türkçe</option>
+                            <option value="de" {{ 'selected' if ai_settings.stt_language == 'de' else '' }}>Almanca</option>
+                            <option value="en" {{ 'selected' if ai_settings.stt_language == 'en' else '' }}>İngilizce</option>
+                        </select>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label>İkincil Dil</label>
+                        <select name="secondary_language" class="form-control">
+                            <option value="">Yok</option>
+                            <option value="tr" {{ 'selected' if ai_settings.stt_secondary_language == 'tr' else '' }}>Türkçe</option>
+                            <option value="de" {{ 'selected' if ai_settings.stt_secondary_language == 'de' else '' }}>Almanca</option>
+                            <option value="en" {{ 'selected' if ai_settings.stt_secondary_language == 'en' else '' }}>İngilizce</option>
+                        </select>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label>Güven Eşiği</label>
+                        <input type="number" name="confidence_threshold" class="form-control"
+                               value="{{ ai_settings.confidence_threshold | default(0.7) }}"
+                               min="0" max="1" step="0.05">
+                        <small class="form-hint">AI tahminleri için minimum güven skoru (0-1)</small>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- STT Settings Tab -->
+    <div class="tab-content" id="tab-stt">
+        <div class="card">
+            <div class="card-header">
+                <h3><i class="ti ti-microphone"></i> Konuşmadan Metne (STT) Ayarları</h3>
+            </div>
+            <div class="card-body">
+                <div class="form-grid">
+                    <div class="form-group">
+                        <label>STT Sağlayıcı</label>
+                        <select name="stt_provider" class="form-control">
+                            <option value="whisper" {{ 'selected' if ai_settings.stt_provider == 'whisper' else '' }}>OpenAI Whisper</option>
+                            <option value="google" {{ 'selected' if ai_settings.stt_provider == 'google' else '' }}>Google Speech-to-Text</option>
+                            <option value="azure" {{ 'selected' if ai_settings.stt_provider == 'azure' else '' }}>Azure Speech</option>
+                            <option value="deepgram" {{ 'selected' if ai_settings.stt_provider == 'deepgram' else '' }}>Deepgram</option>
+                        </select>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label>Whisper Modeli</label>
+                        <select name="stt_model" class="form-control">
+                            <option value="tiny" {{ 'selected' if ai_settings.stt_model == 'tiny' else '' }}>Tiny (Hızlı)</option>
+                            <option value="base" {{ 'selected' if ai_settings.stt_model == 'base' else '' }}>Base (Dengeli)</option>
+                            <option value="small" {{ 'selected' if ai_settings.stt_model == 'small' else '' }}>Small</option>
+                            <option value="medium" {{ 'selected' if ai_settings.stt_model == 'medium' else '' }}>Medium</option>
+                            <option value="large" {{ 'selected' if ai_settings.stt_model == 'large' else '' }}>Large (En İyi)</option>
+                        </select>
+                    </div>
+                    
+                    <div class="form-group full-width">
+                        <label>Otomatik Transkripsiyon</label>
+                        <div class="toggle-switch">
+                            <input type="checkbox" id="auto_transcription" name="auto_transcription" 
+                                   {{ 'checked' if ai_settings.auto_transcription_enabled else '' }}>
+                            <label for="auto_transcription">Her çağrıyı otomatik metne dönüştür</label>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- TTS Settings Tab -->
+    <div class="tab-content" id="tab-tts">
+        <div class="card">
+            <div class="card-header">
+                <h3><i class="ti ti-volume"></i> Metinden Konuşmaya (TTS) Ayarları</h3>
+            </div>
+            <div class="card-body">
+                <div class="form-grid">
+                    <div class="form-group">
+                        <label>TTS Sağlayıcı</label>
+                        <select name="tts_provider" class="form-control">
+                            <option value="elevenlabs" {{ 'selected' if ai_settings.tts_provider == 'elevenlabs' else '' }}>ElevenLabs</option>
+                            <option value="google" {{ 'selected' if ai_settings.tts_provider == 'google' else '' }}>Google Text-to-Speech</option>
+                            <option value="azure" {{ 'selected' if ai_settings.tts_provider == 'azure' else '' }}>Azure Speech</option>
+                        </select>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label>Ses Hızı</label>
+                        <input type="range" name="tts_speed" class="form-range"
+                               value="{{ ai_settings.tts_speed | default(1.0) }}"
+                               min="0.5" max="2" step="0.1">
+                        <div class="range-labels">
+                            <span>Yavaş</span>
+                            <span>Normal</span>
+                            <span>Hızlı</span>
+                        </div>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label>Ses ID (ElevenLabs)</label>
+                        <input type="text" name="tts_voice_id" class="form-control"
+                               value="{{ ai_settings.tts_voice_id | default('') }}"
+                               placeholder="Örn: 21m00Tcm4TlvDq8ikWAM">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label>TTS Dili</label>
+                        <select name="tts_language" class="form-control">
+                            <option value="tr" {{ 'selected' if ai_settings.tts_language == 'tr' else '' }}>Türkçe</option>
+                            <option value="de" {{ 'selected' if ai_settings.tts_language == 'de' else '' }}>Almanca</option>
+                            <option value="en" {{ 'selected' if ai_settings.tts_language == 'en' else '' }}>İngilizce</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- LLM Settings Tab -->
+    <div class="tab-content" id="tab-llm">
+        <div class="card">
+            <div class="card-header">
+                <h3><i class="ti ti-brain"></i> Dil Modeli (LLM) Ayarları</h3>
+            </div>
+            <div class="card-body">
+                <div class="form-grid">
+                    <div class="form-group">
+                        <label>LLM Sağlayıcı</label>
+                        <select name="llm_provider" class="form-control">
+                            <option value="openai" {{ 'selected' if ai_settings.llm_provider == 'openai' else '' }}>OpenAI</option>
+                            <option value="anthropic" {{ 'selected' if ai_settings.llm_provider == 'anthropic' else '' }}>Anthropic Claude</option>
+                            <option value="azure" {{ 'selected' if ai_settings.llm_provider == 'azure' else '' }}>Azure OpenAI</option>
+                        </select>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label>Model</label>
+                        <select name="llm_model" class="form-control">
+                            <option value="gpt-4" {{ 'selected' if ai_settings.llm_model == 'gpt-4' else '' }}>GPT-4</option>
+                            <option value="gpt-4-turbo" {{ 'selected' if ai_settings.llm_model == 'gpt-4-turbo' else '' }}>GPT-4 Turbo</option>
+                            <option value="gpt-3.5-turbo" {{ 'selected' if ai_settings.llm_model == 'gpt-3.5-turbo' else '' }}>GPT-3.5 Turbo</option>
+                            <option value="claude-3-opus" {{ 'selected' if ai_settings.llm_model == 'claude-3-opus' else '' }}>Claude 3 Opus</option>
+                            <option value="claude-3-sonnet" {{ 'selected' if ai_settings.llm_model == 'claude-3-sonnet' else '' }}>Claude 3 Sonnet</option>
+                        </select>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label>Temperature</label>
+                        <input type="range" name="llm_temperature" class="form-range"
+                               value="{{ ai_settings.llm_temperature | default(0.3) }}"
+                               min="0" max="1" step="0.1">
+                        <div class="range-labels">
+                            <span>Tutarlı</span>
+                            <span>Dengeli</span>
+                            <span>Yaratıcı</span>
+                        </div>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label>Max Token</label>
+                        <input type="number" name="llm_max_tokens" class="form-control"
+                               value="{{ ai_settings.llm_max_tokens | default(2000) }}"
+                               min="100" max="8000" step="100">
+                    </div>
+                </div>
+                
+                <div class="form-group full-width mt-4">
+                    <label>Özet Prompt Şablonu</label>
+                    <textarea name="summary_template" class="form-control" rows="6"
+                              placeholder="Özet oluşturma için özel prompt...">{{ ai_settings.summary_template | default('') }}</textarea>
+                </div>
+                
+                <div class="form-group full-width">
+                    <label>Agent Asistan Prompt Şablonu</label>
+                    <textarea name="agent_assist_prompt" class="form-control" rows="6"
+                              placeholder="Agent önerileri için özel prompt...">{{ ai_settings.agent_assist_prompt | default('') }}</textarea>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Features Tab -->
+    <div class="tab-content" id="tab-features">
+        <div class="card">
+            <div class="card-header">
+                <h3><i class="ti ti-puzzle"></i> AI Özellikleri</h3>
+            </div>
+            <div class="card-body">
+                <div class="features-section">
+                    <h4>Çağrı Sonrası Analiz</h4>
+                    <div class="feature-toggles">
+                        <div class="toggle-item">
+                            <input type="checkbox" id="auto_summary" name="auto_summary"
+                                   {{ 'checked' if ai_settings.auto_summary_enabled else '' }}>
+                            <label for="auto_summary">
+                                <span class="toggle-title">Otomatik Özet</span>
+                                <span class="toggle-desc">Her çağrı için AI özeti üret</span>
+                            </label>
+                        </div>
+                        
+                        <div class="toggle-item">
+                            <input type="checkbox" id="sentiment_analysis" name="sentiment_analysis"
+                                   {{ 'checked' if ai_settings.sentiment_analysis_enabled else '' }}>
+                            <label for="sentiment_analysis">
+                                <span class="toggle-title">Duygu Analizi</span>
+                                <span class="toggle-desc">Müşteri ve agent duygularını analiz et</span>
+                            </label>
+                        </div>
+                        
+                        <div class="toggle-item">
+                            <input type="checkbox" id="topic_detection" name="topic_detection"
+                                   {{ 'checked' if ai_settings.topic_detection_enabled else '' }}>
+                            <label for="topic_detection">
+                                <span class="toggle-title">Konu Tespiti</span>
+                                <span class="toggle-desc">Görüşme konularını otomatik etiketle</span>
+                            </label>
+                        </div>
+                        
+                        <div class="toggle-item">
+                            <input type="checkbox" id="keyword_extraction" name="keyword_extraction"
+                                   {{ 'checked' if ai_settings.keyword_extraction_enabled else '' }}>
+                            <label for="keyword_extraction">
+                                <span class="toggle-title">Anahtar Kelime Çıkarma</span>
+                                <span class="toggle-desc">Önemli terimleri otomatik belirle</span>
+                            </label>
+                        </div>
+                        
+                        <div class="toggle-item">
+                            <input type="checkbox" id="next_action_suggestions" name="next_action_suggestions"
+                                   {{ 'checked' if ai_settings.next_action_suggestions else '' }}>
+                            <label for="next_action_suggestions">
+                                <span class="toggle-title">Sonraki Adım Önerisi</span>
+                                <span class="toggle-desc">AI ile takip aksiyonu öner</span>
+                            </label>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="features-section">
+                    <h4>Gerçek Zamanlı Agent Desteği</h4>
+                    <div class="feature-toggles">
+                        <div class="toggle-item">
+                            <input type="checkbox" id="agent_assist" name="agent_assist"
+                                   {{ 'checked' if ai_settings.agent_assist_enabled else '' }}>
+                            <label for="agent_assist">
+                                <span class="toggle-title">Agent Asistan</span>
+                                <span class="toggle-desc">Canlı görüşme sırasında öneri sun</span>
+                            </label>
+                        </div>
+                        
+                        <div class="toggle-item">
+                            <input type="checkbox" id="realtime_script" name="realtime_script"
+                                   {{ 'checked' if ai_settings.realtime_script_suggestions else '' }}>
+                            <label for="realtime_script">
+                                <span class="toggle-title">Anlık Script Önerisi</span>
+                                <span class="toggle-desc">Bağlama uygun script bölümü öner</span>
+                            </label>
+                        </div>
+                        
+                        <div class="toggle-item">
+                            <input type="checkbox" id="objection_handling" name="objection_handling"
+                                   {{ 'checked' if ai_settings.objection_handling_enabled else '' }}>
+                            <label for="objection_handling">
+                                <span class="toggle-title">İtiraz Karşılama</span>
+                                <span class="toggle-desc">Müşteri itirazlarına yanıt öner</span>
+                            </label>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="features-section">
+                    <h4>Otomatik QA</h4>
+                    <div class="feature-toggles">
+                        <div class="toggle-item">
+                            <input type="checkbox" id="auto_qa" name="auto_qa"
+                                   {{ 'checked' if ai_settings.auto_qa_enabled else '' }}>
+                            <label for="auto_qa">
+                                <span class="toggle-title">Otomatik QA Puanlama</span>
+                                <span class="toggle-desc">%100 çağrıyı AI ile değerlendir</span>
+                            </label>
+                        </div>
+                        
+                        <div class="toggle-item">
+                            <input type="checkbox" id="aggressive_detection" name="aggressive_detection"
+                                   {{ 'checked' if ai_settings.aggressive_language_detection else '' }}>
+                            <label for="aggressive_detection">
+                                <span class="toggle-title">Agresif Dil Tespiti</span>
+                                <span class="toggle-desc">Uygunsuz davranışları otomatik tespit et</span>
+                            </label>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="features-section">
+                    <h4>Akıllı Yönlendirme & Dialer</h4>
+                    <div class="feature-toggles">
+                        <div class="toggle-item">
+                            <input type="checkbox" id="smart_routing" name="smart_routing"
+                                   {{ 'checked' if ai_settings.smart_routing_enabled else '' }}>
+                            <label for="smart_routing">
+                                <span class="toggle-title">Akıllı Yönlendirme</span>
+                                <span class="toggle-desc">AI ile en uygun agent/kuyruk seç</span>
+                            </label>
+                        </div>
+                        
+                        <div class="toggle-item">
+                            <input type="checkbox" id="intent_detection" name="intent_detection"
+                                   {{ 'checked' if ai_settings.intent_detection_enabled else '' }}>
+                            <label for="intent_detection">
+                                <span class="toggle-title">Niyet Tespiti</span>
+                                <span class="toggle-desc">Müşteri niyetini anlayarak yönlendir</span>
+                            </label>
+                        </div>
+                        
+                        <div class="toggle-item">
+                            <input type="checkbox" id="lead_scoring" name="lead_scoring"
+                                   {{ 'checked' if ai_settings.lead_scoring_enabled else '' }}>
+                            <label for="lead_scoring">
+                                <span class="toggle-title">Lead Skorlama</span>
+                                <span class="toggle-desc">Satış potansiyelini AI ile skorla</span>
+                            </label>
+                        </div>
+                        
+                        <div class="toggle-item">
+                            <input type="checkbox" id="best_time_to_call" name="best_time_to_call"
+                                   {{ 'checked' if ai_settings.best_time_to_call else '' }}>
+                            <label for="best_time_to_call">
+                                <span class="toggle-title">En İyi Arama Zamanı</span>
+                                <span class="toggle-desc">Lead için optimal arama saatini tahmin et</span>
+                            </label>
+                        </div>
+                        
+                        <div class="toggle-item">
+                            <input type="checkbox" id="predictive_dialer_ai" name="predictive_dialer_ai"
+                                   {{ 'checked' if ai_settings.predictive_dialer_ai else '' }}>
+                            <label for="predictive_dialer_ai">
+                                <span class="toggle-title">AI Predictive Dialer</span>
+                                <span class="toggle-desc">Dialer pacing'i AI ile optimize et</span>
+                            </label>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="features-section">
+                    <h4>Voice Bot & Self-Service</h4>
+                    <div class="feature-toggles">
+                        <div class="toggle-item">
+                            <input type="checkbox" id="voice_bot" name="voice_bot"
+                                   {{ 'checked' if ai_settings.voice_bot_enabled else '' }}>
+                            <label for="voice_bot">
+                                <span class="toggle-title">Voice Bot</span>
+                                <span class="toggle-desc">AI sesli asistan ile self-service</span>
+                            </label>
+                        </div>
+                        
+                        <div class="toggle-item">
+                            <input type="checkbox" id="vip_detection" name="vip_detection"
+                                   {{ 'checked' if ai_settings.vip_detection_enabled else '' }}>
+                            <label for="vip_detection">
+                                <span class="toggle-title">VIP Tespiti</span>
+                                <span class="toggle-desc">Değerli müşterileri otomatik tanı</span>
+                            </label>
+                        </div>
+                        
+                        <div class="toggle-item">
+                            <input type="checkbox" id="churn_prediction" name="churn_prediction"
+                                   {{ 'checked' if ai_settings.churn_prediction_enabled else '' }}>
+                            <label for="churn_prediction">
+                                <span class="toggle-title">Churn Tahmini</span>
+                                <span class="toggle-desc">Müşteri kaybetme riskini tahmin et</span>
+                            </label>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Compliance Tab -->
+    <div class="tab-content" id="tab-compliance">
+        <div class="card">
+            <div class="card-header">
+                <h3><i class="ti ti-shield-check"></i> KVKK & Uyum Ayarları</h3>
+            </div>
+            <div class="card-body">
+                <div class="form-grid">
+                    <div class="form-group full-width">
+                        <div class="toggle-item">
+                            <input type="checkbox" id="kvkk_compliance" name="kvkk_compliance"
+                                   {{ 'checked' if ai_settings.kvkk_compliance_check else '' }}>
+                            <label for="kvkk_compliance">
+                                <span class="toggle-title">KVKK Uyum Kontrolü</span>
+                                <span class="toggle-desc">Çağrılarda KVKK metni okundu mu kontrol et</span>
+                            </label>
+                        </div>
+                    </div>
+                    
+                    <div class="form-group full-width">
+                        <div class="toggle-item">
+                            <input type="checkbox" id="forbidden_words" name="forbidden_words"
+                                   {{ 'checked' if ai_settings.forbidden_words_enabled else '' }}>
+                            <label for="forbidden_words">
+                                <span class="toggle-title">Yasaklı Kelime Kontrolü</span>
+                                <span class="toggle-desc">Uygunsuz ifadeleri otomatik tespit et</span>
+                            </label>
+                        </div>
+                    </div>
+                    
+                    <div class="form-group full-width">
+                        <label>Yasaklı Kelimeler</label>
+                        <textarea name="forbidden_words_list" class="form-control" rows="4"
+                                  placeholder="Her satıra bir kelime...">{{ (ai_settings.forbidden_words or []) | join('\n') }}</textarea>
+                        <small class="form-hint">Agent'ların kullanmaması gereken kelimeler</small>
+                    </div>
+                </div>
+                
+                <h4 class="mt-4">Veri Maskeleme</h4>
+                <div class="feature-toggles">
+                    <div class="toggle-item">
+                        <input type="checkbox" id="mask_credit_card" name="mask_credit_card"
+                               {{ 'checked' if ai_settings.mask_credit_card else '' }}>
+                        <label for="mask_credit_card">
+                            <span class="toggle-title">Kredi Kartı Maskeleme</span>
+                            <span class="toggle-desc">Kart numaralarını transkriptte maskele</span>
+                        </label>
+                    </div>
+                    
+                    <div class="toggle-item">
+                        <input type="checkbox" id="mask_tc_no" name="mask_tc_no"
+                               {{ 'checked' if ai_settings.mask_tc_no else '' }}>
+                        <label for="mask_tc_no">
+                            <span class="toggle-title">TC No Maskeleme</span>
+                            <span class="toggle-desc">TC kimlik numaralarını maskele</span>
+                        </label>
+                    </div>
+                    
+                    <div class="toggle-item">
+                        <input type="checkbox" id="mask_phone" name="mask_phone"
+                               {{ 'checked' if ai_settings.mask_phone else '' }}>
+                        <label for="mask_phone">
+                            <span class="toggle-title">Telefon Maskeleme</span>
+                            <span class="toggle-desc">Telefon numaralarını maskele</span>
+                        </label>
+                    </div>
+                    
+                    <div class="toggle-item">
+                        <input type="checkbox" id="mask_email" name="mask_email"
+                               {{ 'checked' if ai_settings.mask_email else '' }}>
+                        <label for="mask_email">
+                            <span class="toggle-title">E-posta Maskeleme</span>
+                            <span class="toggle-desc">E-posta adreslerini maskele</span>
+                        </label>
+                    </div>
+                </div>
+                
+                <div class="form-grid mt-4">
+                    <div class="form-group">
+                        <label>Duygu Uyarı Eşiği</label>
+                        <input type="number" name="sentiment_alert_threshold" class="form-control"
+                               value="{{ ai_settings.sentiment_alert_threshold | default(-0.5) }}"
+                               min="-1" max="0" step="0.1">
+                        <small class="form-hint">Bu skorun altında supervisor'a uyarı gönder</small>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label>QA Otomatik Fail Eşiği</label>
+                        <input type="number" name="qa_auto_fail_threshold" class="form-control"
+                               value="{{ ai_settings.qa_auto_fail_threshold | default(50) }}"
+                               min="0" max="100" step="5">
+                        <small class="form-hint">Bu skorun altında çağrı otomatik fail</small>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Packages Tab -->
+    <div class="tab-content" id="tab-packages">
+        <div class="card">
+            <div class="card-header">
+                <h3><i class="ti ti-package"></i> AI Paketleri</h3>
+                <a href="{{ url_for('ai_packages') }}" class="btn btn-sm btn-outline">Paketleri Yönet</a>
+            </div>
+            <div class="card-body">
+                <div class="package-grid">
+                    {% for package in ai_packages %}
+                    <div class="package-card {{ 'current' if current_package and current_package.id == package.id else '' }}">
+                        <div class="package-header">
+                            <span class="package-tier {{ package.tier }}">{{ package.tier | upper }}</span>
+                            <h4>{{ package.name }}</h4>
+                        </div>
+                        <div class="package-price">
+                            <span class="price">₺{{ package.price_monthly }}</span>
+                            <span class="period">/ay</span>
+                        </div>
+                        <ul class="package-features">
+                            <li><i class="ti ti-check"></i> {{ package.monthly_transcription_minutes }} dk transkripsiyon</li>
+                            <li><i class="ti ti-check"></i> {{ package.monthly_summary_count }} özet</li>
+                            <li><i class="ti ti-check"></i> {{ package.monthly_qa_evaluations }} QA değerlendirme</li>
+                            {% for feature in package.features %}
+                            <li><i class="ti ti-check"></i> {{ feature }}</li>
+                            {% endfor %}
+                        </ul>
+                        {% if current_package and current_package.id == package.id %}
+                        <span class="badge badge-success">Mevcut Paket</span>
+                        {% else %}
+                        <button type="button" class="btn btn-outline btn-sm" 
+                                onclick="selectPackage({{ package.id }})">Seç</button>
+                        {% endif %}
+                    </div>
+                    {% else %}
+                    <div class="empty-state">
+                        <i class="ti ti-package"></i>
+                        <p>Henüz AI paketi tanımlanmamış</p>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+    </div>
+</form>
+
+<style>
+.settings-tabs {
+    display: flex;
+    gap: 0.5rem;
+    margin-bottom: 1.5rem;
+    flex-wrap: wrap;
+    background: var(--card-bg);
+    padding: 0.5rem;
+    border-radius: 12px;
+    border: 1px solid var(--border-color);
+}
+
+.tab-btn {
+    padding: 0.75rem 1.25rem;
+    border: none;
+    background: transparent;
+    border-radius: 8px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-weight: 500;
+    color: var(--text-secondary);
+    transition: all 0.3s ease;
+}
+
+.tab-btn:hover {
+    background: rgba(245, 166, 35, 0.1);
+    color: var(--primary-color);
+}
+
+.tab-btn.active {
+    background: linear-gradient(135deg, var(--primary-color), var(--primary-dark));
+    color: white;
+}
+
+.tab-content {
+    display: none;
+}
+
+.tab-content.active {
+    display: block;
+}
+
+.form-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 1.5rem;
+}
+
+.form-group.full-width {
+    grid-column: 1 / -1;
+}
+
+.toggle-switch {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+}
+
+.toggle-switch input[type="checkbox"] {
+    width: 48px;
+    height: 24px;
+    appearance: none;
+    background: var(--border-color);
+    border-radius: 12px;
+    position: relative;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.toggle-switch input[type="checkbox"]:checked {
+    background: var(--primary-color);
+}
+
+.toggle-switch input[type="checkbox"]::before {
+    content: '';
+    position: absolute;
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    background: white;
+    top: 2px;
+    left: 2px;
+    transition: all 0.3s ease;
+}
+
+.toggle-switch input[type="checkbox"]:checked::before {
+    left: 26px;
+}
+
+.features-section {
+    margin-bottom: 2rem;
+}
+
+.features-section h4 {
+    margin-bottom: 1rem;
+    color: var(--text-primary);
+    font-size: 1.1rem;
+    border-bottom: 1px solid var(--border-color);
+    padding-bottom: 0.5rem;
+}
+
+.feature-toggles {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+    gap: 1rem;
+}
+
+.toggle-item {
+    display: flex;
+    align-items: flex-start;
+    gap: 1rem;
+    padding: 1rem;
+    background: var(--card-bg);
+    border-radius: 10px;
+    border: 1px solid var(--border-color);
+}
+
+.toggle-item input[type="checkbox"] {
+    width: 44px;
+    height: 24px;
+    appearance: none;
+    background: var(--border-color);
+    border-radius: 12px;
+    position: relative;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    flex-shrink: 0;
+    margin-top: 2px;
+}
+
+.toggle-item input[type="checkbox"]:checked {
+    background: var(--primary-color);
+}
+
+.toggle-item input[type="checkbox"]::before {
+    content: '';
+    position: absolute;
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    background: white;
+    top: 2px;
+    left: 2px;
+    transition: all 0.3s ease;
+}
+
+.toggle-item input[type="checkbox"]:checked::before {
+    left: 22px;
+}
+
+.toggle-item label {
+    cursor: pointer;
+    display: flex;
+    flex-direction: column;
+}
+
+.toggle-title {
+    font-weight: 600;
+    color: var(--text-primary);
+}
+
+.toggle-desc {
+    font-size: 0.85rem;
+    color: var(--text-secondary);
+    margin-top: 0.25rem;
+}
+
+.range-labels {
+    display: flex;
+    justify-content: space-between;
+    font-size: 0.8rem;
+    color: var(--text-secondary);
+    margin-top: 0.25rem;
+}
+
+.package-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 1.5rem;
+}
+
+.package-card {
+    padding: 1.5rem;
+    background: var(--card-bg);
+    border-radius: 16px;
+    border: 2px solid var(--border-color);
+    text-align: center;
+    transition: all 0.3s ease;
+}
+
+.package-card.current {
+    border-color: var(--primary-color);
+    background: rgba(245, 166, 35, 0.05);
+}
+
+.package-card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.1);
+}
+
+.package-header {
+    margin-bottom: 1rem;
+}
+
+.package-tier {
+    display: inline-block;
+    padding: 0.25rem 0.75rem;
+    border-radius: 20px;
+    font-size: 0.75rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    margin-bottom: 0.5rem;
+}
+
+.package-tier.basic { background: #E5E7EB; color: #374151; }
+.package-tier.pro { background: #DBEAFE; color: #1D4ED8; }
+.package-tier.enterprise { background: #F3E8FF; color: #7C3AED; }
+
+.package-price {
+    margin-bottom: 1.5rem;
+}
+
+.package-price .price {
+    font-size: 2rem;
+    font-weight: 700;
+    color: var(--primary-color);
+}
+
+.package-price .period {
+    color: var(--text-secondary);
+}
+
+.package-features {
+    list-style: none;
+    padding: 0;
+    margin: 0 0 1.5rem 0;
+    text-align: left;
+}
+
+.package-features li {
+    padding: 0.5rem 0;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    color: var(--text-secondary);
+}
+
+.package-features li i {
+    color: var(--success-color);
+}
+</style>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Tab switching
+    const tabBtns = document.querySelectorAll('.tab-btn');
+    const tabContents = document.querySelectorAll('.tab-content');
+    
+    tabBtns.forEach(btn => {
+        btn.addEventListener('click', function() {
+            const tabId = this.dataset.tab;
+            
+            tabBtns.forEach(b => b.classList.remove('active'));
+            tabContents.forEach(c => c.classList.remove('active'));
+            
+            this.classList.add('active');
+            document.getElementById('tab-' + tabId).classList.add('active');
+        });
+    });
+});
+
+function selectPackage(packageId) {
+    if (confirm('Bu pakete geçmek istediğinize emin misiniz?')) {
+        window.location.href = '/ai/packages/' + packageId + '/select';
+    }
+}
+</script>
+{% endblock %}
+

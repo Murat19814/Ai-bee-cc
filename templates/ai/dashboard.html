@@ -1,0 +1,568 @@
+{% extends "base.html" %}
+
+{% block title %}AI Dashboard - {{ config.APP_NAME }}{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <div class="header-content">
+        <h1><i class="ti ti-brain"></i> AI Dashboard</h1>
+        <p class="subtitle">Yapay Zeka Performans ve Kullanım İzleme</p>
+    </div>
+    <div class="header-actions">
+        <a href="{{ url_for('ai_settings') }}" class="btn btn-outline">
+            <i class="ti ti-settings"></i> AI Ayarları
+        </a>
+    </div>
+</div>
+
+<!-- AI Stats Overview -->
+<div class="stats-grid">
+    <div class="stat-card gradient-blue">
+        <div class="stat-card-icon">
+            <i class="ti ti-microphone"></i>
+        </div>
+        <div class="stat-card-content">
+            <div class="stat-value">{{ ai_stats.transcription_minutes | default(0) }}</div>
+            <div class="stat-label">Transkripsiyon (dk)</div>
+            <div class="stat-trend up">
+                <i class="ti ti-trending-up"></i> Bu Ay
+            </div>
+        </div>
+    </div>
+    
+    <div class="stat-card gradient-green">
+        <div class="stat-card-icon">
+            <i class="ti ti-file-text"></i>
+        </div>
+        <div class="stat-card-content">
+            <div class="stat-value">{{ ai_stats.summaries_generated | default(0) }}</div>
+            <div class="stat-label">Özet Üretildi</div>
+            <div class="stat-trend up">
+                <i class="ti ti-trending-up"></i> Bu Ay
+            </div>
+        </div>
+    </div>
+    
+    <div class="stat-card gradient-purple">
+        <div class="stat-card-icon">
+            <i class="ti ti-clipboard-check"></i>
+        </div>
+        <div class="stat-card-content">
+            <div class="stat-value">{{ ai_stats.qa_evaluations | default(0) }}</div>
+            <div class="stat-label">QA Değerlendirme</div>
+            <div class="stat-trend up">
+                <i class="ti ti-trending-up"></i> Bu Ay
+            </div>
+        </div>
+    </div>
+    
+    <div class="stat-card gradient-orange">
+        <div class="stat-card-icon">
+            <i class="ti ti-currency-lira"></i>
+        </div>
+        <div class="stat-card-content">
+            <div class="stat-value">₺{{ ai_stats.total_cost | default(0) | round(2) }}</div>
+            <div class="stat-label">AI Maliyeti</div>
+            <div class="stat-trend">
+                <i class="ti ti-calendar"></i> Bu Ay
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- AI Features Status -->
+<div class="content-grid">
+    <div class="card">
+        <div class="card-header">
+            <h3><i class="ti ti-toggle-right"></i> AI Özellik Durumu</h3>
+        </div>
+        <div class="card-body">
+            <div class="feature-grid">
+                <div class="feature-item {{ 'active' if ai_settings.auto_transcription_enabled else 'inactive' }}">
+                    <div class="feature-icon">
+                        <i class="ti ti-microphone"></i>
+                    </div>
+                    <div class="feature-info">
+                        <span class="feature-name">Otomatik Transkripsiyon</span>
+                        <span class="feature-status">{{ 'Aktif' if ai_settings.auto_transcription_enabled else 'Pasif' }}</span>
+                    </div>
+                    <div class="feature-toggle">
+                        <span class="badge {{ 'badge-success' if ai_settings.auto_transcription_enabled else 'badge-secondary' }}">
+                            {{ 'ON' if ai_settings.auto_transcription_enabled else 'OFF' }}
+                        </span>
+                    </div>
+                </div>
+                
+                <div class="feature-item {{ 'active' if ai_settings.auto_summary_enabled else 'inactive' }}">
+                    <div class="feature-icon">
+                        <i class="ti ti-file-text"></i>
+                    </div>
+                    <div class="feature-info">
+                        <span class="feature-name">Otomatik Özet</span>
+                        <span class="feature-status">{{ 'Aktif' if ai_settings.auto_summary_enabled else 'Pasif' }}</span>
+                    </div>
+                    <div class="feature-toggle">
+                        <span class="badge {{ 'badge-success' if ai_settings.auto_summary_enabled else 'badge-secondary' }}">
+                            {{ 'ON' if ai_settings.auto_summary_enabled else 'OFF' }}
+                        </span>
+                    </div>
+                </div>
+                
+                <div class="feature-item {{ 'active' if ai_settings.sentiment_analysis_enabled else 'inactive' }}">
+                    <div class="feature-icon">
+                        <i class="ti ti-mood-smile"></i>
+                    </div>
+                    <div class="feature-info">
+                        <span class="feature-name">Duygu Analizi</span>
+                        <span class="feature-status">{{ 'Aktif' if ai_settings.sentiment_analysis_enabled else 'Pasif' }}</span>
+                    </div>
+                    <div class="feature-toggle">
+                        <span class="badge {{ 'badge-success' if ai_settings.sentiment_analysis_enabled else 'badge-secondary' }}">
+                            {{ 'ON' if ai_settings.sentiment_analysis_enabled else 'OFF' }}
+                        </span>
+                    </div>
+                </div>
+                
+                <div class="feature-item {{ 'active' if ai_settings.agent_assist_enabled else 'inactive' }}">
+                    <div class="feature-icon">
+                        <i class="ti ti-bulb"></i>
+                    </div>
+                    <div class="feature-info">
+                        <span class="feature-name">Agent Asistan</span>
+                        <span class="feature-status">{{ 'Aktif' if ai_settings.agent_assist_enabled else 'Pasif' }}</span>
+                    </div>
+                    <div class="feature-toggle">
+                        <span class="badge {{ 'badge-success' if ai_settings.agent_assist_enabled else 'badge-secondary' }}">
+                            {{ 'ON' if ai_settings.agent_assist_enabled else 'OFF' }}
+                        </span>
+                    </div>
+                </div>
+                
+                <div class="feature-item {{ 'active' if ai_settings.auto_qa_enabled else 'inactive' }}">
+                    <div class="feature-icon">
+                        <i class="ti ti-clipboard-check"></i>
+                    </div>
+                    <div class="feature-info">
+                        <span class="feature-name">Otomatik QA</span>
+                        <span class="feature-status">{{ 'Aktif' if ai_settings.auto_qa_enabled else 'Pasif' }}</span>
+                    </div>
+                    <div class="feature-toggle">
+                        <span class="badge {{ 'badge-success' if ai_settings.auto_qa_enabled else 'badge-secondary' }}">
+                            {{ 'ON' if ai_settings.auto_qa_enabled else 'OFF' }}
+                        </span>
+                    </div>
+                </div>
+                
+                <div class="feature-item {{ 'active' if ai_settings.smart_routing_enabled else 'inactive' }}">
+                    <div class="feature-icon">
+                        <i class="ti ti-route"></i>
+                    </div>
+                    <div class="feature-info">
+                        <span class="feature-name">Akıllı Yönlendirme</span>
+                        <span class="feature-status">{{ 'Aktif' if ai_settings.smart_routing_enabled else 'Pasif' }}</span>
+                    </div>
+                    <div class="feature-toggle">
+                        <span class="badge {{ 'badge-success' if ai_settings.smart_routing_enabled else 'badge-secondary' }}">
+                            {{ 'ON' if ai_settings.smart_routing_enabled else 'OFF' }}
+                        </span>
+                    </div>
+                </div>
+                
+                <div class="feature-item {{ 'active' if ai_settings.voice_bot_enabled else 'inactive' }}">
+                    <div class="feature-icon">
+                        <i class="ti ti-robot"></i>
+                    </div>
+                    <div class="feature-info">
+                        <span class="feature-name">Voice Bot</span>
+                        <span class="feature-status">{{ 'Aktif' if ai_settings.voice_bot_enabled else 'Pasif' }}</span>
+                    </div>
+                    <div class="feature-toggle">
+                        <span class="badge {{ 'badge-success' if ai_settings.voice_bot_enabled else 'badge-secondary' }}">
+                            {{ 'ON' if ai_settings.voice_bot_enabled else 'OFF' }}
+                        </span>
+                    </div>
+                </div>
+                
+                <div class="feature-item {{ 'active' if ai_settings.lead_scoring_enabled else 'inactive' }}">
+                    <div class="feature-icon">
+                        <i class="ti ti-chart-dots"></i>
+                    </div>
+                    <div class="feature-info">
+                        <span class="feature-name">Lead Skorlama</span>
+                        <span class="feature-status">{{ 'Aktif' if ai_settings.lead_scoring_enabled else 'Pasif' }}</span>
+                    </div>
+                    <div class="feature-toggle">
+                        <span class="badge {{ 'badge-success' if ai_settings.lead_scoring_enabled else 'badge-secondary' }}">
+                            {{ 'ON' if ai_settings.lead_scoring_enabled else 'OFF' }}
+                        </span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="card">
+        <div class="card-header">
+            <h3><i class="ti ti-server"></i> AI Sağlayıcıları</h3>
+        </div>
+        <div class="card-body">
+            <div class="provider-list">
+                <div class="provider-item">
+                    <div class="provider-icon stt">
+                        <i class="ti ti-microphone"></i>
+                    </div>
+                    <div class="provider-info">
+                        <span class="provider-type">STT (Konuşmadan Metne)</span>
+                        <span class="provider-name">{{ ai_settings.stt_provider | default('whisper') | capitalize }}</span>
+                    </div>
+                    <div class="provider-model">
+                        Model: {{ ai_settings.stt_model | default('base') }}
+                    </div>
+                    <span class="badge badge-success">Aktif</span>
+                </div>
+                
+                <div class="provider-item">
+                    <div class="provider-icon tts">
+                        <i class="ti ti-volume"></i>
+                    </div>
+                    <div class="provider-info">
+                        <span class="provider-type">TTS (Metinden Konuşmaya)</span>
+                        <span class="provider-name">{{ ai_settings.tts_provider | default('elevenlabs') | capitalize }}</span>
+                    </div>
+                    <div class="provider-model">
+                        Dil: {{ ai_settings.tts_language | default('tr') | upper }}
+                    </div>
+                    <span class="badge badge-success">Aktif</span>
+                </div>
+                
+                <div class="provider-item">
+                    <div class="provider-icon llm">
+                        <i class="ti ti-brain"></i>
+                    </div>
+                    <div class="provider-info">
+                        <span class="provider-type">LLM (Dil Modeli)</span>
+                        <span class="provider-name">{{ ai_settings.llm_provider | default('openai') | capitalize }}</span>
+                    </div>
+                    <div class="provider-model">
+                        Model: {{ ai_settings.llm_model | default('gpt-4') }}
+                    </div>
+                    <span class="badge badge-success">Aktif</span>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- AI Insights -->
+<div class="card">
+    <div class="card-header">
+        <h3><i class="ti ti-sparkles"></i> AI İçgörüleri - Bugün AI Neyi İyileştirdi?</h3>
+    </div>
+    <div class="card-body">
+        <div class="insights-grid">
+            <div class="insight-card">
+                <div class="insight-icon time">
+                    <i class="ti ti-clock"></i>
+                </div>
+                <div class="insight-content">
+                    <div class="insight-value">{{ ai_insights.time_saved | default(45) }} dk</div>
+                    <div class="insight-label">Tasarruf Edilen Süre</div>
+                    <div class="insight-detail">Otomatik transkripsiyon ve özet ile</div>
+                </div>
+            </div>
+            
+            <div class="insight-card">
+                <div class="insight-icon quality">
+                    <i class="ti ti-chart-arrows-vertical"></i>
+                </div>
+                <div class="insight-content">
+                    <div class="insight-value">%{{ ai_insights.qa_improvement | default(12) }}</div>
+                    <div class="insight-label">QA Skor Artışı</div>
+                    <div class="insight-detail">AI önerilerini kullanan agentlarda</div>
+                </div>
+            </div>
+            
+            <div class="insight-card">
+                <div class="insight-icon satisfaction">
+                    <i class="ti ti-heart"></i>
+                </div>
+                <div class="insight-content">
+                    <div class="insight-value">%{{ ai_insights.satisfaction_increase | default(8) }}</div>
+                    <div class="insight-label">Müşteri Memnuniyeti</div>
+                    <div class="insight-detail">Akıllı yönlendirme sayesinde</div>
+                </div>
+            </div>
+            
+            <div class="insight-card">
+                <div class="insight-icon risk">
+                    <i class="ti ti-alert-triangle"></i>
+                </div>
+                <div class="insight-content">
+                    <div class="insight-value">{{ ai_insights.risks_detected | default(3) }}</div>
+                    <div class="insight-label">Risk Tespit Edildi</div>
+                    <div class="insight-detail">Fraud ve uyum ihlali önlendi</div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Recent AI Activities -->
+<div class="card">
+    <div class="card-header">
+        <h3><i class="ti ti-activity"></i> Son AI Aktiviteleri</h3>
+        <a href="{{ url_for('ai_logs') }}" class="btn btn-sm btn-outline">Tümünü Gör</a>
+    </div>
+    <div class="card-body">
+        <div class="activity-list">
+            {% for activity in recent_activities[:10] %}
+            <div class="activity-item">
+                <div class="activity-icon {{ activity.type }}">
+                    {% if activity.type == 'transcription' %}
+                    <i class="ti ti-microphone"></i>
+                    {% elif activity.type == 'summary' %}
+                    <i class="ti ti-file-text"></i>
+                    {% elif activity.type == 'qa' %}
+                    <i class="ti ti-clipboard-check"></i>
+                    {% elif activity.type == 'suggestion' %}
+                    <i class="ti ti-bulb"></i>
+                    {% elif activity.type == 'routing' %}
+                    <i class="ti ti-route"></i>
+                    {% else %}
+                    <i class="ti ti-brain"></i>
+                    {% endif %}
+                </div>
+                <div class="activity-content">
+                    <span class="activity-title">{{ activity.title }}</span>
+                    <span class="activity-detail">{{ activity.detail }}</span>
+                </div>
+                <div class="activity-meta">
+                    <span class="activity-time">{{ activity.created_at | default('az önce') }}</span>
+                </div>
+            </div>
+            {% else %}
+            <div class="empty-state">
+                <i class="ti ti-brain"></i>
+                <p>Henüz AI aktivitesi yok</p>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+</div>
+
+<style>
+.feature-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 1rem;
+}
+
+.feature-item {
+    display: flex;
+    align-items: center;
+    padding: 1rem;
+    background: var(--card-bg);
+    border-radius: 12px;
+    border: 1px solid var(--border-color);
+    transition: all 0.3s ease;
+}
+
+.feature-item.active {
+    border-color: var(--success-color);
+    background: rgba(16, 185, 129, 0.05);
+}
+
+.feature-item.inactive {
+    opacity: 0.6;
+}
+
+.feature-icon {
+    width: 48px;
+    height: 48px;
+    border-radius: 12px;
+    background: linear-gradient(135deg, var(--primary-color), var(--primary-dark));
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-size: 1.5rem;
+    margin-right: 1rem;
+}
+
+.feature-info {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+}
+
+.feature-name {
+    font-weight: 600;
+    color: var(--text-primary);
+}
+
+.feature-status {
+    font-size: 0.85rem;
+    color: var(--text-secondary);
+}
+
+.provider-list {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+}
+
+.provider-item {
+    display: flex;
+    align-items: center;
+    padding: 1rem;
+    background: var(--card-bg);
+    border-radius: 12px;
+    border: 1px solid var(--border-color);
+}
+
+.provider-icon {
+    width: 48px;
+    height: 48px;
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-size: 1.5rem;
+    margin-right: 1rem;
+}
+
+.provider-icon.stt { background: linear-gradient(135deg, #3B82F6, #1D4ED8); }
+.provider-icon.tts { background: linear-gradient(135deg, #10B981, #059669); }
+.provider-icon.llm { background: linear-gradient(135deg, #8B5CF6, #6D28D9); }
+
+.provider-info {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+}
+
+.provider-type {
+    font-size: 0.85rem;
+    color: var(--text-secondary);
+}
+
+.provider-name {
+    font-weight: 600;
+    color: var(--text-primary);
+}
+
+.provider-model {
+    font-size: 0.85rem;
+    color: var(--text-secondary);
+    margin-right: 1rem;
+}
+
+.insights-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+    gap: 1.5rem;
+}
+
+.insight-card {
+    display: flex;
+    align-items: center;
+    padding: 1.5rem;
+    background: linear-gradient(135deg, rgba(245, 166, 35, 0.05), rgba(245, 166, 35, 0.1));
+    border-radius: 16px;
+    border: 1px solid rgba(245, 166, 35, 0.2);
+}
+
+.insight-icon {
+    width: 56px;
+    height: 56px;
+    border-radius: 14px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.75rem;
+    margin-right: 1rem;
+}
+
+.insight-icon.time { background: linear-gradient(135deg, #3B82F6, #1D4ED8); color: white; }
+.insight-icon.quality { background: linear-gradient(135deg, #10B981, #059669); color: white; }
+.insight-icon.satisfaction { background: linear-gradient(135deg, #EC4899, #BE185D); color: white; }
+.insight-icon.risk { background: linear-gradient(135deg, #F59E0B, #D97706); color: white; }
+
+.insight-content {
+    flex: 1;
+}
+
+.insight-value {
+    font-size: 1.75rem;
+    font-weight: 700;
+    color: var(--text-primary);
+}
+
+.insight-label {
+    font-weight: 600;
+    color: var(--text-primary);
+    margin-bottom: 0.25rem;
+}
+
+.insight-detail {
+    font-size: 0.85rem;
+    color: var(--text-secondary);
+}
+
+.activity-list {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+}
+
+.activity-item {
+    display: flex;
+    align-items: center;
+    padding: 1rem;
+    background: var(--card-bg);
+    border-radius: 10px;
+    border: 1px solid var(--border-color);
+}
+
+.activity-icon {
+    width: 40px;
+    height: 40px;
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-size: 1.25rem;
+    margin-right: 1rem;
+}
+
+.activity-icon.transcription { background: #3B82F6; }
+.activity-icon.summary { background: #10B981; }
+.activity-icon.qa { background: #8B5CF6; }
+.activity-icon.suggestion { background: #F59E0B; }
+.activity-icon.routing { background: #EC4899; }
+
+.activity-content {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+}
+
+.activity-title {
+    font-weight: 600;
+    color: var(--text-primary);
+}
+
+.activity-detail {
+    font-size: 0.85rem;
+    color: var(--text-secondary);
+}
+
+.activity-time {
+    font-size: 0.85rem;
+    color: var(--text-secondary);
+}
+</style>
+{% endblock %}
+

@@ -1273,44 +1273,718 @@ class QAEvaluation(db.Model):
 
 
 # ============================================
-# 10. AI MODELS
+# 10. AI MODELS - COMPREHENSIVE
 # ============================================
 
 class AISettings(db.Model):
-    """AI ayarları"""
+    """AI ayarları - Tenant bazlı"""
     __tablename__ = 'ai_settings'
     
     id = db.Column(db.Integer, primary_key=True)
     tenant_id = db.Column(db.Integer, db.ForeignKey('tenants.id'), nullable=False)
     
     # STT ayarları
-    stt_provider = db.Column(db.String(50), default='whisper')  # whisper, google, azure
+    stt_provider = db.Column(db.String(50), default='whisper')  # whisper, google, azure, deepgram
     stt_model = db.Column(db.String(50), default='base')
     stt_language = db.Column(db.String(10), default='tr')
+    stt_secondary_language = db.Column(db.String(10), default='de')  # DE desteği
+    
+    # TTS ayarları
+    tts_provider = db.Column(db.String(50), default='elevenlabs')  # elevenlabs, google, azure
+    tts_voice_id = db.Column(db.String(100))
+    tts_language = db.Column(db.String(10), default='tr')
+    tts_speed = db.Column(db.Float, default=1.0)
     
     # LLM ayarları
     llm_provider = db.Column(db.String(50), default='openai')
     llm_model = db.Column(db.String(50), default='gpt-4')
     llm_temperature = db.Column(db.Float, default=0.3)
+    llm_max_tokens = db.Column(db.Integer, default=2000)
     
-    # Özellikler
+    # Özellikler - Genel
+    auto_transcription_enabled = db.Column(db.Boolean, default=True)
     auto_summary_enabled = db.Column(db.Boolean, default=True)
     sentiment_analysis_enabled = db.Column(db.Boolean, default=True)
     topic_detection_enabled = db.Column(db.Boolean, default=True)
+    keyword_extraction_enabled = db.Column(db.Boolean, default=True)
+    
+    # Özellikler - Agent
     agent_assist_enabled = db.Column(db.Boolean, default=True)
+    realtime_script_suggestions = db.Column(db.Boolean, default=True)
+    objection_handling_enabled = db.Column(db.Boolean, default=True)
+    next_action_suggestions = db.Column(db.Boolean, default=True)
+    
+    # Özellikler - QA
     auto_qa_enabled = db.Column(db.Boolean, default=True)
+    kvkk_compliance_check = db.Column(db.Boolean, default=True)
     forbidden_words_enabled = db.Column(db.Boolean, default=True)
+    aggressive_language_detection = db.Column(db.Boolean, default=True)
+    
+    # Özellikler - Routing
+    smart_routing_enabled = db.Column(db.Boolean, default=False)
+    intent_detection_enabled = db.Column(db.Boolean, default=True)
+    vip_detection_enabled = db.Column(db.Boolean, default=True)
+    churn_prediction_enabled = db.Column(db.Boolean, default=False)
+    
+    # Özellikler - Dialer
+    predictive_dialer_ai = db.Column(db.Boolean, default=False)
+    best_time_to_call = db.Column(db.Boolean, default=True)
+    lead_scoring_enabled = db.Column(db.Boolean, default=True)
+    
+    # Özellikler - Voice Bot
+    voice_bot_enabled = db.Column(db.Boolean, default=False)
+    voice_bot_language = db.Column(db.String(10), default='tr')
     
     # Eşikler
     sentiment_alert_threshold = db.Column(db.Float, default=-0.5)
     qa_auto_fail_threshold = db.Column(db.Float, default=50.0)
+    confidence_threshold = db.Column(db.Float, default=0.7)
     
     # Yasaklı kelimeler
     forbidden_words = db.Column(db.JSON)
     
-    # Özet şablonları
+    # Özet ve prompt şablonları
     summary_template = db.Column(db.Text)
+    qa_evaluation_prompt = db.Column(db.Text)
+    agent_assist_prompt = db.Column(db.Text)
     
+    # Maskeleme ayarları
+    mask_credit_card = db.Column(db.Boolean, default=True)
+    mask_tc_no = db.Column(db.Boolean, default=True)
+    mask_phone = db.Column(db.Boolean, default=False)
+    mask_email = db.Column(db.Boolean, default=False)
+    
+    is_active = db.Column(db.Boolean, default=True)
+    updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+
+
+class AIProvider(db.Model):
+    """AI sağlayıcı konfigürasyonları - Platform seviyesi"""
+    __tablename__ = 'ai_providers'
+    
+    id = db.Column(db.Integer, primary_key=True)
+    
+    provider_type = db.Column(db.String(20), nullable=False)  # stt, tts, llm, embedding
+    provider_name = db.Column(db.String(50), nullable=False)  # openai, google, azure, whisper
+    display_name = db.Column(db.String(100))
+    
+    # API bilgileri
+    api_endpoint = db.Column(db.String(500))
+    api_key = db.Column(db.String(500))  # Şifreli saklanmalı
+    api_secret = db.Column(db.String(500))
+    
+    # Model listesi
+    available_models = db.Column(db.JSON)  # ["gpt-4", "gpt-3.5-turbo"]
+    default_model = db.Column(db.String(100))
+    
+    # Dil desteği
+    supported_languages = db.Column(db.JSON, default=['tr', 'en', 'de'])
+    
+    # Fiyatlandırma
+    price_per_minute = db.Column(db.Numeric(8, 4))  # STT/TTS için
+    price_per_1k_tokens = db.Column(db.Numeric(8, 4))  # LLM için
+    price_per_1k_chars = db.Column(db.Numeric(8, 4))  # TTS için
+    
+    # Limitler
+    rate_limit_per_minute = db.Column(db.Integer)
+    max_concurrent_requests = db.Column(db.Integer)
+    
+    is_active = db.Column(db.Boolean, default=True)
+    is_default = db.Column(db.Boolean, default=False)
+    
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+
+
+class AIProjectSettings(db.Model):
+    """Proje bazlı AI ayarları"""
+    __tablename__ = 'ai_project_settings'
+    
+    id = db.Column(db.Integer, primary_key=True)
+    project_id = db.Column(db.Integer, db.ForeignKey('projects.id'), nullable=False)
+    
+    # AI özellikleri aç/kapat (proje bazlı override)
+    ai_enabled = db.Column(db.Boolean, default=True)
+    auto_transcription = db.Column(db.Boolean, default=True)
+    auto_summary = db.Column(db.Boolean, default=True)
+    agent_assist = db.Column(db.Boolean, default=True)
+    auto_qa = db.Column(db.Boolean, default=True)
+    
+    # Proje özel promptlar
+    custom_summary_prompt = db.Column(db.Text)
+    custom_qa_prompt = db.Column(db.Text)
+    custom_agent_assist_prompt = db.Column(db.Text)
+    
+    # Proje özel yasaklı kelimeler
+    project_forbidden_words = db.Column(db.JSON)
+    
+    # KVKK metni kontrol şablonu
+    kvkk_check_phrases = db.Column(db.JSON)
+    
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+
+
+class AITranscription(db.Model):
+    """AI transkripsiyon işlemleri"""
+    __tablename__ = 'ai_transcriptions'
+    
+    id = db.Column(db.Integer, primary_key=True)
+    tenant_id = db.Column(db.Integer, db.ForeignKey('tenants.id'), nullable=False)
+    call_id = db.Column(db.Integer, db.ForeignKey('calls.id'), nullable=False)
+    
+    # İşlem bilgileri
+    status = db.Column(db.String(20), default='pending')  # pending, processing, completed, failed
+    provider = db.Column(db.String(50))
+    model = db.Column(db.String(50))
+    language = db.Column(db.String(10))
+    
+    # Sonuçlar
+    full_text = db.Column(db.Text)
+    segments = db.Column(db.JSON)  # [{"speaker": "agent", "start": 0.5, "end": 3.2, "text": "..."}]
+    word_timestamps = db.Column(db.JSON)
+    
+    # Kalite metrikleri
+    confidence_score = db.Column(db.Float)
+    audio_duration = db.Column(db.Float)
+    processing_time = db.Column(db.Float)  # saniye
+    
+    # Maliyet
+    tokens_used = db.Column(db.Integer)
+    cost = db.Column(db.Numeric(8, 4))
+    
+    error_message = db.Column(db.Text)
+    
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    completed_at = db.Column(db.DateTime)
+
+
+class AICallAnalysis(db.Model):
+    """AI çağrı analizi sonuçları"""
+    __tablename__ = 'ai_call_analyses'
+    
+    id = db.Column(db.Integer, primary_key=True)
+    tenant_id = db.Column(db.Integer, db.ForeignKey('tenants.id'), nullable=False)
+    call_id = db.Column(db.Integer, db.ForeignKey('calls.id'), nullable=False)
+    
+    # Özet
+    summary = db.Column(db.Text)
+    summary_bullet_points = db.Column(db.JSON)  # ["Müşteri iade istedi", "Agent çözüm önerdi"]
+    
+    # Duygu analizi
+    overall_sentiment = db.Column(db.String(20))  # positive, neutral, negative
+    sentiment_score = db.Column(db.Float)  # -1 to 1
+    sentiment_timeline = db.Column(db.JSON)  # [{"time": 30, "score": 0.5}, ...]
+    customer_sentiment = db.Column(db.String(20))
+    agent_sentiment = db.Column(db.String(20))
+    
+    # Konu ve anahtar kelimeler
+    topics = db.Column(db.JSON)  # ["fiyat", "iade", "şikayet"]
+    keywords = db.Column(db.JSON)  # ["ürün kalitesi", "gecikme"]
+    intent = db.Column(db.String(100))  # "complaint", "purchase", "support"
+    
+    # Tespit edilen sorunlar
+    issues_detected = db.Column(db.JSON)
+    # [{"type": "forbidden_word", "word": "...", "timestamp": 45.2}]
+    
+    kvkk_compliance = db.Column(db.Boolean)
+    kvkk_issues = db.Column(db.JSON)
+    
+    # Sonraki adım önerisi
+    next_action = db.Column(db.String(100))  # callback, email, escalate, close
+    next_action_details = db.Column(db.JSON)
+    
+    # CRM alan önerileri
+    suggested_crm_fields = db.Column(db.JSON)
+    # {"customer_segment": "premium", "churn_risk": "high"}
+    
+    # Disposition önerisi
+    suggested_disposition_id = db.Column(db.Integer, db.ForeignKey('dispositions.id'))
+    disposition_confidence = db.Column(db.Float)
+    
+    # İşlem bilgileri
+    model_used = db.Column(db.String(100))
+    tokens_used = db.Column(db.Integer)
+    cost = db.Column(db.Numeric(8, 4))
+    processing_time = db.Column(db.Float)
+    
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+
+
+class AIQAEvaluation(db.Model):
+    """AI otomatik QA değerlendirmesi"""
+    __tablename__ = 'ai_qa_evaluations'
+    
+    id = db.Column(db.Integer, primary_key=True)
+    tenant_id = db.Column(db.Integer, db.ForeignKey('tenants.id'), nullable=False)
+    call_id = db.Column(db.Integer, db.ForeignKey('calls.id'), nullable=False)
+    form_id = db.Column(db.Integer, db.ForeignKey('qa_forms.id'))
+    
+    # Puanlama
+    total_score = db.Column(db.Float)
+    max_score = db.Column(db.Float, default=100)
+    percentage = db.Column(db.Float)
+    passed = db.Column(db.Boolean)
+    
+    # Kriter bazlı puanlar
+    criteria_scores = db.Column(db.JSON)
+    # [{"criteria_id": 1, "score": 8, "max": 10, "reasoning": "..."}]
+    
+    # Detaylı analiz
+    strengths = db.Column(db.JSON)  # ["İyi karşılama", "Sabırlı dinleme"]
+    weaknesses = db.Column(db.JSON)  # ["Ürün bilgisi eksik"]
+    coaching_suggestions = db.Column(db.JSON)
+    
+    # İhlaller
+    violations = db.Column(db.JSON)
+    # [{"type": "forbidden_word", "severity": "critical", "details": "..."}]
+    
+    critical_fail = db.Column(db.Boolean, default=False)
+    critical_fail_reason = db.Column(db.Text)
+    
+    # Güven skoru
+    confidence = db.Column(db.Float)
+    
+    # Manuel override
+    is_overridden = db.Column(db.Boolean, default=False)
+    override_score = db.Column(db.Float)
+    override_by_id = db.Column(db.Integer, db.ForeignKey('users.id'))
+    override_reason = db.Column(db.Text)
+    override_at = db.Column(db.DateTime)
+    
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+
+
+class AIAgentSuggestion(db.Model):
+    """AI gerçek zamanlı agent önerileri"""
+    __tablename__ = 'ai_agent_suggestions'
+    
+    id = db.Column(db.Integer, primary_key=True)
+    tenant_id = db.Column(db.Integer, db.ForeignKey('tenants.id'), nullable=False)
+    call_id = db.Column(db.Integer, db.ForeignKey('calls.id'), nullable=False)
+    agent_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
+    
+    # Öneri tipi
+    suggestion_type = db.Column(db.String(30), nullable=False)
+    # script, objection, upsell, compliance_warning, knowledge, action
+    
+    # Öneri içeriği
+    suggestion_text = db.Column(db.Text, nullable=False)
+    context = db.Column(db.Text)  # Hangi bağlamda önerildi
+    
+    # Tetikleyici
+    trigger_phrase = db.Column(db.Text)  # Müşterinin söylediği
+    trigger_timestamp = db.Column(db.Float)  # Çağrı içindeki zaman
+    
+    # Öneri durumu
+    is_shown = db.Column(db.Boolean, default=True)
+    is_used = db.Column(db.Boolean)
+    is_helpful = db.Column(db.Boolean)  # Agent geri bildirimi
+    
+    confidence = db.Column(db.Float)
+    
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+
+
+class AIVoiceBot(db.Model):
+    """AI Voice Bot konfigürasyonu"""
+    __tablename__ = 'ai_voice_bots'
+    
+    id = db.Column(db.Integer, primary_key=True)
+    tenant_id = db.Column(db.Integer, db.ForeignKey('tenants.id'), nullable=False)
+    project_id = db.Column(db.Integer, db.ForeignKey('projects.id'))
+    
+    name = db.Column(db.String(100), nullable=False)
+    description = db.Column(db.Text)
+    
+    # Ses ayarları
+    voice_id = db.Column(db.String(100))
+    voice_name = db.Column(db.String(100))
+    language = db.Column(db.String(10), default='tr')
+    speed = db.Column(db.Float, default=1.0)
+    
+    # Bot davranışı
+    greeting_message = db.Column(db.Text)
+    fallback_message = db.Column(db.Text)
+    transfer_message = db.Column(db.Text)
+    goodbye_message = db.Column(db.Text)
+    
+    # Intent tanımları
+    intents = db.Column(db.JSON)
+    # [{"name": "billing", "phrases": [...], "action": "transfer_queue", "target_id": 5}]
+    
+    # Transfer kuralları
+    max_turns = db.Column(db.Integer, default=5)  # Max konuşma turu
+    transfer_on_frustration = db.Column(db.Boolean, default=True)
+    transfer_queue_id = db.Column(db.Integer, db.ForeignKey('queues.id'))
+    
+    # RAG bilgi tabanı
+    knowledge_base_id = db.Column(db.Integer, db.ForeignKey('knowledge_bases.id'))
+    
+    # Çalışma saatleri
+    active_hours_start = db.Column(db.String(5))
+    active_hours_end = db.Column(db.String(5))
+    
+    is_active = db.Column(db.Boolean, default=False)
+    
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+
+
+class AIVoiceBotSession(db.Model):
+    """Voice Bot oturumu"""
+    __tablename__ = 'ai_voice_bot_sessions'
+    
+    id = db.Column(db.Integer, primary_key=True)
+    tenant_id = db.Column(db.Integer, db.ForeignKey('tenants.id'), nullable=False)
+    bot_id = db.Column(db.Integer, db.ForeignKey('ai_voice_bots.id'), nullable=False)
+    call_id = db.Column(db.Integer, db.ForeignKey('calls.id'))
+    
+    # Oturum bilgileri
+    session_uuid = db.Column(db.String(100), unique=True)
+    caller_number = db.Column(db.String(20))
+    
+    # Konuşma geçmişi
+    conversation = db.Column(db.JSON)
+    # [{"role": "bot", "text": "...", "timestamp": ...}, {"role": "customer", "text": "...", ...}]
+    
+    # Tespit edilen intentler
+    detected_intents = db.Column(db.JSON)
+    
+    # Sonuç
+    outcome = db.Column(db.String(30))  # resolved, transferred, abandoned
+    resolution_details = db.Column(db.Text)
+    
+    transferred_to_queue_id = db.Column(db.Integer, db.ForeignKey('queues.id'))
+    transferred_to_agent_id = db.Column(db.Integer, db.ForeignKey('users.id'))
+    
+    # Metrikler
+    turns_count = db.Column(db.Integer, default=0)
+    duration_seconds = db.Column(db.Integer)
+    customer_satisfaction = db.Column(db.Integer)  # 1-5 rating if collected
+    
+    started_at = db.Column(db.DateTime, default=datetime.utcnow)
+    ended_at = db.Column(db.DateTime)
+
+
+class AISmartRouting(db.Model):
+    """AI akıllı yönlendirme kararları"""
+    __tablename__ = 'ai_smart_routing'
+    
+    id = db.Column(db.Integer, primary_key=True)
+    tenant_id = db.Column(db.Integer, db.ForeignKey('tenants.id'), nullable=False)
+    call_id = db.Column(db.Integer, db.ForeignKey('calls.id'), nullable=False)
+    
+    # Müşteri analizi
+    customer_id = db.Column(db.Integer, db.ForeignKey('customers.id'))
+    customer_segment = db.Column(db.String(50))
+    customer_value_score = db.Column(db.Float)
+    churn_risk = db.Column(db.Float)
+    sentiment_history = db.Column(db.String(20))
+    
+    # Intent tespiti
+    detected_intent = db.Column(db.String(100))
+    intent_confidence = db.Column(db.Float)
+    urgency_level = db.Column(db.String(20))  # low, medium, high, critical
+    
+    # Yönlendirme kararı
+    recommended_queue_id = db.Column(db.Integer, db.ForeignKey('queues.id'))
+    recommended_agent_id = db.Column(db.Integer, db.ForeignKey('users.id'))
+    routing_reason = db.Column(db.Text)
+    
+    # VIP/Öncelik
+    is_vip = db.Column(db.Boolean, default=False)
+    priority_boost = db.Column(db.Integer, default=0)
+    
+    # Gerçek yönlendirme
+    actual_queue_id = db.Column(db.Integer, db.ForeignKey('queues.id'))
+    actual_agent_id = db.Column(db.Integer, db.ForeignKey('users.id'))
+    
+    # Sonuç değerlendirme
+    routing_successful = db.Column(db.Boolean)
+    call_outcome = db.Column(db.String(50))
+    
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+
+
+class AILeadScoring(db.Model):
+    """AI lead skorlama"""
+    __tablename__ = 'ai_lead_scoring'
+    
+    id = db.Column(db.Integer, primary_key=True)
+    tenant_id = db.Column(db.Integer, db.ForeignKey('tenants.id'), nullable=False)
+    lead_id = db.Column(db.Integer, db.ForeignKey('leads.id'), nullable=False)
+    
+    # Skorlar
+    overall_score = db.Column(db.Float)  # 0-100
+    conversion_probability = db.Column(db.Float)  # 0-1
+    
+    # Alt skorlar
+    demographic_score = db.Column(db.Float)
+    behavioral_score = db.Column(db.Float)
+    engagement_score = db.Column(db.Float)
+    timing_score = db.Column(db.Float)
+    
+    # Öneriler
+    best_time_to_call = db.Column(db.JSON)  # {"day": "tuesday", "hour": 14}
+    recommended_agent_skills = db.Column(db.JSON)
+    recommended_approach = db.Column(db.Text)
+    
+    # Faktörler
+    scoring_factors = db.Column(db.JSON)
+    # [{"factor": "past_purchase", "impact": "+15", "value": "yes"}]
+    
+    model_version = db.Column(db.String(50))
+    
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+
+
+class AIDialerOptimization(db.Model):
+    """AI dialer optimizasyonu"""
+    __tablename__ = 'ai_dialer_optimizations'
+    
+    id = db.Column(db.Integer, primary_key=True)
+    tenant_id = db.Column(db.Integer, db.ForeignKey('tenants.id'), nullable=False)
+    campaign_id = db.Column(db.Integer, db.ForeignKey('campaigns.id'), nullable=False)
+    
+    # Optimizasyon metrikleri
+    optimization_date = db.Column(db.Date, nullable=False)
+    
+    # Pacing önerileri
+    recommended_pacing = db.Column(db.Float)
+    current_pacing = db.Column(db.Float)
+    
+    # Zaman optimizasyonu
+    best_call_hours = db.Column(db.JSON)  # [{"hour": 10, "success_rate": 0.35}, ...]
+    avoid_hours = db.Column(db.JSON)
+    
+    # Liste optimizasyonu
+    hot_leads_count = db.Column(db.Integer)
+    cold_leads_count = db.Column(db.Integer)
+    recommended_lead_order = db.Column(db.JSON)
+    
+    # Performans tahmini
+    predicted_contact_rate = db.Column(db.Float)
+    predicted_conversion_rate = db.Column(db.Float)
+    
+    # Risk uyarıları
+    spam_risk_level = db.Column(db.String(20))
+    abandonment_risk = db.Column(db.Float)
+    
+    recommendations = db.Column(db.JSON)
+    
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+
+
+class AIFraudDetection(db.Model):
+    """AI fraud tespiti"""
+    __tablename__ = 'ai_fraud_detections'
+    
+    id = db.Column(db.Integer, primary_key=True)
+    tenant_id = db.Column(db.Integer, db.ForeignKey('tenants.id'))
+    
+    # Tespit bilgileri
+    detection_type = db.Column(db.String(50), nullable=False)
+    # call_pattern, premium_route, cli_spoofing, abnormal_traffic, brute_force
+    
+    severity = db.Column(db.String(20), default='medium')  # low, medium, high, critical
+    
+    # Detaylar
+    description = db.Column(db.Text)
+    evidence = db.Column(db.JSON)
+    
+    # İlgili kayıtlar
+    related_calls = db.Column(db.JSON)  # call_id listesi
+    related_cli = db.Column(db.String(20))
+    related_destination = db.Column(db.String(50))
+    
+    # Anomali metrikleri
+    anomaly_score = db.Column(db.Float)
+    baseline_value = db.Column(db.Float)
+    actual_value = db.Column(db.Float)
+    deviation_percent = db.Column(db.Float)
+    
+    # Aksiyon
+    action_taken = db.Column(db.String(50))  # alert, block, throttle, none
+    auto_blocked = db.Column(db.Boolean, default=False)
+    
+    # Durum
+    status = db.Column(db.String(20), default='new')  # new, investigating, resolved, false_positive
+    resolved_by_id = db.Column(db.Integer, db.ForeignKey('users.id'))
+    resolution_notes = db.Column(db.Text)
+    resolved_at = db.Column(db.DateTime)
+    
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+
+
+class AIUsage(db.Model):
+    """AI kullanım kayıtları"""
+    __tablename__ = 'ai_usage'
+    
+    id = db.Column(db.Integer, primary_key=True)
+    tenant_id = db.Column(db.Integer, db.ForeignKey('tenants.id'), nullable=False)
+    
+    # Kullanım tipi
+    usage_type = db.Column(db.String(30), nullable=False)
+    # transcription, summary, qa_evaluation, agent_assist, voice_bot, lead_scoring, routing
+    
+    # Miktar
+    quantity = db.Column(db.Numeric(12, 4), nullable=False)
+    unit = db.Column(db.String(20))  # minute, token, request, character
+    
+    # Maliyet
+    unit_cost = db.Column(db.Numeric(10, 6))
+    total_cost = db.Column(db.Numeric(10, 4))
+    currency = db.Column(db.String(10), default='TRY')
+    
+    # Referans
+    reference_type = db.Column(db.String(30))
+    reference_id = db.Column(db.Integer)
+    
+    # Provider bilgisi
+    provider = db.Column(db.String(50))
+    model = db.Column(db.String(100))
+    
+    usage_date = db.Column(db.Date, nullable=False)
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+
+
+class AIFeedback(db.Model):
+    """AI geri bildirimleri - Model geliştirme için"""
+    __tablename__ = 'ai_feedbacks'
+    
+    id = db.Column(db.Integer, primary_key=True)
+    tenant_id = db.Column(db.Integer, db.ForeignKey('tenants.id'), nullable=False)
+    user_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
+    
+    # Geri bildirim tipi
+    feedback_type = db.Column(db.String(30), nullable=False)
+    # transcription_error, summary_quality, suggestion_relevance, qa_accuracy, routing_wrong
+    
+    # İlgili kayıt
+    related_type = db.Column(db.String(30))  # call, transcription, qa_evaluation, suggestion
+    related_id = db.Column(db.Integer)
+    
+    # Değerlendirme
+    rating = db.Column(db.Integer)  # 1-5
+    is_accurate = db.Column(db.Boolean)
+    
+    # Düzeltme
+    original_value = db.Column(db.Text)
+    corrected_value = db.Column(db.Text)
+    
+    # Notlar
+    feedback_text = db.Column(db.Text)
+    
+    # Durum
+    is_processed = db.Column(db.Boolean, default=False)
+    processed_at = db.Column(db.DateTime)
+    
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+
+
+class AIModelPerformance(db.Model):
+    """AI model performans metrikleri"""
+    __tablename__ = 'ai_model_performance'
+    
+    id = db.Column(db.Integer, primary_key=True)
+    
+    # Model bilgisi
+    model_type = db.Column(db.String(30), nullable=False)  # stt, llm, qa, routing
+    provider = db.Column(db.String(50))
+    model_name = db.Column(db.String(100))
+    model_version = db.Column(db.String(50))
+    
+    # Dönem
+    period_type = db.Column(db.String(10))  # daily, weekly, monthly
+    period_date = db.Column(db.Date, nullable=False)
+    
+    # Performans metrikleri
+    total_requests = db.Column(db.Integer, default=0)
+    successful_requests = db.Column(db.Integer, default=0)
+    failed_requests = db.Column(db.Integer, default=0)
+    
+    # Kalite metrikleri
+    average_confidence = db.Column(db.Float)
+    accuracy_score = db.Column(db.Float)  # Geri bildirimlerden hesaplanan
+    
+    # Hız metrikleri
+    average_latency_ms = db.Column(db.Float)
+    p95_latency_ms = db.Column(db.Float)
+    p99_latency_ms = db.Column(db.Float)
+    
+    # Maliyet
+    total_cost = db.Column(db.Numeric(12, 4))
+    cost_per_request = db.Column(db.Numeric(10, 6))
+    
+    # Hata analizi
+    error_breakdown = db.Column(db.JSON)  # {"timeout": 5, "rate_limit": 2, "invalid_input": 1}
+    
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+
+
+class AIPackage(db.Model):
+    """AI paket tanımları"""
+    __tablename__ = 'ai_packages'
+    
+    id = db.Column(db.Integer, primary_key=True)
+    
+    code = db.Column(db.String(50), unique=True, nullable=False)
+    name = db.Column(db.String(100), nullable=False)
+    description = db.Column(db.Text)
+    tier = db.Column(db.String(20))  # basic, pro, enterprise
+    
+    # Dahil özellikler
+    features = db.Column(db.JSON)
+    # ["transcription", "summary", "qa", "agent_assist", "voice_bot", "routing"]
+    
+    # Limitler
+    monthly_transcription_minutes = db.Column(db.Integer, default=0)
+    monthly_summary_count = db.Column(db.Integer, default=0)
+    monthly_qa_evaluations = db.Column(db.Integer, default=0)
+    monthly_agent_assist_minutes = db.Column(db.Integer, default=0)
+    monthly_voice_bot_minutes = db.Column(db.Integer, default=0)
+    
+    # Fiyatlandırma
+    price_monthly = db.Column(db.Numeric(10, 2))
+    price_yearly = db.Column(db.Numeric(10, 2))
+    
+    # Aşım fiyatları
+    overage_transcription_per_minute = db.Column(db.Numeric(8, 4))
+    overage_summary_per_unit = db.Column(db.Numeric(8, 4))
+    overage_qa_per_unit = db.Column(db.Numeric(8, 4))
+    
+    is_active = db.Column(db.Boolean, default=True)
+    is_trial = db.Column(db.Boolean, default=False)
+    trial_days = db.Column(db.Integer, default=14)
+    
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+
+
+class TenantAISubscription(db.Model):
+    """Tenant AI aboneliği"""
+    __tablename__ = 'tenant_ai_subscriptions'
+    
+    id = db.Column(db.Integer, primary_key=True)
+    tenant_id = db.Column(db.Integer, db.ForeignKey('tenants.id'), nullable=False)
+    package_id = db.Column(db.Integer, db.ForeignKey('ai_packages.id'), nullable=False)
+    
+    status = db.Column(db.String(20), default='active')  # active, trial, suspended, cancelled
+    
+    started_at = db.Column(db.DateTime, default=datetime.utcnow)
+    trial_ends_at = db.Column(db.DateTime)
+    expires_at = db.Column(db.DateTime)
+    
+    # Kullanım
+    current_transcription_minutes = db.Column(db.Integer, default=0)
+    current_summary_count = db.Column(db.Integer, default=0)
+    current_qa_evaluations = db.Column(db.Integer, default=0)
+    
+    # Özel limitler (paket üstü override)
+    custom_limits = db.Column(db.JSON)
+    
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
     updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
 
 

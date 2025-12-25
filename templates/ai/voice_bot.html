@@ -1,0 +1,667 @@
+{% extends "base.html" %}
+
+{% block title %}Voice Bot Yönetimi - {{ config.APP_NAME }}{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <div class="header-content">
+        <h1><i class="ti ti-robot"></i> Voice Bot Yönetimi</h1>
+        <p class="subtitle">AI Sesli Asistan Konfigürasyonu</p>
+    </div>
+    <div class="header-actions">
+        <button class="btn btn-primary" onclick="openBotModal()">
+            <i class="ti ti-plus"></i> Yeni Bot Oluştur
+        </button>
+    </div>
+</div>
+
+<!-- Stats -->
+<div class="stats-grid">
+    <div class="stat-card gradient-blue">
+        <div class="stat-card-icon">
+            <i class="ti ti-robot"></i>
+        </div>
+        <div class="stat-card-content">
+            <div class="stat-value">{{ voice_bots | length }}</div>
+            <div class="stat-label">Toplam Bot</div>
+        </div>
+    </div>
+    
+    <div class="stat-card gradient-green">
+        <div class="stat-card-icon">
+            <i class="ti ti-player-play"></i>
+        </div>
+        <div class="stat-card-content">
+            <div class="stat-value">{{ active_bots | default(0) }}</div>
+            <div class="stat-label">Aktif Bot</div>
+        </div>
+    </div>
+    
+    <div class="stat-card gradient-purple">
+        <div class="stat-card-icon">
+            <i class="ti ti-phone-call"></i>
+        </div>
+        <div class="stat-card-content">
+            <div class="stat-value">{{ today_sessions | default(0) }}</div>
+            <div class="stat-label">Bugünkü Oturum</div>
+        </div>
+    </div>
+    
+    <div class="stat-card gradient-orange">
+        <div class="stat-card-icon">
+            <i class="ti ti-check"></i>
+        </div>
+        <div class="stat-card-content">
+            <div class="stat-value">%{{ resolution_rate | default(0) }}</div>
+            <div class="stat-label">Çözüm Oranı</div>
+        </div>
+    </div>
+</div>
+
+<!-- Voice Bots List -->
+<div class="card">
+    <div class="card-header">
+        <h3><i class="ti ti-list"></i> Voice Bot'lar</h3>
+    </div>
+    <div class="card-body">
+        <div class="bot-grid">
+            {% for bot in voice_bots %}
+            <div class="bot-card {{ 'active' if bot.is_active else 'inactive' }}">
+                <div class="bot-header">
+                    <div class="bot-avatar">
+                        <i class="ti ti-robot"></i>
+                    </div>
+                    <div class="bot-info">
+                        <h4>{{ bot.name }}</h4>
+                        <span class="bot-language">
+                            <i class="ti ti-language"></i> {{ bot.language | upper }}
+                        </span>
+                    </div>
+                    <div class="bot-status">
+                        <span class="badge {{ 'badge-success' if bot.is_active else 'badge-secondary' }}">
+                            {{ 'Aktif' if bot.is_active else 'Pasif' }}
+                        </span>
+                    </div>
+                </div>
+                
+                <div class="bot-description">
+                    {{ bot.description | default('Açıklama yok') | truncate(100) }}
+                </div>
+                
+                <div class="bot-stats">
+                    <div class="bot-stat">
+                        <span class="stat-value">{{ bot.sessions_today | default(0) }}</span>
+                        <span class="stat-label">Bugün</span>
+                    </div>
+                    <div class="bot-stat">
+                        <span class="stat-value">%{{ bot.resolution_rate | default(0) }}</span>
+                        <span class="stat-label">Çözüm</span>
+                    </div>
+                    <div class="bot-stat">
+                        <span class="stat-value">{{ bot.avg_turns | default(0) }}</span>
+                        <span class="stat-label">Ort. Tur</span>
+                    </div>
+                </div>
+                
+                <div class="bot-intents">
+                    <h5>Intent'ler</h5>
+                    <div class="intent-tags">
+                        {% for intent in (bot.intents or [])[:5] %}
+                        <span class="intent-tag">{{ intent.name }}</span>
+                        {% else %}
+                        <span class="text-muted">Intent tanımlı değil</span>
+                        {% endfor %}
+                    </div>
+                </div>
+                
+                <div class="bot-actions">
+                    <button class="btn btn-sm btn-outline" onclick="editBot({{ bot.id }})">
+                        <i class="ti ti-edit"></i> Düzenle
+                    </button>
+                    <button class="btn btn-sm btn-outline" onclick="testBot({{ bot.id }})">
+                        <i class="ti ti-player-play"></i> Test Et
+                    </button>
+                    <button class="btn btn-sm {{ 'btn-danger' if bot.is_active else 'btn-success' }}" 
+                            onclick="toggleBot({{ bot.id }}, {{ 'false' if bot.is_active else 'true' }})">
+                        <i class="ti ti-{{ 'player-pause' if bot.is_active else 'player-play' }}"></i>
+                        {{ 'Durdur' if bot.is_active else 'Başlat' }}
+                    </button>
+                </div>
+            </div>
+            {% else %}
+            <div class="empty-state full-width">
+                <i class="ti ti-robot"></i>
+                <h3>Henüz Voice Bot Yok</h3>
+                <p>İlk Voice Bot'unuzu oluşturarak başlayın</p>
+                <button class="btn btn-primary" onclick="openBotModal()">
+                    <i class="ti ti-plus"></i> Bot Oluştur
+                </button>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+</div>
+
+<!-- Recent Sessions -->
+<div class="card">
+    <div class="card-header">
+        <h3><i class="ti ti-history"></i> Son Oturumlar</h3>
+        <a href="{{ url_for('ai_voice_bot_sessions') }}" class="btn btn-sm btn-outline">Tümünü Gör</a>
+    </div>
+    <div class="card-body">
+        <div class="table-responsive">
+            <table class="data-table">
+                <thead>
+                    <tr>
+                        <th>Tarih</th>
+                        <th>Bot</th>
+                        <th>Arayan</th>
+                        <th>Süre</th>
+                        <th>Tur Sayısı</th>
+                        <th>Sonuç</th>
+                        <th>İşlem</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for session in recent_sessions[:10] %}
+                    <tr>
+                        <td>{{ session.started_at.strftime('%d.%m.%Y %H:%M') if session.started_at else '-' }}</td>
+                        <td>{{ session.bot.name if session.bot else '-' }}</td>
+                        <td>{{ session.caller_number or '-' }}</td>
+                        <td>{{ session.duration_seconds | default(0) }}s</td>
+                        <td>{{ session.turns_count | default(0) }}</td>
+                        <td>
+                            <span class="badge 
+                                {{ 'badge-success' if session.outcome == 'resolved' else '' }}
+                                {{ 'badge-warning' if session.outcome == 'transferred' else '' }}
+                                {{ 'badge-danger' if session.outcome == 'abandoned' else '' }}">
+                                {% if session.outcome == 'resolved' %}Çözüldü
+                                {% elif session.outcome == 'transferred' %}Transfer
+                                {% elif session.outcome == 'abandoned' %}Bırakıldı
+                                {% else %}{{ session.outcome or '-' }}{% endif %}
+                            </span>
+                        </td>
+                        <td>
+                            <button class="btn btn-sm btn-outline" onclick="viewSession({{ session.id }})">
+                                <i class="ti ti-eye"></i>
+                            </button>
+                        </td>
+                    </tr>
+                    {% else %}
+                    <tr>
+                        <td colspan="7" class="text-center">Henüz oturum kaydı yok</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<!-- Bot Modal -->
+<div class="modal" id="botModal">
+    <div class="modal-content modal-lg">
+        <div class="modal-header">
+            <h3 id="botModalTitle"><i class="ti ti-robot"></i> Yeni Voice Bot</h3>
+            <button class="modal-close" onclick="closeBotModal()">&times;</button>
+        </div>
+        <form id="botForm" method="POST" action="{{ url_for('ai_voice_bot_save') }}">
+            <div class="modal-body">
+                <input type="hidden" name="bot_id" id="bot_id">
+                
+                <div class="form-tabs">
+                    <button type="button" class="form-tab active" data-tab="basic">Temel</button>
+                    <button type="button" class="form-tab" data-tab="voice">Ses</button>
+                    <button type="button" class="form-tab" data-tab="messages">Mesajlar</button>
+                    <button type="button" class="form-tab" data-tab="intents">Intent'ler</button>
+                    <button type="button" class="form-tab" data-tab="transfer">Transfer</button>
+                </div>
+                
+                <!-- Basic Tab -->
+                <div class="form-tab-content active" id="form-tab-basic">
+                    <div class="form-grid">
+                        <div class="form-group">
+                            <label>Bot Adı *</label>
+                            <input type="text" name="name" id="bot_name" class="form-control" required>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label>Proje</label>
+                            <select name="project_id" id="bot_project" class="form-control">
+                                <option value="">Tüm Projeler</option>
+                                {% for project in projects %}
+                                <option value="{{ project.id }}">{{ project.name }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        
+                        <div class="form-group full-width">
+                            <label>Açıklama</label>
+                            <textarea name="description" id="bot_description" class="form-control" rows="3"></textarea>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label>Dil</label>
+                            <select name="language" id="bot_language" class="form-control">
+                                <option value="tr">Türkçe</option>
+                                <option value="de">Almanca</option>
+                                <option value="en">İngilizce</option>
+                            </select>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label>Bilgi Tabanı</label>
+                            <select name="knowledge_base_id" id="bot_kb" class="form-control">
+                                <option value="">Seçiniz</option>
+                                {% for kb in knowledge_bases %}
+                                <option value="{{ kb.id }}">{{ kb.name }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Voice Tab -->
+                <div class="form-tab-content" id="form-tab-voice">
+                    <div class="form-grid">
+                        <div class="form-group">
+                            <label>Ses ID</label>
+                            <input type="text" name="voice_id" id="bot_voice_id" class="form-control"
+                                   placeholder="ElevenLabs Voice ID">
+                        </div>
+                        
+                        <div class="form-group">
+                            <label>Ses Adı</label>
+                            <input type="text" name="voice_name" id="bot_voice_name" class="form-control"
+                                   placeholder="Örn: Ayşe">
+                        </div>
+                        
+                        <div class="form-group full-width">
+                            <label>Konuşma Hızı</label>
+                            <input type="range" name="speed" id="bot_speed" class="form-range"
+                                   value="1.0" min="0.5" max="2" step="0.1">
+                            <div class="range-labels">
+                                <span>Yavaş</span>
+                                <span>Normal</span>
+                                <span>Hızlı</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Messages Tab -->
+                <div class="form-tab-content" id="form-tab-messages">
+                    <div class="form-grid">
+                        <div class="form-group full-width">
+                            <label>Karşılama Mesajı</label>
+                            <textarea name="greeting_message" id="bot_greeting" class="form-control" rows="3"
+                                      placeholder="Merhaba, AI BEE CC'ye hoş geldiniz..."></textarea>
+                        </div>
+                        
+                        <div class="form-group full-width">
+                            <label>Anlayamadım Mesajı</label>
+                            <textarea name="fallback_message" id="bot_fallback" class="form-control" rows="2"
+                                      placeholder="Üzgünüm, sizi anlayamadım. Lütfen tekrar söyler misiniz?"></textarea>
+                        </div>
+                        
+                        <div class="form-group full-width">
+                            <label>Transfer Mesajı</label>
+                            <textarea name="transfer_message" id="bot_transfer" class="form-control" rows="2"
+                                      placeholder="Sizi bir müşteri temsilcisine bağlıyorum..."></textarea>
+                        </div>
+                        
+                        <div class="form-group full-width">
+                            <label>Vedalaşma Mesajı</label>
+                            <textarea name="goodbye_message" id="bot_goodbye" class="form-control" rows="2"
+                                      placeholder="Bizi aradığınız için teşekkür ederiz. İyi günler dileriz."></textarea>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Intents Tab -->
+                <div class="form-tab-content" id="form-tab-intents">
+                    <div class="intents-builder">
+                        <div class="intent-header">
+                            <h4>Intent Tanımları</h4>
+                            <button type="button" class="btn btn-sm btn-outline" onclick="addIntent()">
+                                <i class="ti ti-plus"></i> Intent Ekle
+                            </button>
+                        </div>
+                        <div id="intents-container">
+                            <!-- Dynamic intent forms -->
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Transfer Tab -->
+                <div class="form-tab-content" id="form-tab-transfer">
+                    <div class="form-grid">
+                        <div class="form-group">
+                            <label>Max Konuşma Turu</label>
+                            <input type="number" name="max_turns" id="bot_max_turns" class="form-control"
+                                   value="5" min="1" max="20">
+                            <small class="form-hint">Bu sayıdan sonra otomatik transfer</small>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label>Transfer Kuyruğu</label>
+                            <select name="transfer_queue_id" id="bot_transfer_queue" class="form-control">
+                                <option value="">Seçiniz</option>
+                                {% for queue in queues %}
+                                <option value="{{ queue.id }}">{{ queue.name }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        
+                        <div class="form-group full-width">
+                            <div class="toggle-item">
+                                <input type="checkbox" id="transfer_on_frustration" name="transfer_on_frustration" checked>
+                                <label for="transfer_on_frustration">
+                                    <span class="toggle-title">Müşteri Sinirlenince Transfer</span>
+                                    <span class="toggle-desc">Negatif duygu algılandığında otomatik agent'a aktar</span>
+                                </label>
+                            </div>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label>Aktif Saatler - Başlangıç</label>
+                            <input type="time" name="active_hours_start" id="bot_hours_start" class="form-control"
+                                   value="09:00">
+                        </div>
+                        
+                        <div class="form-group">
+                            <label>Aktif Saatler - Bitiş</label>
+                            <input type="time" name="active_hours_end" id="bot_hours_end" class="form-control"
+                                   value="18:00">
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-outline" onclick="closeBotModal()">İptal</button>
+                <button type="submit" class="btn btn-primary">
+                    <i class="ti ti-device-floppy"></i> Kaydet
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<style>
+.bot-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+    gap: 1.5rem;
+}
+
+.bot-card {
+    background: var(--card-bg);
+    border-radius: 16px;
+    border: 1px solid var(--border-color);
+    padding: 1.5rem;
+    transition: all 0.3s ease;
+}
+
+.bot-card.active {
+    border-color: rgba(16, 185, 129, 0.3);
+}
+
+.bot-card.inactive {
+    opacity: 0.7;
+}
+
+.bot-card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.1);
+}
+
+.bot-header {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    margin-bottom: 1rem;
+}
+
+.bot-avatar {
+    width: 56px;
+    height: 56px;
+    border-radius: 14px;
+    background: linear-gradient(135deg, var(--primary-color), var(--primary-dark));
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-size: 1.75rem;
+}
+
+.bot-info {
+    flex: 1;
+}
+
+.bot-info h4 {
+    margin: 0;
+    color: var(--text-primary);
+}
+
+.bot-language {
+    font-size: 0.85rem;
+    color: var(--text-secondary);
+    display: flex;
+    align-items: center;
+    gap: 0.25rem;
+}
+
+.bot-description {
+    color: var(--text-secondary);
+    font-size: 0.9rem;
+    margin-bottom: 1rem;
+    line-height: 1.5;
+}
+
+.bot-stats {
+    display: flex;
+    gap: 1.5rem;
+    margin-bottom: 1rem;
+    padding: 1rem;
+    background: rgba(245, 166, 35, 0.05);
+    border-radius: 10px;
+}
+
+.bot-stat {
+    text-align: center;
+}
+
+.bot-stat .stat-value {
+    font-size: 1.25rem;
+    font-weight: 700;
+    color: var(--primary-color);
+}
+
+.bot-stat .stat-label {
+    font-size: 0.8rem;
+    color: var(--text-secondary);
+}
+
+.bot-intents {
+    margin-bottom: 1rem;
+}
+
+.bot-intents h5 {
+    font-size: 0.85rem;
+    color: var(--text-secondary);
+    margin-bottom: 0.5rem;
+}
+
+.intent-tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+}
+
+.intent-tag {
+    padding: 0.25rem 0.75rem;
+    background: rgba(59, 130, 246, 0.1);
+    color: #3B82F6;
+    border-radius: 20px;
+    font-size: 0.8rem;
+}
+
+.bot-actions {
+    display: flex;
+    gap: 0.5rem;
+    flex-wrap: wrap;
+}
+
+.form-tabs {
+    display: flex;
+    gap: 0.5rem;
+    margin-bottom: 1.5rem;
+    flex-wrap: wrap;
+}
+
+.form-tab {
+    padding: 0.5rem 1rem;
+    border: 1px solid var(--border-color);
+    background: transparent;
+    border-radius: 8px;
+    cursor: pointer;
+    font-weight: 500;
+    color: var(--text-secondary);
+    transition: all 0.3s ease;
+}
+
+.form-tab:hover {
+    border-color: var(--primary-color);
+    color: var(--primary-color);
+}
+
+.form-tab.active {
+    background: var(--primary-color);
+    border-color: var(--primary-color);
+    color: white;
+}
+
+.form-tab-content {
+    display: none;
+}
+
+.form-tab-content.active {
+    display: block;
+}
+
+.intents-builder {
+    border: 1px solid var(--border-color);
+    border-radius: 12px;
+    padding: 1rem;
+}
+
+.intent-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1rem;
+}
+
+.full-width {
+    grid-column: 1 / -1;
+}
+</style>
+
+<script>
+let intentIndex = 0;
+
+function openBotModal() {
+    document.getElementById('botModalTitle').innerHTML = '<i class="ti ti-robot"></i> Yeni Voice Bot';
+    document.getElementById('botForm').reset();
+    document.getElementById('bot_id').value = '';
+    document.getElementById('intents-container').innerHTML = '';
+    intentIndex = 0;
+    document.getElementById('botModal').classList.add('active');
+}
+
+function closeBotModal() {
+    document.getElementById('botModal').classList.remove('active');
+}
+
+function editBot(botId) {
+    // Fetch bot data and populate form
+    fetch('/api/voice-bots/' + botId)
+        .then(response => response.json())
+        .then(data => {
+            document.getElementById('botModalTitle').innerHTML = '<i class="ti ti-robot"></i> Bot Düzenle';
+            document.getElementById('bot_id').value = data.id;
+            document.getElementById('bot_name').value = data.name;
+            document.getElementById('bot_description').value = data.description || '';
+            document.getElementById('bot_language').value = data.language || 'tr';
+            // ... populate other fields
+            document.getElementById('botModal').classList.add('active');
+        });
+}
+
+function testBot(botId) {
+    window.open('/ai/voice-bot/' + botId + '/test', '_blank', 'width=400,height=600');
+}
+
+function toggleBot(botId, active) {
+    fetch('/api/voice-bots/' + botId + '/toggle', {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({is_active: active})
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            location.reload();
+        }
+    });
+}
+
+function addIntent() {
+    const container = document.getElementById('intents-container');
+    const html = `
+        <div class="intent-item" id="intent-${intentIndex}">
+            <div class="intent-item-header">
+                <input type="text" name="intents[${intentIndex}][name]" class="form-control" placeholder="Intent adı">
+                <button type="button" class="btn btn-sm btn-danger" onclick="removeIntent(${intentIndex})">
+                    <i class="ti ti-trash"></i>
+                </button>
+            </div>
+            <textarea name="intents[${intentIndex}][phrases]" class="form-control" rows="2" 
+                      placeholder="Örnek ifadeler (her satıra bir tane)"></textarea>
+            <div class="intent-action">
+                <select name="intents[${intentIndex}][action]" class="form-control">
+                    <option value="transfer_queue">Kuyruğa Transfer</option>
+                    <option value="answer">Yanıt Ver</option>
+                    <option value="collect_info">Bilgi Topla</option>
+                </select>
+                <input type="text" name="intents[${intentIndex}][target]" class="form-control" placeholder="Hedef ID/Yanıt">
+            </div>
+        </div>
+    `;
+    container.insertAdjacentHTML('beforeend', html);
+    intentIndex++;
+}
+
+function removeIntent(index) {
+    document.getElementById('intent-' + index).remove();
+}
+
+function viewSession(sessionId) {
+    window.location.href = '/ai/voice-bot/sessions/' + sessionId;
+}
+
+// Form tabs
+document.querySelectorAll('.form-tab').forEach(tab => {
+    tab.addEventListener('click', function() {
+        const tabId = this.dataset.tab;
+        
+        document.querySelectorAll('.form-tab').forEach(t => t.classList.remove('active'));
+        document.querySelectorAll('.form-tab-content').forEach(c => c.classList.remove('active'));
+        
+        this.classList.add('active');
+        document.getElementById('form-tab-' + tabId).classList.add('active');
+    });
+});
+</script>
+{% endblock %}
+

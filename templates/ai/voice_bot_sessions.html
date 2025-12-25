@@ -1,0 +1,335 @@
+{% extends "base.html" %}
+
+{% block title %}Voice Bot Oturumları - {{ config.APP_NAME }}{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <div class="header-content">
+        <h1><i class="ti ti-history"></i> Voice Bot Oturumları</h1>
+        <p class="subtitle">Tüm Voice Bot görüşme kayıtları</p>
+    </div>
+    <div class="header-actions">
+        <a href="{{ url_for('ai_voice_bot') }}" class="btn btn-outline">
+            <i class="ti ti-arrow-left"></i> Bot Yönetimi
+        </a>
+        <button class="btn btn-outline" onclick="exportSessions()">
+            <i class="ti ti-download"></i> Dışa Aktar
+        </button>
+    </div>
+</div>
+
+<!-- Filters -->
+<div class="card mb-4">
+    <div class="card-body">
+        <form method="GET" class="filter-form">
+            <div class="filter-grid">
+                <div class="form-group">
+                    <label>Bot</label>
+                    <select name="bot_id" class="form-control">
+                        <option value="">Tümü</option>
+                        {% for bot in voice_bots %}
+                        <option value="{{ bot.id }}" {{ 'selected' if request.args.get('bot_id') == bot.id|string else '' }}>
+                            {{ bot.name }}
+                        </option>
+                        {% endfor %}
+                    </select>
+                </div>
+                
+                <div class="form-group">
+                    <label>Sonuç</label>
+                    <select name="outcome" class="form-control">
+                        <option value="">Tümü</option>
+                        <option value="resolved" {{ 'selected' if request.args.get('outcome') == 'resolved' else '' }}>Çözüldü</option>
+                        <option value="transferred" {{ 'selected' if request.args.get('outcome') == 'transferred' else '' }}>Transfer</option>
+                        <option value="abandoned" {{ 'selected' if request.args.get('outcome') == 'abandoned' else '' }}>Bırakıldı</option>
+                    </select>
+                </div>
+                
+                <div class="form-group">
+                    <label>Tarih</label>
+                    <input type="date" name="date_from" class="form-control"
+                           value="{{ request.args.get('date_from', '') }}">
+                </div>
+                
+                <div class="form-group">
+                    <label>&nbsp;</label>
+                    <input type="date" name="date_to" class="form-control"
+                           value="{{ request.args.get('date_to', '') }}">
+                </div>
+                
+                <div class="form-group">
+                    <label>&nbsp;</label>
+                    <button type="submit" class="btn btn-primary">
+                        <i class="ti ti-filter"></i> Filtrele
+                    </button>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Sessions Table -->
+<div class="card">
+    <div class="card-body">
+        <div class="table-responsive">
+            <table class="data-table">
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Tarih/Saat</th>
+                        <th>Bot</th>
+                        <th>Arayan</th>
+                        <th>Süre</th>
+                        <th>Tur</th>
+                        <th>Intent</th>
+                        <th>Sonuç</th>
+                        <th>İşlem</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for session in sessions %}
+                    <tr>
+                        <td>
+                            <code>{{ session.session_uuid[:8] if session.session_uuid else session.id }}...</code>
+                        </td>
+                        <td>
+                            <div class="datetime-cell">
+                                <span class="date">{{ session.started_at.strftime('%d.%m.%Y') if session.started_at else '-' }}</span>
+                                <span class="time">{{ session.started_at.strftime('%H:%M:%S') if session.started_at else '' }}</span>
+                            </div>
+                        </td>
+                        <td>
+                            <span class="bot-name">
+                                <i class="ti ti-robot"></i>
+                                {{ session.bot.name if session.bot else '-' }}
+                            </span>
+                        </td>
+                        <td>{{ session.caller_number or '-' }}</td>
+                        <td>
+                            {% if session.duration_seconds %}
+                            {{ (session.duration_seconds // 60) }}:{{ '%02d' % (session.duration_seconds % 60) }}
+                            {% else %}
+                            -
+                            {% endif %}
+                        </td>
+                        <td>{{ session.turns_count | default(0) }}</td>
+                        <td>
+                            {% if session.detected_intents %}
+                            <div class="intent-tags">
+                                {% for intent in (session.detected_intents or [])[:2] %}
+                                <span class="intent-tag">{{ intent }}</span>
+                                {% endfor %}
+                            </div>
+                            {% else %}
+                            -
+                            {% endif %}
+                        </td>
+                        <td>
+                            <span class="badge 
+                                {{ 'badge-success' if session.outcome == 'resolved' else '' }}
+                                {{ 'badge-warning' if session.outcome == 'transferred' else '' }}
+                                {{ 'badge-danger' if session.outcome == 'abandoned' else '' }}">
+                                {% if session.outcome == 'resolved' %}
+                                <i class="ti ti-check"></i> Çözüldü
+                                {% elif session.outcome == 'transferred' %}
+                                <i class="ti ti-transfer"></i> Transfer
+                                {% elif session.outcome == 'abandoned' %}
+                                <i class="ti ti-phone-off"></i> Bırakıldı
+                                {% else %}
+                                {{ session.outcome or '-' }}
+                                {% endif %}
+                            </span>
+                        </td>
+                        <td>
+                            <button class="btn btn-sm btn-outline" onclick="viewConversation({{ session.id }})">
+                                <i class="ti ti-messages"></i>
+                            </button>
+                            {% if session.call_id %}
+                            <a href="{{ url_for('call_detail', id=session.call_id) }}" class="btn btn-sm btn-outline">
+                                <i class="ti ti-phone"></i>
+                            </a>
+                            {% endif %}
+                        </td>
+                    </tr>
+                    {% else %}
+                    <tr>
+                        <td colspan="9" class="text-center">
+                            <div class="empty-state-inline">
+                                <i class="ti ti-robot"></i>
+                                <span>Henüz oturum kaydı yok</span>
+                            </div>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<!-- Conversation Modal -->
+<div class="modal" id="conversationModal">
+    <div class="modal-content modal-lg">
+        <div class="modal-header">
+            <h3><i class="ti ti-messages"></i> Konuşma Detayı</h3>
+            <button class="modal-close" onclick="closeConversation()">&times;</button>
+        </div>
+        <div class="modal-body" id="conversationContent">
+            <!-- Dynamic content -->
+        </div>
+    </div>
+</div>
+
+<style>
+.filter-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+    gap: 1rem;
+    align-items: end;
+}
+
+.datetime-cell {
+    display: flex;
+    flex-direction: column;
+}
+
+.datetime-cell .date {
+    font-weight: 600;
+}
+
+.datetime-cell .time {
+    font-size: 0.85rem;
+    color: var(--text-secondary);
+}
+
+.bot-name {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.bot-name i {
+    color: var(--primary-color);
+}
+
+.intent-tags {
+    display: flex;
+    gap: 0.25rem;
+}
+
+.intent-tag {
+    padding: 0.15rem 0.5rem;
+    background: rgba(59, 130, 246, 0.1);
+    color: #3B82F6;
+    border-radius: 12px;
+    font-size: 0.75rem;
+}
+
+.empty-state-inline {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    color: var(--text-secondary);
+    padding: 2rem;
+}
+
+.empty-state-inline i {
+    font-size: 1.5rem;
+}
+
+.conversation-view {
+    max-height: 400px;
+    overflow-y: auto;
+    padding: 1rem;
+}
+
+.message {
+    display: flex;
+    margin-bottom: 1rem;
+}
+
+.message.bot {
+    justify-content: flex-start;
+}
+
+.message.customer {
+    justify-content: flex-end;
+}
+
+.message-bubble {
+    max-width: 70%;
+    padding: 0.75rem 1rem;
+    border-radius: 16px;
+}
+
+.message.bot .message-bubble {
+    background: linear-gradient(135deg, var(--primary-color), var(--primary-dark));
+    color: white;
+    border-bottom-left-radius: 4px;
+}
+
+.message.customer .message-bubble {
+    background: var(--card-bg);
+    border: 1px solid var(--border-color);
+    border-bottom-right-radius: 4px;
+}
+
+.message-time {
+    font-size: 0.75rem;
+    margin-top: 0.25rem;
+    opacity: 0.7;
+}
+</style>
+
+<script>
+function viewConversation(sessionId) {
+    fetch('/api/voice-bot/sessions/' + sessionId)
+        .then(response => response.json())
+        .then(data => {
+            let html = '<div class="conversation-view">';
+            
+            if (data.conversation) {
+                data.conversation.forEach(msg => {
+                    html += `
+                        <div class="message ${msg.role}">
+                            <div class="message-bubble">
+                                ${msg.text}
+                                <div class="message-time">${msg.timestamp || ''}</div>
+                            </div>
+                        </div>
+                    `;
+                });
+            } else {
+                html += '<p class="text-center text-muted">Konuşma kaydı bulunamadı</p>';
+            }
+            
+            html += '</div>';
+            
+            // Session info
+            html += `
+                <div class="session-info mt-3 pt-3 border-top">
+                    <div class="info-grid">
+                        <div><strong>Sonuç:</strong> ${data.outcome || '-'}</div>
+                        <div><strong>Tur Sayısı:</strong> ${data.turns_count || 0}</div>
+                        <div><strong>Süre:</strong> ${data.duration_seconds || 0}s</div>
+                    </div>
+                </div>
+            `;
+            
+            document.getElementById('conversationContent').innerHTML = html;
+            document.getElementById('conversationModal').classList.add('active');
+        });
+}
+
+function closeConversation() {
+    document.getElementById('conversationModal').classList.remove('active');
+}
+
+function exportSessions() {
+    const params = new URLSearchParams(window.location.search);
+    window.location.href = '/ai/voice-bot/sessions/export?' + params.toString();
+}
+</script>
+{% endblock %}
+

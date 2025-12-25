@@ -215,13 +215,29 @@
                         <i class="ti ti-chevron-down nav-arrow"></i>
                     </button>
                     <div class="nav-group-menu" id="ai-menu">
-                        <a href="{{ url_for('ai_panel') }}" class="nav-subitem">
+                        <a href="{{ url_for('ai_dashboard') }}" class="nav-subitem">
+                            <i class="ti ti-chart-dots"></i>
+                            <span>AI Dashboard</span>
+                        </a>
+                        <a href="{{ url_for('ai_settings_full') }}" class="nav-subitem">
+                            <i class="ti ti-settings-automation"></i>
+                            <span>AI Ayarları</span>
+                        </a>
+                        <a href="{{ url_for('ai_voice_bot') }}" class="nav-subitem">
                             <i class="ti ti-robot"></i>
-                            <span>AI Yönetimi</span>
+                            <span>Voice Bot</span>
                         </a>
                         <a href="{{ url_for('ai_knowledge_base') }}" class="nav-subitem">
                             <i class="ti ti-books"></i>
-                            <span>Bilgi Tabanı</span>
+                            <span>Bilgi Tabanı (RAG)</span>
+                        </a>
+                        <a href="{{ url_for('ai_logs') }}" class="nav-subitem">
+                            <i class="ti ti-file-analytics"></i>
+                            <span>AI Logları</span>
+                        </a>
+                        <a href="{{ url_for('ai_packages') }}" class="nav-subitem">
+                            <i class="ti ti-package"></i>
+                            <span>AI Paketleri</span>
                         </a>
                     </div>
                 </div>
