@@ -1,0 +1,260 @@
+{% extends "base.html" %}
+
+{% block title %}{{ tariff.name }} - Fiyat Detayları - AI BEE CC{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <h1><i class="ti ti-receipt"></i> {{ tariff.name }} - Fiyat Detayları</h1>
+    <div class="page-actions">
+        <button class="btn btn-primary">
+            <i class="ti ti-plus"></i> Fiyat Ekle
+        </button>
+    </div>
+</div>
+
+<!-- Tarife Özeti -->
+<div class="tariff-summary">
+    <div class="summary-item">
+        <span class="summary-label">Varsayılan Gelen</span>
+        <span class="summary-value">₺{{ "%.4f"|format(tariff.default_rate_inbound|float) }}/dk</span>
+    </div>
+    <div class="summary-item">
+        <span class="summary-label">Varsayılan Giden</span>
+        <span class="summary-value">₺{{ "%.4f"|format(tariff.default_rate_outbound|float) }}/dk</span>
+    </div>
+    <div class="summary-item">
+        <span class="summary-label">Bağlantı</span>
+        <span class="summary-value">₺{{ "%.4f"|format(tariff.connection_fee|float) }}</span>
+    </div>
+    <div class="summary-item">
+        <span class="summary-label">Yuvarlama</span>
+        <span class="summary-value">{{ tariff.billing_increment }} sn</span>
+    </div>
+</div>
+
+<!-- Ülke/Operatör Bazlı Fiyatlar -->
+<div class="table-card">
+    <h3>Ülke/Operatör Bazlı Fiyatlar</h3>
+    <table class="data-table">
+        <thead>
+            <tr>
+                <th>Hedef</th>
+                <th>Tip</th>
+                <th>Prefix</th>
+                <th>Gelen</th>
+                <th>Giden</th>
+                <th>Bağlantı</th>
+                <th>Durum</th>
+                <th>İşlemler</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for rate in rates %}
+            <tr>
+                <td>
+                    <strong>{{ rate.destination_name or rate.destination_code }}</strong>
+                </td>
+                <td>
+                    <span class="badge badge-outline">{{ rate.destination_type }}</span>
+                </td>
+                <td><code>{{ rate.prefix_pattern or '-' }}</code></td>
+                <td>₺{{ "%.4f"|format(rate.rate_inbound|float) if rate.rate_inbound else '-' }}</td>
+                <td>₺{{ "%.4f"|format(rate.rate_outbound|float) if rate.rate_outbound else '-' }}</td>
+                <td>₺{{ "%.4f"|format(rate.connection_fee|float) if rate.connection_fee else '-' }}</td>
+                <td>
+                    {% if rate.is_blocked %}
+                    <span class="badge badge-danger">Engelli</span>
+                    {% elif rate.is_active %}
+                    <span class="badge badge-success">Aktif</span>
+                    {% else %}
+                    <span class="badge badge-muted">Pasif</span>
+                    {% endif %}
+                </td>
+                <td>
+                    <button class="btn btn-icon" title="Düzenle">
+                        <i class="ti ti-edit"></i>
+                    </button>
+                </td>
+            </tr>
+            {% else %}
+            <tr>
+                <td colspan="8" class="empty-row">
+                    <i class="ti ti-list-search"></i>
+                    <p>Özel fiyat tanımlı değil - varsayılan fiyatlar uygulanacak</p>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+
+<!-- Yaygın Hedefler için Hızlı Ekle -->
+<div class="quick-add-section">
+    <h3>Hızlı Fiyat Ekle</h3>
+    <div class="quick-add-grid">
+        <button class="quick-add-btn" data-dest="TR_MOBILE">
+            <i class="ti ti-device-mobile"></i>
+            TR Mobil
+        </button>
+        <button class="quick-add-btn" data-dest="TR_FIXED">
+            <i class="ti ti-phone"></i>
+            TR Sabit
+        </button>
+        <button class="quick-add-btn" data-dest="EU">
+            <i class="ti ti-world"></i>
+            Avrupa
+        </button>
+        <button class="quick-add-btn" data-dest="US">
+            <i class="ti ti-world"></i>
+            ABD
+        </button>
+        <button class="quick-add-btn" data-dest="PREMIUM">
+            <i class="ti ti-currency-dollar"></i>
+            Premium
+        </button>
+    </div>
+</div>
+
+<style>
+.tariff-summary {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+    gap: 1rem;
+    margin-bottom: 1.5rem;
+}
+
+.summary-item {
+    background: white;
+    border-radius: 8px;
+    padding: 1rem;
+    text-align: center;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+}
+
+.summary-label {
+    display: block;
+    font-size: 0.8rem;
+    color: var(--text-muted);
+    margin-bottom: 0.25rem;
+}
+
+.summary-value {
+    font-size: 1.25rem;
+    font-weight: 700;
+    color: var(--primary-color);
+}
+
+.table-card {
+    background: white;
+    border-radius: 12px;
+    padding: 1.5rem;
+    margin-bottom: 1.5rem;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+}
+
+.table-card h3 {
+    margin-bottom: 1rem;
+}
+
+.data-table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.data-table th,
+.data-table td {
+    padding: 0.75rem 1rem;
+    text-align: left;
+    border-bottom: 1px solid #f0f0f0;
+}
+
+.data-table th {
+    font-weight: 600;
+    color: var(--text-secondary);
+    font-size: 0.85rem;
+}
+
+code {
+    background: #f8f9fa;
+    padding: 0.2rem 0.5rem;
+    border-radius: 4px;
+    font-size: 0.85rem;
+}
+
+.badge {
+    padding: 0.2rem 0.5rem;
+    border-radius: 4px;
+    font-size: 0.75rem;
+}
+
+.badge-outline {
+    background: transparent;
+    border: 1px solid #ddd;
+}
+
+.badge-success {
+    background: #e8f5e9;
+    color: #2e7d32;
+}
+
+.badge-danger {
+    background: #ffebee;
+    color: #c62828;
+}
+
+.badge-muted {
+    background: #f5f5f5;
+    color: #757575;
+}
+
+.quick-add-section {
+    background: white;
+    border-radius: 12px;
+    padding: 1.5rem;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+}
+
+.quick-add-section h3 {
+    margin-bottom: 1rem;
+}
+
+.quick-add-grid {
+    display: flex;
+    gap: 0.75rem;
+    flex-wrap: wrap;
+}
+
+.quick-add-btn {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.75rem 1.25rem;
+    border: 1px solid #ddd;
+    background: white;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.quick-add-btn:hover {
+    border-color: var(--primary-color);
+    background: #fff8e1;
+}
+
+.quick-add-btn i {
+    color: var(--primary-color);
+}
+
+.empty-row {
+    text-align: center;
+    padding: 2rem !important;
+    color: var(--text-muted);
+}
+
+.empty-row i {
+    font-size: 2rem;
+    margin-bottom: 0.5rem;
+}
+</style>
+{% endblock %}
+

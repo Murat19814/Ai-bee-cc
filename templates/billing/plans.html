@@ -1,0 +1,238 @@
+{% extends "base.html" %}
+
+{% block title %}Fiyat Planları - AI BEE CC{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <h1><i class="ti ti-package"></i> Fiyat Planları</h1>
+    <div class="page-actions">
+        <a href="{{ url_for('billing_plan_new') }}" class="btn btn-primary">
+            <i class="ti ti-plus"></i> Yeni Plan
+        </a>
+    </div>
+</div>
+
+<div class="plans-grid">
+    {% for plan in plans %}
+    <div class="plan-card {{ 'plan-featured' if plan.is_default else '' }}">
+        {% if plan.is_default %}
+        <div class="plan-badge">Popüler</div>
+        {% endif %}
+        
+        <div class="plan-header">
+            <h3>{{ plan.name }}</h3>
+            <p class="plan-code">{{ plan.code }}</p>
+        </div>
+        
+        <div class="plan-pricing">
+            <span class="plan-price">₺{{ "%.0f"|format(plan.price_monthly|float) }}</span>
+            <span class="plan-period">/ay</span>
+        </div>
+        
+        {% if plan.price_per_agent|float > 0 %}
+        <div class="plan-agent-price">
+            <small>+₺{{ "%.0f"|format(plan.price_per_agent|float) }}/agent ({{ plan.included_agents }} dahil)</small>
+        </div>
+        {% endif %}
+        
+        <div class="plan-features">
+            <div class="feature-item">
+                <i class="ti ti-users"></i>
+                <span>Max {{ plan.max_agents }} Agent</span>
+            </div>
+            <div class="feature-item">
+                <i class="ti ti-phone-call"></i>
+                <span>{{ plan.max_concurrent_calls }} Eş Zamanlı Çağrı</span>
+            </div>
+            <div class="feature-item">
+                <i class="ti ti-database"></i>
+                <span>{{ plan.storage_gb }} GB Storage</span>
+            </div>
+            <div class="feature-item">
+                <i class="ti ti-calendar"></i>
+                <span>{{ plan.recording_retention_days }} Gün Kayıt</span>
+            </div>
+            {% if plan.included_minutes_outbound > 0 %}
+            <div class="feature-item">
+                <i class="ti ti-phone-outgoing"></i>
+                <span>{{ plan.included_minutes_outbound }} dk Outbound</span>
+            </div>
+            {% endif %}
+            {% if plan.included_ai_minutes > 0 %}
+            <div class="feature-item">
+                <i class="ti ti-brain"></i>
+                <span>{{ plan.included_ai_minutes }} dk AI</span>
+            </div>
+            {% endif %}
+        </div>
+        
+        <div class="plan-status">
+            {% if plan.is_active %}
+            <span class="badge badge-success">Aktif</span>
+            {% else %}
+            <span class="badge badge-muted">Pasif</span>
+            {% endif %}
+            {% if plan.is_public %}
+            <span class="badge badge-info">Satışta</span>
+            {% endif %}
+        </div>
+        
+        <div class="plan-actions">
+            <a href="{{ url_for('billing_plan_new') }}?edit={{ plan.id }}" class="btn btn-outline btn-sm">
+                <i class="ti ti-edit"></i> Düzenle
+            </a>
+        </div>
+    </div>
+    {% else %}
+    <div class="empty-state full-width">
+        <i class="ti ti-package-off"></i>
+        <h4>Henüz fiyat planı tanımlanmamış</h4>
+        <a href="{{ url_for('billing_plan_new') }}" class="btn btn-primary">
+            <i class="ti ti-plus"></i> İlk Planı Oluştur
+        </a>
+    </div>
+    {% endfor %}
+</div>
+
+<style>
+.plans-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    gap: 1.5rem;
+}
+
+.plan-card {
+    background: white;
+    border-radius: 16px;
+    padding: 2rem;
+    box-shadow: 0 2px 12px rgba(0,0,0,0.05);
+    position: relative;
+    transition: all 0.3s;
+}
+
+.plan-card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 8px 24px rgba(0,0,0,0.1);
+}
+
+.plan-featured {
+    border: 2px solid var(--primary-color);
+}
+
+.plan-badge {
+    position: absolute;
+    top: -12px;
+    right: 24px;
+    background: linear-gradient(135deg, var(--primary-color), #ffc107);
+    color: white;
+    padding: 0.5rem 1rem;
+    border-radius: 20px;
+    font-size: 0.8rem;
+    font-weight: 600;
+}
+
+.plan-header {
+    margin-bottom: 1.5rem;
+}
+
+.plan-header h3 {
+    font-size: 1.5rem;
+    margin-bottom: 0.25rem;
+}
+
+.plan-code {
+    color: var(--text-muted);
+    font-size: 0.85rem;
+    font-family: monospace;
+}
+
+.plan-pricing {
+    margin-bottom: 0.5rem;
+}
+
+.plan-price {
+    font-size: 2.5rem;
+    font-weight: 700;
+    color: var(--primary-color);
+}
+
+.plan-period {
+    color: var(--text-muted);
+}
+
+.plan-agent-price {
+    margin-bottom: 1.5rem;
+    color: var(--text-secondary);
+}
+
+.plan-features {
+    margin-bottom: 1.5rem;
+    padding: 1rem 0;
+    border-top: 1px solid #eee;
+    border-bottom: 1px solid #eee;
+}
+
+.feature-item {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 0.5rem 0;
+}
+
+.feature-item i {
+    color: var(--primary-color);
+    font-size: 1.1rem;
+}
+
+.plan-status {
+    display: flex;
+    gap: 0.5rem;
+    margin-bottom: 1rem;
+}
+
+.plan-actions {
+    display: flex;
+    gap: 0.5rem;
+}
+
+.badge {
+    padding: 0.25rem 0.75rem;
+    border-radius: 20px;
+    font-size: 0.75rem;
+    font-weight: 600;
+}
+
+.badge-success {
+    background: #e8f5e9;
+    color: #2e7d32;
+}
+
+.badge-info {
+    background: #e3f2fd;
+    color: #1565c0;
+}
+
+.badge-muted {
+    background: #f5f5f5;
+    color: #757575;
+}
+
+.empty-state {
+    text-align: center;
+    padding: 4rem 2rem;
+    background: white;
+    border-radius: 16px;
+}
+
+.empty-state i {
+    font-size: 4rem;
+    color: var(--text-muted);
+    margin-bottom: 1rem;
+}
+
+.full-width {
+    grid-column: 1 / -1;
+}
+</style>
+{% endblock %}
+

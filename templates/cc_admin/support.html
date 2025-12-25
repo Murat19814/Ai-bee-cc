@@ -1,0 +1,407 @@
+{% extends "base.html" %}
+
+{% block title %}Destek - AI BEE CC{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <h1><i class="ti ti-help"></i> Destek Merkezi</h1>
+    <div class="page-actions">
+        <a href="{{ url_for('cc_support_new') }}" class="btn btn-primary">
+            <i class="ti ti-plus"></i> Yeni Talep
+        </a>
+    </div>
+</div>
+
+<!-- Duyurular -->
+{% if announcements %}
+<div class="announcements-section">
+    <h3><i class="ti ti-speakerphone"></i> Platform Duyuruları</h3>
+    <div class="announcements-list">
+        {% for announcement in announcements %}
+        <div class="announcement-card {{ 'announcement-' + announcement.announcement_type }}">
+            <div class="announcement-icon">
+                {% if announcement.announcement_type == 'maintenance' %}
+                <i class="ti ti-tool"></i>
+                {% elif announcement.announcement_type == 'incident' %}
+                <i class="ti ti-alert-triangle"></i>
+                {% elif announcement.announcement_type == 'feature' %}
+                <i class="ti ti-sparkles"></i>
+                {% else %}
+                <i class="ti ti-info-circle"></i>
+                {% endif %}
+            </div>
+            <div class="announcement-content">
+                <h4>{{ announcement.title }}</h4>
+                <p>{{ announcement.content[:200] }}{% if announcement.content|length > 200 %}...{% endif %}</p>
+                <span class="announcement-date">{{ announcement.publish_at.strftime('%d.%m.%Y %H:%M') }}</span>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+{% endif %}
+
+<!-- Destek Talepleri -->
+<div class="section-card">
+    <div class="section-header">
+        <h3><i class="ti ti-ticket"></i> Destek Taleplerim</h3>
+        <div class="ticket-filters">
+            <button class="filter-btn active">Tümü</button>
+            <button class="filter-btn">Açık</button>
+            <button class="filter-btn">Bekleyen</button>
+            <button class="filter-btn">Çözümlendi</button>
+        </div>
+    </div>
+
+    {% if tickets %}
+    <div class="tickets-list">
+        {% for ticket in tickets %}
+        <div class="ticket-card">
+            <div class="ticket-header">
+                <div class="ticket-id">
+                    <span class="ticket-number">#{{ ticket.ticket_number }}</span>
+                    <span class="ticket-category badge">{{ ticket.category or 'Genel' }}</span>
+                </div>
+                <span class="ticket-status status-{{ ticket.status }}">
+                    {% if ticket.status == 'open' %}Açık
+                    {% elif ticket.status == 'in_progress' %}İşleniyor
+                    {% elif ticket.status == 'waiting_customer' %}Yanıt Bekleniyor
+                    {% elif ticket.status == 'resolved' %}Çözümlendi
+                    {% elif ticket.status == 'closed' %}Kapatıldı
+                    {% else %}{{ ticket.status }}{% endif %}
+                </span>
+            </div>
+            <h4 class="ticket-subject">{{ ticket.subject }}</h4>
+            <p class="ticket-preview">{{ ticket.description[:150] }}{% if ticket.description|length > 150 %}...{% endif %}</p>
+            <div class="ticket-footer">
+                <div class="ticket-meta">
+                    <span><i class="ti ti-clock"></i> {{ ticket.created_at.strftime('%d.%m.%Y %H:%M') }}</span>
+                    <span class="priority-{{ ticket.priority }}">
+                        <i class="ti ti-flag"></i> {{ ticket.priority|capitalize }}
+                    </span>
+                </div>
+                <button class="btn btn-outline btn-sm">Detay</button>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+    {% else %}
+    <div class="empty-state">
+        <i class="ti ti-ticket-off"></i>
+        <h4>Henüz destek talebi yok</h4>
+        <p>Yardıma ihtiyacınız varsa yeni bir talep oluşturabilirsiniz.</p>
+        <a href="{{ url_for('cc_support_new') }}" class="btn btn-primary">
+            <i class="ti ti-plus"></i> Yeni Talep Oluştur
+        </a>
+    </div>
+    {% endif %}
+</div>
+
+<!-- Hızlı Bağlantılar -->
+<div class="quick-links">
+    <a href="#" class="quick-link-card">
+        <i class="ti ti-book"></i>
+        <h4>Dokümantasyon</h4>
+        <p>Kullanım kılavuzları ve rehberler</p>
+    </a>
+    <a href="#" class="quick-link-card">
+        <i class="ti ti-video"></i>
+        <h4>Video Eğitimler</h4>
+        <p>Adım adım video anlatımlar</p>
+    </a>
+    <a href="#" class="quick-link-card">
+        <i class="ti ti-messages"></i>
+        <h4>SSS</h4>
+        <p>Sık sorulan sorular</p>
+    </a>
+    <a href="#" class="quick-link-card">
+        <i class="ti ti-phone"></i>
+        <h4>Acil Destek</h4>
+        <p>7/24 teknik destek hattı</p>
+    </a>
+</div>
+
+<style>
+.announcements-section {
+    margin-bottom: 2rem;
+}
+
+.announcements-section h3 {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    margin-bottom: 1rem;
+}
+
+.announcements-list {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+}
+
+.announcement-card {
+    background: white;
+    border-radius: 12px;
+    padding: 1.25rem;
+    display: flex;
+    gap: 1rem;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+    border-left: 4px solid #ddd;
+}
+
+.announcement-maintenance {
+    border-left-color: #ff9800;
+    background: linear-gradient(90deg, #fff8e1, white);
+}
+
+.announcement-incident {
+    border-left-color: #f44336;
+    background: linear-gradient(90deg, #ffebee, white);
+}
+
+.announcement-feature {
+    border-left-color: #4caf50;
+    background: linear-gradient(90deg, #e8f5e9, white);
+}
+
+.announcement-icon {
+    width: 40px;
+    height: 40px;
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.25rem;
+    background: rgba(0,0,0,0.05);
+}
+
+.announcement-content h4 {
+    margin-bottom: 0.5rem;
+}
+
+.announcement-content p {
+    color: var(--text-secondary);
+    font-size: 0.9rem;
+    margin-bottom: 0.5rem;
+}
+
+.announcement-date {
+    font-size: 0.8rem;
+    color: var(--text-muted);
+}
+
+.section-card {
+    background: white;
+    border-radius: 12px;
+    padding: 1.5rem;
+    margin-bottom: 2rem;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+}
+
+.section-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1.5rem;
+    padding-bottom: 1rem;
+    border-bottom: 1px solid #eee;
+}
+
+.section-header h3 {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.ticket-filters {
+    display: flex;
+    gap: 0.5rem;
+}
+
+.filter-btn {
+    padding: 0.5rem 1rem;
+    border: 1px solid #ddd;
+    background: white;
+    border-radius: 20px;
+    font-size: 0.85rem;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.filter-btn:hover {
+    border-color: var(--primary-color);
+}
+
+.filter-btn.active {
+    background: var(--primary-color);
+    color: white;
+    border-color: var(--primary-color);
+}
+
+.tickets-list {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+}
+
+.ticket-card {
+    border: 1px solid #eee;
+    border-radius: 8px;
+    padding: 1.25rem;
+    transition: all 0.2s;
+}
+
+.ticket-card:hover {
+    border-color: var(--primary-color);
+    box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+}
+
+.ticket-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 0.75rem;
+}
+
+.ticket-id {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.ticket-number {
+    font-weight: 600;
+    color: var(--text-primary);
+}
+
+.ticket-status {
+    padding: 0.25rem 0.75rem;
+    border-radius: 20px;
+    font-size: 0.75rem;
+    font-weight: 600;
+}
+
+.status-open {
+    background: #e3f2fd;
+    color: #1565c0;
+}
+
+.status-in_progress {
+    background: #fff3e0;
+    color: #e65100;
+}
+
+.status-waiting_customer {
+    background: #f3e5f5;
+    color: #7b1fa2;
+}
+
+.status-resolved {
+    background: #e8f5e9;
+    color: #2e7d32;
+}
+
+.status-closed {
+    background: #f5f5f5;
+    color: #757575;
+}
+
+.ticket-subject {
+    margin-bottom: 0.5rem;
+}
+
+.ticket-preview {
+    color: var(--text-secondary);
+    font-size: 0.9rem;
+    margin-bottom: 1rem;
+}
+
+.ticket-footer {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.ticket-meta {
+    display: flex;
+    gap: 1rem;
+    font-size: 0.85rem;
+    color: var(--text-muted);
+}
+
+.ticket-meta span {
+    display: flex;
+    align-items: center;
+    gap: 0.25rem;
+}
+
+.priority-high, .priority-urgent {
+    color: #f44336;
+}
+
+.quick-links {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 1rem;
+}
+
+.quick-link-card {
+    background: white;
+    border-radius: 12px;
+    padding: 1.5rem;
+    text-align: center;
+    text-decoration: none;
+    color: inherit;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+    transition: all 0.2s;
+}
+
+.quick-link-card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 4px 16px rgba(0,0,0,0.1);
+}
+
+.quick-link-card i {
+    font-size: 2.5rem;
+    color: var(--primary-color);
+    margin-bottom: 1rem;
+}
+
+.quick-link-card h4 {
+    margin-bottom: 0.5rem;
+}
+
+.quick-link-card p {
+    font-size: 0.85rem;
+    color: var(--text-muted);
+}
+
+.badge {
+    padding: 0.2rem 0.5rem;
+    border-radius: 4px;
+    font-size: 0.7rem;
+    background: #f0f0f0;
+}
+
+.empty-state {
+    text-align: center;
+    padding: 3rem;
+}
+
+.empty-state i {
+    font-size: 4rem;
+    color: var(--text-muted);
+    margin-bottom: 1rem;
+}
+
+.empty-state h4 {
+    margin-bottom: 0.5rem;
+}
+
+.empty-state p {
+    color: var(--text-muted);
+    margin-bottom: 1.5rem;
+}
+</style>
+{% endblock %}
+

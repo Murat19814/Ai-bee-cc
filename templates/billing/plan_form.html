@@ -1,0 +1,177 @@
+{% extends "base.html" %}
+
+{% block title %}{% if plan %}Plan Düzenle{% else %}Yeni Plan{% endif %} - AI BEE CC{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <h1><i class="ti ti-package"></i> {% if plan %}Plan Düzenle{% else %}Yeni Fiyat Planı{% endif %}</h1>
+</div>
+
+<form action="{{ url_for('billing_plan_new') }}" method="POST" class="plan-form">
+    <div class="form-grid">
+        <!-- Temel Bilgiler -->
+        <div class="form-section">
+            <h3><i class="ti ti-info-circle"></i> Temel Bilgiler</h3>
+            <div class="form-group">
+                <label>Plan Kodu <span class="required">*</span></label>
+                <input type="text" name="code" class="form-control" required
+                       value="{{ plan.code if plan else '' }}" placeholder="starter, professional, enterprise">
+            </div>
+            <div class="form-group">
+                <label>Plan Adı <span class="required">*</span></label>
+                <input type="text" name="name" class="form-control" required
+                       value="{{ plan.name if plan else '' }}" placeholder="Starter Plan">
+            </div>
+            <div class="form-group">
+                <label>Açıklama</label>
+                <textarea name="description" class="form-control" rows="3"
+                          placeholder="Plan açıklaması...">{{ plan.description if plan else '' }}</textarea>
+            </div>
+        </div>
+
+        <!-- Fiyatlandırma -->
+        <div class="form-section">
+            <h3><i class="ti ti-currency-lira"></i> Fiyatlandırma</h3>
+            <div class="form-row">
+                <div class="form-group">
+                    <label>Aylık Fiyat (₺)</label>
+                    <input type="number" name="price_monthly" class="form-control" step="0.01"
+                           value="{{ plan.price_monthly if plan else 0 }}">
+                </div>
+                <div class="form-group">
+                    <label>Yıllık Fiyat (₺)</label>
+                    <input type="number" name="price_yearly" class="form-control" step="0.01"
+                           value="{{ plan.price_yearly if plan else 0 }}">
+                </div>
+            </div>
+            <div class="form-row">
+                <div class="form-group">
+                    <label>Agent Başına Ücret (₺)</label>
+                    <input type="number" name="price_per_agent" class="form-control" step="0.01"
+                           value="{{ plan.price_per_agent if plan else 0 }}">
+                </div>
+                <div class="form-group">
+                    <label>Dahil Agent Sayısı</label>
+                    <input type="number" name="included_agents" class="form-control"
+                           value="{{ plan.included_agents if plan else 5 }}">
+                </div>
+            </div>
+        </div>
+
+        <!-- Limitler -->
+        <div class="form-section">
+            <h3><i class="ti ti-adjustments"></i> Limitler</h3>
+            <div class="form-row">
+                <div class="form-group">
+                    <label>Max Agent</label>
+                    <input type="number" name="max_agents" class="form-control"
+                           value="{{ plan.max_agents if plan else 10 }}">
+                </div>
+                <div class="form-group">
+                    <label>Max Eş Zamanlı Çağrı</label>
+                    <input type="number" name="max_concurrent_calls" class="form-control"
+                           value="{{ plan.max_concurrent_calls if plan else 20 }}">
+                </div>
+            </div>
+            <div class="form-row">
+                <div class="form-group">
+                    <label>Storage (GB)</label>
+                    <input type="number" name="storage_gb" class="form-control"
+                           value="{{ plan.storage_gb if plan else 50 }}">
+                </div>
+                <div class="form-group">
+                    <label>Kayıt Saklama (gün)</label>
+                    <input type="number" name="recording_retention_days" class="form-control"
+                           value="{{ plan.recording_retention_days if plan else 90 }}">
+                </div>
+            </div>
+        </div>
+
+        <!-- VoIP ve AI -->
+        <div class="form-section">
+            <h3><i class="ti ti-phone"></i> VoIP & AI</h3>
+            <div class="form-row">
+                <div class="form-group">
+                    <label>Dahil Inbound (dk)</label>
+                    <input type="number" name="included_minutes_inbound" class="form-control"
+                           value="{{ plan.included_minutes_inbound if plan else 0 }}">
+                </div>
+                <div class="form-group">
+                    <label>Dahil Outbound (dk)</label>
+                    <input type="number" name="included_minutes_outbound" class="form-control"
+                           value="{{ plan.included_minutes_outbound if plan else 0 }}">
+                </div>
+            </div>
+            <div class="form-group">
+                <label>Dahil AI Dakika</label>
+                <input type="number" name="included_ai_minutes" class="form-control"
+                       value="{{ plan.included_ai_minutes if plan else 0 }}">
+            </div>
+        </div>
+    </div>
+
+    <div class="form-actions">
+        <a href="{{ url_for('billing_plans') }}" class="btn btn-outline">İptal</a>
+        <button type="submit" class="btn btn-primary">
+            <i class="ti ti-check"></i> Kaydet
+        </button>
+    </div>
+</form>
+
+<style>
+.plan-form {
+    max-width: 900px;
+}
+
+.form-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+    gap: 1.5rem;
+}
+
+.form-section {
+    background: white;
+    border-radius: 12px;
+    padding: 1.5rem;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+}
+
+.form-section h3 {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    margin-bottom: 1.5rem;
+    padding-bottom: 1rem;
+    border-bottom: 1px solid #eee;
+    font-size: 1rem;
+}
+
+.form-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1rem;
+}
+
+.form-group {
+    margin-bottom: 1rem;
+}
+
+.form-group label {
+    display: block;
+    font-weight: 600;
+    margin-bottom: 0.5rem;
+}
+
+.required {
+    color: #f44336;
+}
+
+.form-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 1rem;
+    margin-top: 2rem;
+}
+</style>
+{% endblock %}
+

@@ -1,0 +1,663 @@
+{% extends "base.html" %}
+
+{% block title %}Queue / ACD Yönetimi - {{ app_name }}{% endblock %}
+
+{% block extra_css %}
+<style>
+.voip-page { padding: 1.5rem; }
+
+.queue-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+    gap: 1.5rem;
+    margin-top: 1.5rem;
+}
+
+.queue-card {
+    background: white;
+    border-radius: 16px;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.06);
+    overflow: hidden;
+    transition: all 0.3s;
+}
+
+.queue-card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 8px 30px rgba(0,0,0,0.1);
+}
+
+.queue-header {
+    padding: 1.25rem;
+    background: linear-gradient(135deg, #9C27B0 0%, #7B1FA2 100%);
+    color: white;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.queue-name {
+    font-size: 1.1rem;
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.queue-name i { color: #F5A623; }
+
+.queue-live {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 0.8rem;
+}
+
+.queue-live .pulse {
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    background: #4CAF50;
+    animation: pulse-live 2s infinite;
+}
+
+@keyframes pulse-live {
+    0%, 100% { opacity: 1; transform: scale(1); }
+    50% { opacity: 0.7; transform: scale(1.2); }
+}
+
+.queue-body { padding: 1.25rem; }
+
+.queue-stats-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 0.75rem;
+}
+
+.queue-stat {
+    text-align: center;
+    padding: 0.75rem;
+    background: #f8f9fa;
+    border-radius: 10px;
+}
+
+.queue-stat-value {
+    font-size: 1.5rem;
+    font-weight: 700;
+    font-family: var(--font-display);
+}
+
+.queue-stat-value.waiting { color: #FF9800; }
+.queue-stat-value.available { color: #4CAF50; }
+.queue-stat-value.busy { color: #f44336; }
+
+.queue-stat-label {
+    font-size: 0.7rem;
+    color: #888;
+    text-transform: uppercase;
+}
+
+.queue-agents {
+    margin-top: 1rem;
+    padding-top: 1rem;
+    border-top: 1px solid #eee;
+}
+
+.queue-agents-title {
+    font-size: 0.75rem;
+    color: #888;
+    text-transform: uppercase;
+    margin-bottom: 0.5rem;
+}
+
+.agent-avatars {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.25rem;
+}
+
+.agent-avatar {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #667eea, #764ba2);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-size: 0.75rem;
+    font-weight: 600;
+    border: 2px solid white;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.agent-avatar.available { border-color: #4CAF50; }
+.agent-avatar.busy { border-color: #f44336; }
+.agent-avatar.pause { border-color: #FF9800; }
+
+.queue-config {
+    margin-top: 1rem;
+    padding: 0.75rem;
+    background: #f8f9fa;
+    border-radius: 10px;
+    font-size: 0.8rem;
+}
+
+.config-row {
+    display: flex;
+    justify-content: space-between;
+    padding: 0.25rem 0;
+}
+
+.config-row span:first-child { color: #888; }
+.config-row span:last-child { font-weight: 600; }
+
+.queue-actions {
+    display: flex;
+    gap: 0.5rem;
+    padding: 1rem 1.25rem;
+    background: #f8f9fa;
+}
+
+.queue-actions .btn { flex: 1; }
+
+/* SLA Bar */
+.sla-bar {
+    margin-top: 1rem;
+}
+
+.sla-bar-header {
+    display: flex;
+    justify-content: space-between;
+    font-size: 0.75rem;
+    margin-bottom: 0.25rem;
+}
+
+.sla-bar-track {
+    height: 8px;
+    background: #e0e0e0;
+    border-radius: 4px;
+    overflow: hidden;
+}
+
+.sla-bar-fill {
+    height: 100%;
+    background: linear-gradient(90deg, #4CAF50, #8BC34A);
+    border-radius: 4px;
+    transition: width 0.5s;
+}
+
+.sla-bar-fill.warning { background: linear-gradient(90deg, #FF9800, #FFC107); }
+.sla-bar-fill.danger { background: linear-gradient(90deg, #f44336, #E91E63); }
+
+/* Modal */
+.modal-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.6);
+    backdrop-filter: blur(4px);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 1000;
+    opacity: 0;
+    visibility: hidden;
+    transition: all 0.3s;
+}
+
+.modal-overlay.show { opacity: 1; visibility: visible; }
+
+.modal-content {
+    background: white;
+    border-radius: 20px;
+    width: 100%;
+    max-width: 700px;
+    max-height: 90vh;
+    overflow: hidden;
+}
+
+.modal-header {
+    padding: 1.5rem;
+    background: linear-gradient(135deg, #9C27B0 0%, #7B1FA2 100%);
+    color: white;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.modal-header h3 {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+}
+
+.modal-header h3 i { color: #F5A623; }
+
+.modal-close {
+    background: rgba(255,255,255,0.1);
+    border: none;
+    color: white;
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    cursor: pointer;
+}
+
+.modal-body { padding: 1.5rem; max-height: 60vh; overflow-y: auto; }
+.modal-footer { padding: 1rem 1.5rem; background: #f8f9fa; display: flex; gap: 1rem; justify-content: flex-end; }
+
+.form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
+.form-group { margin-bottom: 1rem; }
+.form-group.full-width { grid-column: 1 / -1; }
+.form-group label { display: block; margin-bottom: 0.5rem; font-weight: 600; color: #333; font-size: 0.85rem; }
+.form-control { width: 100%; padding: 0.75rem 1rem; border: 2px solid #e0e0e0; border-radius: 10px; font-size: 0.9rem; }
+.form-control:focus { outline: none; border-color: #9C27B0; box-shadow: 0 0 0 4px rgba(156, 39, 176, 0.1); }
+
+/* Ring Strategy Visual */
+.strategy-options {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 0.75rem;
+}
+
+.strategy-option {
+    padding: 1rem;
+    border: 2px solid #e0e0e0;
+    border-radius: 10px;
+    cursor: pointer;
+    transition: all 0.2s;
+    text-align: center;
+}
+
+.strategy-option:hover { border-color: #9C27B0; }
+.strategy-option.selected { border-color: #9C27B0; background: rgba(156, 39, 176, 0.05); }
+
+.strategy-option i {
+    font-size: 1.5rem;
+    color: #9C27B0;
+    margin-bottom: 0.5rem;
+}
+
+.strategy-option h5 { margin-bottom: 0.25rem; }
+.strategy-option span { font-size: 0.75rem; color: #888; }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="voip-page">
+    <div class="page-header">
+        <div>
+            <h1 class="page-title">
+                <i class="ti ti-users-group" style="color: #9C27B0;"></i>
+                Queue / ACD Yönetimi
+            </h1>
+            <p class="page-subtitle">Çağrı kuyruklarını ve dağıtım kurallarını yönetin</p>
+        </div>
+        <div class="page-header-actions">
+            <button class="btn btn-primary" onclick="openAddQueueModal()">
+                <i class="ti ti-plus"></i> Yeni Kuyruk
+            </button>
+        </div>
+    </div>
+
+    <!-- Stats -->
+    <div class="grid grid-cols-4 gap-4 mt-4">
+        <div class="stat-card" style="background: linear-gradient(145deg, #F3E5F5, #E1BEE7); border-left: 4px solid #9C27B0;">
+            <div class="stat-card-inner">
+                <div class="icon-3d purple"><i class="ti ti-users-group"></i></div>
+                <div class="stat-content">
+                    <div class="stat-value">{{ queues|length if queues else 5 }}</div>
+                    <div class="stat-label">Toplam Kuyruk</div>
+                </div>
+            </div>
+        </div>
+        <div class="stat-card" style="background: linear-gradient(145deg, #FFF3E0, #FFE0B2); border-left: 4px solid #FF9800;">
+            <div class="stat-card-inner">
+                <div class="icon-3d orange"><i class="ti ti-clock"></i></div>
+                <div class="stat-content">
+                    <div class="stat-value" id="totalWaiting">12</div>
+                    <div class="stat-label">Bekleyen Çağrı</div>
+                </div>
+            </div>
+        </div>
+        <div class="stat-card" style="background: linear-gradient(145deg, #E8F5E9, #C8E6C9); border-left: 4px solid #4CAF50;">
+            <div class="stat-card-inner">
+                <div class="icon-3d green"><i class="ti ti-user-check"></i></div>
+                <div class="stat-content">
+                    <div class="stat-value" id="availableAgents">18</div>
+                    <div class="stat-label">Müsait Agent</div>
+                </div>
+            </div>
+        </div>
+        <div class="stat-card" style="background: linear-gradient(145deg, #E3F2FD, #BBDEFB); border-left: 4px solid #2196F3;">
+            <div class="stat-card-inner">
+                <div class="icon-3d blue"><i class="ti ti-percentage"></i></div>
+                <div class="stat-content">
+                    <div class="stat-value">94%</div>
+                    <div class="stat-label">SLA Uyumu</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Queue Grid -->
+    <div class="queue-grid">
+        <!-- Queue 1 -->
+        <div class="queue-card">
+            <div class="queue-header">
+                <div class="queue-name"><i class="ti ti-shopping-cart"></i> Satış Ekibi</div>
+                <div class="queue-live"><span class="pulse"></span> Canlı</div>
+            </div>
+            <div class="queue-body">
+                <div class="queue-stats-grid">
+                    <div class="queue-stat">
+                        <div class="queue-stat-value waiting">3</div>
+                        <div class="queue-stat-label">Bekleyen</div>
+                    </div>
+                    <div class="queue-stat">
+                        <div class="queue-stat-value available">5</div>
+                        <div class="queue-stat-label">Müsait</div>
+                    </div>
+                    <div class="queue-stat">
+                        <div class="queue-stat-value busy">2</div>
+                        <div class="queue-stat-label">Meşgul</div>
+                    </div>
+                </div>
+
+                <div class="sla-bar">
+                    <div class="sla-bar-header">
+                        <span>SLA (20sn)</span>
+                        <span style="font-weight: 600; color: #4CAF50;">96%</span>
+                    </div>
+                    <div class="sla-bar-track">
+                        <div class="sla-bar-fill" style="width: 96%;"></div>
+                    </div>
+                </div>
+
+                <div class="queue-agents">
+                    <div class="queue-agents-title">Atanmış Agentlar (7)</div>
+                    <div class="agent-avatars">
+                        <div class="agent-avatar available">AK</div>
+                        <div class="agent-avatar available">BY</div>
+                        <div class="agent-avatar busy">CD</div>
+                        <div class="agent-avatar available">EF</div>
+                        <div class="agent-avatar pause">GH</div>
+                        <div class="agent-avatar available">IJ</div>
+                        <div class="agent-avatar busy">KL</div>
+                    </div>
+                </div>
+
+                <div class="queue-config">
+                    <div class="config-row">
+                        <span>Ring Stratejisi:</span>
+                        <span>Round Robin</span>
+                    </div>
+                    <div class="config-row">
+                        <span>Max Bekleme:</span>
+                        <span>300 sn</span>
+                    </div>
+                    <div class="config-row">
+                        <span>Wrap-up:</span>
+                        <span>30 sn</span>
+                    </div>
+                </div>
+            </div>
+            <div class="queue-actions">
+                <button class="btn btn-sm btn-info"><i class="ti ti-eye"></i> İzle</button>
+                <button class="btn btn-sm btn-secondary"><i class="ti ti-edit"></i> Düzenle</button>
+                <button class="btn btn-sm btn-danger"><i class="ti ti-trash"></i></button>
+            </div>
+        </div>
+
+        <!-- Queue 2 -->
+        <div class="queue-card">
+            <div class="queue-header" style="background: linear-gradient(135deg, #2196F3, #1976D2);">
+                <div class="queue-name"><i class="ti ti-headset"></i> Destek Ekibi</div>
+                <div class="queue-live"><span class="pulse"></span> Canlı</div>
+            </div>
+            <div class="queue-body">
+                <div class="queue-stats-grid">
+                    <div class="queue-stat">
+                        <div class="queue-stat-value waiting">5</div>
+                        <div class="queue-stat-label">Bekleyen</div>
+                    </div>
+                    <div class="queue-stat">
+                        <div class="queue-stat-value available">3</div>
+                        <div class="queue-stat-label">Müsait</div>
+                    </div>
+                    <div class="queue-stat">
+                        <div class="queue-stat-value busy">4</div>
+                        <div class="queue-stat-label">Meşgul</div>
+                    </div>
+                </div>
+
+                <div class="sla-bar">
+                    <div class="sla-bar-header">
+                        <span>SLA (30sn)</span>
+                        <span style="font-weight: 600; color: #FF9800;">82%</span>
+                    </div>
+                    <div class="sla-bar-track">
+                        <div class="sla-bar-fill warning" style="width: 82%;"></div>
+                    </div>
+                </div>
+
+                <div class="queue-agents">
+                    <div class="queue-agents-title">Atanmış Agentlar (7)</div>
+                    <div class="agent-avatars">
+                        <div class="agent-avatar available">MN</div>
+                        <div class="agent-avatar busy">OP</div>
+                        <div class="agent-avatar busy">QR</div>
+                        <div class="agent-avatar available">ST</div>
+                        <div class="agent-avatar busy">UV</div>
+                        <div class="agent-avatar available">WX</div>
+                        <div class="agent-avatar busy">YZ</div>
+                    </div>
+                </div>
+
+                <div class="queue-config">
+                    <div class="config-row">
+                        <span>Ring Stratejisi:</span>
+                        <span>Skill-Based</span>
+                    </div>
+                    <div class="config-row">
+                        <span>Max Bekleme:</span>
+                        <span>180 sn</span>
+                    </div>
+                    <div class="config-row">
+                        <span>Wrap-up:</span>
+                        <span>45 sn</span>
+                    </div>
+                </div>
+            </div>
+            <div class="queue-actions">
+                <button class="btn btn-sm btn-info"><i class="ti ti-eye"></i> İzle</button>
+                <button class="btn btn-sm btn-secondary"><i class="ti ti-edit"></i> Düzenle</button>
+                <button class="btn btn-sm btn-danger"><i class="ti ti-trash"></i></button>
+            </div>
+        </div>
+
+        <!-- Queue 3 - VIP -->
+        <div class="queue-card">
+            <div class="queue-header" style="background: linear-gradient(135deg, #F5A623, #D4920A);">
+                <div class="queue-name"><i class="ti ti-crown"></i> VIP Müşteriler</div>
+                <div class="queue-live"><span class="pulse"></span> Canlı</div>
+            </div>
+            <div class="queue-body">
+                <div class="queue-stats-grid">
+                    <div class="queue-stat">
+                        <div class="queue-stat-value waiting">1</div>
+                        <div class="queue-stat-label">Bekleyen</div>
+                    </div>
+                    <div class="queue-stat">
+                        <div class="queue-stat-value available">4</div>
+                        <div class="queue-stat-label">Müsait</div>
+                    </div>
+                    <div class="queue-stat">
+                        <div class="queue-stat-value busy">1</div>
+                        <div class="queue-stat-label">Meşgul</div>
+                    </div>
+                </div>
+
+                <div class="sla-bar">
+                    <div class="sla-bar-header">
+                        <span>SLA (10sn)</span>
+                        <span style="font-weight: 600; color: #4CAF50;">99%</span>
+                    </div>
+                    <div class="sla-bar-track">
+                        <div class="sla-bar-fill" style="width: 99%;"></div>
+                    </div>
+                </div>
+
+                <div class="queue-agents">
+                    <div class="queue-agents-title">Atanmış Agentlar (5)</div>
+                    <div class="agent-avatars">
+                        <div class="agent-avatar available">AA</div>
+                        <div class="agent-avatar available">BB</div>
+                        <div class="agent-avatar available">CC</div>
+                        <div class="agent-avatar busy">DD</div>
+                        <div class="agent-avatar available">EE</div>
+                    </div>
+                </div>
+
+                <div class="queue-config">
+                    <div class="config-row">
+                        <span>Ring Stratejisi:</span>
+                        <span>Priority</span>
+                    </div>
+                    <div class="config-row">
+                        <span>Max Bekleme:</span>
+                        <span>60 sn</span>
+                    </div>
+                    <div class="config-row">
+                        <span>Öncelik:</span>
+                        <span style="color: #F5A623;">★ Yüksek</span>
+                    </div>
+                </div>
+            </div>
+            <div class="queue-actions">
+                <button class="btn btn-sm btn-info"><i class="ti ti-eye"></i> İzle</button>
+                <button class="btn btn-sm btn-secondary"><i class="ti ti-edit"></i> Düzenle</button>
+                <button class="btn btn-sm btn-danger"><i class="ti ti-trash"></i></button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Add Queue Modal -->
+<div class="modal-overlay" id="queueModal">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h3><i class="ti ti-users-group"></i> Yeni Kuyruk Oluştur</h3>
+            <button class="modal-close" onclick="closeModal()"><i class="ti ti-x"></i></button>
+        </div>
+        <form id="queueForm">
+            <div class="modal-body">
+                <div class="form-grid">
+                    <div class="form-group">
+                        <label>Kuyruk Adı</label>
+                        <input type="text" class="form-control" name="name" required placeholder="Örn: Satış Ekibi">
+                    </div>
+                    <div class="form-group">
+                        <label>Extension</label>
+                        <input type="text" class="form-control" name="extension" placeholder="Örn: 8001">
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label>Ring Stratejisi</label>
+                    <div class="strategy-options">
+                        <div class="strategy-option selected" data-value="ringall">
+                            <i class="ti ti-users"></i>
+                            <h5>Ring All</h5>
+                            <span>Tüm agentları çaldır</span>
+                        </div>
+                        <div class="strategy-option" data-value="roundrobin">
+                            <i class="ti ti-rotate-clockwise"></i>
+                            <h5>Round Robin</h5>
+                            <span>Sırayla dağıt</span>
+                        </div>
+                        <div class="strategy-option" data-value="leastrecent">
+                            <i class="ti ti-clock"></i>
+                            <h5>Least Recent</h5>
+                            <span>En az çağrı alana</span>
+                        </div>
+                        <div class="strategy-option" data-value="skillbased">
+                            <i class="ti ti-star"></i>
+                            <h5>Skill-Based</h5>
+                            <span>Yeteneğe göre</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="form-grid">
+                    <div class="form-group">
+                        <label>Max Bekleme Süresi (sn)</label>
+                        <input type="number" class="form-control" name="max_wait" value="300">
+                    </div>
+                    <div class="form-group">
+                        <label>Ring Timeout (sn)</label>
+                        <input type="number" class="form-control" name="ring_timeout" value="20">
+                    </div>
+                    <div class="form-group">
+                        <label>Wrap-up Süresi (sn)</label>
+                        <input type="number" class="form-control" name="wrapup" value="30">
+                    </div>
+                    <div class="form-group">
+                        <label>SLA Hedefi (sn)</label>
+                        <input type="number" class="form-control" name="sla_target" value="20">
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label>Kuyruk Müziği</label>
+                    <select class="form-control" name="music_on_hold">
+                        <option value="default">Varsayılan Müzik</option>
+                        <option value="jazz">Jazz</option>
+                        <option value="classical">Klasik</option>
+                        <option value="corporate">Kurumsal</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label>Overflow Kuyruğu</label>
+                    <select class="form-control" name="overflow_queue">
+                        <option value="">Yok</option>
+                        <option value="1">Destek Ekibi</option>
+                        <option value="2">Genel Kuyruk</option>
+                    </select>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" onclick="closeModal()">İptal</button>
+                <button type="submit" class="btn btn-primary"><i class="ti ti-device-floppy"></i> Kaydet</button>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+function openAddQueueModal() {
+    document.getElementById('queueModal').classList.add('show');
+}
+
+function closeModal() {
+    document.getElementById('queueModal').classList.remove('show');
+}
+
+// Strategy selection
+document.querySelectorAll('.strategy-option').forEach(option => {
+    option.addEventListener('click', function() {
+        document.querySelectorAll('.strategy-option').forEach(o => o.classList.remove('selected'));
+        this.classList.add('selected');
+    });
+});
+
+// Real-time updates simulation
+setInterval(() => {
+    document.getElementById('totalWaiting').textContent = Math.floor(Math.random() * 15) + 5;
+    document.getElementById('availableAgents').textContent = Math.floor(Math.random() * 10) + 15;
+}, 5000);
+</script>
+{% endblock %}
+

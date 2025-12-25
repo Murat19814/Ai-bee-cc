@@ -1,0 +1,797 @@
+{% extends "base.html" %}
+
+{% block title %}VoIP Dashboard - {{ app_name }}{% endblock %}
+
+{% block extra_css %}
+<style>
+.voip-dashboard {
+    padding: 1.5rem;
+    display: grid;
+    grid-template-columns: 1fr 1fr 400px;
+    gap: 1.5rem;
+    height: calc(100vh - 120px);
+}
+
+/* Live Stats Cards */
+.live-stats {
+    grid-column: 1 / -1;
+    display: grid;
+    grid-template-columns: repeat(6, 1fr);
+    gap: 1rem;
+}
+
+.live-stat {
+    background: white;
+    border-radius: 16px;
+    padding: 1.25rem;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.06);
+    position: relative;
+    overflow: hidden;
+}
+
+.live-stat::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 4px;
+}
+
+.live-stat.calls::before { background: linear-gradient(90deg, #2196F3, #21CBF3); }
+.live-stat.waiting::before { background: linear-gradient(90deg, #FF9800, #FFC107); }
+.live-stat.agents::before { background: linear-gradient(90deg, #4CAF50, #8BC34A); }
+.live-stat.sla::before { background: linear-gradient(90deg, #9C27B0, #E040FB); }
+.live-stat.aht::before { background: linear-gradient(90deg, #00BCD4, #00E5FF); }
+.live-stat.trunk::before { background: linear-gradient(90deg, #F5A623, #FFD700); }
+
+.live-stat-icon {
+    width: 50px;
+    height: 50px;
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.5rem;
+    margin-bottom: 0.75rem;
+}
+
+.live-stat.calls .live-stat-icon { background: rgba(33, 150, 243, 0.1); color: #2196F3; }
+.live-stat.waiting .live-stat-icon { background: rgba(255, 152, 0, 0.1); color: #FF9800; }
+.live-stat.agents .live-stat-icon { background: rgba(76, 175, 80, 0.1); color: #4CAF50; }
+.live-stat.sla .live-stat-icon { background: rgba(156, 39, 176, 0.1); color: #9C27B0; }
+.live-stat.aht .live-stat-icon { background: rgba(0, 188, 212, 0.1); color: #00BCD4; }
+.live-stat.trunk .live-stat-icon { background: rgba(245, 166, 35, 0.1); color: #F5A623; }
+
+.live-stat-value {
+    font-size: 2rem;
+    font-weight: 700;
+    font-family: var(--font-display);
+    color: #1a1a2e;
+    line-height: 1;
+}
+
+.live-stat-label {
+    font-size: 0.8rem;
+    color: #888;
+    margin-top: 0.25rem;
+}
+
+.live-stat-trend {
+    position: absolute;
+    top: 1rem;
+    right: 1rem;
+    font-size: 0.75rem;
+    display: flex;
+    align-items: center;
+    gap: 0.25rem;
+}
+
+.live-stat-trend.up { color: #4CAF50; }
+.live-stat-trend.down { color: #f44336; }
+
+/* Active Calls Panel */
+.panel {
+    background: white;
+    border-radius: 16px;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.06);
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+}
+
+.panel-header {
+    padding: 1rem 1.25rem;
+    background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+    color: white;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.panel-header h3 {
+    font-size: 1rem;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.panel-header h3 i { color: #F5A623; }
+
+.panel-header .live-badge {
+    background: #f44336;
+    padding: 0.25rem 0.5rem;
+    border-radius: 4px;
+    font-size: 0.7rem;
+    animation: pulse-badge 2s infinite;
+}
+
+@keyframes pulse-badge {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.7; }
+}
+
+.panel-body {
+    flex: 1;
+    overflow-y: auto;
+    padding: 1rem;
+}
+
+/* Active Call Item */
+.active-call {
+    background: #f8f9fa;
+    border-radius: 12px;
+    padding: 1rem;
+    margin-bottom: 0.75rem;
+    border-left: 4px solid #4CAF50;
+}
+
+.active-call.ringing { border-left-color: #FF9800; animation: ring-pulse 1s infinite; }
+.active-call.hold { border-left-color: #9C27B0; }
+
+@keyframes ring-pulse {
+    0%, 100% { background: #f8f9fa; }
+    50% { background: rgba(255, 152, 0, 0.1); }
+}
+
+.active-call-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 0.75rem;
+}
+
+.call-type-badge {
+    padding: 0.25rem 0.5rem;
+    border-radius: 4px;
+    font-size: 0.7rem;
+    font-weight: 600;
+}
+
+.call-type-badge.inbound { background: rgba(33, 150, 243, 0.1); color: #1976D2; }
+.call-type-badge.outbound { background: rgba(76, 175, 80, 0.1); color: #388E3C; }
+
+.call-timer {
+    font-family: var(--font-mono);
+    font-size: 0.9rem;
+    font-weight: 600;
+    color: #4CAF50;
+}
+
+.active-call-body {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 0.5rem;
+    font-size: 0.8rem;
+}
+
+.call-info-row {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.call-info-row i { color: #888; font-size: 0.9rem; }
+
+.active-call-footer {
+    display: flex;
+    gap: 0.5rem;
+    margin-top: 0.75rem;
+}
+
+.call-action-btn {
+    flex: 1;
+    padding: 0.5rem;
+    border: none;
+    border-radius: 6px;
+    font-size: 0.75rem;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.25rem;
+    transition: all 0.2s;
+}
+
+.call-action-btn.listen { background: #2196F3; color: white; }
+.call-action-btn.whisper { background: #9C27B0; color: white; }
+.call-action-btn.barge { background: #FF9800; color: white; }
+.call-action-btn.hangup { background: #f44336; color: white; }
+
+/* Queue Status Panel */
+.queue-status-grid {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+}
+
+.queue-status-item {
+    background: #f8f9fa;
+    border-radius: 12px;
+    padding: 1rem;
+}
+
+.queue-status-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 0.5rem;
+}
+
+.queue-name {
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.queue-name i { color: #9C27B0; }
+
+.queue-waiting {
+    background: #FF9800;
+    color: white;
+    padding: 0.25rem 0.5rem;
+    border-radius: 4px;
+    font-size: 0.75rem;
+    font-weight: 600;
+}
+
+.queue-stats-row {
+    display: flex;
+    gap: 1rem;
+    font-size: 0.8rem;
+    color: #666;
+}
+
+.queue-stats-row span {
+    display: flex;
+    align-items: center;
+    gap: 0.25rem;
+}
+
+.sla-mini {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    margin-top: 0.5rem;
+}
+
+.sla-mini-bar {
+    flex: 1;
+    height: 6px;
+    background: #e0e0e0;
+    border-radius: 3px;
+    overflow: hidden;
+}
+
+.sla-mini-fill {
+    height: 100%;
+    background: #4CAF50;
+    border-radius: 3px;
+}
+
+.sla-mini-fill.warning { background: #FF9800; }
+.sla-mini-fill.danger { background: #f44336; }
+
+/* Agent Status Panel */
+.agent-status-list {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.agent-status-item {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 0.75rem;
+    background: #f8f9fa;
+    border-radius: 10px;
+}
+
+.agent-avatar {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #667eea, #764ba2);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-weight: 600;
+    font-size: 0.9rem;
+    position: relative;
+}
+
+.agent-avatar .status-dot {
+    position: absolute;
+    bottom: 0;
+    right: 0;
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    border: 2px solid white;
+}
+
+.status-dot.available { background: #4CAF50; }
+.status-dot.busy { background: #f44336; }
+.status-dot.pause { background: #FF9800; }
+.status-dot.acw { background: #2196F3; }
+
+.agent-info { flex: 1; }
+.agent-info strong { display: block; font-size: 0.9rem; }
+.agent-info span { font-size: 0.75rem; color: #888; }
+
+.agent-status-badge {
+    padding: 0.25rem 0.5rem;
+    border-radius: 4px;
+    font-size: 0.7rem;
+    font-weight: 600;
+}
+
+.agent-status-badge.available { background: rgba(76, 175, 80, 0.1); color: #388E3C; }
+.agent-status-badge.busy { background: rgba(244, 67, 54, 0.1); color: #C62828; }
+.agent-status-badge.pause { background: rgba(255, 152, 0, 0.1); color: #F57C00; }
+.agent-status-badge.acw { background: rgba(33, 150, 243, 0.1); color: #1565C0; }
+
+/* Trunk Health */
+.trunk-health-list {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.trunk-health-item {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 0.75rem;
+    background: #f8f9fa;
+    border-radius: 10px;
+}
+
+.trunk-icon {
+    width: 36px;
+    height: 36px;
+    border-radius: 8px;
+    background: linear-gradient(135deg, #1a1a2e, #16213e);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #F5A623;
+}
+
+.trunk-info { flex: 1; }
+.trunk-info strong { display: block; font-size: 0.85rem; }
+.trunk-info span { font-size: 0.7rem; color: #888; }
+
+.trunk-metrics {
+    text-align: right;
+}
+
+.trunk-channels {
+    font-family: var(--font-mono);
+    font-size: 0.85rem;
+    font-weight: 600;
+}
+
+.trunk-latency {
+    font-size: 0.7rem;
+    color: #4CAF50;
+}
+
+/* Real-time Chart */
+.chart-container {
+    height: 200px;
+    padding: 1rem;
+}
+
+/* Tabs */
+.panel-tabs {
+    display: flex;
+    background: #f0f0f0;
+    padding: 0.25rem;
+    border-radius: 8px;
+    margin-bottom: 1rem;
+}
+
+.panel-tab {
+    flex: 1;
+    padding: 0.5rem;
+    border: none;
+    background: transparent;
+    border-radius: 6px;
+    font-size: 0.8rem;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.panel-tab.active {
+    background: white;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="voip-dashboard">
+    <!-- Live Stats -->
+    <div class="live-stats">
+        <div class="live-stat calls">
+            <div class="live-stat-icon"><i class="ti ti-phone-call"></i></div>
+            <div class="live-stat-value" id="activeCallsCount">24</div>
+            <div class="live-stat-label">Aktif Çağrı</div>
+            <div class="live-stat-trend up"><i class="ti ti-arrow-up"></i> 12%</div>
+        </div>
+        <div class="live-stat waiting">
+            <div class="live-stat-icon"><i class="ti ti-clock"></i></div>
+            <div class="live-stat-value" id="waitingCount">8</div>
+            <div class="live-stat-label">Bekleyen</div>
+            <div class="live-stat-trend down"><i class="ti ti-arrow-down"></i> 5%</div>
+        </div>
+        <div class="live-stat agents">
+            <div class="live-stat-icon"><i class="ti ti-users"></i></div>
+            <div class="live-stat-value" id="availableAgents">32</div>
+            <div class="live-stat-label">Müsait Agent</div>
+            <div class="live-stat-trend up"><i class="ti ti-arrow-up"></i> 8%</div>
+        </div>
+        <div class="live-stat sla">
+            <div class="live-stat-icon"><i class="ti ti-chart-line"></i></div>
+            <div class="live-stat-value" id="slaPercent">94%</div>
+            <div class="live-stat-label">SLA</div>
+            <div class="live-stat-trend up"><i class="ti ti-arrow-up"></i> 2%</div>
+        </div>
+        <div class="live-stat aht">
+            <div class="live-stat-icon"><i class="ti ti-hourglass"></i></div>
+            <div class="live-stat-value" id="ahtValue">3:42</div>
+            <div class="live-stat-label">AHT</div>
+            <div class="live-stat-trend down"><i class="ti ti-arrow-down"></i> 15s</div>
+        </div>
+        <div class="live-stat trunk">
+            <div class="live-stat-icon"><i class="ti ti-server"></i></div>
+            <div class="live-stat-value" id="trunkUsage">67%</div>
+            <div class="live-stat-label">Trunk Kullanımı</div>
+            <div class="live-stat-trend up"><i class="ti ti-arrow-up"></i> 3%</div>
+        </div>
+    </div>
+
+    <!-- Active Calls Panel -->
+    <div class="panel">
+        <div class="panel-header">
+            <h3><i class="ti ti-phone-call"></i> Aktif Çağrılar</h3>
+            <span class="live-badge">LIVE</span>
+        </div>
+        <div class="panel-body">
+            <div class="active-call">
+                <div class="active-call-header">
+                    <span class="call-type-badge inbound"><i class="ti ti-phone-incoming"></i> Gelen</span>
+                    <span class="call-timer">05:42</span>
+                </div>
+                <div class="active-call-body">
+                    <div class="call-info-row"><i class="ti ti-phone"></i> +90 532 XXX XX45</div>
+                    <div class="call-info-row"><i class="ti ti-user"></i> Ahmet Y.</div>
+                    <div class="call-info-row"><i class="ti ti-users-group"></i> Satış</div>
+                    <div class="call-info-row"><i class="ti ti-building"></i> ABC Şirket</div>
+                </div>
+                <div class="active-call-footer">
+                    <button class="call-action-btn listen"><i class="ti ti-ear"></i> Dinle</button>
+                    <button class="call-action-btn whisper"><i class="ti ti-message"></i> Fısılda</button>
+                    <button class="call-action-btn barge"><i class="ti ti-phone-plus"></i> Katıl</button>
+                </div>
+            </div>
+
+            <div class="active-call ringing">
+                <div class="active-call-header">
+                    <span class="call-type-badge inbound"><i class="ti ti-phone-incoming"></i> Çalıyor</span>
+                    <span class="call-timer" style="color: #FF9800;">00:08</span>
+                </div>
+                <div class="active-call-body">
+                    <div class="call-info-row"><i class="ti ti-phone"></i> +90 555 XXX XX12</div>
+                    <div class="call-info-row"><i class="ti ti-user"></i> Beklemede</div>
+                    <div class="call-info-row"><i class="ti ti-users-group"></i> Destek</div>
+                    <div class="call-info-row"><i class="ti ti-building"></i> -</div>
+                </div>
+                <div class="active-call-footer">
+                    <button class="call-action-btn hangup"><i class="ti ti-phone-off"></i> Kapat</button>
+                </div>
+            </div>
+
+            <div class="active-call">
+                <div class="active-call-header">
+                    <span class="call-type-badge outbound"><i class="ti ti-phone-outgoing"></i> Giden</span>
+                    <span class="call-timer">02:18</span>
+                </div>
+                <div class="active-call-body">
+                    <div class="call-info-row"><i class="ti ti-phone"></i> +90 544 XXX XX89</div>
+                    <div class="call-info-row"><i class="ti ti-user"></i> Ayşe K.</div>
+                    <div class="call-info-row"><i class="ti ti-users-group"></i> Satış</div>
+                    <div class="call-info-row"><i class="ti ti-building"></i> XYZ Ltd.</div>
+                </div>
+                <div class="active-call-footer">
+                    <button class="call-action-btn listen"><i class="ti ti-ear"></i> Dinle</button>
+                    <button class="call-action-btn whisper"><i class="ti ti-message"></i> Fısılda</button>
+                    <button class="call-action-btn barge"><i class="ti ti-phone-plus"></i> Katıl</button>
+                </div>
+            </div>
+
+            <div class="active-call hold">
+                <div class="active-call-header">
+                    <span class="call-type-badge inbound" style="background: rgba(156, 39, 176, 0.1); color: #7B1FA2;"><i class="ti ti-player-pause"></i> Bekletme</span>
+                    <span class="call-timer" style="color: #9C27B0;">00:45</span>
+                </div>
+                <div class="active-call-body">
+                    <div class="call-info-row"><i class="ti ti-phone"></i> +90 507 XXX XX33</div>
+                    <div class="call-info-row"><i class="ti ti-user"></i> Mehmet D.</div>
+                    <div class="call-info-row"><i class="ti ti-users-group"></i> VIP</div>
+                    <div class="call-info-row"><i class="ti ti-building"></i> Premium Ltd.</div>
+                </div>
+                <div class="active-call-footer">
+                    <button class="call-action-btn listen"><i class="ti ti-ear"></i> Dinle</button>
+                    <button class="call-action-btn hangup"><i class="ti ti-phone-off"></i> Kapat</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Queue Status Panel -->
+    <div class="panel">
+        <div class="panel-header">
+            <h3><i class="ti ti-users-group"></i> Kuyruk Durumu</h3>
+        </div>
+        <div class="panel-body">
+            <div class="queue-status-grid">
+                <div class="queue-status-item">
+                    <div class="queue-status-header">
+                        <span class="queue-name"><i class="ti ti-shopping-cart"></i> Satış Ekibi</span>
+                        <span class="queue-waiting">3 bekliyor</span>
+                    </div>
+                    <div class="queue-stats-row">
+                        <span><i class="ti ti-user-check"></i> 5 müsait</span>
+                        <span><i class="ti ti-phone-call"></i> 4 meşgul</span>
+                        <span><i class="ti ti-clock"></i> 12s ort.</span>
+                    </div>
+                    <div class="sla-mini">
+                        <span style="font-size: 0.75rem; color: #888;">SLA</span>
+                        <div class="sla-mini-bar">
+                            <div class="sla-mini-fill" style="width: 96%;"></div>
+                        </div>
+                        <span style="font-size: 0.75rem; font-weight: 600; color: #4CAF50;">96%</span>
+                    </div>
+                </div>
+
+                <div class="queue-status-item">
+                    <div class="queue-status-header">
+                        <span class="queue-name"><i class="ti ti-headset"></i> Destek Ekibi</span>
+                        <span class="queue-waiting" style="background: #f44336;">5 bekliyor</span>
+                    </div>
+                    <div class="queue-stats-row">
+                        <span><i class="ti ti-user-check"></i> 2 müsait</span>
+                        <span><i class="ti ti-phone-call"></i> 6 meşgul</span>
+                        <span><i class="ti ti-clock"></i> 45s ort.</span>
+                    </div>
+                    <div class="sla-mini">
+                        <span style="font-size: 0.75rem; color: #888;">SLA</span>
+                        <div class="sla-mini-bar">
+                            <div class="sla-mini-fill warning" style="width: 78%;"></div>
+                        </div>
+                        <span style="font-size: 0.75rem; font-weight: 600; color: #FF9800;">78%</span>
+                    </div>
+                </div>
+
+                <div class="queue-status-item">
+                    <div class="queue-status-header">
+                        <span class="queue-name"><i class="ti ti-crown"></i> VIP</span>
+                        <span class="queue-waiting" style="background: #4CAF50;">0 bekliyor</span>
+                    </div>
+                    <div class="queue-stats-row">
+                        <span><i class="ti ti-user-check"></i> 4 müsait</span>
+                        <span><i class="ti ti-phone-call"></i> 1 meşgul</span>
+                        <span><i class="ti ti-clock"></i> 5s ort.</span>
+                    </div>
+                    <div class="sla-mini">
+                        <span style="font-size: 0.75rem; color: #888;">SLA</span>
+                        <div class="sla-mini-bar">
+                            <div class="sla-mini-fill" style="width: 100%;"></div>
+                        </div>
+                        <span style="font-size: 0.75rem; font-weight: 600; color: #4CAF50;">100%</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Trunk Health -->
+            <h4 style="margin: 1.5rem 0 0.75rem; font-size: 0.85rem; color: #888;">Trunk Durumu</h4>
+            <div class="trunk-health-list">
+                <div class="trunk-health-item">
+                    <div class="trunk-icon"><i class="ti ti-server-bolt"></i></div>
+                    <div class="trunk-info">
+                        <strong>Turkcell SIP</strong>
+                        <span>30 kanal aktif</span>
+                    </div>
+                    <div class="trunk-metrics">
+                        <div class="trunk-channels">24/30</div>
+                        <div class="trunk-latency">45ms</div>
+                    </div>
+                </div>
+                <div class="trunk-health-item">
+                    <div class="trunk-icon"><i class="ti ti-server-bolt"></i></div>
+                    <div class="trunk-info">
+                        <strong>Vodafone Trunk</strong>
+                        <span>20 kanal aktif</span>
+                    </div>
+                    <div class="trunk-metrics">
+                        <div class="trunk-channels">12/20</div>
+                        <div class="trunk-latency">38ms</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Agent Status Panel -->
+    <div class="panel" style="grid-column: 3; grid-row: 2 / 4;">
+        <div class="panel-header">
+            <h3><i class="ti ti-users"></i> Agent Durumları</h3>
+        </div>
+        <div class="panel-body">
+            <div class="panel-tabs">
+                <button class="panel-tab active">Tümü (45)</button>
+                <button class="panel-tab">Müsait (32)</button>
+                <button class="panel-tab">Meşgul (13)</button>
+            </div>
+
+            <div class="agent-status-list">
+                <div class="agent-status-item">
+                    <div class="agent-avatar">
+                        AY
+                        <span class="status-dot busy"></span>
+                    </div>
+                    <div class="agent-info">
+                        <strong>Ahmet Yılmaz</strong>
+                        <span>Satış Ekibi • 05:42</span>
+                    </div>
+                    <span class="agent-status-badge busy">Meşgul</span>
+                </div>
+
+                <div class="agent-status-item">
+                    <div class="agent-avatar" style="background: linear-gradient(135deg, #4CAF50, #8BC34A);">
+                        AK
+                        <span class="status-dot available"></span>
+                    </div>
+                    <div class="agent-info">
+                        <strong>Ayşe Kaya</strong>
+                        <span>Satış Ekibi • Boşta 2dk</span>
+                    </div>
+                    <span class="agent-status-badge available">Müsait</span>
+                </div>
+
+                <div class="agent-status-item">
+                    <div class="agent-avatar">
+                        MD
+                        <span class="status-dot busy"></span>
+                    </div>
+                    <div class="agent-info">
+                        <strong>Mehmet Demir</strong>
+                        <span>VIP • 08:15</span>
+                    </div>
+                    <span class="agent-status-badge busy">Meşgul</span>
+                </div>
+
+                <div class="agent-status-item">
+                    <div class="agent-avatar" style="background: linear-gradient(135deg, #FF9800, #FFC107);">
+                        EF
+                        <span class="status-dot pause"></span>
+                    </div>
+                    <div class="agent-info">
+                        <strong>Elif Yıldız</strong>
+                        <span>Destek • Mola 5dk</span>
+                    </div>
+                    <span class="agent-status-badge pause">Mola</span>
+                </div>
+
+                <div class="agent-status-item">
+                    <div class="agent-avatar" style="background: linear-gradient(135deg, #4CAF50, #8BC34A);">
+                        SK
+                        <span class="status-dot available"></span>
+                    </div>
+                    <div class="agent-info">
+                        <strong>Selim Koç</strong>
+                        <span>Satış Ekibi • Boşta 45s</span>
+                    </div>
+                    <span class="agent-status-badge available">Müsait</span>
+                </div>
+
+                <div class="agent-status-item">
+                    <div class="agent-avatar" style="background: linear-gradient(135deg, #2196F3, #21CBF3);">
+                        BT
+                        <span class="status-dot acw"></span>
+                    </div>
+                    <div class="agent-info">
+                        <strong>Burcu Tan</strong>
+                        <span>Destek • ACW 1dk</span>
+                    </div>
+                    <span class="agent-status-badge acw">ACW</span>
+                </div>
+
+                <div class="agent-status-item">
+                    <div class="agent-avatar" style="background: linear-gradient(135deg, #4CAF50, #8BC34A);">
+                        CÖ
+                        <span class="status-dot available"></span>
+                    </div>
+                    <div class="agent-info">
+                        <strong>Can Özdemir</strong>
+                        <span>VIP • Boşta 1dk</span>
+                    </div>
+                    <span class="agent-status-badge available">Müsait</span>
+                </div>
+
+                <div class="agent-status-item">
+                    <div class="agent-avatar">
+                        DK
+                        <span class="status-dot busy"></span>
+                    </div>
+                    <div class="agent-info">
+                        <strong>Deniz Kurt</strong>
+                        <span>Satış Ekibi • 03:22</span>
+                    </div>
+                    <span class="agent-status-badge busy">Meşgul</span>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+// Simulate real-time updates
+function updateStats() {
+    document.getElementById('activeCallsCount').textContent = Math.floor(Math.random() * 10) + 20;
+    document.getElementById('waitingCount').textContent = Math.floor(Math.random() * 8) + 3;
+    document.getElementById('availableAgents').textContent = Math.floor(Math.random() * 10) + 28;
+}
+
+setInterval(updateStats, 5000);
+
+// Tab functionality
+document.querySelectorAll('.panel-tab').forEach(tab => {
+    tab.addEventListener('click', function() {
+        document.querySelectorAll('.panel-tab').forEach(t => t.classList.remove('active'));
+        this.classList.add('active');
+    });
+});
+
+// WebSocket for real-time updates (simulation)
+if (typeof io !== 'undefined') {
+    const socket = io();
+    
+    socket.on('call_update', function(data) {
+        console.log('Call update:', data);
+    });
+    
+    socket.on('agent_status', function(data) {
+        console.log('Agent status:', data);
+    });
+}
+</script>
+{% endblock %}
+

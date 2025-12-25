@@ -1,0 +1,379 @@
+{% extends "base.html" %}
+
+{% block title %}DID Havuzu - AI BEE CC{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <h1><i class="ti ti-hash"></i> DID Havuzu Yönetimi</h1>
+    <div class="page-actions">
+        <button class="btn btn-outline" data-modal="import-dids">
+            <i class="ti ti-upload"></i> Toplu İçeri Aktar
+        </button>
+        <button class="btn btn-primary" data-modal="add-did">
+            <i class="ti ti-plus"></i> DID Ekle
+        </button>
+    </div>
+</div>
+
+<!-- Özet Kartları -->
+<div class="summary-cards">
+    <div class="summary-card">
+        <i class="ti ti-hash"></i>
+        <div class="summary-content">
+            <span class="summary-value">{{ dids|length }}</span>
+            <span class="summary-label">Toplam DID</span>
+        </div>
+    </div>
+    <div class="summary-card">
+        <i class="ti ti-check"></i>
+        <div class="summary-content">
+            <span class="summary-value">{{ dids|selectattr('status', 'equalto', 'available')|list|length }}</span>
+            <span class="summary-label">Müsait</span>
+        </div>
+    </div>
+    <div class="summary-card">
+        <i class="ti ti-user-check"></i>
+        <div class="summary-content">
+            <span class="summary-value">{{ dids|selectattr('status', 'equalto', 'assigned')|list|length }}</span>
+            <span class="summary-label">Atanmış</span>
+        </div>
+    </div>
+</div>
+
+<!-- Filtreler -->
+<div class="filters-bar">
+    <div class="filter-group">
+        <select class="form-control" id="filter-status">
+            <option value="">Tüm Durumlar</option>
+            <option value="available">Müsait</option>
+            <option value="assigned">Atanmış</option>
+            <option value="reserved">Rezerve</option>
+            <option value="suspended">Askıda</option>
+        </select>
+    </div>
+    <div class="filter-group">
+        <select class="form-control" id="filter-tenant">
+            <option value="">Tüm Tenant'lar</option>
+            {% for tenant in tenants %}
+            <option value="{{ tenant.id }}">{{ tenant.name }}</option>
+            {% endfor %}
+        </select>
+    </div>
+    <div class="filter-group">
+        <input type="text" class="form-control" placeholder="Numara ara..." id="filter-search">
+    </div>
+</div>
+
+<!-- DID Tablosu -->
+<div class="table-card">
+    <table class="data-table">
+        <thead>
+            <tr>
+                <th><input type="checkbox" id="select-all"></th>
+                <th>Numara</th>
+                <th>Ülke</th>
+                <th>Tip</th>
+                <th>Sağlayıcı</th>
+                <th>Atanan CC</th>
+                <th>Kira</th>
+                <th>Durum</th>
+                <th>İşlemler</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for did in dids %}
+            <tr>
+                <td><input type="checkbox" name="did_ids[]" value="{{ did.id }}"></td>
+                <td><strong>{{ did.number }}</strong></td>
+                <td>{{ did.country_code }}</td>
+                <td>
+                    <span class="badge badge-outline">{{ did.number_type|capitalize }}</span>
+                </td>
+                <td>{{ did.provider or '-' }}</td>
+                <td>
+                    {% if did.tenant_id %}
+                    <span class="tenant-badge">
+                        {% set tenant = tenants|selectattr('id', 'equalto', did.tenant_id)|first %}
+                        {{ tenant.name if tenant else 'Bilinmeyen' }}
+                    </span>
+                    {% else %}
+                    <span class="text-muted">-</span>
+                    {% endif %}
+                </td>
+                <td>₺{{ "%.2f"|format(did.monthly_rental|float) if did.monthly_rental else '0.00' }}</td>
+                <td>
+                    <span class="status-badge status-{{ did.status }}">
+                        {% if did.status == 'available' %}Müsait
+                        {% elif did.status == 'assigned' %}Atanmış
+                        {% elif did.status == 'reserved' %}Rezerve
+                        {% elif did.status == 'suspended' %}Askıda
+                        {% else %}{{ did.status }}{% endif %}
+                    </span>
+                </td>
+                <td>
+                    <div class="action-dropdown">
+                        <button class="btn btn-icon">
+                            <i class="ti ti-dots-vertical"></i>
+                        </button>
+                        <div class="dropdown-menu">
+                            <a href="#" class="dropdown-item" data-action="assign" data-did="{{ did.id }}">
+                                <i class="ti ti-user-plus"></i> Ata
+                            </a>
+                            <a href="#" class="dropdown-item" data-action="unassign" data-did="{{ did.id }}">
+                                <i class="ti ti-user-minus"></i> Atamayı Kaldır
+                            </a>
+                            <a href="#" class="dropdown-item text-danger" data-action="delete" data-did="{{ did.id }}">
+                                <i class="ti ti-trash"></i> Sil
+                            </a>
+                        </div>
+                    </div>
+                </td>
+            </tr>
+            {% else %}
+            <tr>
+                <td colspan="9" class="empty-row">
+                    <i class="ti ti-phone-off"></i>
+                    <p>Henüz DID numarası eklenmemiş</p>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+
+<!-- Atama Modalı -->
+<div class="modal" id="assign-modal" style="display: none;">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h3>DID Ata</h3>
+            <button class="modal-close">&times;</button>
+        </div>
+        <form action="{{ url_for('provisioning_did_assign') }}" method="POST">
+            <input type="hidden" name="did_id" id="assign-did-id">
+            <div class="form-group">
+                <label>Tenant Seç</label>
+                <select name="tenant_id" class="form-control" required>
+                    <option value="">Seçiniz...</option>
+                    {% for tenant in tenants %}
+                    <option value="{{ tenant.id }}">{{ tenant.name }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="modal-actions">
+                <button type="button" class="btn btn-outline modal-cancel">İptal</button>
+                <button type="submit" class="btn btn-primary">Ata</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<style>
+.summary-cards {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+    gap: 1rem;
+    margin-bottom: 1.5rem;
+}
+
+.summary-card {
+    background: white;
+    border-radius: 12px;
+    padding: 1.25rem;
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+}
+
+.summary-card i {
+    font-size: 2rem;
+    color: var(--primary-color);
+}
+
+.summary-content {
+    display: flex;
+    flex-direction: column;
+}
+
+.summary-value {
+    font-size: 1.75rem;
+    font-weight: 700;
+}
+
+.summary-label {
+    font-size: 0.85rem;
+    color: var(--text-muted);
+}
+
+.filters-bar {
+    display: flex;
+    gap: 1rem;
+    margin-bottom: 1.5rem;
+    flex-wrap: wrap;
+}
+
+.filter-group {
+    flex: 1;
+    min-width: 180px;
+}
+
+.table-card {
+    background: white;
+    border-radius: 12px;
+    padding: 1.5rem;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+    overflow-x: auto;
+}
+
+.data-table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.data-table th,
+.data-table td {
+    padding: 1rem;
+    text-align: left;
+    border-bottom: 1px solid #f0f0f0;
+}
+
+.data-table th {
+    font-weight: 600;
+    color: var(--text-secondary);
+    font-size: 0.85rem;
+}
+
+.tenant-badge {
+    background: #e3f2fd;
+    color: #1565c0;
+    padding: 0.25rem 0.75rem;
+    border-radius: 20px;
+    font-size: 0.8rem;
+}
+
+.status-badge {
+    padding: 0.25rem 0.75rem;
+    border-radius: 20px;
+    font-size: 0.75rem;
+    font-weight: 600;
+}
+
+.status-available {
+    background: #e8f5e9;
+    color: #2e7d32;
+}
+
+.status-assigned {
+    background: #e3f2fd;
+    color: #1565c0;
+}
+
+.status-reserved {
+    background: #fff3e0;
+    color: #e65100;
+}
+
+.status-suspended {
+    background: #ffebee;
+    color: #c62828;
+}
+
+.badge-outline {
+    background: transparent;
+    border: 1px solid #ddd;
+    padding: 0.2rem 0.5rem;
+    border-radius: 4px;
+    font-size: 0.75rem;
+}
+
+.action-dropdown {
+    position: relative;
+}
+
+.dropdown-menu {
+    position: absolute;
+    right: 0;
+    top: 100%;
+    background: white;
+    border-radius: 8px;
+    box-shadow: 0 4px 16px rgba(0,0,0,0.15);
+    display: none;
+    z-index: 10;
+    min-width: 150px;
+}
+
+.action-dropdown:hover .dropdown-menu {
+    display: block;
+}
+
+.dropdown-item {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.75rem 1rem;
+    color: var(--text-primary);
+    text-decoration: none;
+    transition: background 0.2s;
+}
+
+.dropdown-item:hover {
+    background: #f8f9fa;
+}
+
+.dropdown-item.text-danger {
+    color: #f44336;
+}
+
+.empty-row {
+    text-align: center;
+    padding: 3rem !important;
+    color: var(--text-muted);
+}
+
+.empty-row i {
+    font-size: 2.5rem;
+    margin-bottom: 1rem;
+}
+
+.modal {
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.5);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 1000;
+}
+
+.modal-content {
+    background: white;
+    border-radius: 12px;
+    padding: 1.5rem;
+    width: 100%;
+    max-width: 400px;
+}
+
+.modal-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1.5rem;
+}
+
+.modal-close {
+    background: none;
+    border: none;
+    font-size: 1.5rem;
+    cursor: pointer;
+    color: var(--text-muted);
+}
+
+.modal-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 0.5rem;
+    margin-top: 1.5rem;
+}
+</style>
+{% endblock %}
+

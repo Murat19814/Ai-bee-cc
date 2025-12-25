@@ -1,0 +1,393 @@
+{% extends "base.html" %}
+
+{% block title %}VoIP Durumu - AI BEE CC{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <h1><i class="ti ti-phone-call"></i> VoIP Durumu & Ayarlar</h1>
+    <p>VoIP bağlantı durumu ve atanmış kaynaklar</p>
+</div>
+
+<!-- Durum Kartları -->
+<div class="voip-status-grid">
+    <div class="status-card status-healthy">
+        <div class="status-indicator"></div>
+        <div class="status-content">
+            <span class="status-label">Trunk Durumu</span>
+            <span class="status-value">Aktif</span>
+        </div>
+        <i class="ti ti-network"></i>
+    </div>
+
+    <div class="status-card">
+        <div class="status-content">
+            <span class="status-label">Eş Zamanlı Limit</span>
+            <span class="status-value">
+                {{ quota.max_concurrent_inbound if quota else 10 }} / {{ quota.max_concurrent_outbound if quota else 10 }}
+            </span>
+            <span class="status-note">Gelen / Giden</span>
+        </div>
+        <i class="ti ti-arrows-left-right"></i>
+    </div>
+
+    <div class="status-card">
+        <div class="status-content">
+            <span class="status-label">Günlük Limit</span>
+            <span class="status-value">
+                {% if quota and quota.max_daily_outbound_minutes > 0 %}
+                {{ quota.max_daily_outbound_minutes }} dk
+                {% else %}
+                Sınırsız
+                {% endif %}
+            </span>
+        </div>
+        <i class="ti ti-clock"></i>
+    </div>
+
+    <div class="status-card">
+        <div class="status-content">
+            <span class="status-label">CPS Limiti</span>
+            <span class="status-value">{{ quota.max_cps if quota else 5 }} çağrı/sn</span>
+        </div>
+        <i class="ti ti-gauge"></i>
+    </div>
+</div>
+
+<!-- Atanmış DID'ler -->
+<div class="section-card">
+    <div class="section-header">
+        <h3><i class="ti ti-hash"></i> Atanmış DID Numaraları</h3>
+        <span class="badge">{{ dids|length if dids else 0 }} numara</span>
+    </div>
+
+    {% if dids %}
+    <table class="data-table">
+        <thead>
+            <tr>
+                <th>Numara</th>
+                <th>Tip</th>
+                <th>Yönlendirme</th>
+                <th>Durum</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for did in dids %}
+            <tr>
+                <td><strong>{{ did.number }}</strong></td>
+                <td>
+                    <span class="badge badge-outline">{{ did.number_type|capitalize }}</span>
+                </td>
+                <td>
+                    <span class="text-muted">Yapılandırılmamış</span>
+                </td>
+                <td>
+                    <span class="badge badge-success">Aktif</span>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    {% else %}
+    <div class="empty-state">
+        <i class="ti ti-phone-off"></i>
+        <h4>Atanmış DID numarası yok</h4>
+        <p>DID numaraları platform yöneticisi tarafından atanır.</p>
+    </div>
+    {% endif %}
+</div>
+
+<!-- Atanmış CLI'lar -->
+<div class="section-card">
+    <div class="section-header">
+        <h3><i class="ti ti-phone-outgoing"></i> CLI (Giden Numara) Havuzu</h3>
+        <span class="badge">{{ cli_assignments|length if cli_assignments else 0 }} numara</span>
+    </div>
+
+    {% if cli_assignments %}
+    <div class="cli-grid">
+        {% for assignment in cli_assignments %}
+        <div class="cli-card">
+            <div class="cli-number">{{ assignment.cli_id }}</div>
+            <div class="cli-meta">
+                <span class="cli-type">{{ assignment.usage_type|capitalize }}</span>
+                {% if assignment.rotation_enabled %}
+                <span class="badge badge-info">Rotasyonda</span>
+                {% endif %}
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+    {% else %}
+    <div class="empty-state">
+        <i class="ti ti-phone-x"></i>
+        <h4>Atanmış CLI numarası yok</h4>
+        <p>Giden arama numaraları platform yöneticisi tarafından atanır.</p>
+    </div>
+    {% endif %}
+</div>
+
+<!-- Arama Saatleri ve Kısıtlamalar -->
+<div class="section-card">
+    <div class="section-header">
+        <h3><i class="ti ti-clock-hour-4"></i> Arama Kısıtlamaları</h3>
+    </div>
+
+    <div class="restrictions-grid">
+        <div class="restriction-item">
+            <i class="ti ti-clock"></i>
+            <div class="restriction-content">
+                <span class="restriction-label">İzin Verilen Arama Saatleri</span>
+                <span class="restriction-value">
+                    {{ voip_config.allowed_call_hours_start if voip_config else '09:00' }} - 
+                    {{ voip_config.allowed_call_hours_end if voip_config else '21:00' }}
+                </span>
+            </div>
+        </div>
+
+        <div class="restriction-item">
+            <i class="ti ti-world"></i>
+            <div class="restriction-content">
+                <span class="restriction-label">İzin Verilen Ülkeler</span>
+                <span class="restriction-value">
+                    {% if voip_config and voip_config.allowed_countries %}
+                    {{ voip_config.allowed_countries|join(', ') }}
+                    {% else %}
+                    Tümü
+                    {% endif %}
+                </span>
+            </div>
+        </div>
+
+        <div class="restriction-item">
+            <i class="ti ti-shield-check"></i>
+            <div class="restriction-content">
+                <span class="restriction-label">Fraud Koruması</span>
+                <span class="restriction-value">
+                    {% if voip_config and voip_config.fraud_protection_enabled %}
+                    <span class="badge badge-success">Aktif</span>
+                    {% else %}
+                    <span class="badge badge-warning">Pasif</span>
+                    {% endif %}
+                </span>
+            </div>
+        </div>
+
+        <div class="restriction-item">
+            <i class="ti ti-currency-lira"></i>
+            <div class="restriction-content">
+                <span class="restriction-label">Günlük Harcama Limiti</span>
+                <span class="restriction-value">
+                    ₺{{ voip_config.fraud_daily_spend_limit if voip_config else '1000' }}
+                </span>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+.voip-status-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 1rem;
+    margin-bottom: 2rem;
+}
+
+.status-card {
+    background: white;
+    border-radius: 12px;
+    padding: 1.25rem;
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+    position: relative;
+}
+
+.status-card i {
+    font-size: 2rem;
+    color: var(--text-muted);
+    opacity: 0.3;
+    position: absolute;
+    right: 1rem;
+}
+
+.status-healthy {
+    border-left: 4px solid #4caf50;
+}
+
+.status-indicator {
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    background: #4caf50;
+    animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+    0% { box-shadow: 0 0 0 0 rgba(76, 175, 80, 0.4); }
+    70% { box-shadow: 0 0 0 10px rgba(76, 175, 80, 0); }
+    100% { box-shadow: 0 0 0 0 rgba(76, 175, 80, 0); }
+}
+
+.status-content {
+    display: flex;
+    flex-direction: column;
+}
+
+.status-label {
+    font-size: 0.8rem;
+    color: var(--text-muted);
+}
+
+.status-value {
+    font-size: 1.25rem;
+    font-weight: 700;
+    color: var(--text-primary);
+}
+
+.status-note {
+    font-size: 0.75rem;
+    color: var(--text-muted);
+}
+
+.section-card {
+    background: white;
+    border-radius: 12px;
+    padding: 1.5rem;
+    margin-bottom: 1.5rem;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+}
+
+.section-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 1.5rem;
+    padding-bottom: 1rem;
+    border-bottom: 1px solid #eee;
+}
+
+.section-header h3 {
+    font-size: 1.1rem;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.cli-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+    gap: 1rem;
+}
+
+.cli-card {
+    background: #f8f9fa;
+    border-radius: 8px;
+    padding: 1rem;
+}
+
+.cli-number {
+    font-size: 1rem;
+    font-weight: 600;
+    font-family: monospace;
+}
+
+.cli-meta {
+    display: flex;
+    gap: 0.5rem;
+    margin-top: 0.5rem;
+}
+
+.cli-type {
+    font-size: 0.75rem;
+    color: var(--text-muted);
+}
+
+.restrictions-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 1rem;
+}
+
+.restriction-item {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    padding: 1rem;
+    background: #f8f9fa;
+    border-radius: 8px;
+}
+
+.restriction-item i {
+    font-size: 1.5rem;
+    color: var(--primary-color);
+}
+
+.restriction-content {
+    display: flex;
+    flex-direction: column;
+}
+
+.restriction-label {
+    font-size: 0.8rem;
+    color: var(--text-muted);
+}
+
+.restriction-value {
+    font-weight: 600;
+}
+
+.data-table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.data-table th,
+.data-table td {
+    padding: 1rem;
+    text-align: left;
+    border-bottom: 1px solid #f0f0f0;
+}
+
+.data-table th {
+    font-weight: 600;
+    color: var(--text-secondary);
+    font-size: 0.85rem;
+}
+
+.badge {
+    padding: 0.25rem 0.75rem;
+    border-radius: 20px;
+    font-size: 0.75rem;
+    font-weight: 600;
+}
+
+.badge-success {
+    background: #e8f5e9;
+    color: #2e7d32;
+}
+
+.badge-info {
+    background: #e3f2fd;
+    color: #1565c0;
+}
+
+.badge-outline {
+    background: transparent;
+    border: 1px solid #ddd;
+    color: var(--text-secondary);
+}
+
+.empty-state {
+    text-align: center;
+    padding: 3rem;
+    color: var(--text-muted);
+}
+
+.empty-state i {
+    font-size: 3rem;
+    margin-bottom: 1rem;
+}
+</style>
+{% endblock %}
+

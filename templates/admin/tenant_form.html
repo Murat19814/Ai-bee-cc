@@ -1,0 +1,191 @@
+{% extends "base.html" %}
+
+{% block title %}{% if tenant %}Tenant Düzenle{% else %}Yeni Tenant{% endif %} - AI BEE CC{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <h1><i class="ti ti-building"></i> {% if tenant %}Tenant Düzenle: {{ tenant.name }}{% else %}Yeni Tenant Oluştur{% endif %}</h1>
+</div>
+
+<form action="{{ url_for('admin_tenant_edit', tenant_id=tenant.id) if tenant else url_for('admin_tenant_new') }}" method="POST" class="tenant-form">
+    <div class="form-grid">
+        <!-- Temel Bilgiler -->
+        <div class="form-section">
+            <h3><i class="ti ti-info-circle"></i> Temel Bilgiler</h3>
+            <div class="form-row">
+                <div class="form-group">
+                    <label>Tenant Kodu <span class="required">*</span></label>
+                    <input type="text" name="code" class="form-control" required
+                           value="{{ tenant.code if tenant else '' }}" 
+                           {% if tenant %}readonly{% endif %}
+                           placeholder="acme_cc">
+                    <small>Benzersiz, değiştirilemez</small>
+                </div>
+                <div class="form-group">
+                    <label>Tenant Adı <span class="required">*</span></label>
+                    <input type="text" name="name" class="form-control" required
+                           value="{{ tenant.name if tenant else '' }}"
+                           placeholder="ACME Çağrı Merkezi">
+                </div>
+            </div>
+            <div class="form-group">
+                <label>Domain</label>
+                <input type="text" name="domain" class="form-control"
+                       value="{{ tenant.domain if tenant else '' }}"
+                       placeholder="acme.aibecc.com">
+            </div>
+        </div>
+
+        <!-- Lokalizasyon -->
+        <div class="form-section">
+            <h3><i class="ti ti-world"></i> Lokalizasyon</h3>
+            <div class="form-row">
+                <div class="form-group">
+                    <label>Saat Dilimi</label>
+                    <select name="timezone" class="form-control">
+                        <option value="Europe/Istanbul" {{ 'selected' if not tenant or tenant.timezone == 'Europe/Istanbul' }}>Türkiye (UTC+3)</option>
+                        <option value="Europe/London" {{ 'selected' if tenant and tenant.timezone == 'Europe/London' }}>Londra (UTC+0)</option>
+                        <option value="Europe/Berlin" {{ 'selected' if tenant and tenant.timezone == 'Europe/Berlin' }}>Berlin (UTC+1)</option>
+                        <option value="America/New_York" {{ 'selected' if tenant and tenant.timezone == 'America/New_York' }}>New York (UTC-5)</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Dil</label>
+                    <select name="language" class="form-control">
+                        <option value="tr" {{ 'selected' if not tenant or tenant.language == 'tr' }}>Türkçe</option>
+                        <option value="en" {{ 'selected' if tenant and tenant.language == 'en' }}>English</option>
+                        <option value="de" {{ 'selected' if tenant and tenant.language == 'de' }}>Deutsch</option>
+                    </select>
+                </div>
+            </div>
+        </div>
+
+        <!-- Limitler -->
+        <div class="form-section">
+            <h3><i class="ti ti-adjustments"></i> Limitler</h3>
+            <div class="form-row">
+                <div class="form-group">
+                    <label>Max Agent Sayısı</label>
+                    <input type="number" name="max_agents" class="form-control" min="1"
+                           value="{{ tenant.max_agents if tenant else 10 }}">
+                </div>
+                <div class="form-group">
+                    <label>Max Eş Zamanlı Çağrı</label>
+                    <input type="number" name="max_concurrent_calls" class="form-control" min="1"
+                           value="{{ tenant.max_concurrent_calls if tenant else 20 }}">
+                </div>
+            </div>
+        </div>
+
+        {% if tenant %}
+        <!-- Durum -->
+        <div class="form-section">
+            <h3><i class="ti ti-toggle-left"></i> Durum</h3>
+            <div class="form-group">
+                <label>Tenant Durumu</label>
+                <select name="status" class="form-control">
+                    <option value="active" {{ 'selected' if tenant.status == 'active' }}>Aktif</option>
+                    <option value="trial" {{ 'selected' if tenant.status == 'trial' }}>Deneme</option>
+                    <option value="suspended" {{ 'selected' if tenant.status == 'suspended' }}>Askıya Alınmış</option>
+                    <option value="cancelled" {{ 'selected' if tenant.status == 'cancelled' }}>İptal Edilmiş</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label>API Anahtarı</label>
+                <div class="api-key-display">
+                    <code>{{ tenant.api_key or 'Tanımlanmamış' }}</code>
+                    <button type="button" class="btn btn-sm btn-outline">Yenile</button>
+                </div>
+            </div>
+        </div>
+        {% endif %}
+    </div>
+
+    <div class="form-actions">
+        <a href="{{ url_for('admin_tenants') }}" class="btn btn-outline">İptal</a>
+        <button type="submit" class="btn btn-primary">
+            <i class="ti ti-check"></i> {% if tenant %}Kaydet{% else %}Oluştur{% endif %}
+        </button>
+    </div>
+</form>
+
+<style>
+.tenant-form {
+    max-width: 900px;
+}
+
+.form-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+    gap: 1.5rem;
+}
+
+.form-section {
+    background: white;
+    border-radius: 12px;
+    padding: 1.5rem;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+}
+
+.form-section h3 {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    margin-bottom: 1.5rem;
+    padding-bottom: 1rem;
+    border-bottom: 1px solid #eee;
+    font-size: 1rem;
+}
+
+.form-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1rem;
+}
+
+.form-group {
+    margin-bottom: 1rem;
+}
+
+.form-group label {
+    display: block;
+    font-weight: 600;
+    margin-bottom: 0.5rem;
+}
+
+.form-group small {
+    display: block;
+    margin-top: 0.25rem;
+    color: var(--text-muted);
+    font-size: 0.8rem;
+}
+
+.required {
+    color: #f44336;
+}
+
+.api-key-display {
+    display: flex;
+    gap: 0.5rem;
+    align-items: center;
+}
+
+.api-key-display code {
+    flex: 1;
+    padding: 0.5rem;
+    background: #f8f9fa;
+    border-radius: 4px;
+    font-size: 0.85rem;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.form-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 1rem;
+    margin-top: 2rem;
+}
+</style>
+{% endblock %}
+

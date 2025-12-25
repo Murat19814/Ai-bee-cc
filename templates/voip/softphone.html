@@ -1,0 +1,1080 @@
+{% extends "base.html" %}
+
+{% block title %}Softphone - {{ app_name }}{% endblock %}
+
+{% block extra_css %}
+<style>
+.softphone-page {
+    padding: 1.5rem;
+    display: flex;
+    justify-content: center;
+    align-items: flex-start;
+    gap: 2rem;
+}
+
+/* Softphone Widget */
+.softphone-widget {
+    width: 320px;
+    background: linear-gradient(180deg, #1a1a2e 0%, #16213e 100%);
+    border-radius: 24px;
+    box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+    overflow: hidden;
+}
+
+.softphone-header {
+    padding: 1.5rem;
+    text-align: center;
+    color: white;
+    position: relative;
+}
+
+.softphone-logo {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    margin-bottom: 1rem;
+}
+
+.softphone-logo i {
+    font-size: 1.5rem;
+    color: #F5A623;
+}
+
+.softphone-logo span {
+    font-family: var(--font-display);
+    font-size: 1rem;
+    font-weight: 600;
+}
+
+.connection-status {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    font-size: 0.75rem;
+    color: #4CAF50;
+}
+
+.connection-status .dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: #4CAF50;
+    animation: pulse-dot 2s infinite;
+}
+
+.connection-status.disconnected { color: #f44336; }
+.connection-status.disconnected .dot { background: #f44336; animation: none; }
+
+@keyframes pulse-dot {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.5; }
+}
+
+/* Display Area */
+.softphone-display {
+    padding: 0 1.5rem;
+    text-align: center;
+}
+
+.caller-info {
+    margin-bottom: 1rem;
+}
+
+.caller-avatar {
+    width: 80px;
+    height: 80px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #F5A623, #D4920A);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto 0.75rem;
+    font-size: 2rem;
+    color: white;
+    font-weight: 700;
+}
+
+.caller-avatar.incoming {
+    animation: ring-animation 1s ease-in-out infinite;
+}
+
+@keyframes ring-animation {
+    0%, 100% { transform: scale(1); }
+    50% { transform: scale(1.1); box-shadow: 0 0 20px rgba(245, 166, 35, 0.5); }
+}
+
+.caller-name {
+    font-size: 1.25rem;
+    font-weight: 600;
+    color: white;
+    margin-bottom: 0.25rem;
+}
+
+.caller-number {
+    font-family: var(--font-mono);
+    font-size: 0.9rem;
+    color: rgba(255,255,255,0.7);
+}
+
+.call-timer {
+    font-family: var(--font-display);
+    font-size: 2.5rem;
+    font-weight: 700;
+    color: #F5A623;
+    margin: 1rem 0;
+}
+
+.call-status {
+    font-size: 0.85rem;
+    color: rgba(255,255,255,0.6);
+    text-transform: uppercase;
+    letter-spacing: 1px;
+}
+
+.call-status.ringing { color: #FF9800; }
+.call-status.connected { color: #4CAF50; }
+.call-status.hold { color: #9C27B0; }
+
+/* Number Input */
+.number-input {
+    padding: 0 1.5rem;
+    margin-bottom: 1rem;
+}
+
+.number-input input {
+    width: 100%;
+    padding: 0.875rem;
+    background: rgba(255,255,255,0.1);
+    border: 1px solid rgba(255,255,255,0.2);
+    border-radius: 12px;
+    color: white;
+    font-family: var(--font-mono);
+    font-size: 1.25rem;
+    text-align: center;
+    letter-spacing: 2px;
+}
+
+.number-input input::placeholder {
+    color: rgba(255,255,255,0.4);
+}
+
+.number-input input:focus {
+    outline: none;
+    border-color: #F5A623;
+    background: rgba(255,255,255,0.15);
+}
+
+/* Dialpad */
+.dialpad {
+    padding: 0.5rem 1.5rem 1.5rem;
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 0.75rem;
+}
+
+.dialpad-key {
+    aspect-ratio: 1;
+    border-radius: 50%;
+    background: rgba(255,255,255,0.1);
+    border: none;
+    color: white;
+    font-size: 1.5rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.15s;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+}
+
+.dialpad-key:hover {
+    background: rgba(255,255,255,0.2);
+    transform: scale(1.05);
+}
+
+.dialpad-key:active {
+    background: rgba(245, 166, 35, 0.3);
+    transform: scale(0.95);
+}
+
+.dialpad-key span {
+    font-size: 0.55rem;
+    letter-spacing: 1px;
+    color: rgba(255,255,255,0.5);
+    margin-top: 0.125rem;
+}
+
+/* Call Controls */
+.call-controls {
+    padding: 1rem 1.5rem 1.5rem;
+    display: flex;
+    justify-content: center;
+    gap: 1rem;
+}
+
+.call-btn {
+    width: 64px;
+    height: 64px;
+    border-radius: 50%;
+    border: none;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.5rem;
+    transition: all 0.2s;
+}
+
+.call-btn.call {
+    background: linear-gradient(135deg, #4CAF50, #388E3C);
+    color: white;
+}
+
+.call-btn.hangup {
+    background: linear-gradient(135deg, #f44336, #C62828);
+    color: white;
+}
+
+.call-btn.answer {
+    background: linear-gradient(135deg, #4CAF50, #388E3C);
+    color: white;
+    animation: pulse-answer 1s infinite;
+}
+
+@keyframes pulse-answer {
+    0%, 100% { box-shadow: 0 0 0 0 rgba(76, 175, 80, 0.4); }
+    50% { box-shadow: 0 0 0 15px rgba(76, 175, 80, 0); }
+}
+
+.call-btn:hover {
+    transform: scale(1.1);
+}
+
+.call-btn:active {
+    transform: scale(0.95);
+}
+
+/* In-Call Controls */
+.in-call-controls {
+    padding: 0 1.5rem 1rem;
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 0.5rem;
+}
+
+.in-call-btn {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.25rem;
+    padding: 0.75rem 0.5rem;
+    background: rgba(255,255,255,0.1);
+    border: none;
+    border-radius: 12px;
+    color: white;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.in-call-btn:hover {
+    background: rgba(255,255,255,0.2);
+}
+
+.in-call-btn.active {
+    background: #F5A623;
+    color: #1a1a2e;
+}
+
+.in-call-btn i {
+    font-size: 1.25rem;
+}
+
+.in-call-btn span {
+    font-size: 0.65rem;
+    text-transform: uppercase;
+}
+
+/* Quick Actions */
+.quick-actions {
+    padding: 0 1.5rem 1.5rem;
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 0.5rem;
+}
+
+.quick-action {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.25rem;
+    padding: 0.75rem 0.5rem;
+    background: rgba(255,255,255,0.05);
+    border: 1px solid rgba(255,255,255,0.1);
+    border-radius: 12px;
+    color: rgba(255,255,255,0.7);
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.quick-action:hover {
+    background: rgba(255,255,255,0.1);
+    color: white;
+}
+
+.quick-action i {
+    font-size: 1.1rem;
+}
+
+.quick-action span {
+    font-size: 0.65rem;
+}
+
+/* Settings Panel */
+.softphone-settings {
+    width: 400px;
+    background: white;
+    border-radius: 16px;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+    overflow: hidden;
+}
+
+.settings-header {
+    padding: 1rem 1.25rem;
+    background: #f8f9fa;
+    border-bottom: 1px solid #eee;
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.settings-header i { color: #F5A623; }
+
+.settings-content {
+    padding: 1.25rem;
+}
+
+.settings-section {
+    margin-bottom: 1.5rem;
+}
+
+.settings-section-title {
+    font-size: 0.75rem;
+    text-transform: uppercase;
+    color: #888;
+    margin-bottom: 0.75rem;
+    letter-spacing: 0.5px;
+}
+
+.setting-item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0.75rem;
+    background: #f8f9fa;
+    border-radius: 10px;
+    margin-bottom: 0.5rem;
+}
+
+.setting-item label {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 0.9rem;
+}
+
+.setting-item label i {
+    color: #666;
+}
+
+.setting-item select,
+.setting-item input[type="range"] {
+    min-width: 150px;
+}
+
+/* Toggle Switch */
+.toggle {
+    position: relative;
+    width: 48px;
+    height: 26px;
+}
+
+.toggle input {
+    opacity: 0;
+    width: 0;
+    height: 0;
+}
+
+.toggle-slider {
+    position: absolute;
+    cursor: pointer;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: #ccc;
+    transition: .4s;
+    border-radius: 26px;
+}
+
+.toggle-slider:before {
+    position: absolute;
+    content: "";
+    height: 20px;
+    width: 20px;
+    left: 3px;
+    bottom: 3px;
+    background-color: white;
+    transition: .4s;
+    border-radius: 50%;
+}
+
+.toggle input:checked + .toggle-slider {
+    background-color: #F5A623;
+}
+
+.toggle input:checked + .toggle-slider:before {
+    transform: translateX(22px);
+}
+
+/* Volume Control */
+.volume-control {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+}
+
+.volume-control input[type="range"] {
+    flex: 1;
+    height: 6px;
+    -webkit-appearance: none;
+    background: #e0e0e0;
+    border-radius: 3px;
+}
+
+.volume-control input[type="range"]::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    width: 16px;
+    height: 16px;
+    background: #F5A623;
+    border-radius: 50%;
+    cursor: pointer;
+}
+
+/* Call History */
+.call-history {
+    max-height: 300px;
+    overflow-y: auto;
+}
+
+.call-history-item {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 0.75rem;
+    background: #f8f9fa;
+    border-radius: 10px;
+    margin-bottom: 0.5rem;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.call-history-item:hover {
+    background: #f0f0f0;
+}
+
+.history-icon {
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.9rem;
+}
+
+.history-icon.inbound {
+    background: rgba(33, 150, 243, 0.1);
+    color: #1976D2;
+}
+
+.history-icon.outbound {
+    background: rgba(76, 175, 80, 0.1);
+    color: #388E3C;
+}
+
+.history-icon.missed {
+    background: rgba(244, 67, 54, 0.1);
+    color: #C62828;
+}
+
+.history-info {
+    flex: 1;
+}
+
+.history-info strong {
+    display: block;
+    font-size: 0.9rem;
+}
+
+.history-info span {
+    font-size: 0.75rem;
+    color: #888;
+}
+
+.history-actions {
+    display: flex;
+    gap: 0.25rem;
+}
+
+.history-actions button {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    border: none;
+    background: #e0e0e0;
+    color: #666;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.history-actions button:hover {
+    background: #F5A623;
+    color: white;
+}
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="softphone-page">
+    <!-- Softphone Widget -->
+    <div class="softphone-widget" id="softphone">
+        <div class="softphone-header">
+            <div class="softphone-logo">
+                <i class="ti ti-headset"></i>
+                <span>AI BEE CC Softphone</span>
+            </div>
+            <div class="connection-status" id="connectionStatus">
+                <span class="dot"></span>
+                <span>Bağlı</span>
+            </div>
+        </div>
+
+        <!-- Idle State -->
+        <div class="softphone-state" id="idleState">
+            <div class="number-input">
+                <input type="tel" id="phoneNumber" placeholder="Numara girin">
+            </div>
+            
+            <div class="dialpad">
+                <button class="dialpad-key" onclick="addDigit('1')">1<span></span></button>
+                <button class="dialpad-key" onclick="addDigit('2')">2<span>ABC</span></button>
+                <button class="dialpad-key" onclick="addDigit('3')">3<span>DEF</span></button>
+                <button class="dialpad-key" onclick="addDigit('4')">4<span>GHI</span></button>
+                <button class="dialpad-key" onclick="addDigit('5')">5<span>JKL</span></button>
+                <button class="dialpad-key" onclick="addDigit('6')">6<span>MNO</span></button>
+                <button class="dialpad-key" onclick="addDigit('7')">7<span>PQRS</span></button>
+                <button class="dialpad-key" onclick="addDigit('8')">8<span>TUV</span></button>
+                <button class="dialpad-key" onclick="addDigit('9')">9<span>WXYZ</span></button>
+                <button class="dialpad-key" onclick="addDigit('*')">*</button>
+                <button class="dialpad-key" onclick="addDigit('0')">0<span>+</span></button>
+                <button class="dialpad-key" onclick="addDigit('#')">#</button>
+            </div>
+            
+            <div class="call-controls">
+                <button class="call-btn call" onclick="makeCall()">
+                    <i class="ti ti-phone"></i>
+                </button>
+            </div>
+
+            <div class="quick-actions">
+                <button class="quick-action" onclick="showHistory()">
+                    <i class="ti ti-history"></i>
+                    <span>Geçmiş</span>
+                </button>
+                <button class="quick-action" onclick="showContacts()">
+                    <i class="ti ti-address-book"></i>
+                    <span>Rehber</span>
+                </button>
+                <button class="quick-action" onclick="showSettings()">
+                    <i class="ti ti-settings"></i>
+                    <span>Ayarlar</span>
+                </button>
+            </div>
+        </div>
+
+        <!-- Incoming Call State (hidden by default) -->
+        <div class="softphone-state" id="incomingState" style="display: none;">
+            <div class="softphone-display">
+                <div class="caller-info">
+                    <div class="caller-avatar incoming">
+                        <i class="ti ti-user"></i>
+                    </div>
+                    <div class="caller-name" id="incomingName">Bilinmeyen</div>
+                    <div class="caller-number" id="incomingNumber">+90 532 XXX XX45</div>
+                </div>
+                <div class="call-status ringing">Gelen Çağrı</div>
+            </div>
+            
+            <div class="call-controls">
+                <button class="call-btn hangup" onclick="rejectCall()">
+                    <i class="ti ti-phone-off"></i>
+                </button>
+                <button class="call-btn answer" onclick="answerCall()">
+                    <i class="ti ti-phone"></i>
+                </button>
+            </div>
+        </div>
+
+        <!-- In Call State (hidden by default) -->
+        <div class="softphone-state" id="inCallState" style="display: none;">
+            <div class="softphone-display">
+                <div class="caller-info">
+                    <div class="caller-avatar">AY</div>
+                    <div class="caller-name" id="callName">ABC Şirket</div>
+                    <div class="caller-number" id="callNumber">+90 532 XXX XX45</div>
+                </div>
+                <div class="call-timer" id="callTimer">00:00</div>
+                <div class="call-status connected" id="callStatus">Bağlı</div>
+            </div>
+            
+            <div class="in-call-controls">
+                <button class="in-call-btn" id="muteBtn" onclick="toggleMute()">
+                    <i class="ti ti-microphone"></i>
+                    <span>Mikrofon</span>
+                </button>
+                <button class="in-call-btn" id="holdBtn" onclick="toggleHold()">
+                    <i class="ti ti-player-pause"></i>
+                    <span>Beklet</span>
+                </button>
+                <button class="in-call-btn" id="recordBtn" onclick="toggleRecord()">
+                    <i class="ti ti-circle-filled"></i>
+                    <span>Kayıt</span>
+                </button>
+                <button class="in-call-btn" id="dialpadBtn" onclick="toggleDialpad()">
+                    <i class="ti ti-dialpad"></i>
+                    <span>Tuşlar</span>
+                </button>
+            </div>
+
+            <div class="quick-actions">
+                <button class="quick-action" onclick="transferCall()">
+                    <i class="ti ti-phone-outgoing"></i>
+                    <span>Transfer</span>
+                </button>
+                <button class="quick-action" onclick="conferenceCall()">
+                    <i class="ti ti-users"></i>
+                    <span>Konferans</span>
+                </button>
+                <button class="quick-action" onclick="showNotes()">
+                    <i class="ti ti-notes"></i>
+                    <span>Not</span>
+                </button>
+            </div>
+            
+            <div class="call-controls">
+                <button class="call-btn hangup" onclick="endCall()">
+                    <i class="ti ti-phone-off"></i>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Settings Panel -->
+    <div class="softphone-settings">
+        <div class="settings-header">
+            <i class="ti ti-settings"></i>
+            Softphone Ayarları
+        </div>
+        <div class="settings-content">
+            <div class="settings-section">
+                <div class="settings-section-title">Ses Cihazları</div>
+                
+                <div class="setting-item">
+                    <label><i class="ti ti-microphone"></i> Mikrofon</label>
+                    <select class="form-control" id="microphoneSelect" style="width: 180px;">
+                        <option>Default - Headset Microphone</option>
+                        <option>Built-in Microphone</option>
+                    </select>
+                </div>
+                
+                <div class="setting-item">
+                    <label><i class="ti ti-volume"></i> Hoparlör</label>
+                    <select class="form-control" id="speakerSelect" style="width: 180px;">
+                        <option>Default - Headset Earphone</option>
+                        <option>Built-in Speakers</option>
+                    </select>
+                </div>
+                
+                <div class="setting-item">
+                    <label><i class="ti ti-bell"></i> Zil Sesi</label>
+                    <select class="form-control" id="ringtoneSelect" style="width: 180px;">
+                        <option>Varsayılan</option>
+                        <option>Classic</option>
+                        <option>Digital</option>
+                        <option>Soft</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="settings-section">
+                <div class="settings-section-title">Ses Düzeyleri</div>
+                
+                <div class="setting-item">
+                    <label><i class="ti ti-microphone"></i> Mikrofon</label>
+                    <div class="volume-control">
+                        <input type="range" min="0" max="100" value="80" id="micVolume">
+                        <span id="micVolumeValue">80%</span>
+                    </div>
+                </div>
+                
+                <div class="setting-item">
+                    <label><i class="ti ti-volume"></i> Hoparlör</label>
+                    <div class="volume-control">
+                        <input type="range" min="0" max="100" value="70" id="speakerVolume">
+                        <span id="speakerVolumeValue">70%</span>
+                    </div>
+                </div>
+                
+                <div class="setting-item">
+                    <label><i class="ti ti-bell"></i> Zil Sesi</label>
+                    <div class="volume-control">
+                        <input type="range" min="0" max="100" value="90" id="ringtoneVolume">
+                        <span id="ringtoneVolumeValue">90%</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="settings-section">
+                <div class="settings-section-title">Genel Ayarlar</div>
+                
+                <div class="setting-item">
+                    <label><i class="ti ti-phone-check"></i> Otomatik Cevaplama</label>
+                    <label class="toggle">
+                        <input type="checkbox" id="autoAnswer">
+                        <span class="toggle-slider"></span>
+                    </label>
+                </div>
+                
+                <div class="setting-item">
+                    <label><i class="ti ti-circle-filled"></i> Otomatik Kayıt</label>
+                    <label class="toggle">
+                        <input type="checkbox" id="autoRecord" checked>
+                        <span class="toggle-slider"></span>
+                    </label>
+                </div>
+                
+                <div class="setting-item">
+                    <label><i class="ti ti-bell-off"></i> Sessiz Mod</label>
+                    <label class="toggle">
+                        <input type="checkbox" id="silentMode">
+                        <span class="toggle-slider"></span>
+                    </label>
+                </div>
+            </div>
+
+            <div class="settings-section">
+                <div class="settings-section-title">Son Çağrılar</div>
+                <div class="call-history">
+                    <div class="call-history-item">
+                        <div class="history-icon inbound"><i class="ti ti-phone-incoming"></i></div>
+                        <div class="history-info">
+                            <strong>+90 532 XXX XX45</strong>
+                            <span>Bugün 14:32 • 5:42</span>
+                        </div>
+                        <div class="history-actions">
+                            <button onclick="callBack('+905321234545')"><i class="ti ti-phone"></i></button>
+                        </div>
+                    </div>
+                    <div class="call-history-item">
+                        <div class="history-icon outbound"><i class="ti ti-phone-outgoing"></i></div>
+                        <div class="history-info">
+                            <strong>+90 555 XXX XX12</strong>
+                            <span>Bugün 13:45 • 2:18</span>
+                        </div>
+                        <div class="history-actions">
+                            <button onclick="callBack('+905551234512')"><i class="ti ti-phone"></i></button>
+                        </div>
+                    </div>
+                    <div class="call-history-item">
+                        <div class="history-icon missed"><i class="ti ti-phone-off"></i></div>
+                        <div class="history-info">
+                            <strong>+90 544 XXX XX89</strong>
+                            <span>Bugün 12:20 • Kaçırıldı</span>
+                        </div>
+                        <div class="history-actions">
+                            <button onclick="callBack('+905441234589')"><i class="ti ti-phone"></i></button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <button class="btn btn-primary" style="width: 100%;" onclick="testAudio()">
+                <i class="ti ti-volume"></i> Ses Testi Yap
+            </button>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+// Softphone State Management
+let currentState = 'idle';
+let callStartTime = null;
+let callTimerInterval = null;
+let isMuted = false;
+let isOnHold = false;
+let isRecording = true;
+
+// Add digit to number input
+function addDigit(digit) {
+    const input = document.getElementById('phoneNumber');
+    input.value += digit;
+    // Play DTMF tone
+    playDTMF(digit);
+}
+
+// Play DTMF tone
+function playDTMF(digit) {
+    // WebRTC DTMF implementation would go here
+    console.log('DTMF:', digit);
+}
+
+// Make outbound call
+function makeCall() {
+    const number = document.getElementById('phoneNumber').value;
+    if (!number) {
+        alert('Lütfen bir numara girin');
+        return;
+    }
+    
+    // Show calling state
+    document.getElementById('idleState').style.display = 'none';
+    document.getElementById('inCallState').style.display = 'block';
+    document.getElementById('callNumber').textContent = number;
+    document.getElementById('callStatus').textContent = 'Arıyor...';
+    
+    // Simulate call connection
+    setTimeout(() => {
+        document.getElementById('callStatus').textContent = 'Bağlı';
+        startCallTimer();
+    }, 2000);
+    
+    currentState = 'calling';
+}
+
+// Answer incoming call
+function answerCall() {
+    document.getElementById('incomingState').style.display = 'none';
+    document.getElementById('inCallState').style.display = 'block';
+    
+    const name = document.getElementById('incomingName').textContent;
+    const number = document.getElementById('incomingNumber').textContent;
+    
+    document.getElementById('callName').textContent = name;
+    document.getElementById('callNumber').textContent = number;
+    
+    startCallTimer();
+    currentState = 'inCall';
+}
+
+// Reject incoming call
+function rejectCall() {
+    document.getElementById('incomingState').style.display = 'none';
+    document.getElementById('idleState').style.display = 'block';
+    currentState = 'idle';
+}
+
+// End call
+function endCall() {
+    stopCallTimer();
+    document.getElementById('inCallState').style.display = 'none';
+    document.getElementById('idleState').style.display = 'block';
+    document.getElementById('phoneNumber').value = '';
+    currentState = 'idle';
+    
+    // Reset controls
+    isMuted = false;
+    isOnHold = false;
+    document.getElementById('muteBtn').classList.remove('active');
+    document.getElementById('holdBtn').classList.remove('active');
+}
+
+// Start call timer
+function startCallTimer() {
+    callStartTime = new Date();
+    callTimerInterval = setInterval(updateCallTimer, 1000);
+}
+
+// Stop call timer
+function stopCallTimer() {
+    if (callTimerInterval) {
+        clearInterval(callTimerInterval);
+        callTimerInterval = null;
+    }
+    document.getElementById('callTimer').textContent = '00:00';
+}
+
+// Update call timer display
+function updateCallTimer() {
+    if (!callStartTime) return;
+    
+    const elapsed = Math.floor((new Date() - callStartTime) / 1000);
+    const minutes = Math.floor(elapsed / 60);
+    const seconds = elapsed % 60;
+    
+    document.getElementById('callTimer').textContent = 
+        String(minutes).padStart(2, '0') + ':' + String(seconds).padStart(2, '0');
+}
+
+// Toggle mute
+function toggleMute() {
+    isMuted = !isMuted;
+    const btn = document.getElementById('muteBtn');
+    btn.classList.toggle('active', isMuted);
+    btn.querySelector('i').className = isMuted ? 'ti ti-microphone-off' : 'ti ti-microphone';
+}
+
+// Toggle hold
+function toggleHold() {
+    isOnHold = !isOnHold;
+    const btn = document.getElementById('holdBtn');
+    btn.classList.toggle('active', isOnHold);
+    document.getElementById('callStatus').textContent = isOnHold ? 'Beklemede' : 'Bağlı';
+}
+
+// Toggle record
+function toggleRecord() {
+    isRecording = !isRecording;
+    const btn = document.getElementById('recordBtn');
+    btn.classList.toggle('active', isRecording);
+}
+
+// Toggle dialpad
+function toggleDialpad() {
+    const btn = document.getElementById('dialpadBtn');
+    btn.classList.toggle('active');
+    // Show/hide in-call dialpad
+}
+
+// Transfer call
+function transferCall() {
+    const number = prompt('Transfer edilecek numara/extension:');
+    if (number) {
+        alert('Çağrı ' + number + ' numarasına transfer ediliyor...');
+    }
+}
+
+// Conference call
+function conferenceCall() {
+    const number = prompt('Konferansa eklenecek numara:');
+    if (number) {
+        alert(number + ' konferansa ekleniyor...');
+    }
+}
+
+// Show notes
+function showNotes() {
+    alert('Not paneli açılacak...');
+}
+
+// Show history
+function showHistory() {
+    document.querySelector('.softphone-settings .call-history').scrollIntoView({ behavior: 'smooth' });
+}
+
+// Show contacts
+function showContacts() {
+    alert('Rehber açılacak...');
+}
+
+// Show settings
+function showSettings() {
+    document.querySelector('.softphone-settings').scrollIntoView({ behavior: 'smooth' });
+}
+
+// Call back from history
+function callBack(number) {
+    document.getElementById('phoneNumber').value = number;
+    makeCall();
+}
+
+// Test audio
+function testAudio() {
+    alert('Ses testi yapılıyor... Kulaklığınızdan bir test sesi duyacaksınız.');
+}
+
+// Volume controls
+document.getElementById('micVolume').addEventListener('input', function() {
+    document.getElementById('micVolumeValue').textContent = this.value + '%';
+});
+
+document.getElementById('speakerVolume').addEventListener('input', function() {
+    document.getElementById('speakerVolumeValue').textContent = this.value + '%';
+});
+
+document.getElementById('ringtoneVolume').addEventListener('input', function() {
+    document.getElementById('ringtoneVolumeValue').textContent = this.value + '%';
+});
+
+// Simulate incoming call (for demo)
+function simulateIncomingCall() {
+    document.getElementById('idleState').style.display = 'none';
+    document.getElementById('incomingState').style.display = 'block';
+    document.getElementById('incomingName').textContent = 'ABC Şirket';
+    document.getElementById('incomingNumber').textContent = '+90 532 XXX XX45';
+    currentState = 'incoming';
+    
+    // Play ringtone
+    // audio.play();
+}
+
+// Keyboard shortcuts
+document.addEventListener('keydown', function(e) {
+    if (e.key >= '0' && e.key <= '9' && currentState === 'idle') {
+        addDigit(e.key);
+    } else if (e.key === 'Enter' && currentState === 'idle') {
+        makeCall();
+    } else if (e.key === 'Escape' && currentState === 'inCall') {
+        endCall();
+    }
+});
+
+// WebRTC initialization (placeholder)
+async function initWebRTC() {
+    try {
+        const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+        console.log('Mikrofon erişimi alındı');
+        
+        // Enumerate devices
+        const devices = await navigator.mediaDevices.enumerateDevices();
+        const audioInputs = devices.filter(d => d.kind === 'audioinput');
+        const audioOutputs = devices.filter(d => d.kind === 'audiooutput');
+        
+        // Populate device selects
+        const micSelect = document.getElementById('microphoneSelect');
+        audioInputs.forEach(device => {
+            const option = document.createElement('option');
+            option.value = device.deviceId;
+            option.textContent = device.label || 'Mikrofon ' + (micSelect.options.length + 1);
+            micSelect.appendChild(option);
+        });
+        
+    } catch (err) {
+        console.error('Mikrofon erişimi hatası:', err);
+        document.getElementById('connectionStatus').className = 'connection-status disconnected';
+        document.getElementById('connectionStatus').innerHTML = '<span class="dot"></span><span>Bağlantı Hatası</span>';
+    }
+}
+
+// Initialize
+initWebRTC();
+</script>
+{% endblock %}
+

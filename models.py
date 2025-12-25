@@ -428,12 +428,22 @@ class SIPTrunk(db.Model):
     is_primary = db.Column(db.Boolean, default=True)
     failover_trunk_id = db.Column(db.Integer, db.ForeignKey('sip_trunks.id'))
     
+    # Gelişmiş ayarlar
+    outbound_proxy = db.Column(db.String(200))
+    auth_user = db.Column(db.String(100))
+    ip_whitelist = db.Column(db.Text)
+    nat_enabled = db.Column(db.Boolean, default=True)
+    keep_alive_interval = db.Column(db.Integer, default=30)
+    
     # Durum
     status = db.Column(db.String(20), default='active')  # active, inactive, error
     last_health_check = db.Column(db.DateTime)
+    last_check = db.Column(db.DateTime)  # Alias for last_health_check
     health_status = db.Column(db.String(20))
+    latency_ms = db.Column(db.Integer)
     
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
 
 
 class DID(db.Model):
@@ -445,10 +455,12 @@ class DID(db.Model):
     
     number = db.Column(db.String(20), nullable=False)
     description = db.Column(db.String(200))
+    did_type = db.Column(db.String(20), default='inbound')  # inbound, outbound, both
     
     # Yönlendirme
     destination_type = db.Column(db.String(20))  # ivr, queue, user, external
     destination_id = db.Column(db.Integer)
+    destination_name = db.Column(db.String(100))
     
     # CLI için kullanım
     use_for_outbound = db.Column(db.Boolean, default=False)
@@ -456,7 +468,9 @@ class DID(db.Model):
     
     # Trunk
     trunk_id = db.Column(db.Integer, db.ForeignKey('sip_trunks.id'))
+    trunk = db.relationship('SIPTrunk', backref='dids')
     
+    is_active = db.Column(db.Boolean, default=True)
     status = db.Column(db.String(20), default='active')
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
 
@@ -1641,5 +1655,621 @@ class Notification(db.Model):
     # Durum
     is_read = db.Column(db.Boolean, default=False)
     read_at = db.Column(db.DateTime)
+    
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+
+
+# ============================================
+# 15. BILLING & SUBSCRIPTION MODELS
+# ============================================
+
+class BillingPlan(db.Model):
+    """Platform fiyatlandırma planları"""
+    __tablename__ = 'billing_plans'
+    
+    id = db.Column(db.Integer, primary_key=True)
+    code = db.Column(db.String(50), unique=True, nullable=False)  # starter, professional, enterprise
+    name = db.Column(db.String(100), nullable=False)
+    description = db.Column(db.Text)
+    
+    # Fiyatlandırma
+    price_monthly = db.Column(db.Numeric(10, 2), default=0)
+    price_yearly = db.Column(db.Numeric(10, 2), default=0)
+    currency = db.Column(db.String(10), default='TRY')
+    
+    # Agent bazlı ek ücret
+    price_per_agent = db.Column(db.Numeric(10, 2), default=0)
+    included_agents = db.Column(db.Integer, default=5)
+    
+    # Limitler
+    max_agents = db.Column(db.Integer, default=10)
+    max_concurrent_calls = db.Column(db.Integer, default=20)
+    max_projects = db.Column(db.Integer, default=5)
+    storage_gb = db.Column(db.Integer, default=50)
+    recording_retention_days = db.Column(db.Integer, default=90)
+    
+    # VoIP dahil dakika
+    included_minutes_inbound = db.Column(db.Integer, default=0)
+    included_minutes_outbound = db.Column(db.Integer, default=0)
+    
+    # AI dakika
+    included_ai_minutes = db.Column(db.Integer, default=0)
+    
+    # Modüller
+    modules_included = db.Column(db.JSON, default=[])
+    
+    # Durum
+    is_active = db.Column(db.Boolean, default=True)
+    is_public = db.Column(db.Boolean, default=True)
+    
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+
+
+class TenantSubscription(db.Model):
+    """Tenant abonelik bilgileri"""
+    __tablename__ = 'tenant_subscriptions'
+    
+    id = db.Column(db.Integer, primary_key=True)
+    tenant_id = db.Column(db.Integer, db.ForeignKey('tenants.id'), nullable=False)
+    plan_id = db.Column(db.Integer, db.ForeignKey('billing_plans.id'), nullable=False)
+    
+    billing_cycle = db.Column(db.String(20), default='monthly')
+    started_at = db.Column(db.DateTime, default=datetime.utcnow)
+    expires_at = db.Column(db.DateTime)
+    
+    status = db.Column(db.String(20), default='active')
+    payment_type = db.Column(db.String(20), default='prepaid')
+    
+    balance = db.Column(db.Numeric(12, 2), default=0)
+    credit_limit = db.Column(db.Numeric(12, 2), default=0)
+    
+    low_balance_threshold = db.Column(db.Numeric(10, 2), default=100)
+    low_balance_notified = db.Column(db.Boolean, default=False)
+    auto_renew = db.Column(db.Boolean, default=True)
+    
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+    
+    plan = db.relationship('BillingPlan', backref='subscriptions')
+
+
+class TenantBillingInfo(db.Model):
+    """Tenant fatura bilgileri"""
+    __tablename__ = 'tenant_billing_info'
+    
+    id = db.Column(db.Integer, primary_key=True)
+    tenant_id = db.Column(db.Integer, db.ForeignKey('tenants.id'), nullable=False, unique=True)
+    
+    company_name = db.Column(db.String(200))
+    tax_office = db.Column(db.String(100))
+    tax_number = db.Column(db.String(20))
+    
+    address_line1 = db.Column(db.String(200))
+    address_line2 = db.Column(db.String(200))
+    city = db.Column(db.String(100))
+    state = db.Column(db.String(100))
+    postal_code = db.Column(db.String(20))
+    country = db.Column(db.String(100), default='Türkiye')
+    
+    billing_email = db.Column(db.String(200))
+    billing_phone = db.Column(db.String(20))
+    
+    e_invoice_enabled = db.Column(db.Boolean, default=False)
+    e_invoice_address = db.Column(db.String(200))
+    
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+
+
+# ============================================
+# 16. VOIP BILLING / TARIFF MODELS
+# ============================================
+
+class VoIPTariff(db.Model):
+    """VoIP ücretlendirme tarifeleri"""
+    __tablename__ = 'voip_tariffs'
+    
+    id = db.Column(db.Integer, primary_key=True)
+    code = db.Column(db.String(50), unique=True, nullable=False)
+    name = db.Column(db.String(100), nullable=False)
+    description = db.Column(db.Text)
+    
+    default_rate_inbound = db.Column(db.Numeric(8, 4), default=0)
+    default_rate_outbound = db.Column(db.Numeric(8, 4), default=0)
+    connection_fee = db.Column(db.Numeric(8, 4), default=0)
+    
+    billing_increment = db.Column(db.Integer, default=60)
+    minimum_duration = db.Column(db.Integer, default=0)
+    
+    is_active = db.Column(db.Boolean, default=True)
+    is_default = db.Column(db.Boolean, default=False)
+    
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    rates = db.relationship('VoIPRate', backref='tariff', lazy='dynamic')
+
+
+class VoIPRate(db.Model):
+    """Ülke/operatör bazlı VoIP fiyatları"""
+    __tablename__ = 'voip_rates'
+    
+    id = db.Column(db.Integer, primary_key=True)
+    tariff_id = db.Column(db.Integer, db.ForeignKey('voip_tariffs.id'), nullable=False)
+    
+    destination_type = db.Column(db.String(20), nullable=False)
+    destination_code = db.Column(db.String(20), nullable=False)
+    destination_name = db.Column(db.String(100))
+    prefix_pattern = db.Column(db.String(50))
+    
+    rate_inbound = db.Column(db.Numeric(8, 4))
+    rate_outbound = db.Column(db.Numeric(8, 4))
+    connection_fee = db.Column(db.Numeric(8, 4))
+    
+    peak_rate_outbound = db.Column(db.Numeric(8, 4))
+    off_peak_rate_outbound = db.Column(db.Numeric(8, 4))
+    peak_hours_start = db.Column(db.String(5))
+    peak_hours_end = db.Column(db.String(5))
+    
+    is_active = db.Column(db.Boolean, default=True)
+    is_blocked = db.Column(db.Boolean, default=False)
+    
+    effective_from = db.Column(db.DateTime, default=datetime.utcnow)
+    effective_until = db.Column(db.DateTime)
+
+
+class TenantVoIPConfig(db.Model):
+    """Tenant VoIP yapılandırması"""
+    __tablename__ = 'tenant_voip_configs'
+    
+    id = db.Column(db.Integer, primary_key=True)
+    tenant_id = db.Column(db.Integer, db.ForeignKey('tenants.id'), nullable=False, unique=True)
+    
+    voip_model = db.Column(db.String(20), default='reseller')
+    tariff_id = db.Column(db.Integer, db.ForeignKey('voip_tariffs.id'))
+    
+    max_concurrent_inbound = db.Column(db.Integer, default=10)
+    max_concurrent_outbound = db.Column(db.Integer, default=10)
+    max_cps = db.Column(db.Integer, default=5)
+    max_daily_minutes = db.Column(db.Integer, default=0)
+    max_daily_calls = db.Column(db.Integer, default=0)
+    
+    allowed_call_hours_start = db.Column(db.String(5), default='09:00')
+    allowed_call_hours_end = db.Column(db.String(5), default='21:00')
+    
+    allowed_countries = db.Column(db.JSON)
+    blocked_countries = db.Column(db.JSON)
+    blocked_prefixes = db.Column(db.JSON)
+    
+    fraud_protection_enabled = db.Column(db.Boolean, default=True)
+    fraud_daily_spend_limit = db.Column(db.Numeric(10, 2), default=1000)
+    fraud_hourly_call_limit = db.Column(db.Integer, default=100)
+    fraud_concurrent_spike_threshold = db.Column(db.Integer, default=20)
+    
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+
+
+# ============================================
+# 17. VOIP PROVISIONING MODELS
+# ============================================
+
+class DIDPool(db.Model):
+    """Platform DID havuzu"""
+    __tablename__ = 'did_pools'
+    
+    id = db.Column(db.Integer, primary_key=True)
+    number = db.Column(db.String(20), unique=True, nullable=False)
+    country_code = db.Column(db.String(5), default='TR')
+    area_code = db.Column(db.String(10))
+    number_type = db.Column(db.String(20), default='geographic')
+    
+    provider = db.Column(db.String(100))
+    provider_cost = db.Column(db.Numeric(8, 2))
+    monthly_rental = db.Column(db.Numeric(8, 2), default=0)
+    
+    tenant_id = db.Column(db.Integer, db.ForeignKey('tenants.id'))
+    assigned_at = db.Column(db.DateTime)
+    status = db.Column(db.String(20), default='available')
+    
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+
+
+class CLIPool(db.Model):
+    """Platform CLI havuzu"""
+    __tablename__ = 'cli_pools'
+    
+    id = db.Column(db.Integer, primary_key=True)
+    number = db.Column(db.String(20), nullable=False)
+    description = db.Column(db.String(200))
+    
+    owner_type = db.Column(db.String(20), default='platform')
+    tenant_id = db.Column(db.Integer, db.ForeignKey('tenants.id'))
+    is_shared = db.Column(db.Boolean, default=False)
+    
+    allowed_destinations = db.Column(db.JSON)
+    rotation_priority = db.Column(db.Integer, default=1)
+    daily_usage_limit = db.Column(db.Integer, default=0)
+    current_daily_usage = db.Column(db.Integer, default=0)
+    
+    status = db.Column(db.String(20), default='active')
+    spam_score = db.Column(db.Integer, default=0)
+    last_spam_check = db.Column(db.DateTime)
+    
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+
+
+class TenantCLIAssignment(db.Model):
+    """Tenant CLI atamaları"""
+    __tablename__ = 'tenant_cli_assignments'
+    
+    id = db.Column(db.Integer, primary_key=True)
+    tenant_id = db.Column(db.Integer, db.ForeignKey('tenants.id'), nullable=False)
+    cli_id = db.Column(db.Integer, db.ForeignKey('cli_pools.id'), nullable=False)
+    
+    usage_type = db.Column(db.String(20), default='all')
+    project_id = db.Column(db.Integer, db.ForeignKey('projects.id'))
+    campaign_id = db.Column(db.Integer, db.ForeignKey('campaigns.id'))
+    
+    rotation_enabled = db.Column(db.Boolean, default=True)
+    rotation_priority = db.Column(db.Integer, default=1)
+    
+    assigned_at = db.Column(db.DateTime, default=datetime.utcnow)
+    assigned_by_id = db.Column(db.Integer, db.ForeignKey('users.id'))
+
+
+class TrunkAllocation(db.Model):
+    """Tenant trunk tahsisleri"""
+    __tablename__ = 'trunk_allocations'
+    
+    id = db.Column(db.Integer, primary_key=True)
+    tenant_id = db.Column(db.Integer, db.ForeignKey('tenants.id'), nullable=False)
+    trunk_id = db.Column(db.Integer, db.ForeignKey('sip_trunks.id'), nullable=False)
+    
+    allocated_channels = db.Column(db.Integer, default=10)
+    priority = db.Column(db.Integer, default=1)
+    direction = db.Column(db.String(20), default='both')
+    
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+
+
+# ============================================
+# 18. USAGE METERING & BILLING RECORDS
+# ============================================
+
+class UsageRecord(db.Model):
+    """Kullanım kayıtları"""
+    __tablename__ = 'usage_records'
+    
+    id = db.Column(db.Integer, primary_key=True)
+    tenant_id = db.Column(db.Integer, db.ForeignKey('tenants.id'), nullable=False)
+    
+    usage_type = db.Column(db.String(30), nullable=False)
+    quantity = db.Column(db.Numeric(12, 4), nullable=False)
+    unit = db.Column(db.String(20), default='minute')
+    
+    unit_price = db.Column(db.Numeric(10, 4))
+    total_amount = db.Column(db.Numeric(12, 4))
+    currency = db.Column(db.String(10), default='TRY')
+    
+    reference_type = db.Column(db.String(30))
+    reference_id = db.Column(db.Integer)
+    
+    call_direction = db.Column(db.String(10))
+    destination_code = db.Column(db.String(20))
+    destination_name = db.Column(db.String(100))
+    
+    usage_date = db.Column(db.Date, nullable=False)
+    usage_timestamp = db.Column(db.DateTime, default=datetime.utcnow)
+    
+    is_billed = db.Column(db.Boolean, default=False)
+    invoice_id = db.Column(db.Integer, db.ForeignKey('invoices.id'))
+
+
+class UsageSummary(db.Model):
+    """Kullanım özetleri"""
+    __tablename__ = 'usage_summaries'
+    
+    id = db.Column(db.Integer, primary_key=True)
+    tenant_id = db.Column(db.Integer, db.ForeignKey('tenants.id'), nullable=False)
+    
+    period_type = db.Column(db.String(10), nullable=False)
+    period_date = db.Column(db.Date, nullable=False)
+    
+    voip_inbound_minutes = db.Column(db.Numeric(12, 2), default=0)
+    voip_inbound_amount = db.Column(db.Numeric(12, 2), default=0)
+    voip_outbound_minutes = db.Column(db.Numeric(12, 2), default=0)
+    voip_outbound_amount = db.Column(db.Numeric(12, 2), default=0)
+    voip_total_calls = db.Column(db.Integer, default=0)
+    
+    ai_transcription_minutes = db.Column(db.Numeric(12, 2), default=0)
+    ai_transcription_amount = db.Column(db.Numeric(12, 2), default=0)
+    ai_summary_count = db.Column(db.Integer, default=0)
+    ai_summary_amount = db.Column(db.Numeric(12, 2), default=0)
+    
+    storage_gb = db.Column(db.Numeric(10, 2), default=0)
+    storage_amount = db.Column(db.Numeric(12, 2), default=0)
+    
+    total_amount = db.Column(db.Numeric(12, 2), default=0)
+    currency = db.Column(db.String(10), default='TRY')
+    
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+
+
+class Invoice(db.Model):
+    """Faturalar"""
+    __tablename__ = 'invoices'
+    
+    id = db.Column(db.Integer, primary_key=True)
+    tenant_id = db.Column(db.Integer, db.ForeignKey('tenants.id'), nullable=False)
+    
+    invoice_number = db.Column(db.String(50), unique=True, nullable=False)
+    period_start = db.Column(db.Date, nullable=False)
+    period_end = db.Column(db.Date, nullable=False)
+    
+    subtotal = db.Column(db.Numeric(12, 2), nullable=False)
+    tax_rate = db.Column(db.Numeric(5, 2), default=20)
+    tax_amount = db.Column(db.Numeric(12, 2), nullable=False)
+    total_amount = db.Column(db.Numeric(12, 2), nullable=False)
+    currency = db.Column(db.String(10), default='TRY')
+    
+    status = db.Column(db.String(20), default='draft')
+    
+    issue_date = db.Column(db.Date, default=date.today)
+    due_date = db.Column(db.Date)
+    paid_date = db.Column(db.Date)
+    
+    payment_method = db.Column(db.String(50))
+    payment_reference = db.Column(db.String(200))
+    pdf_url = db.Column(db.String(500))
+    notes = db.Column(db.Text)
+    
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    items = db.relationship('InvoiceItem', backref='invoice', lazy='dynamic')
+
+
+class InvoiceItem(db.Model):
+    """Fatura kalemleri"""
+    __tablename__ = 'invoice_items'
+    
+    id = db.Column(db.Integer, primary_key=True)
+    invoice_id = db.Column(db.Integer, db.ForeignKey('invoices.id'), nullable=False)
+    
+    description = db.Column(db.String(500), nullable=False)
+    item_type = db.Column(db.String(50))
+    
+    quantity = db.Column(db.Numeric(12, 4), default=1)
+    unit = db.Column(db.String(20))
+    unit_price = db.Column(db.Numeric(10, 4))
+    amount = db.Column(db.Numeric(12, 2), nullable=False)
+
+
+class Payment(db.Model):
+    """Ödemeler"""
+    __tablename__ = 'payments'
+    
+    id = db.Column(db.Integer, primary_key=True)
+    tenant_id = db.Column(db.Integer, db.ForeignKey('tenants.id'), nullable=False)
+    
+    payment_type = db.Column(db.String(30), nullable=False)
+    amount = db.Column(db.Numeric(12, 2), nullable=False)
+    currency = db.Column(db.String(10), default='TRY')
+    
+    invoice_id = db.Column(db.Integer, db.ForeignKey('invoices.id'))
+    
+    payment_method = db.Column(db.String(50))
+    payment_gateway = db.Column(db.String(50))
+    gateway_transaction_id = db.Column(db.String(200))
+    
+    status = db.Column(db.String(20), default='pending')
+    paid_at = db.Column(db.DateTime)
+    
+    card_last_four = db.Column(db.String(4))
+    card_brand = db.Column(db.String(20))
+    notes = db.Column(db.Text)
+    
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+
+
+# ============================================
+# 19. WHITE-LABEL & BRANDING
+# ============================================
+
+class TenantBranding(db.Model):
+    """Tenant marka ayarları"""
+    __tablename__ = 'tenant_brandings'
+    
+    id = db.Column(db.Integer, primary_key=True)
+    tenant_id = db.Column(db.Integer, db.ForeignKey('tenants.id'), nullable=False, unique=True)
+    
+    logo_light_url = db.Column(db.String(500))
+    logo_dark_url = db.Column(db.String(500))
+    favicon_url = db.Column(db.String(500))
+    
+    primary_color = db.Column(db.String(10), default='#F5A623')
+    secondary_color = db.Column(db.String(10), default='#4A4A4A')
+    accent_color = db.Column(db.String(10), default='#50E3C2')
+    
+    default_theme = db.Column(db.String(10), default='light')
+    
+    app_title = db.Column(db.String(100))
+    login_title = db.Column(db.String(200))
+    login_subtitle = db.Column(db.String(500))
+    
+    email_header_html = db.Column(db.Text)
+    email_footer_html = db.Column(db.Text)
+    email_from_name = db.Column(db.String(100))
+    
+    support_url = db.Column(db.String(500))
+    support_email = db.Column(db.String(200))
+    support_phone = db.Column(db.String(50))
+    
+    custom_css = db.Column(db.Text)
+    
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+
+
+class TenantDomain(db.Model):
+    """Tenant domain yönetimi"""
+    __tablename__ = 'tenant_domains'
+    
+    id = db.Column(db.Integer, primary_key=True)
+    tenant_id = db.Column(db.Integer, db.ForeignKey('tenants.id'), nullable=False)
+    
+    domain = db.Column(db.String(200), unique=True, nullable=False)
+    domain_type = db.Column(db.String(20), default='subdomain')
+    
+    ssl_enabled = db.Column(db.Boolean, default=True)
+    ssl_certificate_path = db.Column(db.String(500))
+    ssl_expires_at = db.Column(db.DateTime)
+    
+    dns_verified = db.Column(db.Boolean, default=False)
+    dns_verification_token = db.Column(db.String(100))
+    dns_verified_at = db.Column(db.DateTime)
+    
+    is_primary = db.Column(db.Boolean, default=False)
+    status = db.Column(db.String(20), default='pending')
+    
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+
+
+# ============================================
+# 20. SUPPORT / TICKET SYSTEM
+# ============================================
+
+class SupportTicket(db.Model):
+    """Destek talepleri"""
+    __tablename__ = 'support_tickets'
+    
+    id = db.Column(db.Integer, primary_key=True)
+    tenant_id = db.Column(db.Integer, db.ForeignKey('tenants.id'), nullable=False)
+    
+    ticket_number = db.Column(db.String(20), unique=True, nullable=False)
+    subject = db.Column(db.String(300), nullable=False)
+    description = db.Column(db.Text, nullable=False)
+    
+    category = db.Column(db.String(50))
+    priority = db.Column(db.String(20), default='normal')
+    status = db.Column(db.String(20), default='open')
+    
+    assigned_to_id = db.Column(db.Integer, db.ForeignKey('users.id'))
+    
+    sla_level = db.Column(db.String(20))
+    sla_due_at = db.Column(db.DateTime)
+    sla_breached = db.Column(db.Boolean, default=False)
+    
+    tags = db.Column(db.JSON)
+    
+    created_by_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+    first_response_at = db.Column(db.DateTime)
+    resolved_at = db.Column(db.DateTime)
+    closed_at = db.Column(db.DateTime)
+    
+    messages = db.relationship('SupportTicketMessage', backref='ticket', lazy='dynamic')
+
+
+class SupportTicketMessage(db.Model):
+    """Ticket mesajları"""
+    __tablename__ = 'support_ticket_messages'
+    
+    id = db.Column(db.Integer, primary_key=True)
+    ticket_id = db.Column(db.Integer, db.ForeignKey('support_tickets.id'), nullable=False)
+    
+    message = db.Column(db.Text, nullable=False)
+    sender_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
+    sender_type = db.Column(db.String(20))
+    
+    attachments = db.Column(db.JSON)
+    is_internal = db.Column(db.Boolean, default=False)
+    
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+
+
+class SystemAnnouncement(db.Model):
+    """Platform duyuruları"""
+    __tablename__ = 'system_announcements'
+    
+    id = db.Column(db.Integer, primary_key=True)
+    
+    title = db.Column(db.String(300), nullable=False)
+    content = db.Column(db.Text, nullable=False)
+    announcement_type = db.Column(db.String(30), nullable=False)
+    
+    target_tenants = db.Column(db.JSON)
+    is_public = db.Column(db.Boolean, default=True)
+    is_pinned = db.Column(db.Boolean, default=False)
+    
+    publish_at = db.Column(db.DateTime, default=datetime.utcnow)
+    expires_at = db.Column(db.DateTime)
+    
+    maintenance_start = db.Column(db.DateTime)
+    maintenance_end = db.Column(db.DateTime)
+    
+    created_by_id = db.Column(db.Integer, db.ForeignKey('users.id'))
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+
+
+# ============================================
+# 21. QUOTA & POLICY ENGINE
+# ============================================
+
+class TenantQuota(db.Model):
+    """Tenant kota tanımları"""
+    __tablename__ = 'tenant_quotas'
+    
+    id = db.Column(db.Integer, primary_key=True)
+    tenant_id = db.Column(db.Integer, db.ForeignKey('tenants.id'), nullable=False, unique=True)
+    
+    max_agents = db.Column(db.Integer, default=10)
+    max_supervisors = db.Column(db.Integer, default=3)
+    max_admins = db.Column(db.Integer, default=2)
+    
+    max_projects = db.Column(db.Integer, default=5)
+    max_campaigns = db.Column(db.Integer, default=10)
+    max_queues = db.Column(db.Integer, default=10)
+    max_ivrs = db.Column(db.Integer, default=5)
+    
+    max_concurrent_inbound = db.Column(db.Integer, default=10)
+    max_concurrent_outbound = db.Column(db.Integer, default=10)
+    max_cps = db.Column(db.Integer, default=5)
+    max_daily_outbound_minutes = db.Column(db.Integer, default=0)
+    max_daily_outbound_calls = db.Column(db.Integer, default=0)
+    
+    storage_quota_gb = db.Column(db.Integer, default=50)
+    recording_retention_days = db.Column(db.Integer, default=90)
+    
+    ai_monthly_minutes = db.Column(db.Integer, default=0)
+    ai_monthly_summaries = db.Column(db.Integer, default=0)
+    
+    current_agents = db.Column(db.Integer, default=0)
+    current_supervisors = db.Column(db.Integer, default=0)
+    current_projects = db.Column(db.Integer, default=0)
+    current_storage_gb = db.Column(db.Numeric(10, 2), default=0)
+    
+    allow_overage = db.Column(db.Boolean, default=False)
+    overage_rate_multiplier = db.Column(db.Numeric(5, 2), default=1.5)
+    
+    updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+
+
+class QuotaAlert(db.Model):
+    """Kota uyarıları"""
+    __tablename__ = 'quota_alerts'
+    
+    id = db.Column(db.Integer, primary_key=True)
+    tenant_id = db.Column(db.Integer, db.ForeignKey('tenants.id'), nullable=False)
+    
+    alert_type = db.Column(db.String(50), nullable=False)
+    message = db.Column(db.String(500))
+    
+    current_value = db.Column(db.Numeric(12, 2))
+    limit_value = db.Column(db.Numeric(12, 2))
+    percentage = db.Column(db.Integer)
+    
+    is_acknowledged = db.Column(db.Boolean, default=False)
+    acknowledged_by_id = db.Column(db.Integer, db.ForeignKey('users.id'))
+    acknowledged_at = db.Column(db.DateTime)
     
     created_at = db.Column(db.DateTime, default=datetime.utcnow)

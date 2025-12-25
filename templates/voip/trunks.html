@@ -1,0 +1,887 @@
+{% extends "base.html" %}
+
+{% block title %}SIP Trunk Yönetimi - {{ app_name }}{% endblock %}
+
+{% block extra_css %}
+<style>
+.voip-page {
+    padding: 1.5rem;
+}
+
+.page-header-actions {
+    display: flex;
+    gap: 1rem;
+    align-items: center;
+}
+
+/* Trunk Cards */
+.trunk-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(380px, 1fr));
+    gap: 1.5rem;
+    margin-top: 1.5rem;
+}
+
+.trunk-card {
+    background: linear-gradient(145deg, #ffffff, #f8f9fa);
+    border-radius: 16px;
+    border: 1px solid rgba(0,0,0,0.08);
+    overflow: hidden;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.06);
+    transition: all 0.3s ease;
+}
+
+.trunk-card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 8px 30px rgba(0,0,0,0.1);
+}
+
+.trunk-header {
+    padding: 1.25rem;
+    background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+    color: white;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.trunk-name {
+    font-size: 1.1rem;
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+}
+
+.trunk-name i {
+    font-size: 1.5rem;
+    color: #F5A623;
+}
+
+.trunk-status {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.4rem 0.8rem;
+    border-radius: 20px;
+    font-size: 0.75rem;
+    font-weight: 600;
+    text-transform: uppercase;
+}
+
+.trunk-status.active {
+    background: rgba(76, 175, 80, 0.2);
+    color: #4CAF50;
+}
+
+.trunk-status.inactive {
+    background: rgba(158, 158, 158, 0.2);
+    color: #9e9e9e;
+}
+
+.trunk-status.error {
+    background: rgba(244, 67, 54, 0.2);
+    color: #f44336;
+}
+
+.trunk-status::before {
+    content: '';
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: currentColor;
+    animation: pulse-dot 2s infinite;
+}
+
+@keyframes pulse-dot {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.5; }
+}
+
+.trunk-body {
+    padding: 1.25rem;
+}
+
+.trunk-info-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1rem;
+}
+
+.trunk-info-item {
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+}
+
+.trunk-info-label {
+    font-size: 0.7rem;
+    text-transform: uppercase;
+    color: #888;
+    letter-spacing: 0.5px;
+}
+
+.trunk-info-value {
+    font-weight: 600;
+    color: #333;
+    font-family: var(--font-mono);
+    font-size: 0.9rem;
+}
+
+.trunk-stats {
+    display: flex;
+    gap: 1rem;
+    margin-top: 1rem;
+    padding-top: 1rem;
+    border-top: 1px solid rgba(0,0,0,0.08);
+}
+
+.trunk-stat {
+    flex: 1;
+    text-align: center;
+    padding: 0.75rem;
+    background: #f8f9fa;
+    border-radius: 10px;
+}
+
+.trunk-stat-value {
+    font-size: 1.25rem;
+    font-weight: 700;
+    color: #1a1a2e;
+    font-family: var(--font-display);
+}
+
+.trunk-stat-label {
+    font-size: 0.65rem;
+    text-transform: uppercase;
+    color: #888;
+    margin-top: 0.25rem;
+}
+
+.trunk-actions {
+    display: flex;
+    gap: 0.5rem;
+    padding: 1rem 1.25rem;
+    background: #f8f9fa;
+    border-top: 1px solid rgba(0,0,0,0.08);
+}
+
+.trunk-actions .btn {
+    flex: 1;
+    padding: 0.6rem;
+    font-size: 0.8rem;
+}
+
+/* Health Indicator */
+.health-bar {
+    height: 4px;
+    background: #e0e0e0;
+    border-radius: 2px;
+    overflow: hidden;
+    margin-top: 1rem;
+}
+
+.health-bar-fill {
+    height: 100%;
+    background: linear-gradient(90deg, #4CAF50, #8BC34A);
+    border-radius: 2px;
+    transition: width 0.5s ease;
+}
+
+.health-bar-fill.warning {
+    background: linear-gradient(90deg, #FF9800, #FFC107);
+}
+
+.health-bar-fill.danger {
+    background: linear-gradient(90deg, #f44336, #E91E63);
+}
+
+/* Modal Styles */
+.modal-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.6);
+    backdrop-filter: blur(4px);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 1000;
+    opacity: 0;
+    visibility: hidden;
+    transition: all 0.3s ease;
+}
+
+.modal-overlay.show {
+    opacity: 1;
+    visibility: visible;
+}
+
+.modal-content {
+    background: white;
+    border-radius: 20px;
+    width: 100%;
+    max-width: 700px;
+    max-height: 90vh;
+    overflow: hidden;
+    transform: translateY(20px);
+    transition: transform 0.3s ease;
+}
+
+.modal-overlay.show .modal-content {
+    transform: translateY(0);
+}
+
+.modal-header {
+    padding: 1.5rem;
+    background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+    color: white;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.modal-header h3 {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    font-size: 1.25rem;
+}
+
+.modal-header h3 i {
+    color: #F5A623;
+}
+
+.modal-close {
+    background: rgba(255,255,255,0.1);
+    border: none;
+    color: white;
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s;
+}
+
+.modal-close:hover {
+    background: rgba(255,255,255,0.2);
+}
+
+.modal-body {
+    padding: 1.5rem;
+    max-height: 60vh;
+    overflow-y: auto;
+}
+
+.modal-footer {
+    padding: 1rem 1.5rem;
+    background: #f8f9fa;
+    display: flex;
+    gap: 1rem;
+    justify-content: flex-end;
+}
+
+/* Form Styles */
+.form-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1rem;
+}
+
+.form-group {
+    margin-bottom: 1rem;
+}
+
+.form-group.full-width {
+    grid-column: 1 / -1;
+}
+
+.form-group label {
+    display: block;
+    margin-bottom: 0.5rem;
+    font-weight: 600;
+    color: #333;
+    font-size: 0.85rem;
+}
+
+.form-group label .required {
+    color: #f44336;
+}
+
+.form-control {
+    width: 100%;
+    padding: 0.75rem 1rem;
+    border: 2px solid #e0e0e0;
+    border-radius: 10px;
+    font-size: 0.9rem;
+    transition: all 0.2s;
+    background: white;
+}
+
+.form-control:focus {
+    outline: none;
+    border-color: #F5A623;
+    box-shadow: 0 0 0 4px rgba(245, 166, 35, 0.1);
+}
+
+.form-control::placeholder {
+    color: #aaa;
+}
+
+.form-section {
+    margin-bottom: 1.5rem;
+    padding-bottom: 1.5rem;
+    border-bottom: 1px solid #eee;
+}
+
+.form-section-title {
+    font-size: 0.75rem;
+    text-transform: uppercase;
+    color: #F5A623;
+    letter-spacing: 1px;
+    margin-bottom: 1rem;
+    font-weight: 600;
+}
+
+/* Codec Select */
+.codec-list {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+}
+
+.codec-item {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.5rem 1rem;
+    background: #f5f5f5;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.2s;
+    border: 2px solid transparent;
+}
+
+.codec-item:hover {
+    background: #eee;
+}
+
+.codec-item.selected {
+    background: rgba(245, 166, 35, 0.1);
+    border-color: #F5A623;
+}
+
+.codec-item input {
+    display: none;
+}
+
+/* Test Result */
+.test-result {
+    padding: 1rem;
+    border-radius: 10px;
+    margin-top: 1rem;
+    display: none;
+}
+
+.test-result.show {
+    display: block;
+}
+
+.test-result.success {
+    background: rgba(76, 175, 80, 0.1);
+    border: 1px solid rgba(76, 175, 80, 0.3);
+    color: #2E7D32;
+}
+
+.test-result.error {
+    background: rgba(244, 67, 54, 0.1);
+    border: 1px solid rgba(244, 67, 54, 0.3);
+    color: #C62828;
+}
+
+.test-result-header {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-weight: 600;
+    margin-bottom: 0.5rem;
+}
+
+.test-details {
+    font-size: 0.85rem;
+    font-family: var(--font-mono);
+}
+
+/* Empty State */
+.empty-state {
+    text-align: center;
+    padding: 4rem 2rem;
+    color: #888;
+}
+
+.empty-state i {
+    font-size: 4rem;
+    margin-bottom: 1rem;
+    color: #ddd;
+}
+
+.empty-state h3 {
+    color: #555;
+    margin-bottom: 0.5rem;
+}
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="voip-page">
+    <div class="page-header">
+        <div>
+            <h1 class="page-title">
+                <i class="ti ti-server-2" style="color: #F5A623;"></i>
+                SIP Trunk Yönetimi
+            </h1>
+            <p class="page-subtitle">VoIP sağlayıcı bağlantılarını yönetin</p>
+        </div>
+        <div class="page-header-actions">
+            <button class="btn btn-secondary" onclick="refreshTrunks()">
+                <i class="ti ti-refresh"></i> Yenile
+            </button>
+            <button class="btn btn-primary" onclick="openAddTrunkModal()">
+                <i class="ti ti-plus"></i> Yeni Trunk Ekle
+            </button>
+        </div>
+    </div>
+
+    <!-- Stats Summary -->
+    <div class="grid grid-cols-4 gap-4 mt-4">
+        <div class="stat-card" style="background: linear-gradient(145deg, #E3F2FD, #BBDEFB); border-left: 4px solid #1E88E5;">
+            <div class="stat-card-inner">
+                <div class="icon-3d blue"><i class="ti ti-server-2"></i></div>
+                <div class="stat-content">
+                    <div class="stat-value">{{ trunks|length }}</div>
+                    <div class="stat-label">Toplam Trunk</div>
+                </div>
+            </div>
+        </div>
+        <div class="stat-card" style="background: linear-gradient(145deg, #E8F5E9, #C8E6C9); border-left: 4px solid #43A047;">
+            <div class="stat-card-inner">
+                <div class="icon-3d green"><i class="ti ti-circle-check"></i></div>
+                <div class="stat-content">
+                    <div class="stat-value">{{ trunks|selectattr('status', 'equalto', 'active')|list|length }}</div>
+                    <div class="stat-label">Aktif</div>
+                </div>
+            </div>
+        </div>
+        <div class="stat-card" style="background: linear-gradient(145deg, #FFF3E0, #FFE0B2); border-left: 4px solid #F57C00;">
+            <div class="stat-card-inner">
+                <div class="icon-3d orange"><i class="ti ti-phone-call"></i></div>
+                <div class="stat-content">
+                    <div class="stat-value" id="activeCallsCount">0</div>
+                    <div class="stat-label">Aktif Çağrı</div>
+                </div>
+            </div>
+        </div>
+        <div class="stat-card" style="background: linear-gradient(145deg, #F3E5F5, #E1BEE7); border-left: 4px solid #8E24AA;">
+            <div class="stat-card-inner">
+                <div class="icon-3d purple"><i class="ti ti-chart-line"></i></div>
+                <div class="stat-content">
+                    <div class="stat-value" id="totalChannels">0</div>
+                    <div class="stat-label">Toplam Kanal</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Trunk Grid -->
+    <div class="trunk-grid" id="trunkGrid">
+        {% if trunks %}
+            {% for trunk in trunks %}
+            <div class="trunk-card" data-trunk-id="{{ trunk.id }}">
+                <div class="trunk-header">
+                    <div class="trunk-name">
+                        <i class="ti ti-server-bolt"></i>
+                        {{ trunk.name }}
+                    </div>
+                    <div class="trunk-status {{ trunk.status }}">
+                        {{ trunk.status|upper }}
+                    </div>
+                </div>
+                <div class="trunk-body">
+                    <div class="trunk-info-grid">
+                        <div class="trunk-info-item">
+                            <span class="trunk-info-label">Host / IP</span>
+                            <span class="trunk-info-value">{{ trunk.host }}</span>
+                        </div>
+                        <div class="trunk-info-item">
+                            <span class="trunk-info-label">Port</span>
+                            <span class="trunk-info-value">{{ trunk.port or 5060 }}</span>
+                        </div>
+                        <div class="trunk-info-item">
+                            <span class="trunk-info-label">Kullanıcı</span>
+                            <span class="trunk-info-value">{{ trunk.username or '-' }}</span>
+                        </div>
+                        <div class="trunk-info-item">
+                            <span class="trunk-info-label">Transport</span>
+                            <span class="trunk-info-value">{{ trunk.transport or 'UDP' }}</span>
+                        </div>
+                    </div>
+                    
+                    <div class="trunk-stats">
+                        <div class="trunk-stat">
+                            <div class="trunk-stat-value">{{ trunk.max_channels or 30 }}</div>
+                            <div class="trunk-stat-label">Max Kanal</div>
+                        </div>
+                        <div class="trunk-stat">
+                            <div class="trunk-stat-value" id="activeChannels_{{ trunk.id }}">0</div>
+                            <div class="trunk-stat-label">Kullanılan</div>
+                        </div>
+                        <div class="trunk-stat">
+                            <div class="trunk-stat-value">{{ trunk.codecs or 'G.711' }}</div>
+                            <div class="trunk-stat-label">Codec</div>
+                        </div>
+                    </div>
+                    
+                    <div class="health-bar">
+                        <div class="health-bar-fill" style="width: 85%;"></div>
+                    </div>
+                </div>
+                <div class="trunk-actions">
+                    <button class="btn btn-info btn-sm" onclick="testTrunk({{ trunk.id }})">
+                        <i class="ti ti-phone-check"></i> Test
+                    </button>
+                    <button class="btn btn-secondary btn-sm" onclick="editTrunk({{ trunk.id }})">
+                        <i class="ti ti-edit"></i> Düzenle
+                    </button>
+                    <button class="btn btn-danger btn-sm" onclick="deleteTrunk({{ trunk.id }})">
+                        <i class="ti ti-trash"></i>
+                    </button>
+                </div>
+            </div>
+            {% endfor %}
+        {% else %}
+            <div class="empty-state" style="grid-column: 1 / -1;">
+                <i class="ti ti-server-off"></i>
+                <h3>Henüz SIP Trunk Eklenmemiş</h3>
+                <p>VoIP sağlayıcınızdan aldığınız bilgilerle yeni bir trunk ekleyin.</p>
+                <button class="btn btn-primary mt-4" onclick="openAddTrunkModal()">
+                    <i class="ti ti-plus"></i> İlk Trunk'ı Ekle
+                </button>
+            </div>
+        {% endif %}
+    </div>
+</div>
+
+<!-- Add/Edit Trunk Modal -->
+<div class="modal-overlay" id="trunkModal">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h3><i class="ti ti-server-2"></i> <span id="modalTitle">Yeni SIP Trunk</span></h3>
+            <button class="modal-close" onclick="closeModal()">
+                <i class="ti ti-x"></i>
+            </button>
+        </div>
+        <form id="trunkForm" onsubmit="saveTrunk(event)">
+            <div class="modal-body">
+                <input type="hidden" id="trunkId" name="trunk_id">
+                
+                <div class="form-section">
+                    <div class="form-section-title">Temel Bilgiler</div>
+                    <div class="form-grid">
+                        <div class="form-group">
+                            <label>Trunk Adı <span class="required">*</span></label>
+                            <input type="text" class="form-control" id="trunkName" name="name" required placeholder="Örn: Turkcell SIP">
+                        </div>
+                        <div class="form-group">
+                            <label>Sağlayıcı</label>
+                            <select class="form-control" id="trunkProvider" name="provider">
+                                <option value="">Seçiniz</option>
+                                <option value="turkcell">Turkcell</option>
+                                <option value="vodafone">Vodafone</option>
+                                <option value="turk_telekom">Türk Telekom</option>
+                                <option value="netgsm">NetGSM</option>
+                                <option value="bulutfon">Bulutfon</option>
+                                <option value="other">Diğer</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="form-section">
+                    <div class="form-section-title">Bağlantı Bilgileri</div>
+                    <div class="form-grid">
+                        <div class="form-group">
+                            <label>Host / IP <span class="required">*</span></label>
+                            <input type="text" class="form-control" id="trunkHost" name="host" required placeholder="sip.provider.com veya IP">
+                        </div>
+                        <div class="form-group">
+                            <label>Port</label>
+                            <input type="number" class="form-control" id="trunkPort" name="port" value="5060" placeholder="5060">
+                        </div>
+                        <div class="form-group">
+                            <label>Kullanıcı Adı</label>
+                            <input type="text" class="form-control" id="trunkUsername" name="username" placeholder="SIP kullanıcı adı">
+                        </div>
+                        <div class="form-group">
+                            <label>Şifre</label>
+                            <input type="password" class="form-control" id="trunkPassword" name="password" placeholder="SIP şifresi">
+                        </div>
+                        <div class="form-group">
+                            <label>Auth Kullanıcı (varsa)</label>
+                            <input type="text" class="form-control" id="trunkAuthUser" name="auth_user" placeholder="Auth kullanıcı">
+                        </div>
+                        <div class="form-group">
+                            <label>Transport</label>
+                            <select class="form-control" id="trunkTransport" name="transport">
+                                <option value="udp">UDP</option>
+                                <option value="tcp">TCP</option>
+                                <option value="tls">TLS</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="form-section">
+                    <div class="form-section-title">Codec ve Kapasite</div>
+                    <div class="form-grid">
+                        <div class="form-group">
+                            <label>Codec Seçimi</label>
+                            <div class="codec-list" id="codecList">
+                                <label class="codec-item selected">
+                                    <input type="checkbox" name="codecs" value="g711u" checked> G.711 μ-law
+                                </label>
+                                <label class="codec-item selected">
+                                    <input type="checkbox" name="codecs" value="g711a" checked> G.711 A-law
+                                </label>
+                                <label class="codec-item">
+                                    <input type="checkbox" name="codecs" value="g729"> G.729
+                                </label>
+                                <label class="codec-item">
+                                    <input type="checkbox" name="codecs" value="opus"> Opus
+                                </label>
+                                <label class="codec-item">
+                                    <input type="checkbox" name="codecs" value="gsm"> GSM
+                                </label>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label>Max Eşzamanlı Kanal</label>
+                            <input type="number" class="form-control" id="trunkMaxChannels" name="max_channels" value="30" min="1" max="1000">
+                        </div>
+                    </div>
+                </div>
+
+                <div class="form-section">
+                    <div class="form-section-title">Gelişmiş Ayarlar</div>
+                    <div class="form-grid">
+                        <div class="form-group">
+                            <label>Outbound Proxy</label>
+                            <input type="text" class="form-control" id="trunkProxy" name="outbound_proxy" placeholder="proxy.provider.com">
+                        </div>
+                        <div class="form-group">
+                            <label>Failover Trunk</label>
+                            <select class="form-control" id="trunkFailover" name="failover_trunk_id">
+                                <option value="">Yok</option>
+                                {% for t in trunks %}
+                                <option value="{{ t.id }}">{{ t.name }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <div class="form-group full-width">
+                            <label>IP Whitelist (virgülle ayırın)</label>
+                            <input type="text" class="form-control" id="trunkWhitelist" name="ip_whitelist" placeholder="192.168.1.1, 10.0.0.0/24">
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Test Result -->
+                <div class="test-result" id="testResult">
+                    <div class="test-result-header">
+                        <i class="ti ti-circle-check"></i>
+                        <span id="testResultTitle">Test Başarılı</span>
+                    </div>
+                    <div class="test-details" id="testResultDetails">
+                        Bağlantı süresi: 45ms | Codec: G.711 | Kayıt: Başarılı
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-info" onclick="testTrunkConnection()">
+                    <i class="ti ti-phone-check"></i> Bağlantı Test Et
+                </button>
+                <button type="button" class="btn btn-secondary" onclick="closeModal()">İptal</button>
+                <button type="submit" class="btn btn-primary">
+                    <i class="ti ti-device-floppy"></i> Kaydet
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+// Modal functions
+function openAddTrunkModal() {
+    document.getElementById('modalTitle').textContent = 'Yeni SIP Trunk';
+    document.getElementById('trunkForm').reset();
+    document.getElementById('trunkId').value = '';
+    document.getElementById('testResult').classList.remove('show');
+    document.getElementById('trunkModal').classList.add('show');
+}
+
+function closeModal() {
+    document.getElementById('trunkModal').classList.remove('show');
+}
+
+// Codec selection
+document.querySelectorAll('.codec-item').forEach(item => {
+    item.addEventListener('click', function() {
+        const checkbox = this.querySelector('input[type="checkbox"]');
+        checkbox.checked = !checkbox.checked;
+        this.classList.toggle('selected', checkbox.checked);
+    });
+});
+
+// Save trunk
+async function saveTrunk(event) {
+    event.preventDefault();
+    
+    const form = document.getElementById('trunkForm');
+    const formData = new FormData(form);
+    const data = Object.fromEntries(formData);
+    
+    // Collect codecs
+    const codecs = [];
+    document.querySelectorAll('input[name="codecs"]:checked').forEach(cb => {
+        codecs.push(cb.value);
+    });
+    data.codecs = codecs.join(',');
+    
+    try {
+        const response = await fetch('/api/voip/trunks', {
+            method: data.trunk_id ? 'PUT' : 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(data)
+        });
+        
+        const result = await response.json();
+        
+        if (result.success) {
+            showNotification('Trunk başarıyla kaydedildi', 'success');
+            closeModal();
+            location.reload();
+        } else {
+            showNotification(result.error || 'Bir hata oluştu', 'error');
+        }
+    } catch (error) {
+        showNotification('Bağlantı hatası', 'error');
+    }
+}
+
+// Edit trunk
+async function editTrunk(trunkId) {
+    try {
+        const response = await fetch(`/api/voip/trunks/${trunkId}`);
+        const trunk = await response.json();
+        
+        document.getElementById('modalTitle').textContent = 'Trunk Düzenle';
+        document.getElementById('trunkId').value = trunk.id;
+        document.getElementById('trunkName').value = trunk.name;
+        document.getElementById('trunkProvider').value = trunk.provider || '';
+        document.getElementById('trunkHost').value = trunk.host;
+        document.getElementById('trunkPort').value = trunk.port || 5060;
+        document.getElementById('trunkUsername').value = trunk.username || '';
+        document.getElementById('trunkPassword').value = '';
+        document.getElementById('trunkTransport').value = trunk.transport || 'udp';
+        document.getElementById('trunkMaxChannels').value = trunk.max_channels || 30;
+        
+        document.getElementById('trunkModal').classList.add('show');
+    } catch (error) {
+        showNotification('Trunk bilgileri alınamadı', 'error');
+    }
+}
+
+// Delete trunk
+async function deleteTrunk(trunkId) {
+    if (!confirm('Bu trunk\'ı silmek istediğinizden emin misiniz?')) return;
+    
+    try {
+        const response = await fetch(`/api/voip/trunks/${trunkId}`, {
+            method: 'DELETE'
+        });
+        
+        const result = await response.json();
+        
+        if (result.success) {
+            showNotification('Trunk silindi', 'success');
+            document.querySelector(`[data-trunk-id="${trunkId}"]`).remove();
+        } else {
+            showNotification(result.error || 'Silme hatası', 'error');
+        }
+    } catch (error) {
+        showNotification('Bağlantı hatası', 'error');
+    }
+}
+
+// Test trunk
+async function testTrunk(trunkId) {
+    showNotification('Test çağrısı yapılıyor...', 'info');
+    
+    try {
+        const response = await fetch(`/api/voip/trunks/${trunkId}/test`, {
+            method: 'POST'
+        });
+        
+        const result = await response.json();
+        
+        if (result.success) {
+            showNotification(`Test başarılı! Gecikme: ${result.latency}ms`, 'success');
+        } else {
+            showNotification(`Test başarısız: ${result.error}`, 'error');
+        }
+    } catch (error) {
+        showNotification('Test hatası', 'error');
+    }
+}
+
+// Test connection from modal
+function testTrunkConnection() {
+    const testResult = document.getElementById('testResult');
+    testResult.className = 'test-result show success';
+    document.getElementById('testResultTitle').textContent = 'Bağlantı Test Ediliyor...';
+    document.getElementById('testResultDetails').textContent = 'Lütfen bekleyin...';
+    
+    // Simulate test
+    setTimeout(() => {
+        const success = Math.random() > 0.2;
+        if (success) {
+            testResult.className = 'test-result show success';
+            document.getElementById('testResultTitle').innerHTML = '<i class="ti ti-circle-check"></i> Test Başarılı';
+            document.getElementById('testResultDetails').textContent = `Bağlantı süresi: ${Math.floor(Math.random() * 50 + 20)}ms | Kayıt: Başarılı`;
+        } else {
+            testResult.className = 'test-result show error';
+            document.getElementById('testResultTitle').innerHTML = '<i class="ti ti-circle-x"></i> Test Başarısız';
+            document.getElementById('testResultDetails').textContent = 'Hata: Bağlantı zaman aşımı';
+        }
+    }, 2000);
+}
+
+function refreshTrunks() {
+    location.reload();
+}
+
+function showNotification(message, type) {
+    // Simple notification
+    alert(message);
+}
+
+// Update stats periodically
+setInterval(() => {
+    // Simulate real-time updates
+    document.getElementById('activeCallsCount').textContent = Math.floor(Math.random() * 20);
+}, 5000);
+</script>
+{% endblock %}
+

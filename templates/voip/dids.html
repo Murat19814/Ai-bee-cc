@@ -1,0 +1,681 @@
+{% extends "base.html" %}
+
+{% block title %}DID / Numara Yönetimi - {{ app_name }}{% endblock %}
+
+{% block extra_css %}
+<style>
+.voip-page {
+    padding: 1.5rem;
+}
+
+/* DID Table */
+.did-table-container {
+    background: white;
+    border-radius: 16px;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.06);
+    overflow: hidden;
+    margin-top: 1.5rem;
+}
+
+.did-table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.did-table th {
+    background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+    color: white;
+    padding: 1rem;
+    text-align: left;
+    font-size: 0.8rem;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.did-table td {
+    padding: 1rem;
+    border-bottom: 1px solid #f0f0f0;
+    vertical-align: middle;
+}
+
+.did-table tr:hover {
+    background: #f8f9fa;
+}
+
+.did-number {
+    font-family: var(--font-mono);
+    font-size: 1rem;
+    font-weight: 600;
+    color: #1a1a2e;
+}
+
+.did-number i {
+    color: #F5A623;
+    margin-right: 0.5rem;
+}
+
+.did-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.25rem;
+    padding: 0.3rem 0.75rem;
+    border-radius: 20px;
+    font-size: 0.75rem;
+    font-weight: 600;
+}
+
+.did-badge.inbound {
+    background: rgba(33, 150, 243, 0.1);
+    color: #1976D2;
+}
+
+.did-badge.outbound {
+    background: rgba(76, 175, 80, 0.1);
+    color: #388E3C;
+}
+
+.did-badge.both {
+    background: rgba(156, 39, 176, 0.1);
+    color: #7B1FA2;
+}
+
+.did-route {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 0.85rem;
+}
+
+.did-route i {
+    color: #F5A623;
+}
+
+.route-arrow {
+    color: #ccc;
+}
+
+/* CLI Rotation */
+.cli-rotation-card {
+    background: linear-gradient(145deg, #fff8e1, #ffecb3);
+    border: 1px solid rgba(255, 193, 7, 0.3);
+    border-radius: 12px;
+    padding: 1rem;
+    margin-top: 1.5rem;
+}
+
+.cli-rotation-header {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    margin-bottom: 1rem;
+    font-weight: 600;
+    color: #F57C00;
+}
+
+.cli-numbers {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+}
+
+.cli-number-tag {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.5rem 1rem;
+    background: white;
+    border-radius: 8px;
+    font-family: var(--font-mono);
+    font-size: 0.85rem;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.cli-number-tag .remove {
+    color: #f44336;
+    cursor: pointer;
+}
+
+/* Filters */
+.filter-bar {
+    display: flex;
+    gap: 1rem;
+    margin-top: 1.5rem;
+    flex-wrap: wrap;
+}
+
+.filter-bar .form-control {
+    min-width: 200px;
+}
+
+.search-input {
+    position: relative;
+}
+
+.search-input i {
+    position: absolute;
+    left: 1rem;
+    top: 50%;
+    transform: translateY(-50%);
+    color: #aaa;
+}
+
+.search-input input {
+    padding-left: 2.5rem;
+}
+
+/* Blacklist Section */
+.blacklist-section {
+    margin-top: 2rem;
+    padding: 1.5rem;
+    background: linear-gradient(145deg, #ffebee, #ffcdd2);
+    border-radius: 16px;
+    border: 1px solid rgba(244, 67, 54, 0.2);
+}
+
+.blacklist-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1rem;
+}
+
+.blacklist-header h3 {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    color: #C62828;
+}
+
+.blacklist-numbers {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+}
+
+.blacklist-tag {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.5rem 1rem;
+    background: white;
+    border-radius: 8px;
+    font-family: var(--font-mono);
+    font-size: 0.85rem;
+    border: 1px solid rgba(244, 67, 54, 0.3);
+}
+
+/* Modal */
+.modal-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.6);
+    backdrop-filter: blur(4px);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 1000;
+    opacity: 0;
+    visibility: hidden;
+    transition: all 0.3s ease;
+}
+
+.modal-overlay.show {
+    opacity: 1;
+    visibility: visible;
+}
+
+.modal-content {
+    background: white;
+    border-radius: 20px;
+    width: 100%;
+    max-width: 600px;
+    max-height: 90vh;
+    overflow: hidden;
+}
+
+.modal-header {
+    padding: 1.5rem;
+    background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+    color: white;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.modal-header h3 {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+}
+
+.modal-header h3 i { color: #F5A623; }
+
+.modal-close {
+    background: rgba(255,255,255,0.1);
+    border: none;
+    color: white;
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    cursor: pointer;
+}
+
+.modal-body { padding: 1.5rem; }
+
+.modal-footer {
+    padding: 1rem 1.5rem;
+    background: #f8f9fa;
+    display: flex;
+    gap: 1rem;
+    justify-content: flex-end;
+}
+
+.form-group {
+    margin-bottom: 1rem;
+}
+
+.form-group label {
+    display: block;
+    margin-bottom: 0.5rem;
+    font-weight: 600;
+    color: #333;
+}
+
+.form-control {
+    width: 100%;
+    padding: 0.75rem 1rem;
+    border: 2px solid #e0e0e0;
+    border-radius: 10px;
+    font-size: 0.9rem;
+    transition: all 0.2s;
+}
+
+.form-control:focus {
+    outline: none;
+    border-color: #F5A623;
+    box-shadow: 0 0 0 4px rgba(245, 166, 35, 0.1);
+}
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="voip-page">
+    <div class="page-header">
+        <div>
+            <h1 class="page-title">
+                <i class="ti ti-phone-plus" style="color: #F5A623;"></i>
+                DID / Numara Yönetimi
+            </h1>
+            <p class="page-subtitle">Gelen ve giden çağrı numaralarını yönetin</p>
+        </div>
+        <div class="page-header-actions">
+            <button class="btn btn-secondary" onclick="importDIDs()">
+                <i class="ti ti-upload"></i> İçe Aktar
+            </button>
+            <button class="btn btn-primary" onclick="openAddDIDModal()">
+                <i class="ti ti-plus"></i> Yeni DID Ekle
+            </button>
+        </div>
+    </div>
+
+    <!-- Stats -->
+    <div class="grid grid-cols-4 gap-4 mt-4">
+        <div class="stat-card" style="background: linear-gradient(145deg, #E3F2FD, #BBDEFB); border-left: 4px solid #1E88E5;">
+            <div class="stat-card-inner">
+                <div class="icon-3d blue"><i class="ti ti-phone"></i></div>
+                <div class="stat-content">
+                    <div class="stat-value">{{ dids|length if dids else 0 }}</div>
+                    <div class="stat-label">Toplam DID</div>
+                </div>
+            </div>
+        </div>
+        <div class="stat-card" style="background: linear-gradient(145deg, #E8F5E9, #C8E6C9); border-left: 4px solid #43A047;">
+            <div class="stat-card-inner">
+                <div class="icon-3d green"><i class="ti ti-phone-incoming"></i></div>
+                <div class="stat-content">
+                    <div class="stat-value">{{ inbound_count if inbound_count else 0 }}</div>
+                    <div class="stat-label">Inbound</div>
+                </div>
+            </div>
+        </div>
+        <div class="stat-card" style="background: linear-gradient(145deg, #FFF3E0, #FFE0B2); border-left: 4px solid #F57C00;">
+            <div class="stat-card-inner">
+                <div class="icon-3d orange"><i class="ti ti-phone-outgoing"></i></div>
+                <div class="stat-content">
+                    <div class="stat-value">{{ outbound_count if outbound_count else 0 }}</div>
+                    <div class="stat-label">Outbound CLI</div>
+                </div>
+            </div>
+        </div>
+        <div class="stat-card" style="background: linear-gradient(145deg, #FFEBEE, #FFCDD2); border-left: 4px solid #E53935;">
+            <div class="stat-card-inner">
+                <div class="icon-3d red"><i class="ti ti-ban"></i></div>
+                <div class="stat-content">
+                    <div class="stat-value">{{ blacklist_count if blacklist_count else 0 }}</div>
+                    <div class="stat-label">Kara Liste</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Filter Bar -->
+    <div class="filter-bar">
+        <div class="search-input">
+            <i class="ti ti-search"></i>
+            <input type="text" class="form-control" placeholder="Numara ara..." id="searchDID">
+        </div>
+        <select class="form-control" id="filterType">
+            <option value="">Tüm Tipler</option>
+            <option value="inbound">Inbound</option>
+            <option value="outbound">Outbound CLI</option>
+            <option value="both">Her İkisi</option>
+        </select>
+        <select class="form-control" id="filterTrunk">
+            <option value="">Tüm Trunk'lar</option>
+            {% for trunk in trunks %}
+            <option value="{{ trunk.id }}">{{ trunk.name }}</option>
+            {% endfor %}
+        </select>
+        <select class="form-control" id="filterRoute">
+            <option value="">Tüm Yönlendirmeler</option>
+            <option value="ivr">IVR</option>
+            <option value="queue">Queue</option>
+            <option value="extension">Extension</option>
+        </select>
+    </div>
+
+    <!-- CLI Rotation -->
+    <div class="cli-rotation-card">
+        <div class="cli-rotation-header">
+            <i class="ti ti-refresh"></i>
+            CLI Rotasyon Havuzu (Outbound)
+        </div>
+        <div class="cli-numbers" id="cliPool">
+            <div class="cli-number-tag">
+                +90 212 555 0001
+                <i class="ti ti-x remove" onclick="removeCLI(this)"></i>
+            </div>
+            <div class="cli-number-tag">
+                +90 212 555 0002
+                <i class="ti ti-x remove" onclick="removeCLI(this)"></i>
+            </div>
+            <div class="cli-number-tag">
+                +90 212 555 0003
+                <i class="ti ti-x remove" onclick="removeCLI(this)"></i>
+            </div>
+            <button class="btn btn-sm btn-secondary" onclick="addCLI()">
+                <i class="ti ti-plus"></i> Ekle
+            </button>
+        </div>
+    </div>
+
+    <!-- DID Table -->
+    <div class="did-table-container">
+        <table class="did-table">
+            <thead>
+                <tr>
+                    <th>Numara</th>
+                    <th>Tip</th>
+                    <th>Trunk</th>
+                    <th>Yönlendirme</th>
+                    <th>Durum</th>
+                    <th>İşlemler</th>
+                </tr>
+            </thead>
+            <tbody id="didTableBody">
+                {% if dids %}
+                    {% for did in dids %}
+                    <tr>
+                        <td>
+                            <span class="did-number">
+                                <i class="ti ti-phone"></i>
+                                {{ did.number }}
+                            </span>
+                        </td>
+                        <td>
+                            <span class="did-badge {{ did.type }}">
+                                {% if did.type == 'inbound' %}
+                                    <i class="ti ti-phone-incoming"></i> Inbound
+                                {% elif did.type == 'outbound' %}
+                                    <i class="ti ti-phone-outgoing"></i> Outbound
+                                {% else %}
+                                    <i class="ti ti-arrows-exchange"></i> Her İkisi
+                                {% endif %}
+                            </span>
+                        </td>
+                        <td>{{ did.trunk.name if did.trunk else '-' }}</td>
+                        <td>
+                            <div class="did-route">
+                                <i class="ti ti-route"></i>
+                                {{ did.destination_type or 'IVR' }}
+                                <span class="route-arrow">→</span>
+                                {{ did.destination_name or 'Ana Menü' }}
+                            </div>
+                        </td>
+                        <td>
+                            {% if did.is_active %}
+                                <span class="badge badge-success">Aktif</span>
+                            {% else %}
+                                <span class="badge badge-secondary">Pasif</span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            <div class="btn-group">
+                                <button class="btn btn-sm btn-secondary" onclick="editDID({{ did.id }})">
+                                    <i class="ti ti-edit"></i>
+                                </button>
+                                <button class="btn btn-sm btn-danger" onclick="deleteDID({{ did.id }})">
+                                    <i class="ti ti-trash"></i>
+                                </button>
+                            </div>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                {% else %}
+                    <!-- Demo Data -->
+                    <tr>
+                        <td><span class="did-number"><i class="ti ti-phone"></i> +90 212 555 0001</span></td>
+                        <td><span class="did-badge inbound"><i class="ti ti-phone-incoming"></i> Inbound</span></td>
+                        <td>Turkcell SIP</td>
+                        <td><div class="did-route"><i class="ti ti-route"></i> IVR <span class="route-arrow">→</span> Ana Menü</div></td>
+                        <td><span class="badge badge-success">Aktif</span></td>
+                        <td>
+                            <div class="btn-group">
+                                <button class="btn btn-sm btn-secondary"><i class="ti ti-edit"></i></button>
+                                <button class="btn btn-sm btn-danger"><i class="ti ti-trash"></i></button>
+                            </div>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td><span class="did-number"><i class="ti ti-phone"></i> +90 212 555 0002</span></td>
+                        <td><span class="did-badge outbound"><i class="ti ti-phone-outgoing"></i> Outbound</span></td>
+                        <td>Turkcell SIP</td>
+                        <td><div class="did-route"><i class="ti ti-route"></i> CLI <span class="route-arrow">→</span> Rotasyon</div></td>
+                        <td><span class="badge badge-success">Aktif</span></td>
+                        <td>
+                            <div class="btn-group">
+                                <button class="btn btn-sm btn-secondary"><i class="ti ti-edit"></i></button>
+                                <button class="btn btn-sm btn-danger"><i class="ti ti-trash"></i></button>
+                            </div>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td><span class="did-number"><i class="ti ti-phone"></i> +90 850 555 0000</span></td>
+                        <td><span class="did-badge both"><i class="ti ti-arrows-exchange"></i> Her İkisi</span></td>
+                        <td>Vodafone Trunk</td>
+                        <td><div class="did-route"><i class="ti ti-route"></i> Queue <span class="route-arrow">→</span> Satış Ekibi</div></td>
+                        <td><span class="badge badge-success">Aktif</span></td>
+                        <td>
+                            <div class="btn-group">
+                                <button class="btn btn-sm btn-secondary"><i class="ti ti-edit"></i></button>
+                                <button class="btn btn-sm btn-danger"><i class="ti ti-trash"></i></button>
+                            </div>
+                        </td>
+                    </tr>
+                {% endif %}
+            </tbody>
+        </table>
+    </div>
+
+    <!-- Blacklist Section -->
+    <div class="blacklist-section">
+        <div class="blacklist-header">
+            <h3><i class="ti ti-ban"></i> Kara Liste (DNC)</h3>
+            <button class="btn btn-sm btn-danger" onclick="addToBlacklist()">
+                <i class="ti ti-plus"></i> Numara Ekle
+            </button>
+        </div>
+        <div class="blacklist-numbers">
+            <div class="blacklist-tag">
+                +90 532 111 2233
+                <i class="ti ti-x" style="color: #f44336; cursor: pointer;"></i>
+            </div>
+            <div class="blacklist-tag">
+                +90 555 444 5566
+                <i class="ti ti-x" style="color: #f44336; cursor: pointer;"></i>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Add DID Modal -->
+<div class="modal-overlay" id="didModal">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h3><i class="ti ti-phone-plus"></i> Yeni DID Ekle</h3>
+            <button class="modal-close" onclick="closeModal()">
+                <i class="ti ti-x"></i>
+            </button>
+        </div>
+        <form id="didForm" onsubmit="saveDID(event)">
+            <div class="modal-body">
+                <div class="form-group">
+                    <label>Telefon Numarası</label>
+                    <input type="tel" class="form-control" name="number" required placeholder="+90 XXX XXX XXXX">
+                </div>
+                <div class="form-group">
+                    <label>Tip</label>
+                    <select class="form-control" name="type">
+                        <option value="inbound">Inbound (Gelen)</option>
+                        <option value="outbound">Outbound CLI (Giden)</option>
+                        <option value="both">Her İkisi</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>SIP Trunk</label>
+                    <select class="form-control" name="trunk_id">
+                        {% for trunk in trunks %}
+                        <option value="{{ trunk.id }}">{{ trunk.name }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Yönlendirme Tipi</label>
+                    <select class="form-control" name="destination_type" id="destType" onchange="updateDestination()">
+                        <option value="ivr">IVR</option>
+                        <option value="queue">Queue</option>
+                        <option value="extension">Extension</option>
+                        <option value="external">Harici Numara</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Hedef</label>
+                    <select class="form-control" name="destination_id" id="destSelect">
+                        <option value="1">Ana Menü</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Açıklama</label>
+                    <input type="text" class="form-control" name="description" placeholder="Numara açıklaması">
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" onclick="closeModal()">İptal</button>
+                <button type="submit" class="btn btn-primary">
+                    <i class="ti ti-device-floppy"></i> Kaydet
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+function openAddDIDModal() {
+    document.getElementById('didModal').classList.add('show');
+}
+
+function closeModal() {
+    document.getElementById('didModal').classList.remove('show');
+}
+
+function saveDID(event) {
+    event.preventDefault();
+    // Save logic
+    alert('DID kaydedildi!');
+    closeModal();
+}
+
+function editDID(id) {
+    openAddDIDModal();
+}
+
+function deleteDID(id) {
+    if(confirm('Bu DID\'ı silmek istediğinizden emin misiniz?')) {
+        alert('DID silindi!');
+    }
+}
+
+function importDIDs() {
+    alert('CSV/Excel import özelliği');
+}
+
+function addCLI() {
+    const number = prompt('CLI numarası girin:');
+    if(number) {
+        const pool = document.getElementById('cliPool');
+        const tag = document.createElement('div');
+        tag.className = 'cli-number-tag';
+        tag.innerHTML = `${number} <i class="ti ti-x remove" onclick="removeCLI(this)"></i>`;
+        pool.insertBefore(tag, pool.lastElementChild);
+    }
+}
+
+function removeCLI(element) {
+    element.parentElement.remove();
+}
+
+function addToBlacklist() {
+    const number = prompt('Kara listeye eklenecek numara:');
+    if(number) {
+        alert(number + ' kara listeye eklendi!');
+    }
+}
+
+function updateDestination() {
+    const type = document.getElementById('destType').value;
+    const select = document.getElementById('destSelect');
+    
+    // Update options based on type
+    select.innerHTML = '';
+    if(type === 'ivr') {
+        select.innerHTML = '<option value="1">Ana Menü</option><option value="2">Satış IVR</option>';
+    } else if(type === 'queue') {
+        select.innerHTML = '<option value="1">Satış Ekibi</option><option value="2">Destek Ekibi</option>';
+    } else if(type === 'extension') {
+        select.innerHTML = '<option value="100">100 - Admin</option><option value="101">101 - Supervisor</option>';
+    }
+}
+
+// Search functionality
+document.getElementById('searchDID').addEventListener('input', function(e) {
+    const search = e.target.value.toLowerCase();
+    document.querySelectorAll('#didTableBody tr').forEach(row => {
+        const number = row.querySelector('.did-number').textContent.toLowerCase();
+        row.style.display = number.includes(search) ? '' : 'none';
+    });
+});
+</script>
+{% endblock %}
+

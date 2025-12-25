@@ -1,0 +1,210 @@
+{% extends "base.html" %}
+
+{% block title %}VoIP Tarifeleri - AI BEE CC{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <h1><i class="ti ti-receipt"></i> VoIP Tarifeleri</h1>
+    <div class="page-actions">
+        <a href="{{ url_for('billing_tariff_new') }}" class="btn btn-primary">
+            <i class="ti ti-plus"></i> Yeni Tarife
+        </a>
+    </div>
+</div>
+
+<div class="tariffs-list">
+    {% for tariff in tariffs %}
+    <div class="tariff-card">
+        <div class="tariff-header">
+            <div class="tariff-info">
+                <h3>{{ tariff.name }}</h3>
+                <span class="tariff-code">{{ tariff.code }}</span>
+            </div>
+            <div class="tariff-status">
+                {% if tariff.is_default %}
+                <span class="badge badge-primary">Varsayılan</span>
+                {% endif %}
+                {% if tariff.is_active %}
+                <span class="badge badge-success">Aktif</span>
+                {% else %}
+                <span class="badge badge-muted">Pasif</span>
+                {% endif %}
+            </div>
+        </div>
+        
+        <div class="tariff-rates">
+            <div class="rate-item">
+                <i class="ti ti-phone-incoming"></i>
+                <div class="rate-content">
+                    <span class="rate-label">Gelen Çağrı</span>
+                    <span class="rate-value">₺{{ "%.4f"|format(tariff.default_rate_inbound|float) }}/dk</span>
+                </div>
+            </div>
+            <div class="rate-item">
+                <i class="ti ti-phone-outgoing"></i>
+                <div class="rate-content">
+                    <span class="rate-label">Giden Çağrı</span>
+                    <span class="rate-value">₺{{ "%.4f"|format(tariff.default_rate_outbound|float) }}/dk</span>
+                </div>
+            </div>
+            <div class="rate-item">
+                <i class="ti ti-link"></i>
+                <div class="rate-content">
+                    <span class="rate-label">Bağlantı Ücreti</span>
+                    <span class="rate-value">₺{{ "%.4f"|format(tariff.connection_fee|float) }}</span>
+                </div>
+            </div>
+            <div class="rate-item">
+                <i class="ti ti-clock"></i>
+                <div class="rate-content">
+                    <span class="rate-label">Yuvarlama</span>
+                    <span class="rate-value">{{ tariff.billing_increment }} sn</span>
+                </div>
+            </div>
+        </div>
+        
+        <div class="tariff-description">
+            {{ tariff.description or 'Açıklama yok' }}
+        </div>
+        
+        <div class="tariff-actions">
+            <a href="{{ url_for('billing_tariff_rates', tariff_id=tariff.id) }}" class="btn btn-outline btn-sm">
+                <i class="ti ti-list"></i> Fiyat Detayları
+            </a>
+            <button class="btn btn-outline btn-sm">
+                <i class="ti ti-edit"></i> Düzenle
+            </button>
+        </div>
+    </div>
+    {% else %}
+    <div class="empty-state">
+        <i class="ti ti-receipt-off"></i>
+        <h4>Henüz VoIP tarifesi tanımlanmamış</h4>
+        <a href="{{ url_for('billing_tariff_new') }}" class="btn btn-primary">
+            <i class="ti ti-plus"></i> İlk Tarifeyi Oluştur
+        </a>
+    </div>
+    {% endfor %}
+</div>
+
+<style>
+.tariffs-list {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+}
+
+.tariff-card {
+    background: white;
+    border-radius: 12px;
+    padding: 1.5rem;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+}
+
+.tariff-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 1.5rem;
+}
+
+.tariff-info h3 {
+    font-size: 1.25rem;
+    margin-bottom: 0.25rem;
+}
+
+.tariff-code {
+    font-family: monospace;
+    color: var(--text-muted);
+    font-size: 0.85rem;
+}
+
+.tariff-status {
+    display: flex;
+    gap: 0.5rem;
+}
+
+.tariff-rates {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+    gap: 1rem;
+    margin-bottom: 1.5rem;
+    padding: 1rem;
+    background: #f8f9fa;
+    border-radius: 8px;
+}
+
+.rate-item {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+}
+
+.rate-item i {
+    font-size: 1.25rem;
+    color: var(--primary-color);
+}
+
+.rate-content {
+    display: flex;
+    flex-direction: column;
+}
+
+.rate-label {
+    font-size: 0.8rem;
+    color: var(--text-muted);
+}
+
+.rate-value {
+    font-weight: 600;
+    font-family: monospace;
+}
+
+.tariff-description {
+    color: var(--text-secondary);
+    font-size: 0.9rem;
+    margin-bottom: 1.5rem;
+}
+
+.tariff-actions {
+    display: flex;
+    gap: 0.5rem;
+}
+
+.badge {
+    padding: 0.25rem 0.75rem;
+    border-radius: 20px;
+    font-size: 0.75rem;
+    font-weight: 600;
+}
+
+.badge-primary {
+    background: linear-gradient(135deg, var(--primary-color), #ffc107);
+    color: white;
+}
+
+.badge-success {
+    background: #e8f5e9;
+    color: #2e7d32;
+}
+
+.badge-muted {
+    background: #f5f5f5;
+    color: #757575;
+}
+
+.empty-state {
+    text-align: center;
+    padding: 4rem 2rem;
+    background: white;
+    border-radius: 12px;
+}
+
+.empty-state i {
+    font-size: 4rem;
+    color: var(--text-muted);
+    margin-bottom: 1rem;
+}
+</style>
+{% endblock %}
+

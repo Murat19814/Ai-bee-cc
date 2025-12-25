@@ -1,0 +1,235 @@
+{% extends "base.html" %}
+
+{% block title %}Trunk Tahsisleri - AI BEE CC{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <h1><i class="ti ti-network"></i> Trunk Tahsis Yönetimi</h1>
+    <div class="page-actions">
+        <button class="btn btn-primary" data-modal="add-allocation">
+            <i class="ti ti-plus"></i> Tahsis Ekle
+        </button>
+    </div>
+</div>
+
+<!-- Trunk Kapasitesi -->
+<div class="trunk-overview">
+    <h3>Trunk Kapasitesi</h3>
+    <div class="trunks-grid">
+        {% for trunk in trunks %}
+        <div class="trunk-card">
+            <div class="trunk-header">
+                <span class="trunk-name">{{ trunk.name }}</span>
+                <span class="trunk-status status-{{ trunk.status }}">{{ trunk.status }}</span>
+            </div>
+            <div class="trunk-capacity">
+                <div class="capacity-bar">
+                    <div class="capacity-fill" style="width: {{ (trunk.current_channels / trunk.max_channels * 100) if trunk.max_channels else 0 }}%"></div>
+                </div>
+                <span>{{ trunk.current_channels or 0 }} / {{ trunk.max_channels }} kanal</span>
+            </div>
+            <div class="trunk-allocations">
+                {% set trunk_allocs = allocations|selectattr('trunk_id', 'equalto', trunk.id)|list %}
+                <span>{{ trunk_allocs|length }} tenant'a tahsisli</span>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+
+<!-- Tahsisler Tablosu -->
+<div class="table-card">
+    <h3>Tahsisler</h3>
+    <table class="data-table">
+        <thead>
+            <tr>
+                <th>Tenant</th>
+                <th>Trunk</th>
+                <th>Tahsis Kanal</th>
+                <th>Yön</th>
+                <th>Öncelik</th>
+                <th>İşlemler</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for alloc in allocations %}
+            <tr>
+                <td>
+                    {% set tenant = tenants|selectattr('id', 'equalto', alloc.tenant_id)|first %}
+                    <strong>{{ tenant.name if tenant else 'Bilinmeyen' }}</strong>
+                </td>
+                <td>
+                    {% set trunk = trunks|selectattr('id', 'equalto', alloc.trunk_id)|first %}
+                    {{ trunk.name if trunk else 'Bilinmeyen' }}
+                </td>
+                <td><strong>{{ alloc.allocated_channels }}</strong> kanal</td>
+                <td>
+                    <span class="badge badge-outline">
+                        {% if alloc.direction == 'both' %}Her İki Yön
+                        {% elif alloc.direction == 'inbound' %}Sadece Gelen
+                        {% elif alloc.direction == 'outbound' %}Sadece Giden
+                        {% else %}{{ alloc.direction }}{% endif %}
+                    </span>
+                </td>
+                <td>
+                    <span class="priority-badge">P{{ alloc.priority }}</span>
+                </td>
+                <td>
+                    <button class="btn btn-icon" title="Düzenle">
+                        <i class="ti ti-edit"></i>
+                    </button>
+                    <button class="btn btn-icon text-danger" title="Sil">
+                        <i class="ti ti-trash"></i>
+                    </button>
+                </td>
+            </tr>
+            {% else %}
+            <tr>
+                <td colspan="6" class="empty-row">
+                    <i class="ti ti-network-off"></i>
+                    <p>Henüz trunk tahsisi yok</p>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+
+<style>
+.trunk-overview {
+    background: white;
+    border-radius: 12px;
+    padding: 1.5rem;
+    margin-bottom: 1.5rem;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+}
+
+.trunk-overview h3 {
+    margin-bottom: 1rem;
+}
+
+.trunks-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+    gap: 1rem;
+}
+
+.trunk-card {
+    background: #f8f9fa;
+    border-radius: 8px;
+    padding: 1rem;
+}
+
+.trunk-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 0.75rem;
+}
+
+.trunk-name {
+    font-weight: 600;
+}
+
+.trunk-status {
+    font-size: 0.75rem;
+    padding: 0.2rem 0.5rem;
+    border-radius: 4px;
+}
+
+.status-active {
+    background: #e8f5e9;
+    color: #2e7d32;
+}
+
+.trunk-capacity {
+    margin-bottom: 0.5rem;
+}
+
+.capacity-bar {
+    height: 8px;
+    background: #ddd;
+    border-radius: 4px;
+    overflow: hidden;
+    margin-bottom: 0.25rem;
+}
+
+.capacity-fill {
+    height: 100%;
+    background: linear-gradient(90deg, var(--primary-color), #ffc107);
+    border-radius: 4px;
+}
+
+.trunk-capacity span {
+    font-size: 0.8rem;
+    color: var(--text-muted);
+}
+
+.trunk-allocations {
+    font-size: 0.85rem;
+    color: var(--text-secondary);
+}
+
+.table-card {
+    background: white;
+    border-radius: 12px;
+    padding: 1.5rem;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+}
+
+.table-card h3 {
+    margin-bottom: 1rem;
+}
+
+.data-table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.data-table th,
+.data-table td {
+    padding: 1rem;
+    text-align: left;
+    border-bottom: 1px solid #f0f0f0;
+}
+
+.data-table th {
+    font-weight: 600;
+    color: var(--text-secondary);
+    font-size: 0.85rem;
+}
+
+.badge-outline {
+    background: transparent;
+    border: 1px solid #ddd;
+    padding: 0.2rem 0.5rem;
+    border-radius: 4px;
+    font-size: 0.75rem;
+}
+
+.priority-badge {
+    background: linear-gradient(135deg, var(--primary-color), #ffc107);
+    color: white;
+    padding: 0.2rem 0.5rem;
+    border-radius: 4px;
+    font-size: 0.75rem;
+    font-weight: 600;
+}
+
+.text-danger {
+    color: #f44336;
+}
+
+.empty-row {
+    text-align: center;
+    padding: 3rem !important;
+    color: var(--text-muted);
+}
+
+.empty-row i {
+    font-size: 2.5rem;
+    margin-bottom: 0.5rem;
+}
+</style>
+{% endblock %}
+

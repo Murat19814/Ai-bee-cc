@@ -1,0 +1,166 @@
+{% extends "base.html" %}
+
+{% block title %}Kota Yönetimi - AI BEE CC{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <h1><i class="ti ti-gauge"></i> Tenant Kota Yönetimi</h1>
+    <p>Çağrı merkezlerinin limit ve kotalarını yönetin</p>
+</div>
+
+<div class="quotas-table-container">
+    <table class="data-table">
+        <thead>
+            <tr>
+                <th>Tenant</th>
+                <th>Agent</th>
+                <th>Proje</th>
+                <th>Eş Zamanlı</th>
+                <th>Storage</th>
+                <th>Kayıt Süresi</th>
+                <th>AI</th>
+                <th>İşlemler</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for tenant in tenants %}
+            {% set quota = quotas|selectattr('tenant_id', 'equalto', tenant.id)|first %}
+            <tr>
+                <td>
+                    <div class="tenant-cell">
+                        <strong>{{ tenant.name }}</strong>
+                        <span class="tenant-code">{{ tenant.code }}</span>
+                    </div>
+                </td>
+                <td>
+                    <div class="quota-cell">
+                        <span class="quota-current">{{ quota.current_agents if quota else 0 }}</span>
+                        <span class="quota-divider">/</span>
+                        <span class="quota-limit">{{ quota.max_agents if quota else 10 }}</span>
+                    </div>
+                    <div class="quota-bar">
+                        <div class="quota-fill" style="width: {{ (quota.current_agents / quota.max_agents * 100) if quota and quota.max_agents else 0 }}%"></div>
+                    </div>
+                </td>
+                <td>
+                    <div class="quota-cell">
+                        <span class="quota-current">{{ quota.current_projects if quota else 0 }}</span>
+                        <span class="quota-divider">/</span>
+                        <span class="quota-limit">{{ quota.max_projects if quota else 5 }}</span>
+                    </div>
+                </td>
+                <td>
+                    <span class="quota-limit">
+                        {{ quota.max_concurrent_inbound if quota else 10 }}/{{ quota.max_concurrent_outbound if quota else 10 }}
+                    </span>
+                    <span class="quota-note">In/Out</span>
+                </td>
+                <td>
+                    <div class="quota-cell">
+                        <span class="quota-current">{{ "%.1f"|format(quota.current_storage_gb|float) if quota else 0 }}</span>
+                        <span class="quota-divider">/</span>
+                        <span class="quota-limit">{{ quota.storage_quota_gb if quota else 50 }} GB</span>
+                    </div>
+                    <div class="quota-bar">
+                        <div class="quota-fill" style="width: {{ (quota.current_storage_gb / quota.storage_quota_gb * 100) if quota and quota.storage_quota_gb else 0 }}%"></div>
+                    </div>
+                </td>
+                <td>
+                    <span class="quota-limit">{{ quota.recording_retention_days if quota else 90 }} gün</span>
+                </td>
+                <td>
+                    <span class="quota-limit">{{ quota.ai_monthly_minutes if quota else 0 }} dk/ay</span>
+                </td>
+                <td>
+                    <a href="{{ url_for('provisioning_quota_edit', tenant_id=tenant.id) }}" class="btn btn-outline btn-sm">
+                        <i class="ti ti-settings"></i> Düzenle
+                    </a>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+
+<style>
+.quotas-table-container {
+    background: white;
+    border-radius: 12px;
+    padding: 1.5rem;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+    overflow-x: auto;
+}
+
+.data-table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.data-table th,
+.data-table td {
+    padding: 1rem;
+    text-align: left;
+    border-bottom: 1px solid #f0f0f0;
+}
+
+.data-table th {
+    font-weight: 600;
+    color: var(--text-secondary);
+    font-size: 0.85rem;
+    white-space: nowrap;
+}
+
+.tenant-cell {
+    display: flex;
+    flex-direction: column;
+}
+
+.tenant-code {
+    font-size: 0.8rem;
+    color: var(--text-muted);
+    font-family: monospace;
+}
+
+.quota-cell {
+    display: flex;
+    align-items: baseline;
+    gap: 0.25rem;
+}
+
+.quota-current {
+    font-weight: 700;
+    color: var(--text-primary);
+}
+
+.quota-divider {
+    color: var(--text-muted);
+}
+
+.quota-limit {
+    color: var(--text-secondary);
+}
+
+.quota-note {
+    font-size: 0.75rem;
+    color: var(--text-muted);
+    display: block;
+}
+
+.quota-bar {
+    width: 100%;
+    height: 4px;
+    background: #eee;
+    border-radius: 2px;
+    margin-top: 0.5rem;
+    overflow: hidden;
+}
+
+.quota-fill {
+    height: 100%;
+    background: linear-gradient(90deg, var(--primary-color), #ffc107);
+    border-radius: 2px;
+    transition: width 0.3s;
+}
+</style>
+{% endblock %}
+

@@ -1,0 +1,210 @@
+{% extends "base.html" %}
+
+{% block title %}Kurum Ayarları - AI BEE CC{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <h1><i class="ti ti-building"></i> Kurum Ayarları</h1>
+    <p>Çağrı merkezinizin genel ayarlarını yönetin</p>
+</div>
+
+<div class="settings-grid">
+    <!-- Genel Bilgiler -->
+    <div class="settings-card">
+        <div class="settings-card-header">
+            <h3><i class="ti ti-info-circle"></i> Genel Bilgiler</h3>
+        </div>
+        <form action="{{ url_for('cc_settings_update') }}" method="POST">
+            <div class="form-group">
+                <label>Kurum Adı</label>
+                <input type="text" name="name" class="form-control" value="{{ tenant.name if tenant else '' }}">
+            </div>
+            <div class="form-row">
+                <div class="form-group">
+                    <label>Saat Dilimi</label>
+                    <select name="timezone" class="form-control">
+                        <option value="Europe/Istanbul" {{ 'selected' if tenant and tenant.timezone == 'Europe/Istanbul' }}>Türkiye (UTC+3)</option>
+                        <option value="Europe/London" {{ 'selected' if tenant and tenant.timezone == 'Europe/London' }}>Londra (UTC+0)</option>
+                        <option value="Europe/Berlin" {{ 'selected' if tenant and tenant.timezone == 'Europe/Berlin' }}>Berlin (UTC+1)</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Dil</label>
+                    <select name="language" class="form-control">
+                        <option value="tr" {{ 'selected' if tenant and tenant.language == 'tr' }}>Türkçe</option>
+                        <option value="en" {{ 'selected' if tenant and tenant.language == 'en' }}>English</option>
+                    </select>
+                </div>
+            </div>
+            <button type="submit" class="btn btn-primary">
+                <i class="ti ti-check"></i> Kaydet
+            </button>
+        </form>
+    </div>
+
+    <!-- Çalışma Saatleri -->
+    <div class="settings-card">
+        <div class="settings-card-header">
+            <h3><i class="ti ti-clock"></i> Çalışma Saatleri</h3>
+        </div>
+        <div class="form-row">
+            <div class="form-group">
+                <label>Başlangıç</label>
+                <input type="time" class="form-control" value="{{ settings.working_hours_start if settings else '09:00' }}">
+            </div>
+            <div class="form-group">
+                <label>Bitiş</label>
+                <input type="time" class="form-control" value="{{ settings.working_hours_end if settings else '18:00' }}">
+            </div>
+        </div>
+        <div class="form-group">
+            <label>Çalışma Günleri</label>
+            <div class="checkbox-group">
+                <label><input type="checkbox" checked> Pazartesi</label>
+                <label><input type="checkbox" checked> Salı</label>
+                <label><input type="checkbox" checked> Çarşamba</label>
+                <label><input type="checkbox" checked> Perşembe</label>
+                <label><input type="checkbox" checked> Cuma</label>
+                <label><input type="checkbox"> Cumartesi</label>
+                <label><input type="checkbox"> Pazar</label>
+            </div>
+        </div>
+    </div>
+
+    <!-- Fatura Bilgileri -->
+    <div class="settings-card">
+        <div class="settings-card-header">
+            <h3><i class="ti ti-file-invoice"></i> Fatura Bilgileri</h3>
+        </div>
+        <div class="form-group">
+            <label>Şirket Unvanı</label>
+            <input type="text" class="form-control" value="{{ billing_info.company_name if billing_info else '' }}">
+        </div>
+        <div class="form-row">
+            <div class="form-group">
+                <label>Vergi Dairesi</label>
+                <input type="text" class="form-control" value="{{ billing_info.tax_office if billing_info else '' }}">
+            </div>
+            <div class="form-group">
+                <label>Vergi No</label>
+                <input type="text" class="form-control" value="{{ billing_info.tax_number if billing_info else '' }}">
+            </div>
+        </div>
+        <div class="form-group">
+            <label>Adres</label>
+            <textarea class="form-control" rows="2">{{ billing_info.address_line1 if billing_info else '' }}</textarea>
+        </div>
+        <div class="form-row">
+            <div class="form-group">
+                <label>Şehir</label>
+                <input type="text" class="form-control" value="{{ billing_info.city if billing_info else '' }}">
+            </div>
+            <div class="form-group">
+                <label>Posta Kodu</label>
+                <input type="text" class="form-control" value="{{ billing_info.postal_code if billing_info else '' }}">
+            </div>
+        </div>
+        <button type="button" class="btn btn-primary">
+            <i class="ti ti-check"></i> Kaydet
+        </button>
+    </div>
+
+    <!-- Marka/Tema -->
+    <div class="settings-card">
+        <div class="settings-card-header">
+            <h3><i class="ti ti-palette"></i> Marka & Tema</h3>
+        </div>
+        <div class="form-group">
+            <label>Logo (Açık Tema)</label>
+            <div class="file-upload">
+                <input type="file" accept="image/*">
+                <span>PNG veya SVG, max 1MB</span>
+            </div>
+        </div>
+        <div class="form-row">
+            <div class="form-group">
+                <label>Ana Renk</label>
+                <input type="color" class="form-control color-input" value="{{ branding.primary_color if branding else '#F5A623' }}">
+            </div>
+            <div class="form-group">
+                <label>İkincil Renk</label>
+                <input type="color" class="form-control color-input" value="{{ branding.secondary_color if branding else '#4A4A4A' }}">
+            </div>
+        </div>
+        <div class="form-group">
+            <label>Varsayılan Tema</label>
+            <select class="form-control">
+                <option value="light">Açık Tema</option>
+                <option value="dark">Koyu Tema</option>
+            </select>
+        </div>
+    </div>
+</div>
+
+<style>
+.settings-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+    gap: 1.5rem;
+}
+
+.settings-card {
+    background: white;
+    border-radius: 12px;
+    padding: 1.5rem;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+}
+
+.settings-card-header {
+    margin-bottom: 1.5rem;
+    padding-bottom: 1rem;
+    border-bottom: 1px solid #eee;
+}
+
+.settings-card-header h3 {
+    font-size: 1.1rem;
+    color: var(--text-primary);
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.form-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1rem;
+}
+
+.checkbox-group {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1rem;
+}
+
+.checkbox-group label {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    cursor: pointer;
+}
+
+.color-input {
+    height: 40px;
+    padding: 4px;
+    cursor: pointer;
+}
+
+.file-upload {
+    border: 2px dashed #ddd;
+    padding: 1rem;
+    text-align: center;
+    border-radius: 8px;
+    cursor: pointer;
+}
+
+.file-upload:hover {
+    border-color: var(--primary-color);
+}
+</style>
+{% endblock %}
+

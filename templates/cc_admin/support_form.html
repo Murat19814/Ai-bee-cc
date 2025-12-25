@@ -1,0 +1,264 @@
+{% extends "base.html" %}
+
+{% block title %}Yeni Destek Talebi - AI BEE CC{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <h1><i class="ti ti-ticket"></i> Yeni Destek Talebi</h1>
+    <p>Sorunlarınızı veya isteklerinizi bize bildirin</p>
+</div>
+
+<div class="form-container">
+    <form action="{{ url_for('cc_support_new') }}" method="POST" class="support-form">
+        <div class="form-group">
+            <label>Kategori <span class="required">*</span></label>
+            <select name="category" class="form-control" required>
+                <option value="">Seçiniz...</option>
+                <option value="technical">Teknik Sorun</option>
+                <option value="billing">Faturalama</option>
+                <option value="voip">VoIP / Çağrı</option>
+                <option value="feature_request">Özellik Talebi</option>
+                <option value="account">Hesap</option>
+                <option value="other">Diğer</option>
+            </select>
+        </div>
+
+        <div class="form-group">
+            <label>Öncelik</label>
+            <div class="priority-options">
+                <label class="priority-option">
+                    <input type="radio" name="priority" value="low">
+                    <span class="priority-label priority-low">
+                        <i class="ti ti-flag"></i> Düşük
+                    </span>
+                </label>
+                <label class="priority-option">
+                    <input type="radio" name="priority" value="normal" checked>
+                    <span class="priority-label priority-normal">
+                        <i class="ti ti-flag"></i> Normal
+                    </span>
+                </label>
+                <label class="priority-option">
+                    <input type="radio" name="priority" value="high">
+                    <span class="priority-label priority-high">
+                        <i class="ti ti-flag-filled"></i> Yüksek
+                    </span>
+                </label>
+                <label class="priority-option">
+                    <input type="radio" name="priority" value="urgent">
+                    <span class="priority-label priority-urgent">
+                        <i class="ti ti-urgent"></i> Acil
+                    </span>
+                </label>
+            </div>
+        </div>
+
+        <div class="form-group">
+            <label>Konu <span class="required">*</span></label>
+            <input type="text" name="subject" class="form-control" placeholder="Sorununuzu kısaca özetleyin" required>
+        </div>
+
+        <div class="form-group">
+            <label>Açıklama <span class="required">*</span></label>
+            <textarea name="description" class="form-control" rows="6" placeholder="Lütfen sorununuzu detaylı açıklayın. Hata mesajları, adımlar ve beklentilerinizi belirtin." required></textarea>
+        </div>
+
+        <div class="form-group">
+            <label>Ekler (Opsiyonel)</label>
+            <div class="file-upload-area">
+                <input type="file" id="attachments" name="attachments" multiple accept="image/*,.pdf,.doc,.docx,.txt">
+                <div class="upload-placeholder">
+                    <i class="ti ti-upload"></i>
+                    <span>Dosyaları sürükleyin veya tıklayın</span>
+                    <small>PNG, JPG, PDF, DOC - Max 10MB</small>
+                </div>
+            </div>
+        </div>
+
+        <div class="form-info">
+            <i class="ti ti-info-circle"></i>
+            <div>
+                <strong>Yanıt Süresi:</strong>
+                <ul>
+                    <li>Acil: 1 saat içinde</li>
+                    <li>Yüksek: 4 saat içinde</li>
+                    <li>Normal: 24 saat içinde</li>
+                    <li>Düşük: 48 saat içinde</li>
+                </ul>
+            </div>
+        </div>
+
+        <div class="form-actions">
+            <a href="{{ url_for('cc_support') }}" class="btn btn-outline">İptal</a>
+            <button type="submit" class="btn btn-primary">
+                <i class="ti ti-send"></i> Talebi Gönder
+            </button>
+        </div>
+    </form>
+</div>
+
+<style>
+.form-container {
+    max-width: 700px;
+    margin: 0 auto;
+}
+
+.support-form {
+    background: white;
+    border-radius: 12px;
+    padding: 2rem;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+}
+
+.form-group {
+    margin-bottom: 1.5rem;
+}
+
+.form-group label {
+    display: block;
+    font-weight: 600;
+    margin-bottom: 0.5rem;
+}
+
+.required {
+    color: #f44336;
+}
+
+.priority-options {
+    display: flex;
+    gap: 0.75rem;
+    flex-wrap: wrap;
+}
+
+.priority-option {
+    cursor: pointer;
+}
+
+.priority-option input {
+    display: none;
+}
+
+.priority-label {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.75rem 1.25rem;
+    border: 2px solid #ddd;
+    border-radius: 8px;
+    transition: all 0.2s;
+}
+
+.priority-option input:checked + .priority-label {
+    border-color: currentColor;
+    background: currentColor;
+    color: white;
+}
+
+.priority-low {
+    color: #9e9e9e;
+}
+
+.priority-normal {
+    color: #2196f3;
+}
+
+.priority-high {
+    color: #ff9800;
+}
+
+.priority-urgent {
+    color: #f44336;
+}
+
+.priority-option input:checked + .priority-low {
+    background: #9e9e9e;
+    border-color: #9e9e9e;
+}
+
+.priority-option input:checked + .priority-normal {
+    background: #2196f3;
+    border-color: #2196f3;
+}
+
+.priority-option input:checked + .priority-high {
+    background: #ff9800;
+    border-color: #ff9800;
+}
+
+.priority-option input:checked + .priority-urgent {
+    background: #f44336;
+    border-color: #f44336;
+}
+
+.file-upload-area {
+    border: 2px dashed #ddd;
+    border-radius: 8px;
+    padding: 2rem;
+    text-align: center;
+    cursor: pointer;
+    transition: all 0.2s;
+    position: relative;
+}
+
+.file-upload-area:hover {
+    border-color: var(--primary-color);
+    background: #fafafa;
+}
+
+.file-upload-area input {
+    position: absolute;
+    inset: 0;
+    opacity: 0;
+    cursor: pointer;
+}
+
+.upload-placeholder {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.5rem;
+    color: var(--text-muted);
+}
+
+.upload-placeholder i {
+    font-size: 2rem;
+}
+
+.upload-placeholder small {
+    font-size: 0.8rem;
+}
+
+.form-info {
+    display: flex;
+    gap: 1rem;
+    padding: 1rem;
+    background: #f8f9fa;
+    border-radius: 8px;
+    margin-bottom: 1.5rem;
+}
+
+.form-info i {
+    font-size: 1.5rem;
+    color: var(--primary-color);
+}
+
+.form-info ul {
+    margin: 0.5rem 0 0 1rem;
+    padding: 0;
+}
+
+.form-info li {
+    font-size: 0.85rem;
+    color: var(--text-secondary);
+}
+
+.form-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 1rem;
+    padding-top: 1rem;
+    border-top: 1px solid #eee;
+}
+</style>
+{% endblock %}
+

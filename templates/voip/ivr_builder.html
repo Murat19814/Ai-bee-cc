@@ -1,0 +1,761 @@
+{% extends "base.html" %}
+
+{% block title %}IVR Builder - {{ app_name }}{% endblock %}
+
+{% block extra_css %}
+<style>
+.ivr-page {
+    padding: 1.5rem;
+    display: grid;
+    grid-template-columns: 300px 1fr 320px;
+    gap: 1.5rem;
+    height: calc(100vh - 120px);
+}
+
+/* Left Panel - Components */
+.ivr-components {
+    background: white;
+    border-radius: 16px;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.06);
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+}
+
+.panel-header {
+    padding: 1rem 1.25rem;
+    background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+    color: white;
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.panel-header i { color: #F5A623; }
+
+.component-list {
+    padding: 1rem;
+    flex: 1;
+    overflow-y: auto;
+}
+
+.component-item {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 0.875rem 1rem;
+    background: #f8f9fa;
+    border-radius: 10px;
+    margin-bottom: 0.75rem;
+    cursor: grab;
+    transition: all 0.2s;
+    border: 2px solid transparent;
+}
+
+.component-item:hover {
+    background: #fff;
+    border-color: #F5A623;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+}
+
+.component-item:active {
+    cursor: grabbing;
+}
+
+.component-icon {
+    width: 40px;
+    height: 40px;
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.25rem;
+    color: white;
+}
+
+.component-icon.play { background: linear-gradient(135deg, #4CAF50, #388E3C); }
+.component-icon.menu { background: linear-gradient(135deg, #2196F3, #1976D2); }
+.component-icon.queue { background: linear-gradient(135deg, #9C27B0, #7B1FA2); }
+.component-icon.time { background: linear-gradient(135deg, #FF9800, #F57C00); }
+.component-icon.transfer { background: linear-gradient(135deg, #00BCD4, #0097A7); }
+.component-icon.voicemail { background: linear-gradient(135deg, #E91E63, #C2185B); }
+.component-icon.condition { background: linear-gradient(135deg, #607D8B, #455A64); }
+.component-icon.callback { background: linear-gradient(135deg, #8BC34A, #689F38); }
+
+.component-info h4 {
+    font-size: 0.9rem;
+    margin-bottom: 0.125rem;
+}
+
+.component-info span {
+    font-size: 0.75rem;
+    color: #888;
+}
+
+/* Center - Canvas */
+.ivr-canvas {
+    background: white;
+    border-radius: 16px;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.06);
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+}
+
+.canvas-toolbar {
+    padding: 0.75rem 1rem;
+    background: #f8f9fa;
+    border-bottom: 1px solid #eee;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.canvas-actions {
+    display: flex;
+    gap: 0.5rem;
+}
+
+.canvas-area {
+    flex: 1;
+    position: relative;
+    background: 
+        linear-gradient(90deg, #f0f0f0 1px, transparent 1px),
+        linear-gradient(#f0f0f0 1px, transparent 1px);
+    background-size: 20px 20px;
+    overflow: auto;
+    padding: 2rem;
+}
+
+/* IVR Nodes */
+.ivr-node {
+    position: absolute;
+    min-width: 200px;
+    background: white;
+    border-radius: 12px;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+    cursor: move;
+    transition: box-shadow 0.2s;
+}
+
+.ivr-node:hover {
+    box-shadow: 0 8px 30px rgba(0,0,0,0.15);
+}
+
+.ivr-node.selected {
+    box-shadow: 0 0 0 3px #F5A623, 0 8px 30px rgba(0,0,0,0.15);
+}
+
+.node-header {
+    padding: 0.75rem 1rem;
+    border-radius: 12px 12px 0 0;
+    color: white;
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 0.85rem;
+}
+
+.node-header.start { background: linear-gradient(135deg, #4CAF50, #388E3C); }
+.node-header.menu { background: linear-gradient(135deg, #2196F3, #1976D2); }
+.node-header.queue { background: linear-gradient(135deg, #9C27B0, #7B1FA2); }
+.node-header.time { background: linear-gradient(135deg, #FF9800, #F57C00); }
+.node-header.end { background: linear-gradient(135deg, #f44336, #d32f2f); }
+
+.node-body {
+    padding: 0.75rem 1rem;
+}
+
+.node-option {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0.5rem 0;
+    border-bottom: 1px solid #f0f0f0;
+    font-size: 0.85rem;
+}
+
+.node-option:last-child {
+    border-bottom: none;
+}
+
+.node-key {
+    width: 24px;
+    height: 24px;
+    background: #f0f0f0;
+    border-radius: 6px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 600;
+    font-size: 0.8rem;
+}
+
+.node-connector {
+    width: 12px;
+    height: 12px;
+    background: #F5A623;
+    border-radius: 50%;
+    position: absolute;
+    right: -6px;
+    cursor: crosshair;
+}
+
+/* Right Panel - Properties */
+.ivr-properties {
+    background: white;
+    border-radius: 16px;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.06);
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+}
+
+.properties-content {
+    padding: 1rem;
+    flex: 1;
+    overflow-y: auto;
+}
+
+.property-group {
+    margin-bottom: 1.5rem;
+}
+
+.property-group-title {
+    font-size: 0.7rem;
+    text-transform: uppercase;
+    color: #888;
+    letter-spacing: 0.5px;
+    margin-bottom: 0.75rem;
+    padding-bottom: 0.5rem;
+    border-bottom: 1px solid #eee;
+}
+
+.property-row {
+    margin-bottom: 0.75rem;
+}
+
+.property-row label {
+    display: block;
+    font-size: 0.8rem;
+    color: #555;
+    margin-bottom: 0.25rem;
+}
+
+.property-row input,
+.property-row select,
+.property-row textarea {
+    width: 100%;
+    padding: 0.6rem 0.75rem;
+    border: 1px solid #e0e0e0;
+    border-radius: 8px;
+    font-size: 0.85rem;
+}
+
+.property-row input:focus,
+.property-row select:focus {
+    outline: none;
+    border-color: #F5A623;
+}
+
+/* Audio Upload */
+.audio-upload {
+    border: 2px dashed #e0e0e0;
+    border-radius: 10px;
+    padding: 1rem;
+    text-align: center;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.audio-upload:hover {
+    border-color: #F5A623;
+    background: rgba(245, 166, 35, 0.05);
+}
+
+.audio-upload i {
+    font-size: 2rem;
+    color: #ccc;
+    margin-bottom: 0.5rem;
+}
+
+.audio-preview {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.5rem;
+    background: #f8f9fa;
+    border-radius: 8px;
+    margin-top: 0.5rem;
+}
+
+/* Connections (SVG lines) */
+.connection-line {
+    stroke: #F5A623;
+    stroke-width: 2;
+    fill: none;
+    marker-end: url(#arrowhead);
+}
+
+/* IVR List Sidebar */
+.ivr-list {
+    padding: 1rem;
+    border-bottom: 1px solid #eee;
+    max-height: 200px;
+    overflow-y: auto;
+}
+
+.ivr-list-item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0.6rem 0.75rem;
+    background: #f8f9fa;
+    border-radius: 8px;
+    margin-bottom: 0.5rem;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.ivr-list-item:hover {
+    background: #f0f0f0;
+}
+
+.ivr-list-item.active {
+    background: rgba(245, 166, 35, 0.1);
+    border: 1px solid rgba(245, 166, 35, 0.3);
+}
+
+.ivr-list-item span {
+    font-size: 0.85rem;
+    font-weight: 500;
+}
+
+/* Empty State */
+.canvas-empty {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    text-align: center;
+    color: #888;
+}
+
+.canvas-empty i {
+    font-size: 4rem;
+    color: #ddd;
+    margin-bottom: 1rem;
+}
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="ivr-page">
+    <!-- Left Panel - Components -->
+    <div class="ivr-components">
+        <div class="panel-header">
+            <i class="ti ti-components"></i>
+            Bileşenler
+        </div>
+        
+        <!-- IVR List -->
+        <div class="ivr-list">
+            <div class="ivr-list-item active">
+                <span><i class="ti ti-sitemap"></i> Ana Menü IVR</span>
+                <i class="ti ti-chevron-right"></i>
+            </div>
+            <div class="ivr-list-item">
+                <span><i class="ti ti-sitemap"></i> Satış IVR</span>
+                <i class="ti ti-chevron-right"></i>
+            </div>
+            <div class="ivr-list-item">
+                <span><i class="ti ti-sitemap"></i> Destek IVR</span>
+                <i class="ti ti-chevron-right"></i>
+            </div>
+            <button class="btn btn-sm btn-primary" style="width: 100%;">
+                <i class="ti ti-plus"></i> Yeni IVR
+            </button>
+        </div>
+
+        <div class="component-list">
+            <div class="component-item" draggable="true" data-type="play">
+                <div class="component-icon play"><i class="ti ti-player-play"></i></div>
+                <div class="component-info">
+                    <h4>Ses Çal</h4>
+                    <span>Karşılama / Bilgi</span>
+                </div>
+            </div>
+
+            <div class="component-item" draggable="true" data-type="menu">
+                <div class="component-icon menu"><i class="ti ti-list-numbers"></i></div>
+                <div class="component-info">
+                    <h4>Menü</h4>
+                    <span>Tuş seçenekleri</span>
+                </div>
+            </div>
+
+            <div class="component-item" draggable="true" data-type="queue">
+                <div class="component-icon queue"><i class="ti ti-users-group"></i></div>
+                <div class="component-info">
+                    <h4>Kuyruğa Aktar</h4>
+                    <span>Agent'a yönlendir</span>
+                </div>
+            </div>
+
+            <div class="component-item" draggable="true" data-type="time">
+                <div class="component-icon time"><i class="ti ti-clock-hour-4"></i></div>
+                <div class="component-info">
+                    <h4>Saat Kontrolü</h4>
+                    <span>Mesai saatleri</span>
+                </div>
+            </div>
+
+            <div class="component-item" draggable="true" data-type="transfer">
+                <div class="component-icon transfer"><i class="ti ti-phone-outgoing"></i></div>
+                <div class="component-info">
+                    <h4>Transfer</h4>
+                    <span>Extension / Harici</span>
+                </div>
+            </div>
+
+            <div class="component-item" draggable="true" data-type="voicemail">
+                <div class="component-icon voicemail"><i class="ti ti-mailbox"></i></div>
+                <div class="component-info">
+                    <h4>Sesli Mesaj</h4>
+                    <span>Voicemail bırak</span>
+                </div>
+            </div>
+
+            <div class="component-item" draggable="true" data-type="condition">
+                <div class="component-icon condition"><i class="ti ti-git-branch"></i></div>
+                <div class="component-info">
+                    <h4>Koşul</h4>
+                    <span>If/Else dallanma</span>
+                </div>
+            </div>
+
+            <div class="component-item" draggable="true" data-type="callback">
+                <div class="component-icon callback"><i class="ti ti-phone-call"></i></div>
+                <div class="component-info">
+                    <h4>Geri Arama</h4>
+                    <span>Callback kaydı</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Center - Canvas -->
+    <div class="ivr-canvas">
+        <div class="canvas-toolbar">
+            <div>
+                <strong>Ana Menü IVR</strong>
+                <span style="color: #888; margin-left: 0.5rem;">Son kayıt: 2 saat önce</span>
+            </div>
+            <div class="canvas-actions">
+                <button class="btn btn-sm btn-secondary">
+                    <i class="ti ti-zoom-in"></i>
+                </button>
+                <button class="btn btn-sm btn-secondary">
+                    <i class="ti ti-zoom-out"></i>
+                </button>
+                <button class="btn btn-sm btn-secondary">
+                    <i class="ti ti-arrows-maximize"></i>
+                </button>
+                <button class="btn btn-sm btn-info">
+                    <i class="ti ti-player-play"></i> Test Et
+                </button>
+                <button class="btn btn-sm btn-primary">
+                    <i class="ti ti-device-floppy"></i> Kaydet
+                </button>
+            </div>
+        </div>
+        
+        <div class="canvas-area" id="ivrCanvas">
+            <!-- SVG for connections -->
+            <svg style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none;">
+                <defs>
+                    <marker id="arrowhead" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto">
+                        <polygon points="0 0, 10 3.5, 0 7" fill="#F5A623"/>
+                    </marker>
+                </defs>
+                <!-- Connection lines will be drawn here -->
+                <path class="connection-line" d="M 260 80 C 310 80, 340 150, 390 150"/>
+                <path class="connection-line" d="M 590 180 C 640 180, 670 120, 720 120"/>
+                <path class="connection-line" d="M 590 210 C 640 210, 670 280, 720 280"/>
+            </svg>
+
+            <!-- Start Node -->
+            <div class="ivr-node" style="left: 50px; top: 50px;">
+                <div class="node-header start">
+                    <i class="ti ti-player-play"></i>
+                    Başlangıç
+                </div>
+                <div class="node-body">
+                    <div class="node-option">
+                        <span>Karşılama mesajı çal</span>
+                    </div>
+                </div>
+                <div class="node-connector" style="top: 50%;"></div>
+            </div>
+
+            <!-- Menu Node -->
+            <div class="ivr-node selected" style="left: 300px; top: 100px; min-width: 250px;">
+                <div class="node-header menu">
+                    <i class="ti ti-list-numbers"></i>
+                    Ana Menü
+                </div>
+                <div class="node-body">
+                    <div class="node-option">
+                        <div class="node-key">1</div>
+                        <span>Satış</span>
+                        <div class="node-connector" style="position: relative; right: 0;"></div>
+                    </div>
+                    <div class="node-option">
+                        <div class="node-key">2</div>
+                        <span>Destek</span>
+                        <div class="node-connector" style="position: relative; right: 0;"></div>
+                    </div>
+                    <div class="node-option">
+                        <div class="node-key">0</div>
+                        <span>Operatör</span>
+                        <div class="node-connector" style="position: relative; right: 0;"></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Queue Node 1 -->
+            <div class="ivr-node" style="left: 620px; top: 50px;">
+                <div class="node-header queue">
+                    <i class="ti ti-users-group"></i>
+                    Satış Kuyruğu
+                </div>
+                <div class="node-body">
+                    <div class="node-option">
+                        <span>Satış ekibine aktar</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Queue Node 2 -->
+            <div class="ivr-node" style="left: 620px; top: 200px;">
+                <div class="node-header queue">
+                    <i class="ti ti-users-group"></i>
+                    Destek Kuyruğu
+                </div>
+                <div class="node-body">
+                    <div class="node-option">
+                        <span>Destek ekibine aktar</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Right Panel - Properties -->
+    <div class="ivr-properties">
+        <div class="panel-header">
+            <i class="ti ti-settings"></i>
+            Özellikler
+        </div>
+        <div class="properties-content">
+            <div class="property-group">
+                <div class="property-group-title">Seçili Düğüm: Ana Menü</div>
+                
+                <div class="property-row">
+                    <label>Düğüm Adı</label>
+                    <input type="text" value="Ana Menü">
+                </div>
+                
+                <div class="property-row">
+                    <label>Timeout (sn)</label>
+                    <input type="number" value="10">
+                </div>
+                
+                <div class="property-row">
+                    <label>Max Tekrar</label>
+                    <input type="number" value="3">
+                </div>
+            </div>
+
+            <div class="property-group">
+                <div class="property-group-title">Ses Dosyası</div>
+                
+                <div class="audio-upload">
+                    <i class="ti ti-music"></i>
+                    <p>Ses dosyası yükleyin</p>
+                    <small>WAV, MP3 - Max 5MB</small>
+                </div>
+                
+                <div class="audio-preview">
+                    <button class="btn btn-sm btn-secondary">
+                        <i class="ti ti-player-play"></i>
+                    </button>
+                    <span style="flex: 1; font-size: 0.8rem;">menu_karsilama.wav</span>
+                    <i class="ti ti-x" style="color: #f44336; cursor: pointer;"></i>
+                </div>
+            </div>
+
+            <div class="property-group">
+                <div class="property-group-title">Menü Seçenekleri</div>
+                
+                <div class="property-row">
+                    <label>Tuş 1 - Hedef</label>
+                    <select>
+                        <option>Satış Kuyruğu</option>
+                        <option>IVR: Satış Alt Menü</option>
+                    </select>
+                </div>
+                
+                <div class="property-row">
+                    <label>Tuş 2 - Hedef</label>
+                    <select>
+                        <option>Destek Kuyruğu</option>
+                        <option>IVR: Destek Alt Menü</option>
+                    </select>
+                </div>
+                
+                <div class="property-row">
+                    <label>Tuş 0 - Hedef</label>
+                    <select>
+                        <option>Operatör Kuyruğu</option>
+                        <option>Extension: 100</option>
+                    </select>
+                </div>
+                
+                <button class="btn btn-sm btn-secondary" style="width: 100%; margin-top: 0.5rem;">
+                    <i class="ti ti-plus"></i> Tuş Ekle
+                </button>
+            </div>
+
+            <div class="property-group">
+                <div class="property-group-title">Geçersiz Giriş</div>
+                
+                <div class="property-row">
+                    <label>Geçersiz Giriş Mesajı</label>
+                    <select>
+                        <option>Varsayılan</option>
+                        <option>Özel ses dosyası</option>
+                    </select>
+                </div>
+                
+                <div class="property-row">
+                    <label>Timeout Sonrası</label>
+                    <select>
+                        <option>Menüyü Tekrarla</option>
+                        <option>Operatöre Aktar</option>
+                        <option>Çağrıyı Kapat</option>
+                    </select>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+// Drag & Drop functionality
+document.querySelectorAll('.component-item').forEach(item => {
+    item.addEventListener('dragstart', function(e) {
+        e.dataTransfer.setData('type', this.dataset.type);
+    });
+});
+
+const canvas = document.getElementById('ivrCanvas');
+
+canvas.addEventListener('dragover', function(e) {
+    e.preventDefault();
+});
+
+canvas.addEventListener('drop', function(e) {
+    e.preventDefault();
+    const type = e.dataTransfer.getData('type');
+    const rect = canvas.getBoundingClientRect();
+    const x = e.clientX - rect.left;
+    const y = e.clientY - rect.top;
+    
+    createNode(type, x, y);
+});
+
+function createNode(type, x, y) {
+    const node = document.createElement('div');
+    node.className = 'ivr-node';
+    node.style.left = x + 'px';
+    node.style.top = y + 'px';
+    
+    const titles = {
+        'play': 'Ses Çal',
+        'menu': 'Menü',
+        'queue': 'Kuyruk',
+        'time': 'Saat Kontrolü',
+        'transfer': 'Transfer',
+        'voicemail': 'Sesli Mesaj',
+        'condition': 'Koşul',
+        'callback': 'Geri Arama'
+    };
+    
+    const headerClass = type === 'queue' ? 'queue' : 
+                        type === 'menu' ? 'menu' : 
+                        type === 'time' ? 'time' : 'start';
+    
+    node.innerHTML = `
+        <div class="node-header ${headerClass}">
+            <i class="ti ti-${type === 'play' ? 'player-play' : type === 'menu' ? 'list-numbers' : 'sitemap'}"></i>
+            ${titles[type] || 'Düğüm'}
+        </div>
+        <div class="node-body">
+            <div class="node-option">
+                <span>Yapılandır...</span>
+            </div>
+        </div>
+        <div class="node-connector" style="top: 50%;"></div>
+    `;
+    
+    canvas.appendChild(node);
+    makeDraggable(node);
+}
+
+// Make nodes draggable
+function makeDraggable(element) {
+    let pos1 = 0, pos2 = 0, pos3 = 0, pos4 = 0;
+    
+    element.querySelector('.node-header').onmousedown = dragMouseDown;
+    
+    function dragMouseDown(e) {
+        e.preventDefault();
+        pos3 = e.clientX;
+        pos4 = e.clientY;
+        document.onmouseup = closeDragElement;
+        document.onmousemove = elementDrag;
+        element.classList.add('selected');
+    }
+    
+    function elementDrag(e) {
+        e.preventDefault();
+        pos1 = pos3 - e.clientX;
+        pos2 = pos4 - e.clientY;
+        pos3 = e.clientX;
+        pos4 = e.clientY;
+        element.style.top = (element.offsetTop - pos2) + "px";
+        element.style.left = (element.offsetLeft - pos1) + "px";
+    }
+    
+    function closeDragElement() {
+        document.onmouseup = null;
+        document.onmousemove = null;
+    }
+}
+
+// Initialize existing nodes
+document.querySelectorAll('.ivr-node').forEach(node => {
+    makeDraggable(node);
+    node.addEventListener('click', function() {
+        document.querySelectorAll('.ivr-node').forEach(n => n.classList.remove('selected'));
+        this.classList.add('selected');
+    });
+});
+</script>
+{% endblock %}
+

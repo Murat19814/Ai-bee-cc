@@ -1,0 +1,118 @@
+{% extends "base.html" %}
+
+{% block title %}Ödemeler - AI BEE CC{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <h1><i class="ti ti-cash"></i> Tüm Ödemeler</h1>
+</div>
+
+<div class="table-card">
+    <table class="data-table">
+        <thead>
+            <tr>
+                <th>Tarih</th>
+                <th>Tenant</th>
+                <th>Tip</th>
+                <th>Tutar</th>
+                <th>Yöntem</th>
+                <th>Durum</th>
+                <th>Referans</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for payment in payments %}
+            <tr>
+                <td>{{ payment.created_at.strftime('%d.%m.%Y %H:%M') }}</td>
+                <td>Tenant #{{ payment.tenant_id }}</td>
+                <td>
+                    {% if payment.payment_type == 'invoice_payment' %}Fatura Ödemesi
+                    {% elif payment.payment_type == 'balance_topup' %}Bakiye Yükleme
+                    {% elif payment.payment_type == 'refund' %}İade
+                    {% else %}{{ payment.payment_type }}{% endif %}
+                </td>
+                <td><strong>₺{{ "%.2f"|format(payment.amount|float) }}</strong></td>
+                <td>{{ payment.payment_method or '-' }}</td>
+                <td>
+                    <span class="status-badge status-{{ payment.status }}">
+                        {% if payment.status == 'completed' %}Tamamlandı
+                        {% elif payment.status == 'pending' %}Bekliyor
+                        {% elif payment.status == 'failed' %}Başarısız
+                        {% else %}{{ payment.status }}{% endif %}
+                    </span>
+                </td>
+                <td>{{ payment.gateway_transaction_id or '-' }}</td>
+            </tr>
+            {% else %}
+            <tr>
+                <td colspan="7" class="empty-row">
+                    <i class="ti ti-cash-off"></i>
+                    <p>Henüz ödeme yok</p>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+
+<style>
+.table-card {
+    background: white;
+    border-radius: 12px;
+    padding: 1.5rem;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+}
+
+.data-table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.data-table th,
+.data-table td {
+    padding: 1rem;
+    text-align: left;
+    border-bottom: 1px solid #f0f0f0;
+}
+
+.data-table th {
+    font-weight: 600;
+    color: var(--text-secondary);
+    font-size: 0.85rem;
+}
+
+.status-badge {
+    padding: 0.25rem 0.75rem;
+    border-radius: 20px;
+    font-size: 0.75rem;
+    font-weight: 600;
+}
+
+.status-completed {
+    background: #e8f5e9;
+    color: #2e7d32;
+}
+
+.status-pending {
+    background: #fff3e0;
+    color: #e65100;
+}
+
+.status-failed {
+    background: #ffebee;
+    color: #c62828;
+}
+
+.empty-row {
+    text-align: center;
+    padding: 3rem !important;
+    color: var(--text-muted);
+}
+
+.empty-row i {
+    font-size: 2.5rem;
+    margin-bottom: 0.5rem;
+}
+</style>
+{% endblock %}
+

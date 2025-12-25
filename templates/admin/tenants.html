@@ -1,0 +1,210 @@
+{% extends "base.html" %}
+
+{% block title %}Tenant Yönetimi - AI BEE CC{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <h1><i class="ti ti-building-community"></i> Tenant Yönetimi</h1>
+    <div class="page-actions">
+        <a href="{{ url_for('admin_tenant_new') }}" class="btn btn-primary">
+            <i class="ti ti-plus"></i> Yeni Tenant
+        </a>
+    </div>
+</div>
+
+<!-- Özet -->
+<div class="summary-cards">
+    <div class="summary-card">
+        <i class="ti ti-building"></i>
+        <div class="summary-content">
+            <span class="summary-value">{{ tenants|length }}</span>
+            <span class="summary-label">Toplam Tenant</span>
+        </div>
+    </div>
+    <div class="summary-card">
+        <i class="ti ti-check"></i>
+        <div class="summary-content">
+            <span class="summary-value">{{ tenants|selectattr('status', 'equalto', 'active')|list|length }}</span>
+            <span class="summary-label">Aktif</span>
+        </div>
+    </div>
+    <div class="summary-card">
+        <i class="ti ti-hourglass"></i>
+        <div class="summary-content">
+            <span class="summary-value">{{ tenants|selectattr('status', 'equalto', 'trial')|list|length }}</span>
+            <span class="summary-label">Deneme</span>
+        </div>
+    </div>
+</div>
+
+<div class="table-card">
+    <table class="data-table">
+        <thead>
+            <tr>
+                <th>Kod</th>
+                <th>İsim</th>
+                <th>Domain</th>
+                <th>Max Agent</th>
+                <th>Max Çağrı</th>
+                <th>Durum</th>
+                <th>Oluşturulma</th>
+                <th>İşlemler</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for tenant in tenants %}
+            <tr>
+                <td><code>{{ tenant.code }}</code></td>
+                <td><strong>{{ tenant.name }}</strong></td>
+                <td>{{ tenant.domain or '-' }}</td>
+                <td>{{ tenant.max_agents }}</td>
+                <td>{{ tenant.max_concurrent_calls }}</td>
+                <td>
+                    <span class="status-badge status-{{ tenant.status }}">
+                        {% if tenant.status == 'active' %}Aktif
+                        {% elif tenant.status == 'suspended' %}Askıda
+                        {% elif tenant.status == 'trial' %}Deneme
+                        {% elif tenant.status == 'cancelled' %}İptal
+                        {% else %}{{ tenant.status }}{% endif %}
+                    </span>
+                </td>
+                <td>{{ tenant.created_at.strftime('%d.%m.%Y') }}</td>
+                <td>
+                    <div class="action-buttons">
+                        <a href="{{ url_for('admin_tenant_edit', tenant_id=tenant.id) }}" class="btn btn-icon" title="Düzenle">
+                            <i class="ti ti-edit"></i>
+                        </a>
+                        <a href="{{ url_for('provisioning_quota_edit', tenant_id=tenant.id) }}" class="btn btn-icon" title="Kotalar">
+                            <i class="ti ti-gauge"></i>
+                        </a>
+                    </div>
+                </td>
+            </tr>
+            {% else %}
+            <tr>
+                <td colspan="8" class="empty-row">
+                    <i class="ti ti-building-off"></i>
+                    <p>Henüz tenant yok</p>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+
+<style>
+.summary-cards {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+    gap: 1rem;
+    margin-bottom: 1.5rem;
+}
+
+.summary-card {
+    background: white;
+    border-radius: 12px;
+    padding: 1.25rem;
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+}
+
+.summary-card i {
+    font-size: 2rem;
+    color: var(--primary-color);
+}
+
+.summary-content {
+    display: flex;
+    flex-direction: column;
+}
+
+.summary-value {
+    font-size: 1.75rem;
+    font-weight: 700;
+}
+
+.summary-label {
+    font-size: 0.85rem;
+    color: var(--text-muted);
+}
+
+.table-card {
+    background: white;
+    border-radius: 12px;
+    padding: 1.5rem;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+    overflow-x: auto;
+}
+
+.data-table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.data-table th,
+.data-table td {
+    padding: 1rem;
+    text-align: left;
+    border-bottom: 1px solid #f0f0f0;
+}
+
+.data-table th {
+    font-weight: 600;
+    color: var(--text-secondary);
+    font-size: 0.85rem;
+}
+
+code {
+    background: #f8f9fa;
+    padding: 0.2rem 0.5rem;
+    border-radius: 4px;
+    font-size: 0.85rem;
+}
+
+.status-badge {
+    padding: 0.25rem 0.75rem;
+    border-radius: 20px;
+    font-size: 0.75rem;
+    font-weight: 600;
+}
+
+.status-active {
+    background: #e8f5e9;
+    color: #2e7d32;
+}
+
+.status-suspended {
+    background: #ffebee;
+    color: #c62828;
+}
+
+.status-trial {
+    background: #e3f2fd;
+    color: #1565c0;
+}
+
+.status-cancelled {
+    background: #f5f5f5;
+    color: #757575;
+}
+
+.action-buttons {
+    display: flex;
+    gap: 0.25rem;
+}
+
+.empty-row {
+    text-align: center;
+    padding: 3rem !important;
+    color: var(--text-muted);
+}
+
+.empty-row i {
+    font-size: 2.5rem;
+    margin-bottom: 0.5rem;
+}
+</style>
+{% endblock %}
+

@@ -38,7 +38,21 @@ from models import (
     # Report
     Report, Dashboard, DashboardWidget,
     # Notification
-    Notification
+    Notification,
+    # Billing & Subscription
+    BillingPlan, TenantSubscription, TenantBillingInfo,
+    # VoIP Billing
+    VoIPTariff, VoIPRate, TenantVoIPConfig,
+    # VoIP Provisioning
+    DIDPool, CLIPool, TenantCLIAssignment, TrunkAllocation,
+    # Usage & Metering
+    UsageRecord, UsageSummary, Invoice, InvoiceItem, Payment,
+    # White-Label
+    TenantBranding, TenantDomain,
+    # Support
+    SupportTicket, SupportTicketMessage, SystemAnnouncement,
+    # Quota
+    TenantQuota, QuotaAlert
 )
 
 # Flask uygulaması oluştur
@@ -588,6 +602,65 @@ def admin_teams():
     return render_template('admin/teams.html', teams=teams)
 
 
+@app.route('/admin/tenants')
+@login_required
+@super_admin_required
+def admin_tenants():
+    """Tenant (Çağrı Merkezi) yönetimi - Super Admin"""
+    tenants = Tenant.query.all()
+    return render_template('admin/tenants.html', tenants=tenants)
+
+
+@app.route('/admin/tenants/new', methods=['GET', 'POST'])
+@login_required
+@super_admin_required
+def admin_tenant_new():
+    """Yeni tenant oluştur"""
+    if request.method == 'POST':
+        import secrets
+        tenant = Tenant(
+            code=request.form.get('code'),
+            name=request.form.get('name'),
+            domain=request.form.get('domain'),
+            timezone=request.form.get('timezone', 'Europe/Istanbul'),
+            language=request.form.get('language', 'tr'),
+            max_agents=request.form.get('max_agents', type=int),
+            max_concurrent_calls=request.form.get('max_concurrent_calls', type=int),
+            api_key=secrets.token_urlsafe(32)
+        )
+        db.session.add(tenant)
+        db.session.commit()
+        
+        # Varsayılan kota oluştur
+        quota = TenantQuota(tenant_id=tenant.id)
+        db.session.add(quota)
+        db.session.commit()
+        
+        flash(f'Tenant "{tenant.name}" başarıyla oluşturuldu.', 'success')
+        return redirect(url_for('admin_tenants'))
+    return render_template('admin/tenant_form.html', tenant=None)
+
+
+@app.route('/admin/tenants/<int:tenant_id>/edit', methods=['GET', 'POST'])
+@login_required
+@super_admin_required
+def admin_tenant_edit(tenant_id):
+    """Tenant düzenle"""
+    tenant = Tenant.query.get_or_404(tenant_id)
+    if request.method == 'POST':
+        tenant.name = request.form.get('name')
+        tenant.domain = request.form.get('domain')
+        tenant.timezone = request.form.get('timezone')
+        tenant.language = request.form.get('language')
+        tenant.max_agents = request.form.get('max_agents', type=int)
+        tenant.max_concurrent_calls = request.form.get('max_concurrent_calls', type=int)
+        tenant.status = request.form.get('status')
+        db.session.commit()
+        flash('Tenant güncellendi.', 'success')
+        return redirect(url_for('admin_tenants'))
+    return render_template('admin/tenant_form.html', tenant=tenant)
+
+
 @app.route('/admin/skills')
 @login_required
 @admin_required
@@ -650,41 +723,339 @@ def project_detail(id):
     return render_template('projects/detail.html', project=project)
 
 
-# ==================== TELEPHONY ROUTES ====================
+# ==================== VOIP / TELEPHONY ROUTES ====================
 
+@app.route('/voip')
+@app.route('/voip/dashboard')
+@login_required
+@super_admin_required
+def voip_dashboard():
+    """VoIP Dashboard - Gerçek zamanlı izleme"""
+    return render_template('voip/dashboard.html')
+
+
+@app.route('/voip/trunks')
 @app.route('/telephony/trunks')
 @login_required
-@admin_required
-def telephony_trunks():
+@super_admin_required
+def voip_trunks():
     """SIP Trunk yönetimi"""
-    trunks = SIPTrunk.query.filter_by(tenant_id=current_user.tenant_id).all()
-    return render_template('telephony/trunks.html', trunks=trunks)
+    if current_user.is_super_admin:
+        trunks = SIPTrunk.query.all()
+    else:
+        trunks = SIPTrunk.query.filter_by(tenant_id=current_user.tenant_id).all()
+    return render_template('voip/trunks.html', trunks=trunks)
 
 
+@app.route('/voip/dids')
 @app.route('/telephony/dids')
 @login_required
-@admin_required
-def telephony_dids():
-    """DID yönetimi"""
-    dids = DID.query.filter_by(tenant_id=current_user.tenant_id).all()
-    return render_template('telephony/dids.html', dids=dids)
+@super_admin_required
+def voip_dids():
+    """DID / Numara yönetimi"""
+    if current_user.is_super_admin:
+        dids = DID.query.all()
+        trunks = SIPTrunk.query.all()
+    else:
+        dids = DID.query.filter_by(tenant_id=current_user.tenant_id).all()
+        trunks = SIPTrunk.query.filter_by(tenant_id=current_user.tenant_id).all()
+    return render_template('voip/dids.html', dids=dids, trunks=trunks)
 
 
+@app.route('/voip/ivr')
+@app.route('/voip/ivr-builder')
 @app.route('/telephony/ivrs')
 @login_required
-@admin_required
-def telephony_ivrs():
-    """IVR yönetimi"""
-    ivrs = IVR.query.filter_by(tenant_id=current_user.tenant_id).all()
-    return render_template('telephony/ivrs.html', ivrs=ivrs)
+@super_admin_required
+def voip_ivr_builder():
+    """IVR Builder"""
+    if current_user.is_super_admin:
+        ivrs = IVR.query.all()
+        queues_list = Queue.query.all()
+    else:
+        ivrs = IVR.query.filter_by(tenant_id=current_user.tenant_id).all()
+        queues_list = Queue.query.filter_by(tenant_id=current_user.tenant_id).all()
+    return render_template('voip/ivr_builder.html', ivrs=ivrs, queues=queues_list)
 
 
+@app.route('/voip/queues')
 @app.route('/queues')
 @login_required
-def queues():
-    """Kuyruk yönetimi"""
-    queues = Queue.query.filter_by(tenant_id=current_user.tenant_id).all()
-    return render_template('queues/list.html', queues=queues)
+@admin_required
+def voip_queues():
+    """Queue / ACD yönetimi"""
+    if current_user.is_super_admin:
+        queues_list = Queue.query.all()
+    else:
+        queues_list = Queue.query.filter_by(tenant_id=current_user.tenant_id).all()
+    return render_template('voip/queues.html', queues=queues_list)
+
+
+@app.route('/voip/cdr')
+@login_required
+@admin_required
+def voip_cdr():
+    """CDR - Çağrı Kayıtları"""
+    page = request.args.get('page', 1, type=int)
+    per_page = request.args.get('per_page', 10, type=int)
+    
+    query = Call.query
+    if not current_user.is_super_admin:
+        query = query.filter_by(tenant_id=current_user.tenant_id)
+    
+    # Filters
+    call_type = request.args.get('type')
+    status = request.args.get('status')
+    date_from = request.args.get('date_from')
+    date_to = request.args.get('date_to')
+    
+    if call_type:
+        query = query.filter_by(direction=call_type)
+    if status:
+        query = query.filter_by(status=status)
+    
+    calls = query.order_by(Call.started_at.desc()).paginate(page=page, per_page=per_page, error_out=False)
+    return render_template('voip/cdr.html', calls=calls)
+
+
+@app.route('/voip/softphone')
+@login_required
+def voip_softphone():
+    """WebRTC Softphone"""
+    return render_template('voip/softphone.html')
+
+
+# ==================== VOIP API ENDPOINTS ====================
+
+@app.route('/api/voip/trunks', methods=['GET', 'POST'])
+@login_required
+@super_admin_required
+def api_voip_trunks():
+    """SIP Trunk API"""
+    if request.method == 'GET':
+        if current_user.is_super_admin:
+            trunks = SIPTrunk.query.all()
+        else:
+            trunks = SIPTrunk.query.filter_by(tenant_id=current_user.tenant_id).all()
+        return jsonify([{
+            'id': t.id,
+            'name': t.name,
+            'host': t.host,
+            'port': t.port,
+            'username': t.username,
+            'transport': t.transport,
+            'max_channels': t.max_channels,
+            'codecs': t.codecs,
+            'status': t.status
+        } for t in trunks])
+    
+    elif request.method == 'POST':
+        data = request.get_json()
+        trunk = SIPTrunk(
+            tenant_id=current_user.tenant_id if not current_user.is_super_admin else data.get('tenant_id'),
+            name=data.get('name'),
+            host=data.get('host'),
+            port=data.get('port', 5060),
+            username=data.get('username'),
+            password=data.get('password'),
+            transport=data.get('transport', 'udp'),
+            max_channels=data.get('max_channels', 30),
+            codecs=data.get('codecs'),
+            status='inactive'
+        )
+        db.session.add(trunk)
+        db.session.commit()
+        
+        log_audit('create', 'sip_trunk', trunk.id, f'SIP Trunk oluşturuldu: {trunk.name}')
+        return jsonify({'success': True, 'id': trunk.id})
+
+
+@app.route('/api/voip/trunks/<int:trunk_id>', methods=['GET', 'PUT', 'DELETE'])
+@login_required
+@super_admin_required
+def api_voip_trunk(trunk_id):
+    """SIP Trunk detay API"""
+    trunk = SIPTrunk.query.get_or_404(trunk_id)
+    
+    if request.method == 'GET':
+        return jsonify({
+            'id': trunk.id,
+            'name': trunk.name,
+            'host': trunk.host,
+            'port': trunk.port,
+            'username': trunk.username,
+            'transport': trunk.transport,
+            'max_channels': trunk.max_channels,
+            'codecs': trunk.codecs,
+            'status': trunk.status,
+            'provider': trunk.provider,
+            'outbound_proxy': trunk.outbound_proxy
+        })
+    
+    elif request.method == 'PUT':
+        data = request.get_json()
+        trunk.name = data.get('name', trunk.name)
+        trunk.host = data.get('host', trunk.host)
+        trunk.port = data.get('port', trunk.port)
+        trunk.username = data.get('username', trunk.username)
+        if data.get('password'):
+            trunk.password = data.get('password')
+        trunk.transport = data.get('transport', trunk.transport)
+        trunk.max_channels = data.get('max_channels', trunk.max_channels)
+        trunk.codecs = data.get('codecs', trunk.codecs)
+        db.session.commit()
+        
+        log_audit('update', 'sip_trunk', trunk.id, f'SIP Trunk güncellendi: {trunk.name}')
+        return jsonify({'success': True})
+    
+    elif request.method == 'DELETE':
+        name = trunk.name
+        db.session.delete(trunk)
+        db.session.commit()
+        
+        log_audit('delete', 'sip_trunk', trunk_id, f'SIP Trunk silindi: {name}')
+        return jsonify({'success': True})
+
+
+@app.route('/api/voip/trunks/<int:trunk_id>/test', methods=['POST'])
+@login_required
+@super_admin_required
+def api_voip_trunk_test(trunk_id):
+    """SIP Trunk bağlantı testi"""
+    trunk = SIPTrunk.query.get_or_404(trunk_id)
+    
+    # Gerçek implementasyonda SIP OPTIONS veya REGISTER test çağrısı yapılır
+    # Şimdilik simülasyon
+    import random
+    success = random.random() > 0.2
+    latency = random.randint(20, 100)
+    
+    if success:
+        trunk.status = 'active'
+        trunk.last_check = datetime.utcnow()
+        db.session.commit()
+        return jsonify({'success': True, 'latency': latency})
+    else:
+        trunk.status = 'error'
+        db.session.commit()
+        return jsonify({'success': False, 'error': 'Connection timeout'})
+
+
+@app.route('/api/voip/dids', methods=['GET', 'POST'])
+@login_required
+@admin_required
+def api_voip_dids():
+    """DID API"""
+    if request.method == 'GET':
+        if current_user.is_super_admin:
+            dids = DID.query.all()
+        else:
+            dids = DID.query.filter_by(tenant_id=current_user.tenant_id).all()
+        return jsonify([{
+            'id': d.id,
+            'number': d.number,
+            'type': d.did_type,
+            'trunk_id': d.trunk_id,
+            'is_active': d.is_active
+        } for d in dids])
+    
+    elif request.method == 'POST':
+        data = request.get_json()
+        did = DID(
+            tenant_id=current_user.tenant_id if not current_user.is_super_admin else data.get('tenant_id'),
+            trunk_id=data.get('trunk_id'),
+            number=data.get('number'),
+            did_type=data.get('type', 'inbound'),
+            description=data.get('description'),
+            is_active=True
+        )
+        db.session.add(did)
+        db.session.commit()
+        
+        log_audit('create', 'did', did.id, f'DID oluşturuldu: {did.number}')
+        return jsonify({'success': True, 'id': did.id})
+
+
+@app.route('/api/voip/queues', methods=['GET', 'POST'])
+@login_required
+@admin_required
+def api_voip_queues():
+    """Queue API"""
+    if request.method == 'GET':
+        if current_user.is_super_admin:
+            queues_list = Queue.query.all()
+        else:
+            queues_list = Queue.query.filter_by(tenant_id=current_user.tenant_id).all()
+        return jsonify([{
+            'id': q.id,
+            'name': q.name,
+            'extension': q.extension,
+            'strategy': q.strategy,
+            'max_wait_time': q.max_wait_time,
+            'status': q.status
+        } for q in queues_list])
+    
+    elif request.method == 'POST':
+        data = request.get_json()
+        queue = Queue(
+            tenant_id=current_user.tenant_id if not current_user.is_super_admin else data.get('tenant_id'),
+            name=data.get('name'),
+            extension=data.get('extension'),
+            strategy=data.get('strategy', 'ringall'),
+            max_wait_time=data.get('max_wait', 300),
+            ring_timeout=data.get('ring_timeout', 20),
+            wrapup_time=data.get('wrapup', 30),
+            status='active'
+        )
+        db.session.add(queue)
+        db.session.commit()
+        
+        log_audit('create', 'queue', queue.id, f'Kuyruk oluşturuldu: {queue.name}')
+        return jsonify({'success': True, 'id': queue.id})
+
+
+@app.route('/api/voip/calls/active')
+@login_required
+def api_voip_active_calls():
+    """Aktif çağrılar"""
+    # Gerçek implementasyonda PBX'ten aktif çağrı bilgisi alınır
+    # Şimdilik demo veri
+    return jsonify([
+        {
+            'id': 1,
+            'caller': '+90 532 XXX XX45',
+            'callee': '8001',
+            'direction': 'inbound',
+            'duration': 342,
+            'agent': 'Ahmet Y.',
+            'queue': 'Satış',
+            'status': 'connected'
+        },
+        {
+            'id': 2,
+            'caller': '+90 212 555 0001',
+            'callee': '+90 555 XXX XX12',
+            'direction': 'outbound',
+            'duration': 138,
+            'agent': 'Ayşe K.',
+            'queue': 'Satış',
+            'status': 'connected'
+        }
+    ])
+
+
+@app.route('/api/voip/stats')
+@login_required
+def api_voip_stats():
+    """VoIP istatistikleri"""
+    return jsonify({
+        'active_calls': 24,
+        'waiting_calls': 8,
+        'available_agents': 32,
+        'sla_percentage': 94,
+        'aht': '3:42',
+        'trunk_usage': 67
+    })
 
 
 # ==================== CAMPAIGN ROUTES ====================
@@ -1752,6 +2123,342 @@ def create_initial_data():
             db.session.add(campaign)
             db.session.commit()
             print('Demo kampanya eklendi.')
+
+
+# ==================== BILLING ROUTES ====================
+
+@app.route('/billing/plans')
+@login_required
+@super_admin_required
+def billing_plans():
+    """Fiyatlandırma planları yönetimi"""
+    plans = BillingPlan.query.all()
+    return render_template('billing/plans.html', plans=plans)
+
+
+@app.route('/billing/plans/new', methods=['GET', 'POST'])
+@login_required
+@super_admin_required
+def billing_plan_new():
+    """Yeni fiyat planı oluştur"""
+    if request.method == 'POST':
+        plan = BillingPlan(
+            code=request.form.get('code'),
+            name=request.form.get('name'),
+            description=request.form.get('description'),
+            price_monthly=request.form.get('price_monthly', type=float),
+            price_yearly=request.form.get('price_yearly', type=float),
+            price_per_agent=request.form.get('price_per_agent', type=float),
+            included_agents=request.form.get('included_agents', type=int),
+            max_agents=request.form.get('max_agents', type=int),
+            max_concurrent_calls=request.form.get('max_concurrent_calls', type=int),
+            storage_gb=request.form.get('storage_gb', type=int),
+            recording_retention_days=request.form.get('recording_retention_days', type=int)
+        )
+        db.session.add(plan)
+        db.session.commit()
+        flash('Plan başarıyla oluşturuldu.', 'success')
+        return redirect(url_for('billing_plans'))
+    return render_template('billing/plan_form.html', plan=None)
+
+
+@app.route('/billing/tariffs')
+@login_required
+@super_admin_required
+def billing_tariffs():
+    """VoIP tarifeleri yönetimi"""
+    tariffs = VoIPTariff.query.all()
+    return render_template('billing/tariffs.html', tariffs=tariffs)
+
+
+@app.route('/billing/tariffs/new', methods=['GET', 'POST'])
+@login_required
+@super_admin_required
+def billing_tariff_new():
+    """Yeni VoIP tarifesi oluştur"""
+    if request.method == 'POST':
+        tariff = VoIPTariff(
+            code=request.form.get('code'),
+            name=request.form.get('name'),
+            description=request.form.get('description'),
+            default_rate_inbound=request.form.get('rate_inbound', type=float),
+            default_rate_outbound=request.form.get('rate_outbound', type=float),
+            connection_fee=request.form.get('connection_fee', type=float),
+            billing_increment=request.form.get('billing_increment', type=int)
+        )
+        db.session.add(tariff)
+        db.session.commit()
+        flash('Tarife başarıyla oluşturuldu.', 'success')
+        return redirect(url_for('billing_tariffs'))
+    return render_template('billing/tariff_form.html', tariff=None)
+
+
+@app.route('/billing/tariffs/<int:tariff_id>/rates')
+@login_required
+@super_admin_required
+def billing_tariff_rates(tariff_id):
+    """Tarife fiyat detayları"""
+    tariff = VoIPTariff.query.get_or_404(tariff_id)
+    rates = tariff.rates.all()
+    return render_template('billing/tariff_rates.html', tariff=tariff, rates=rates)
+
+
+@app.route('/billing/invoices')
+@login_required
+@super_admin_required
+def billing_invoices():
+    """Tüm faturaları listele"""
+    invoices = Invoice.query.order_by(Invoice.created_at.desc()).all()
+    return render_template('billing/invoices.html', invoices=invoices)
+
+
+@app.route('/billing/payments')
+@login_required
+@super_admin_required
+def billing_payments():
+    """Tüm ödemeleri listele"""
+    payments = Payment.query.order_by(Payment.created_at.desc()).all()
+    return render_template('billing/payments.html', payments=payments)
+
+
+# ==================== CC ADMIN PANEL ROUTES ====================
+
+@app.route('/cc/settings')
+@login_required
+@admin_required
+def cc_settings():
+    """CC Kurum Ayarları"""
+    tenant = Tenant.query.get(current_user.tenant_id)
+    settings = TenantSettings.query.filter_by(tenant_id=current_user.tenant_id).first()
+    billing_info = TenantBillingInfo.query.filter_by(tenant_id=current_user.tenant_id).first()
+    branding = TenantBranding.query.filter_by(tenant_id=current_user.tenant_id).first()
+    return render_template('cc_admin/settings.html', 
+                          tenant=tenant, 
+                          settings=settings, 
+                          billing_info=billing_info,
+                          branding=branding)
+
+
+@app.route('/cc/settings/update', methods=['POST'])
+@login_required
+@admin_required
+def cc_settings_update():
+    """CC Kurum Ayarlarını Güncelle"""
+    tenant = Tenant.query.get(current_user.tenant_id)
+    if tenant:
+        tenant.name = request.form.get('name')
+        tenant.timezone = request.form.get('timezone')
+        tenant.language = request.form.get('language')
+        db.session.commit()
+        flash('Kurum ayarları güncellendi.', 'success')
+    return redirect(url_for('cc_settings'))
+
+
+@app.route('/cc/billing')
+@login_required
+@admin_required
+def cc_billing():
+    """CC Faturalama ve Kullanım"""
+    subscription = TenantSubscription.query.filter_by(tenant_id=current_user.tenant_id).first()
+    billing_info = TenantBillingInfo.query.filter_by(tenant_id=current_user.tenant_id).first()
+    invoices = Invoice.query.filter_by(tenant_id=current_user.tenant_id).order_by(Invoice.created_at.desc()).limit(10).all()
+    
+    # Kullanım özeti
+    from datetime import date
+    today = date.today()
+    current_month_start = today.replace(day=1)
+    usage = UsageSummary.query.filter(
+        UsageSummary.tenant_id == current_user.tenant_id,
+        UsageSummary.period_type == 'daily',
+        UsageSummary.period_date >= current_month_start
+    ).all()
+    
+    return render_template('cc_admin/billing.html',
+                          subscription=subscription,
+                          billing_info=billing_info,
+                          invoices=invoices,
+                          usage=usage)
+
+
+@app.route('/cc/voip')
+@login_required
+@admin_required
+def cc_voip():
+    """CC VoIP Ayarları ve Durumu"""
+    voip_config = TenantVoIPConfig.query.filter_by(tenant_id=current_user.tenant_id).first()
+    quota = TenantQuota.query.filter_by(tenant_id=current_user.tenant_id).first()
+    
+    # Atanmış DID'ler
+    dids = DIDPool.query.filter_by(tenant_id=current_user.tenant_id).all()
+    
+    # Atanmış CLI'lar
+    cli_assignments = TenantCLIAssignment.query.filter_by(tenant_id=current_user.tenant_id).all()
+    
+    return render_template('cc_admin/voip.html',
+                          voip_config=voip_config,
+                          quota=quota,
+                          dids=dids,
+                          cli_assignments=cli_assignments)
+
+
+@app.route('/cc/usage')
+@login_required
+@admin_required
+def cc_usage():
+    """CC Kullanım Detayları"""
+    from datetime import date, timedelta
+    
+    # Tarih aralığı
+    end_date = date.today()
+    start_date = end_date - timedelta(days=30)
+    
+    # Günlük kullanım
+    daily_usage = UsageSummary.query.filter(
+        UsageSummary.tenant_id == current_user.tenant_id,
+        UsageSummary.period_type == 'daily',
+        UsageSummary.period_date >= start_date
+    ).order_by(UsageSummary.period_date.desc()).all()
+    
+    # Kota durumu
+    quota = TenantQuota.query.filter_by(tenant_id=current_user.tenant_id).first()
+    
+    return render_template('cc_admin/usage.html',
+                          daily_usage=daily_usage,
+                          quota=quota,
+                          start_date=start_date,
+                          end_date=end_date)
+
+
+@app.route('/cc/support')
+@login_required
+@admin_required
+def cc_support():
+    """CC Destek Talepleri"""
+    tickets = SupportTicket.query.filter_by(tenant_id=current_user.tenant_id).order_by(SupportTicket.created_at.desc()).all()
+    announcements = SystemAnnouncement.query.filter(
+        SystemAnnouncement.is_public == True,
+        (SystemAnnouncement.expires_at == None) | (SystemAnnouncement.expires_at > datetime.utcnow())
+    ).order_by(SystemAnnouncement.publish_at.desc()).limit(5).all()
+    
+    return render_template('cc_admin/support.html',
+                          tickets=tickets,
+                          announcements=announcements)
+
+
+@app.route('/cc/support/new', methods=['GET', 'POST'])
+@login_required
+@admin_required
+def cc_support_new():
+    """Yeni destek talebi oluştur"""
+    if request.method == 'POST':
+        import random
+        ticket = SupportTicket(
+            tenant_id=current_user.tenant_id,
+            ticket_number=f'TKT-{random.randint(100000, 999999)}',
+            subject=request.form.get('subject'),
+            description=request.form.get('description'),
+            category=request.form.get('category'),
+            priority=request.form.get('priority', 'normal'),
+            created_by_id=current_user.id
+        )
+        db.session.add(ticket)
+        db.session.commit()
+        flash('Destek talebiniz oluşturuldu.', 'success')
+        return redirect(url_for('cc_support'))
+    return render_template('cc_admin/support_form.html')
+
+
+# ==================== PROVISIONING ROUTES (SUPER ADMIN) ====================
+
+@app.route('/provisioning/dids')
+@login_required
+@super_admin_required
+def provisioning_dids():
+    """DID Havuzu Yönetimi"""
+    dids = DIDPool.query.all()
+    tenants = Tenant.query.filter_by(status='active').all()
+    return render_template('provisioning/dids.html', dids=dids, tenants=tenants)
+
+
+@app.route('/provisioning/dids/assign', methods=['POST'])
+@login_required
+@super_admin_required
+def provisioning_did_assign():
+    """DID'i tenant'a ata"""
+    did_id = request.form.get('did_id', type=int)
+    tenant_id = request.form.get('tenant_id', type=int)
+    
+    did = DIDPool.query.get_or_404(did_id)
+    did.tenant_id = tenant_id
+    did.assigned_at = datetime.utcnow()
+    did.status = 'assigned' if tenant_id else 'available'
+    db.session.commit()
+    
+    flash('DID ataması güncellendi.', 'success')
+    return redirect(url_for('provisioning_dids'))
+
+
+@app.route('/provisioning/cli')
+@login_required
+@super_admin_required
+def provisioning_cli():
+    """CLI Havuzu Yönetimi"""
+    clis = CLIPool.query.all()
+    tenants = Tenant.query.filter_by(status='active').all()
+    return render_template('provisioning/cli.html', clis=clis, tenants=tenants)
+
+
+@app.route('/provisioning/trunks')
+@login_required
+@super_admin_required
+def provisioning_trunks():
+    """Trunk Tahsis Yönetimi"""
+    allocations = TrunkAllocation.query.all()
+    trunks = SIPTrunk.query.all()
+    tenants = Tenant.query.filter_by(status='active').all()
+    return render_template('provisioning/trunks.html', 
+                          allocations=allocations, 
+                          trunks=trunks, 
+                          tenants=tenants)
+
+
+@app.route('/provisioning/quotas')
+@login_required
+@super_admin_required
+def provisioning_quotas():
+    """Tenant Kota Yönetimi"""
+    quotas = TenantQuota.query.all()
+    tenants = Tenant.query.all()
+    return render_template('provisioning/quotas.html', quotas=quotas, tenants=tenants)
+
+
+@app.route('/provisioning/quotas/<int:tenant_id>/edit', methods=['GET', 'POST'])
+@login_required
+@super_admin_required
+def provisioning_quota_edit(tenant_id):
+    """Tenant kotalarını düzenle"""
+    quota = TenantQuota.query.filter_by(tenant_id=tenant_id).first()
+    tenant = Tenant.query.get_or_404(tenant_id)
+    
+    if not quota:
+        quota = TenantQuota(tenant_id=tenant_id)
+        db.session.add(quota)
+        db.session.commit()
+    
+    if request.method == 'POST':
+        quota.max_agents = request.form.get('max_agents', type=int)
+        quota.max_supervisors = request.form.get('max_supervisors', type=int)
+        quota.max_projects = request.form.get('max_projects', type=int)
+        quota.max_concurrent_inbound = request.form.get('max_concurrent_inbound', type=int)
+        quota.max_concurrent_outbound = request.form.get('max_concurrent_outbound', type=int)
+        quota.storage_quota_gb = request.form.get('storage_quota_gb', type=int)
+        quota.recording_retention_days = request.form.get('recording_retention_days', type=int)
+        quota.ai_monthly_minutes = request.form.get('ai_monthly_minutes', type=int)
+        db.session.commit()
+        flash('Kotalar güncellendi.', 'success')
+        return redirect(url_for('provisioning_quotas'))
+    
+    return render_template('provisioning/quota_form.html', quota=quota, tenant=tenant)
 
 
 # ==================== STARTUP ====================

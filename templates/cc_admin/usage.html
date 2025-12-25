@@ -1,0 +1,330 @@
+{% extends "base.html" %}
+
+{% block title %}Kullanım Detayları - AI BEE CC{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <h1><i class="ti ti-chart-bar"></i> Kullanım Detayları</h1>
+    <p>Son 30 günlük detaylı kullanım raporları</p>
+</div>
+
+<!-- Özet Kartları -->
+<div class="usage-summary">
+    <div class="usage-card">
+        <div class="usage-icon voip-icon">
+            <i class="ti ti-phone-incoming"></i>
+        </div>
+        <div class="usage-content">
+            <span class="usage-label">Gelen Çağrı</span>
+            <span class="usage-value">{{ daily_usage|sum(attribute='voip_inbound_minutes')|round(0)|int if daily_usage else 0 }} dk</span>
+            <span class="usage-amount">₺{{ "%.2f"|format(daily_usage|sum(attribute='voip_inbound_amount')|float) if daily_usage else '0.00' }}</span>
+        </div>
+    </div>
+
+    <div class="usage-card">
+        <div class="usage-icon voip-out-icon">
+            <i class="ti ti-phone-outgoing"></i>
+        </div>
+        <div class="usage-content">
+            <span class="usage-label">Giden Çağrı</span>
+            <span class="usage-value">{{ daily_usage|sum(attribute='voip_outbound_minutes')|round(0)|int if daily_usage else 0 }} dk</span>
+            <span class="usage-amount">₺{{ "%.2f"|format(daily_usage|sum(attribute='voip_outbound_amount')|float) if daily_usage else '0.00' }}</span>
+        </div>
+    </div>
+
+    <div class="usage-card">
+        <div class="usage-icon ai-icon">
+            <i class="ti ti-brain"></i>
+        </div>
+        <div class="usage-content">
+            <span class="usage-label">AI Transkripsiyon</span>
+            <span class="usage-value">{{ daily_usage|sum(attribute='ai_transcription_minutes')|round(0)|int if daily_usage else 0 }} dk</span>
+            <span class="usage-amount">₺{{ "%.2f"|format(daily_usage|sum(attribute='ai_transcription_amount')|float) if daily_usage else '0.00' }}</span>
+        </div>
+    </div>
+
+    <div class="usage-card">
+        <div class="usage-icon storage-icon">
+            <i class="ti ti-database"></i>
+        </div>
+        <div class="usage-content">
+            <span class="usage-label">Storage Kullanımı</span>
+            <span class="usage-value">{{ quota.current_storage_gb if quota else 0 }} GB</span>
+            <span class="usage-progress">
+                <div class="progress-bar">
+                    <div class="progress-fill" style="width: {{ ((quota.current_storage_gb|float / quota.storage_quota_gb) * 100) if quota and quota.storage_quota_gb else 0 }}%"></div>
+                </div>
+                <span>{{ quota.storage_quota_gb if quota else 50 }} GB limit</span>
+            </span>
+        </div>
+    </div>
+</div>
+
+<!-- Kota Durumu -->
+<div class="quota-section">
+    <h3><i class="ti ti-gauge"></i> Kota Durumu</h3>
+    <div class="quota-grid">
+        <div class="quota-item">
+            <div class="quota-header">
+                <span>Aktif Agent</span>
+                <span>{{ quota.current_agents if quota else 0 }} / {{ quota.max_agents if quota else 10 }}</span>
+            </div>
+            <div class="progress-bar">
+                <div class="progress-fill" style="width: {{ ((quota.current_agents / quota.max_agents) * 100) if quota and quota.max_agents else 0 }}%"></div>
+            </div>
+        </div>
+
+        <div class="quota-item">
+            <div class="quota-header">
+                <span>Projeler</span>
+                <span>{{ quota.current_projects if quota else 0 }} / {{ quota.max_projects if quota else 5 }}</span>
+            </div>
+            <div class="progress-bar">
+                <div class="progress-fill" style="width: {{ ((quota.current_projects / quota.max_projects) * 100) if quota and quota.max_projects else 0 }}%"></div>
+            </div>
+        </div>
+
+        <div class="quota-item">
+            <div class="quota-header">
+                <span>Kayıt Saklama</span>
+                <span>{{ quota.recording_retention_days if quota else 90 }} gün</span>
+            </div>
+            <div class="progress-bar">
+                <div class="progress-fill" style="width: 100%"></div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Günlük Kullanım Tablosu -->
+<div class="section-card">
+    <div class="section-header">
+        <h3><i class="ti ti-calendar"></i> Günlük Kullanım</h3>
+        <button class="btn btn-outline btn-sm">
+            <i class="ti ti-download"></i> Excel İndir
+        </button>
+    </div>
+
+    {% if daily_usage %}
+    <table class="data-table">
+        <thead>
+            <tr>
+                <th>Tarih</th>
+                <th>Gelen (dk)</th>
+                <th>Giden (dk)</th>
+                <th>Toplam Çağrı</th>
+                <th>AI (dk)</th>
+                <th>Toplam Tutar</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for usage in daily_usage %}
+            <tr>
+                <td>{{ usage.period_date.strftime('%d.%m.%Y') }}</td>
+                <td>{{ usage.voip_inbound_minutes|round(0)|int }}</td>
+                <td>{{ usage.voip_outbound_minutes|round(0)|int }}</td>
+                <td>{{ usage.voip_total_calls }}</td>
+                <td>{{ usage.ai_transcription_minutes|round(0)|int }}</td>
+                <td><strong>₺{{ "%.2f"|format(usage.total_amount|float) }}</strong></td>
+            </tr>
+            {% endfor %}
+        </tbody>
+        <tfoot>
+            <tr>
+                <th>TOPLAM</th>
+                <th>{{ daily_usage|sum(attribute='voip_inbound_minutes')|round(0)|int }}</th>
+                <th>{{ daily_usage|sum(attribute='voip_outbound_minutes')|round(0)|int }}</th>
+                <th>{{ daily_usage|sum(attribute='voip_total_calls') }}</th>
+                <th>{{ daily_usage|sum(attribute='ai_transcription_minutes')|round(0)|int }}</th>
+                <th>₺{{ "%.2f"|format(daily_usage|sum(attribute='total_amount')|float) }}</th>
+            </tr>
+        </tfoot>
+    </table>
+    {% else %}
+    <div class="empty-state">
+        <i class="ti ti-chart-bar-off"></i>
+        <h4>Henüz kullanım verisi yok</h4>
+    </div>
+    {% endif %}
+</div>
+
+<style>
+.usage-summary {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    gap: 1.5rem;
+    margin-bottom: 2rem;
+}
+
+.usage-card {
+    background: white;
+    border-radius: 12px;
+    padding: 1.5rem;
+    display: flex;
+    gap: 1rem;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+}
+
+.usage-icon {
+    width: 48px;
+    height: 48px;
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.5rem;
+}
+
+.voip-icon {
+    background: linear-gradient(135deg, #e8f5e9, #c8e6c9);
+    color: #2e7d32;
+}
+
+.voip-out-icon {
+    background: linear-gradient(135deg, #e3f2fd, #bbdefb);
+    color: #1565c0;
+}
+
+.ai-icon {
+    background: linear-gradient(135deg, #f3e5f5, #e1bee7);
+    color: #7b1fa2;
+}
+
+.storage-icon {
+    background: linear-gradient(135deg, #fff3e0, #ffe0b2);
+    color: #e65100;
+}
+
+.usage-content {
+    display: flex;
+    flex-direction: column;
+}
+
+.usage-label {
+    font-size: 0.85rem;
+    color: var(--text-muted);
+}
+
+.usage-value {
+    font-size: 1.5rem;
+    font-weight: 700;
+}
+
+.usage-amount {
+    font-size: 0.9rem;
+    color: var(--text-secondary);
+}
+
+.usage-progress {
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+    font-size: 0.8rem;
+    color: var(--text-muted);
+}
+
+.progress-bar {
+    height: 6px;
+    background: #eee;
+    border-radius: 3px;
+    overflow: hidden;
+}
+
+.progress-fill {
+    height: 100%;
+    background: linear-gradient(90deg, var(--primary-color), #ffc107);
+    border-radius: 3px;
+}
+
+.quota-section {
+    background: white;
+    border-radius: 12px;
+    padding: 1.5rem;
+    margin-bottom: 2rem;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+}
+
+.quota-section h3 {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    margin-bottom: 1.5rem;
+}
+
+.quota-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 1.5rem;
+}
+
+.quota-item {
+    padding: 1rem;
+    background: #f8f9fa;
+    border-radius: 8px;
+}
+
+.quota-header {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 0.5rem;
+    font-size: 0.9rem;
+}
+
+.section-card {
+    background: white;
+    border-radius: 12px;
+    padding: 1.5rem;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+}
+
+.section-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1.5rem;
+    padding-bottom: 1rem;
+    border-bottom: 1px solid #eee;
+}
+
+.section-header h3 {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.data-table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.data-table th,
+.data-table td {
+    padding: 0.75rem 1rem;
+    text-align: left;
+    border-bottom: 1px solid #f0f0f0;
+}
+
+.data-table th {
+    font-weight: 600;
+    color: var(--text-secondary);
+    font-size: 0.85rem;
+}
+
+.data-table tfoot th {
+    background: #f8f9fa;
+    color: var(--text-primary);
+}
+
+.empty-state {
+    text-align: center;
+    padding: 3rem;
+    color: var(--text-muted);
+}
+
+.empty-state i {
+    font-size: 3rem;
+    margin-bottom: 1rem;
+}
+</style>
+{% endblock %}
+

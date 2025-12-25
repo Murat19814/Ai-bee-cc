@@ -1,0 +1,238 @@
+{% extends "base.html" %}
+
+{% block title %}Kota Düzenle - {{ tenant.name }} - AI BEE CC{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <h1><i class="ti ti-gauge"></i> Kota Düzenle: {{ tenant.name }}</h1>
+    <p>{{ tenant.code }}</p>
+</div>
+
+<form action="{{ url_for('provisioning_quota_edit', tenant_id=tenant.id) }}" method="POST" class="quota-form">
+    <div class="form-grid">
+        <!-- Agent Limitleri -->
+        <div class="form-section">
+            <h3><i class="ti ti-users"></i> Agent Limitleri</h3>
+            <div class="form-row">
+                <div class="form-group">
+                    <label>Max Agent Sayısı</label>
+                    <input type="number" name="max_agents" class="form-control" 
+                           value="{{ quota.max_agents if quota else 10 }}" min="1">
+                </div>
+                <div class="form-group">
+                    <label>Max Supervisor</label>
+                    <input type="number" name="max_supervisors" class="form-control" 
+                           value="{{ quota.max_supervisors if quota else 3 }}" min="1">
+                </div>
+            </div>
+            <div class="current-usage">
+                <span>Mevcut: {{ quota.current_agents if quota else 0 }} agent, {{ quota.current_supervisors if quota else 0 }} supervisor</span>
+            </div>
+        </div>
+
+        <!-- Proje Limitleri -->
+        <div class="form-section">
+            <h3><i class="ti ti-folders"></i> Proje & Kampanya</h3>
+            <div class="form-row">
+                <div class="form-group">
+                    <label>Max Proje</label>
+                    <input type="number" name="max_projects" class="form-control" 
+                           value="{{ quota.max_projects if quota else 5 }}" min="1">
+                </div>
+                <div class="form-group">
+                    <label>Max Kampanya</label>
+                    <input type="number" name="max_campaigns" class="form-control" 
+                           value="{{ quota.max_campaigns if quota else 10 }}" min="1">
+                </div>
+            </div>
+            <div class="form-row">
+                <div class="form-group">
+                    <label>Max Kuyruk</label>
+                    <input type="number" name="max_queues" class="form-control" 
+                           value="{{ quota.max_queues if quota else 10 }}" min="1">
+                </div>
+                <div class="form-group">
+                    <label>Max IVR</label>
+                    <input type="number" name="max_ivrs" class="form-control" 
+                           value="{{ quota.max_ivrs if quota else 5 }}" min="1">
+                </div>
+            </div>
+        </div>
+
+        <!-- VoIP Limitleri -->
+        <div class="form-section">
+            <h3><i class="ti ti-phone-call"></i> VoIP Limitleri</h3>
+            <div class="form-row">
+                <div class="form-group">
+                    <label>Max Eş Zamanlı Gelen</label>
+                    <input type="number" name="max_concurrent_inbound" class="form-control" 
+                           value="{{ quota.max_concurrent_inbound if quota else 10 }}" min="1">
+                </div>
+                <div class="form-group">
+                    <label>Max Eş Zamanlı Giden</label>
+                    <input type="number" name="max_concurrent_outbound" class="form-control" 
+                           value="{{ quota.max_concurrent_outbound if quota else 10 }}" min="1">
+                </div>
+            </div>
+            <div class="form-row">
+                <div class="form-group">
+                    <label>Max CPS (Çağrı/sn)</label>
+                    <input type="number" name="max_cps" class="form-control" 
+                           value="{{ quota.max_cps if quota else 5 }}" min="1">
+                </div>
+                <div class="form-group">
+                    <label>Günlük Outbound Limit (dk)</label>
+                    <input type="number" name="max_daily_outbound_minutes" class="form-control" 
+                           value="{{ quota.max_daily_outbound_minutes if quota else 0 }}" min="0">
+                    <small>0 = Sınırsız</small>
+                </div>
+            </div>
+        </div>
+
+        <!-- Storage Limitleri -->
+        <div class="form-section">
+            <h3><i class="ti ti-database"></i> Storage & Kayıt</h3>
+            <div class="form-row">
+                <div class="form-group">
+                    <label>Storage Kotası (GB)</label>
+                    <input type="number" name="storage_quota_gb" class="form-control" 
+                           value="{{ quota.storage_quota_gb if quota else 50 }}" min="1">
+                </div>
+                <div class="form-group">
+                    <label>Kayıt Saklama Süresi (gün)</label>
+                    <input type="number" name="recording_retention_days" class="form-control" 
+                           value="{{ quota.recording_retention_days if quota else 90 }}" min="7">
+                </div>
+            </div>
+            <div class="current-usage">
+                <span>Mevcut Kullanım: {{ "%.1f"|format(quota.current_storage_gb|float) if quota else 0 }} GB</span>
+            </div>
+        </div>
+
+        <!-- AI Limitleri -->
+        <div class="form-section">
+            <h3><i class="ti ti-brain"></i> AI Limitleri</h3>
+            <div class="form-row">
+                <div class="form-group">
+                    <label>Aylık AI Dakika</label>
+                    <input type="number" name="ai_monthly_minutes" class="form-control" 
+                           value="{{ quota.ai_monthly_minutes if quota else 0 }}" min="0">
+                    <small>0 = Kapalı</small>
+                </div>
+                <div class="form-group">
+                    <label>Aylık AI Özet</label>
+                    <input type="number" name="ai_monthly_summaries" class="form-control" 
+                           value="{{ quota.ai_monthly_summaries if quota else 0 }}" min="0">
+                    <small>0 = Kapalı</small>
+                </div>
+            </div>
+        </div>
+
+        <!-- Aşım Ayarları -->
+        <div class="form-section">
+            <h3><i class="ti ti-alert-triangle"></i> Aşım Politikası</h3>
+            <div class="form-group">
+                <label class="checkbox-label">
+                    <input type="checkbox" name="allow_overage" 
+                           {{ 'checked' if quota and quota.allow_overage }}>
+                    <span>Kota aşımına izin ver (ek ücretle)</span>
+                </label>
+            </div>
+            <div class="form-group">
+                <label>Aşım Çarpanı</label>
+                <input type="number" name="overage_rate_multiplier" class="form-control" 
+                       value="{{ quota.overage_rate_multiplier if quota else 1.5 }}" 
+                       min="1" max="5" step="0.1">
+                <small>Normal fiyatın kaç katı uygulanacak</small>
+            </div>
+        </div>
+    </div>
+
+    <div class="form-actions">
+        <a href="{{ url_for('provisioning_quotas') }}" class="btn btn-outline">İptal</a>
+        <button type="submit" class="btn btn-primary">
+            <i class="ti ti-check"></i> Kaydet
+        </button>
+    </div>
+</form>
+
+<style>
+.quota-form {
+    max-width: 900px;
+}
+
+.form-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+    gap: 1.5rem;
+}
+
+.form-section {
+    background: white;
+    border-radius: 12px;
+    padding: 1.5rem;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+}
+
+.form-section h3 {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    margin-bottom: 1.5rem;
+    padding-bottom: 1rem;
+    border-bottom: 1px solid #eee;
+    font-size: 1rem;
+}
+
+.form-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1rem;
+    margin-bottom: 1rem;
+}
+
+.form-group {
+    margin-bottom: 1rem;
+}
+
+.form-group label {
+    display: block;
+    font-weight: 600;
+    margin-bottom: 0.5rem;
+    font-size: 0.9rem;
+}
+
+.form-group small {
+    display: block;
+    margin-top: 0.25rem;
+    color: var(--text-muted);
+    font-size: 0.8rem;
+}
+
+.current-usage {
+    padding: 0.75rem;
+    background: #f8f9fa;
+    border-radius: 6px;
+    font-size: 0.85rem;
+    color: var(--text-secondary);
+}
+
+.checkbox-label {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    cursor: pointer;
+    font-weight: normal !important;
+}
+
+.form-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 1rem;
+    margin-top: 2rem;
+    padding-top: 1.5rem;
+    border-top: 1px solid #eee;
+}
+</style>
+{% endblock %}
+

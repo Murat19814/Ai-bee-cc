@@ -1,0 +1,836 @@
+{% extends "base.html" %}
+
+{% block title %}CDR - Çağrı Kayıtları - {{ app_name }}{% endblock %}
+
+{% block extra_css %}
+<style>
+.cdr-page { padding: 1.5rem; }
+
+/* Filter Panel */
+.filter-panel {
+    background: white;
+    border-radius: 16px;
+    padding: 1.25rem;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.06);
+    margin-top: 1.5rem;
+}
+
+.filter-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1rem;
+    align-items: flex-end;
+}
+
+.filter-group {
+    flex: 1;
+    min-width: 150px;
+}
+
+.filter-group label {
+    display: block;
+    font-size: 0.75rem;
+    color: #888;
+    margin-bottom: 0.25rem;
+    text-transform: uppercase;
+}
+
+.filter-group .form-control {
+    width: 100%;
+    padding: 0.6rem 0.75rem;
+    border: 1px solid #e0e0e0;
+    border-radius: 8px;
+    font-size: 0.85rem;
+}
+
+.filter-actions {
+    display: flex;
+    gap: 0.5rem;
+}
+
+/* CDR Table */
+.cdr-table-container {
+    background: white;
+    border-radius: 16px;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.06);
+    overflow: hidden;
+    margin-top: 1.5rem;
+}
+
+.table-header {
+    padding: 1rem 1.25rem;
+    background: #f8f9fa;
+    border-bottom: 1px solid #eee;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.table-info {
+    font-size: 0.85rem;
+    color: #666;
+}
+
+.cdr-table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.cdr-table th {
+    background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+    color: white;
+    padding: 0.875rem 1rem;
+    text-align: left;
+    font-size: 0.75rem;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    position: sticky;
+    top: 0;
+}
+
+.cdr-table td {
+    padding: 0.875rem 1rem;
+    border-bottom: 1px solid #f0f0f0;
+    font-size: 0.85rem;
+}
+
+.cdr-table tr:hover {
+    background: #f8f9fa;
+}
+
+/* Call Type Badge */
+.call-type {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.25rem;
+    padding: 0.25rem 0.6rem;
+    border-radius: 6px;
+    font-size: 0.75rem;
+    font-weight: 600;
+}
+
+.call-type.inbound {
+    background: rgba(33, 150, 243, 0.1);
+    color: #1976D2;
+}
+
+.call-type.outbound {
+    background: rgba(76, 175, 80, 0.1);
+    color: #388E3C;
+}
+
+.call-type.internal {
+    background: rgba(156, 39, 176, 0.1);
+    color: #7B1FA2;
+}
+
+/* Call Status */
+.call-status {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.25rem;
+    font-size: 0.8rem;
+}
+
+.call-status.answered { color: #4CAF50; }
+.call-status.missed { color: #f44336; }
+.call-status.busy { color: #FF9800; }
+.call-status.failed { color: #9e9e9e; }
+
+/* Phone Number */
+.phone-number {
+    font-family: var(--font-mono);
+    font-weight: 500;
+}
+
+/* Duration */
+.duration {
+    font-family: var(--font-mono);
+    color: #666;
+}
+
+.duration.short { color: #f44336; }
+.duration.medium { color: #FF9800; }
+.duration.long { color: #4CAF50; }
+
+/* Agent Info */
+.agent-info {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.agent-avatar-sm {
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #667eea, #764ba2);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-size: 0.65rem;
+    font-weight: 600;
+}
+
+/* Recording Link */
+.recording-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.25rem;
+    color: #2196F3;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.recording-link:hover {
+    color: #1565C0;
+}
+
+/* Pagination */
+.pagination {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 1rem;
+    background: #f8f9fa;
+}
+
+.pagination .btn {
+    min-width: 36px;
+    padding: 0.5rem;
+}
+
+.pagination .current {
+    background: #1a1a2e;
+    color: white;
+}
+
+/* CDR Detail Modal */
+.cdr-detail {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1rem;
+}
+
+.cdr-detail-section {
+    background: #f8f9fa;
+    border-radius: 10px;
+    padding: 1rem;
+}
+
+.cdr-detail-section h4 {
+    font-size: 0.8rem;
+    color: #888;
+    text-transform: uppercase;
+    margin-bottom: 0.75rem;
+    padding-bottom: 0.5rem;
+    border-bottom: 1px solid #eee;
+}
+
+.cdr-detail-row {
+    display: flex;
+    justify-content: space-between;
+    padding: 0.4rem 0;
+    font-size: 0.85rem;
+}
+
+.cdr-detail-row span:first-child { color: #888; }
+.cdr-detail-row span:last-child { font-weight: 500; }
+
+/* Waveform Player */
+.waveform-player {
+    grid-column: 1 / -1;
+    background: #1a1a2e;
+    border-radius: 10px;
+    padding: 1rem;
+    color: white;
+}
+
+.waveform-controls {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    margin-bottom: 1rem;
+}
+
+.play-btn {
+    width: 48px;
+    height: 48px;
+    border-radius: 50%;
+    background: #F5A623;
+    border: none;
+    color: #1a1a2e;
+    font-size: 1.25rem;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.time-display {
+    font-family: var(--font-mono);
+    font-size: 0.9rem;
+}
+
+.speed-control {
+    margin-left: auto;
+    display: flex;
+    gap: 0.25rem;
+}
+
+.speed-btn {
+    padding: 0.25rem 0.5rem;
+    background: rgba(255,255,255,0.1);
+    border: none;
+    color: white;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 0.75rem;
+}
+
+.speed-btn.active { background: #F5A623; color: #1a1a2e; }
+
+.waveform-visual {
+    height: 60px;
+    background: rgba(255,255,255,0.1);
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    padding: 0 1rem;
+    gap: 2px;
+    overflow: hidden;
+}
+
+.waveform-bar {
+    flex: 1;
+    min-width: 3px;
+    background: #F5A623;
+    border-radius: 2px;
+}
+
+/* Modal */
+.modal-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.6);
+    backdrop-filter: blur(4px);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 1000;
+    opacity: 0;
+    visibility: hidden;
+    transition: all 0.3s;
+}
+
+.modal-overlay.show { opacity: 1; visibility: visible; }
+
+.modal-content {
+    background: white;
+    border-radius: 20px;
+    width: 100%;
+    max-width: 800px;
+    max-height: 90vh;
+    overflow: hidden;
+}
+
+.modal-header {
+    padding: 1.5rem;
+    background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+    color: white;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.modal-header h3 {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+}
+
+.modal-header h3 i { color: #F5A623; }
+
+.modal-close {
+    background: rgba(255,255,255,0.1);
+    border: none;
+    color: white;
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    cursor: pointer;
+}
+
+.modal-body { padding: 1.5rem; max-height: 70vh; overflow-y: auto; }
+.modal-footer { padding: 1rem 1.5rem; background: #f8f9fa; display: flex; gap: 1rem; justify-content: flex-end; }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="cdr-page">
+    <div class="page-header">
+        <div>
+            <h1 class="page-title">
+                <i class="ti ti-file-analytics" style="color: #F5A623;"></i>
+                CDR - Çağrı Kayıtları
+            </h1>
+            <p class="page-subtitle">Tüm çağrı detaylarını görüntüleyin ve analiz edin</p>
+        </div>
+        <div class="page-header-actions">
+            <button class="btn btn-secondary" onclick="exportCDR()">
+                <i class="ti ti-download"></i> Dışa Aktar
+            </button>
+        </div>
+    </div>
+
+    <!-- Stats -->
+    <div class="grid grid-cols-5 gap-4 mt-4">
+        <div class="stat-card" style="background: linear-gradient(145deg, #E3F2FD, #BBDEFB); border-left: 4px solid #1E88E5;">
+            <div class="stat-card-inner">
+                <div class="icon-3d blue"><i class="ti ti-phone"></i></div>
+                <div class="stat-content">
+                    <div class="stat-value">1,247</div>
+                    <div class="stat-label">Toplam Çağrı</div>
+                </div>
+            </div>
+        </div>
+        <div class="stat-card" style="background: linear-gradient(145deg, #E8F5E9, #C8E6C9); border-left: 4px solid #43A047;">
+            <div class="stat-card-inner">
+                <div class="icon-3d green"><i class="ti ti-phone-check"></i></div>
+                <div class="stat-content">
+                    <div class="stat-value">1,089</div>
+                    <div class="stat-label">Cevaplanan</div>
+                </div>
+            </div>
+        </div>
+        <div class="stat-card" style="background: linear-gradient(145deg, #FFEBEE, #FFCDD2); border-left: 4px solid #E53935;">
+            <div class="stat-card-inner">
+                <div class="icon-3d red"><i class="ti ti-phone-off"></i></div>
+                <div class="stat-content">
+                    <div class="stat-value">158</div>
+                    <div class="stat-label">Kaçırılan</div>
+                </div>
+            </div>
+        </div>
+        <div class="stat-card" style="background: linear-gradient(145deg, #FFF3E0, #FFE0B2); border-left: 4px solid #F57C00;">
+            <div class="stat-card-inner">
+                <div class="icon-3d orange"><i class="ti ti-clock"></i></div>
+                <div class="stat-content">
+                    <div class="stat-value">3:42</div>
+                    <div class="stat-label">Ort. Süre</div>
+                </div>
+            </div>
+        </div>
+        <div class="stat-card" style="background: linear-gradient(145deg, #F3E5F5, #E1BEE7); border-left: 4px solid #8E24AA;">
+            <div class="stat-card-inner">
+                <div class="icon-3d purple"><i class="ti ti-microphone"></i></div>
+                <div class="stat-content">
+                    <div class="stat-value">1,089</div>
+                    <div class="stat-label">Kayıt</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Filters -->
+    <div class="filter-panel">
+        <div class="filter-row">
+            <div class="filter-group">
+                <label>Tarih Aralığı</label>
+                <input type="date" class="form-control" id="dateFrom">
+            </div>
+            <div class="filter-group">
+                <label>&nbsp;</label>
+                <input type="date" class="form-control" id="dateTo">
+            </div>
+            <div class="filter-group">
+                <label>Çağrı Tipi</label>
+                <select class="form-control" id="callType">
+                    <option value="">Tümü</option>
+                    <option value="inbound">Gelen</option>
+                    <option value="outbound">Giden</option>
+                    <option value="internal">Dahili</option>
+                </select>
+            </div>
+            <div class="filter-group">
+                <label>Durum</label>
+                <select class="form-control" id="callStatus">
+                    <option value="">Tümü</option>
+                    <option value="answered">Cevaplanan</option>
+                    <option value="missed">Kaçırılan</option>
+                    <option value="busy">Meşgul</option>
+                    <option value="failed">Başarısız</option>
+                </select>
+            </div>
+            <div class="filter-group">
+                <label>Kuyruk</label>
+                <select class="form-control" id="queue">
+                    <option value="">Tümü</option>
+                    <option value="1">Satış Ekibi</option>
+                    <option value="2">Destek Ekibi</option>
+                    <option value="3">VIP</option>
+                </select>
+            </div>
+            <div class="filter-group">
+                <label>Agent</label>
+                <select class="form-control" id="agent">
+                    <option value="">Tümü</option>
+                    <option value="1">Ahmet Yılmaz</option>
+                    <option value="2">Ayşe Kaya</option>
+                    <option value="3">Mehmet Demir</option>
+                </select>
+            </div>
+            <div class="filter-group">
+                <label>Numara Ara</label>
+                <input type="text" class="form-control" placeholder="Numara..." id="phoneSearch">
+            </div>
+            <div class="filter-actions">
+                <button class="btn btn-primary" onclick="applyFilters()">
+                    <i class="ti ti-filter"></i> Filtrele
+                </button>
+                <button class="btn btn-secondary" onclick="clearFilters()">
+                    <i class="ti ti-x"></i>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- CDR Table -->
+    <div class="cdr-table-container">
+        <div class="table-header">
+            <div class="table-info">
+                <strong>1,247</strong> kayıt bulundu | Sayfa <strong>1</strong> / 125
+            </div>
+            <div>
+                <select class="form-control" style="width: auto; display: inline-block;">
+                    <option>10 kayıt</option>
+                    <option>25 kayıt</option>
+                    <option>50 kayıt</option>
+                    <option>100 kayıt</option>
+                </select>
+            </div>
+        </div>
+        
+        <div style="overflow-x: auto;">
+            <table class="cdr-table">
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Tarih/Saat</th>
+                        <th>Tip</th>
+                        <th>Arayan</th>
+                        <th>Aranan</th>
+                        <th>Agent</th>
+                        <th>Kuyruk</th>
+                        <th>Süre</th>
+                        <th>Durum</th>
+                        <th>Kayıt</th>
+                        <th>İşlem</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>#10247</td>
+                        <td>25.12.2024 14:32:15</td>
+                        <td><span class="call-type inbound"><i class="ti ti-phone-incoming"></i> Gelen</span></td>
+                        <td class="phone-number">+90 532 XXX XX45</td>
+                        <td class="phone-number">8001</td>
+                        <td>
+                            <div class="agent-info">
+                                <div class="agent-avatar-sm">AY</div>
+                                <span>Ahmet Y.</span>
+                            </div>
+                        </td>
+                        <td>Satış</td>
+                        <td><span class="duration long">05:42</span></td>
+                        <td><span class="call-status answered"><i class="ti ti-check"></i> Cevaplandı</span></td>
+                        <td><span class="recording-link" onclick="playRecording(10247)"><i class="ti ti-player-play"></i> Dinle</span></td>
+                        <td><button class="btn btn-sm btn-secondary" onclick="showCDRDetail(10247)"><i class="ti ti-eye"></i></button></td>
+                    </tr>
+                    <tr>
+                        <td>#10246</td>
+                        <td>25.12.2024 14:28:03</td>
+                        <td><span class="call-type outbound"><i class="ti ti-phone-outgoing"></i> Giden</span></td>
+                        <td class="phone-number">+90 212 555 0001</td>
+                        <td class="phone-number">+90 555 XXX XX12</td>
+                        <td>
+                            <div class="agent-info">
+                                <div class="agent-avatar-sm">AK</div>
+                                <span>Ayşe K.</span>
+                            </div>
+                        </td>
+                        <td>Satış</td>
+                        <td><span class="duration medium">02:18</span></td>
+                        <td><span class="call-status answered"><i class="ti ti-check"></i> Cevaplandı</span></td>
+                        <td><span class="recording-link" onclick="playRecording(10246)"><i class="ti ti-player-play"></i> Dinle</span></td>
+                        <td><button class="btn btn-sm btn-secondary" onclick="showCDRDetail(10246)"><i class="ti ti-eye"></i></button></td>
+                    </tr>
+                    <tr>
+                        <td>#10245</td>
+                        <td>25.12.2024 14:25:41</td>
+                        <td><span class="call-type inbound"><i class="ti ti-phone-incoming"></i> Gelen</span></td>
+                        <td class="phone-number">+90 544 XXX XX89</td>
+                        <td class="phone-number">8002</td>
+                        <td>
+                            <div class="agent-info">
+                                <div class="agent-avatar-sm">--</div>
+                                <span>-</span>
+                            </div>
+                        </td>
+                        <td>Destek</td>
+                        <td><span class="duration short">00:00</span></td>
+                        <td><span class="call-status missed"><i class="ti ti-x"></i> Kaçırıldı</span></td>
+                        <td>-</td>
+                        <td><button class="btn btn-sm btn-secondary" onclick="showCDRDetail(10245)"><i class="ti ti-eye"></i></button></td>
+                    </tr>
+                    <tr>
+                        <td>#10244</td>
+                        <td>25.12.2024 14:20:55</td>
+                        <td><span class="call-type inbound"><i class="ti ti-phone-incoming"></i> Gelen</span></td>
+                        <td class="phone-number">+90 507 XXX XX33</td>
+                        <td class="phone-number">8001</td>
+                        <td>
+                            <div class="agent-info">
+                                <div class="agent-avatar-sm">MD</div>
+                                <span>Mehmet D.</span>
+                            </div>
+                        </td>
+                        <td>VIP</td>
+                        <td><span class="duration long">08:15</span></td>
+                        <td><span class="call-status answered"><i class="ti ti-check"></i> Cevaplandı</span></td>
+                        <td><span class="recording-link" onclick="playRecording(10244)"><i class="ti ti-player-play"></i> Dinle</span></td>
+                        <td><button class="btn btn-sm btn-secondary" onclick="showCDRDetail(10244)"><i class="ti ti-eye"></i></button></td>
+                    </tr>
+                    <tr>
+                        <td>#10243</td>
+                        <td>25.12.2024 14:15:22</td>
+                        <td><span class="call-type internal"><i class="ti ti-phone"></i> Dahili</span></td>
+                        <td class="phone-number">101</td>
+                        <td class="phone-number">102</td>
+                        <td>
+                            <div class="agent-info">
+                                <div class="agent-avatar-sm">SV</div>
+                                <span>Supervisor</span>
+                            </div>
+                        </td>
+                        <td>-</td>
+                        <td><span class="duration short">00:45</span></td>
+                        <td><span class="call-status answered"><i class="ti ti-check"></i> Cevaplandı</span></td>
+                        <td><span class="recording-link"><i class="ti ti-player-play"></i> Dinle</span></td>
+                        <td><button class="btn btn-sm btn-secondary" onclick="showCDRDetail(10243)"><i class="ti ti-eye"></i></button></td>
+                    </tr>
+                    <tr>
+                        <td>#10242</td>
+                        <td>25.12.2024 14:10:08</td>
+                        <td><span class="call-type outbound"><i class="ti ti-phone-outgoing"></i> Giden</span></td>
+                        <td class="phone-number">+90 212 555 0002</td>
+                        <td class="phone-number">+90 533 XXX XX67</td>
+                        <td>
+                            <div class="agent-info">
+                                <div class="agent-avatar-sm">EF</div>
+                                <span>Elif F.</span>
+                            </div>
+                        </td>
+                        <td>Satış</td>
+                        <td><span class="duration short">00:12</span></td>
+                        <td><span class="call-status busy"><i class="ti ti-phone-off"></i> Meşgul</span></td>
+                        <td>-</td>
+                        <td><button class="btn btn-sm btn-secondary" onclick="showCDRDetail(10242)"><i class="ti ti-eye"></i></button></td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <!-- Pagination -->
+        <div class="pagination">
+            <button class="btn btn-sm btn-secondary"><i class="ti ti-chevron-left"></i></button>
+            <button class="btn btn-sm current">1</button>
+            <button class="btn btn-sm btn-secondary">2</button>
+            <button class="btn btn-sm btn-secondary">3</button>
+            <button class="btn btn-sm btn-secondary">...</button>
+            <button class="btn btn-sm btn-secondary">125</button>
+            <button class="btn btn-sm btn-secondary"><i class="ti ti-chevron-right"></i></button>
+        </div>
+    </div>
+</div>
+
+<!-- CDR Detail Modal -->
+<div class="modal-overlay" id="cdrModal">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h3><i class="ti ti-file-analytics"></i> Çağrı Detayı #<span id="cdrId">10247</span></h3>
+            <button class="modal-close" onclick="closeModal()"><i class="ti ti-x"></i></button>
+        </div>
+        <div class="modal-body">
+            <div class="cdr-detail">
+                <div class="cdr-detail-section">
+                    <h4>Çağrı Bilgileri</h4>
+                    <div class="cdr-detail-row">
+                        <span>Çağrı ID:</span>
+                        <span>#10247</span>
+                    </div>
+                    <div class="cdr-detail-row">
+                        <span>Tarih/Saat:</span>
+                        <span>25.12.2024 14:32:15</span>
+                    </div>
+                    <div class="cdr-detail-row">
+                        <span>Tip:</span>
+                        <span>Gelen (Inbound)</span>
+                    </div>
+                    <div class="cdr-detail-row">
+                        <span>Durum:</span>
+                        <span style="color: #4CAF50;">Cevaplandı</span>
+                    </div>
+                </div>
+
+                <div class="cdr-detail-section">
+                    <h4>Numara Bilgileri</h4>
+                    <div class="cdr-detail-row">
+                        <span>Arayan:</span>
+                        <span>+90 532 XXX XX45</span>
+                    </div>
+                    <div class="cdr-detail-row">
+                        <span>Aranan:</span>
+                        <span>8001 (Satış Kuyruğu)</span>
+                    </div>
+                    <div class="cdr-detail-row">
+                        <span>DID:</span>
+                        <span>+90 212 555 0001</span>
+                    </div>
+                    <div class="cdr-detail-row">
+                        <span>Trunk:</span>
+                        <span>Turkcell SIP</span>
+                    </div>
+                </div>
+
+                <div class="cdr-detail-section">
+                    <h4>Süre Bilgileri</h4>
+                    <div class="cdr-detail-row">
+                        <span>Toplam Süre:</span>
+                        <span>05:42</span>
+                    </div>
+                    <div class="cdr-detail-row">
+                        <span>Çalma Süresi:</span>
+                        <span>00:08</span>
+                    </div>
+                    <div class="cdr-detail-row">
+                        <span>Konuşma Süresi:</span>
+                        <span>05:34</span>
+                    </div>
+                    <div class="cdr-detail-row">
+                        <span>Kuyruk Bekleme:</span>
+                        <span>00:12</span>
+                    </div>
+                </div>
+
+                <div class="cdr-detail-section">
+                    <h4>Agent & Sonuç</h4>
+                    <div class="cdr-detail-row">
+                        <span>Agent:</span>
+                        <span>Ahmet Yılmaz</span>
+                    </div>
+                    <div class="cdr-detail-row">
+                        <span>Kuyruk:</span>
+                        <span>Satış Ekibi</span>
+                    </div>
+                    <div class="cdr-detail-row">
+                        <span>Disposition:</span>
+                        <span style="color: #4CAF50;">Satış Tamam</span>
+                    </div>
+                    <div class="cdr-detail-row">
+                        <span>QA Puanı:</span>
+                        <span>92/100</span>
+                    </div>
+                </div>
+
+                <!-- Waveform Player -->
+                <div class="waveform-player">
+                    <div class="waveform-controls">
+                        <button class="play-btn"><i class="ti ti-player-play"></i></button>
+                        <div class="time-display">
+                            <span id="currentTime">00:00</span> / <span id="totalTime">05:42</span>
+                        </div>
+                        <div class="speed-control">
+                            <button class="speed-btn">0.5x</button>
+                            <button class="speed-btn active">1x</button>
+                            <button class="speed-btn">1.5x</button>
+                            <button class="speed-btn">2x</button>
+                        </div>
+                        <button class="btn btn-sm btn-secondary" style="margin-left: 1rem;">
+                            <i class="ti ti-download"></i> İndir
+                        </button>
+                    </div>
+                    <div class="waveform-visual" id="waveform">
+                        <!-- Waveform bars will be generated by JS -->
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="modal-footer">
+            <button class="btn btn-secondary" onclick="closeModal()">Kapat</button>
+            <button class="btn btn-info"><i class="ti ti-message"></i> AI Özet</button>
+            <button class="btn btn-primary"><i class="ti ti-clipboard"></i> CRM'e Git</button>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+function applyFilters() {
+    alert('Filtreler uygulanıyor...');
+}
+
+function clearFilters() {
+    document.querySelectorAll('.filter-panel input, .filter-panel select').forEach(el => {
+        el.value = '';
+    });
+}
+
+function exportCDR() {
+    alert('CDR dışa aktarılıyor (CSV/Excel)...');
+}
+
+function showCDRDetail(id) {
+    document.getElementById('cdrId').textContent = id;
+    document.getElementById('cdrModal').classList.add('show');
+    generateWaveform();
+}
+
+function playRecording(id) {
+    showCDRDetail(id);
+}
+
+function closeModal() {
+    document.getElementById('cdrModal').classList.remove('show');
+}
+
+function generateWaveform() {
+    const waveform = document.getElementById('waveform');
+    waveform.innerHTML = '';
+    
+    for (let i = 0; i < 100; i++) {
+        const bar = document.createElement('div');
+        bar.className = 'waveform-bar';
+        bar.style.height = (Math.random() * 40 + 10) + 'px';
+        waveform.appendChild(bar);
+    }
+}
+
+// Speed control
+document.querySelectorAll('.speed-btn').forEach(btn => {
+    btn.addEventListener('click', function() {
+        document.querySelectorAll('.speed-btn').forEach(b => b.classList.remove('active'));
+        this.classList.add('active');
+    });
+});
+
+// Set default dates
+const today = new Date().toISOString().split('T')[0];
+document.getElementById('dateFrom').value = today;
+document.getElementById('dateTo').value = today;
+</script>
+{% endblock %}
+

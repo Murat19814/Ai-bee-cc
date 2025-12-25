@@ -1,0 +1,131 @@
+{% extends "base.html" %}
+
+{% block title %}{% if tariff %}Tarife Düzenle{% else %}Yeni Tarife{% endif %} - AI BEE CC{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <h1><i class="ti ti-receipt"></i> {% if tariff %}Tarife Düzenle{% else %}Yeni VoIP Tarifesi{% endif %}</h1>
+</div>
+
+<form action="{{ url_for('billing_tariff_new') }}" method="POST" class="tariff-form">
+    <div class="form-card">
+        <div class="form-section">
+            <h3><i class="ti ti-info-circle"></i> Temel Bilgiler</h3>
+            <div class="form-row">
+                <div class="form-group">
+                    <label>Tarife Kodu <span class="required">*</span></label>
+                    <input type="text" name="code" class="form-control" required
+                           value="{{ tariff.code if tariff else '' }}" placeholder="standard, premium">
+                </div>
+                <div class="form-group">
+                    <label>Tarife Adı <span class="required">*</span></label>
+                    <input type="text" name="name" class="form-control" required
+                           value="{{ tariff.name if tariff else '' }}" placeholder="Standart Tarife">
+                </div>
+            </div>
+            <div class="form-group">
+                <label>Açıklama</label>
+                <textarea name="description" class="form-control" rows="2">{{ tariff.description if tariff else '' }}</textarea>
+            </div>
+        </div>
+
+        <div class="form-section">
+            <h3><i class="ti ti-currency-lira"></i> Varsayılan Fiyatlar</h3>
+            <div class="form-row">
+                <div class="form-group">
+                    <label>Gelen Çağrı (₺/dk)</label>
+                    <input type="number" name="rate_inbound" class="form-control" step="0.0001"
+                           value="{{ tariff.default_rate_inbound if tariff else 0 }}">
+                </div>
+                <div class="form-group">
+                    <label>Giden Çağrı (₺/dk)</label>
+                    <input type="number" name="rate_outbound" class="form-control" step="0.0001"
+                           value="{{ tariff.default_rate_outbound if tariff else 0 }}">
+                </div>
+            </div>
+            <div class="form-row">
+                <div class="form-group">
+                    <label>Bağlantı Ücreti (₺)</label>
+                    <input type="number" name="connection_fee" class="form-control" step="0.0001"
+                           value="{{ tariff.connection_fee if tariff else 0 }}">
+                </div>
+                <div class="form-group">
+                    <label>Yuvarlama (saniye)</label>
+                    <select name="billing_increment" class="form-control">
+                        <option value="1" {{ 'selected' if tariff and tariff.billing_increment == 1 }}>1 sn</option>
+                        <option value="6" {{ 'selected' if tariff and tariff.billing_increment == 6 }}>6 sn</option>
+                        <option value="30" {{ 'selected' if tariff and tariff.billing_increment == 30 }}>30 sn</option>
+                        <option value="60" {{ 'selected' if not tariff or tariff.billing_increment == 60 }}>60 sn</option>
+                    </select>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="form-actions">
+        <a href="{{ url_for('billing_tariffs') }}" class="btn btn-outline">İptal</a>
+        <button type="submit" class="btn btn-primary">
+            <i class="ti ti-check"></i> Kaydet
+        </button>
+    </div>
+</form>
+
+<style>
+.tariff-form {
+    max-width: 600px;
+}
+
+.form-card {
+    background: white;
+    border-radius: 12px;
+    padding: 1.5rem;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+}
+
+.form-section {
+    margin-bottom: 1.5rem;
+}
+
+.form-section:last-child {
+    margin-bottom: 0;
+}
+
+.form-section h3 {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    margin-bottom: 1.5rem;
+    padding-bottom: 1rem;
+    border-bottom: 1px solid #eee;
+    font-size: 1rem;
+}
+
+.form-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1rem;
+}
+
+.form-group {
+    margin-bottom: 1rem;
+}
+
+.form-group label {
+    display: block;
+    font-weight: 600;
+    margin-bottom: 0.5rem;
+}
+
+.required {
+    color: #f44336;
+}
+
+.form-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 1rem;
+    margin-top: 1.5rem;
+}
+</style>
+{% endblock %}
+

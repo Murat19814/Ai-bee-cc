@@ -131,7 +131,7 @@
                             <i class="ti ti-broadcast"></i>
                             <span>Kampanyalar</span>
                         </a>
-                        <a href="{{ url_for('queues') }}" class="nav-subitem">
+                        <a href="{{ url_for('voip_queues') }}" class="nav-subitem">
                             <i class="ti ti-list-numbers"></i>
                             <span>Kuyruklar</span>
                         </a>
@@ -164,29 +164,48 @@
                 </div>
                 {% endif %}
                 
-                {% if current_user.role == 'admin' or current_user.is_super_admin %}
-                <!-- Telefoni -->
+                {% if current_user.is_super_admin %}
+                <!-- VoIP Yönetimi (Sadece Super Admin) -->
                 <div class="nav-group">
-                    <button class="nav-group-toggle" data-target="telephony-menu">
+                    <button class="nav-group-toggle" data-target="voip-menu">
                         <i class="ti ti-phone-call"></i>
-                        <span>Telefoni</span>
+                        <span>VoIP Yönetimi</span>
                         <i class="ti ti-chevron-down nav-arrow"></i>
                     </button>
-                    <div class="nav-group-menu" id="telephony-menu">
-                        <a href="{{ url_for('telephony_trunks') }}" class="nav-subitem">
-                            <i class="ti ti-network"></i>
+                    <div class="nav-group-menu" id="voip-menu">
+                        <a href="{{ url_for('voip_dashboard') }}" class="nav-subitem">
+                            <i class="ti ti-dashboard"></i>
+                            <span>VoIP Dashboard</span>
+                        </a>
+                        <a href="{{ url_for('voip_trunks') }}" class="nav-subitem">
+                            <i class="ti ti-server-2"></i>
                             <span>SIP Trunk</span>
                         </a>
-                        <a href="{{ url_for('telephony_dids') }}" class="nav-subitem">
-                            <i class="ti ti-hash"></i>
-                            <span>DID Numaraları</span>
+                        <a href="{{ url_for('voip_dids') }}" class="nav-subitem">
+                            <i class="ti ti-phone-plus"></i>
+                            <span>DID / Numaralar</span>
                         </a>
-                        <a href="{{ url_for('telephony_ivrs') }}" class="nav-subitem">
+                        <a href="{{ url_for('voip_ivr_builder') }}" class="nav-subitem">
                             <i class="ti ti-sitemap"></i>
-                            <span>IVR</span>
+                            <span>IVR Builder</span>
+                        </a>
+                        <a href="{{ url_for('voip_queues') }}" class="nav-subitem">
+                            <i class="ti ti-users-group"></i>
+                            <span>Queue / ACD</span>
+                        </a>
+                        <a href="{{ url_for('voip_cdr') }}" class="nav-subitem">
+                            <i class="ti ti-file-analytics"></i>
+                            <span>CDR Kayıtları</span>
+                        </a>
+                        <a href="{{ url_for('voip_softphone') }}" class="nav-subitem">
+                            <i class="ti ti-headset"></i>
+                            <span>Softphone</span>
                         </a>
                     </div>
                 </div>
+                {% endif %}
+                
+                {% if current_user.role == 'admin' or current_user.is_super_admin %}
                 
                 <!-- Yapay Zeka -->
                 <div class="nav-group">
@@ -275,6 +294,82 @@
                         <a href="{{ url_for('settings_scripts') }}" class="nav-subitem">
                             <i class="ti ti-file-text"></i>
                             <span>Scriptler</span>
+                        </a>
+                    </div>
+                </div>
+                
+                <!-- CC Admin Panel -->
+                <div class="nav-group">
+                    <button class="nav-group-toggle" data-target="cc-admin-menu">
+                        <i class="ti ti-building-store"></i>
+                        <span>CC Yönetimi</span>
+                        <i class="ti ti-chevron-down nav-arrow"></i>
+                    </button>
+                    <div class="nav-group-menu" id="cc-admin-menu">
+                        <a href="{{ url_for('cc_settings') }}" class="nav-subitem">
+                            <i class="ti ti-settings"></i>
+                            <span>Kurum Ayarları</span>
+                        </a>
+                        <a href="{{ url_for('cc_billing') }}" class="nav-subitem">
+                            <i class="ti ti-credit-card"></i>
+                            <span>Faturalama</span>
+                        </a>
+                        <a href="{{ url_for('cc_usage') }}" class="nav-subitem">
+                            <i class="ti ti-chart-bar"></i>
+                            <span>Kullanım</span>
+                        </a>
+                        <a href="{{ url_for('cc_voip') }}" class="nav-subitem">
+                            <i class="ti ti-phone-call"></i>
+                            <span>VoIP Durumu</span>
+                        </a>
+                        <a href="{{ url_for('cc_support') }}" class="nav-subitem">
+                            <i class="ti ti-help"></i>
+                            <span>Destek</span>
+                        </a>
+                    </div>
+                </div>
+                {% endif %}
+                
+                {% if current_user.is_super_admin %}
+                <!-- Platform Yönetimi (Super Admin) -->
+                <div class="nav-group">
+                    <button class="nav-group-toggle" data-target="platform-menu">
+                        <i class="ti ti-crown"></i>
+                        <span>Platform</span>
+                        <i class="ti ti-chevron-down nav-arrow"></i>
+                    </button>
+                    <div class="nav-group-menu" id="platform-menu">
+                        <a href="{{ url_for('admin_tenants') }}" class="nav-subitem">
+                            <i class="ti ti-building-community"></i>
+                            <span>Tenant'lar</span>
+                        </a>
+                        <a href="{{ url_for('billing_plans') }}" class="nav-subitem">
+                            <i class="ti ti-package"></i>
+                            <span>Fiyat Planları</span>
+                        </a>
+                        <a href="{{ url_for('billing_tariffs') }}" class="nav-subitem">
+                            <i class="ti ti-receipt"></i>
+                            <span>VoIP Tarifeleri</span>
+                        </a>
+                        <a href="{{ url_for('billing_invoices') }}" class="nav-subitem">
+                            <i class="ti ti-file-invoice"></i>
+                            <span>Faturalar</span>
+                        </a>
+                        <a href="{{ url_for('provisioning_dids') }}" class="nav-subitem">
+                            <i class="ti ti-hash"></i>
+                            <span>DID Havuzu</span>
+                        </a>
+                        <a href="{{ url_for('provisioning_cli') }}" class="nav-subitem">
+                            <i class="ti ti-phone-outgoing"></i>
+                            <span>CLI Havuzu</span>
+                        </a>
+                        <a href="{{ url_for('provisioning_trunks') }}" class="nav-subitem">
+                            <i class="ti ti-network"></i>
+                            <span>Trunk Tahsis</span>
+                        </a>
+                        <a href="{{ url_for('provisioning_quotas') }}" class="nav-subitem">
+                            <i class="ti ti-gauge"></i>
+                            <span>Kotalar</span>
                         </a>
                     </div>
                 </div>
