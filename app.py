@@ -324,6 +324,12 @@ def logout():
 # ==================== DASHBOARD ROUTES ====================
 
 @app.route('/')
+def landing():
+    """Landing page - giriş yapmamış kullanıcılar için tanıtım sayfası"""
+    if current_user.is_authenticated:
+        return redirect(url_for('dashboard'))
+    return render_template('landing.html')
+
 @app.route('/dashboard')
 @login_required
 def dashboard():

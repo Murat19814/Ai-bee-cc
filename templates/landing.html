@@ -1,0 +1,1135 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="AI BEE CC - Yapay Zeka Destekli Profesyonel Çağrı Merkezi Platformu. Çağrı merkezinizi geleceğe taşıyın.">
+    <meta name="keywords" content="çağrı merkezi, call center, AI, yapay zeka, CRM, VoIP, bulut çağrı merkezi">
+    <title>AI BEE CC - Yapay Zeka Destekli Çağrı Merkezi Platformu</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@latest/tabler-icons.min.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary: #F5A623;
+            --primary-dark: #D4880C;
+            --secondary: #1a1a2e;
+            --accent: #FFD700;
+            --success: #22C55E;
+            --text-dark: #1a1a2e;
+            --text-light: #6B7280;
+            --bg-light: #FAFAFA;
+            --bg-white: #FFFFFF;
+        }
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            color: var(--text-dark);
+            line-height: 1.6;
+            overflow-x: hidden;
+        }
+        
+        /* Honeycomb Background */
+        .honeycomb-bg {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -1;
+            background-color: #FFFDF7;
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='42' viewBox='0 0 28 49'%3E%3Cg fill-rule='evenodd'%3E%3Cg fill='%23f5a623' fill-opacity='0.06'%3E%3Cpath d='M13.99 9.25l13 7.5v15l-13 7.5L1 31.75v-15l12.99-7.5zM3 17.9v12.7l10.99 6.34 11-6.35V17.9l-11-6.34L3 17.9zM0 15l12.98-7.5V0h-2v6.35L0 12.69v2.3zm0 18.5L12.98 41v8h-2v-6.85L0 35.81v-2.3zM15 0v7.5L27.99 15H28v-2.31h-.01L17 6.35V0h-2zm0 49v-8l12.99-7.5H28v2.31h-.01L17 42.15V49h-2z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+        }
+        
+        /* Navigation */
+        .navbar {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            z-index: 1000;
+            padding: 1rem 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            box-shadow: 0 2px 20px rgba(0,0,0,0.05);
+        }
+        
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            text-decoration: none;
+        }
+        
+        .logo-icon {
+            width: 48px;
+            height: 48px;
+            background: linear-gradient(135deg, var(--primary), var(--accent));
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 1.5rem;
+        }
+        
+        .logo-text {
+            font-size: 1.5rem;
+            font-weight: 800;
+            color: var(--primary);
+        }
+        
+        .logo-text span {
+            color: var(--text-dark);
+        }
+        
+        .nav-links {
+            display: flex;
+            gap: 2rem;
+            align-items: center;
+        }
+        
+        .nav-links a {
+            text-decoration: none;
+            color: var(--text-dark);
+            font-weight: 500;
+            transition: color 0.3s;
+        }
+        
+        .nav-links a:hover {
+            color: var(--primary);
+        }
+        
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.75rem 1.5rem;
+            border-radius: 10px;
+            font-weight: 600;
+            text-decoration: none;
+            transition: all 0.3s;
+            border: none;
+            cursor: pointer;
+        }
+        
+        .btn-primary {
+            background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+            color: white;
+            box-shadow: 0 4px 15px rgba(245, 166, 35, 0.3);
+        }
+        
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 25px rgba(245, 166, 35, 0.4);
+        }
+        
+        .btn-outline {
+            border: 2px solid var(--primary);
+            color: var(--primary);
+            background: transparent;
+        }
+        
+        .btn-outline:hover {
+            background: var(--primary);
+            color: white;
+        }
+        
+        /* Hero Section */
+        .hero {
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            padding: 8rem 2rem 4rem;
+            position: relative;
+        }
+        
+        .hero-container {
+            max-width: 1400px;
+            margin: 0 auto;
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 4rem;
+            align-items: center;
+        }
+        
+        .hero-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.5rem 1rem;
+            background: rgba(245, 166, 35, 0.1);
+            border: 1px solid rgba(245, 166, 35, 0.3);
+            border-radius: 50px;
+            color: var(--primary-dark);
+            font-weight: 600;
+            font-size: 0.9rem;
+            margin-bottom: 1.5rem;
+        }
+        
+        .hero-title {
+            font-size: 3.5rem;
+            font-weight: 800;
+            line-height: 1.1;
+            margin-bottom: 1.5rem;
+        }
+        
+        .hero-title .highlight {
+            background: linear-gradient(135deg, var(--primary), var(--accent));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        
+        .hero-description {
+            font-size: 1.25rem;
+            color: var(--text-light);
+            margin-bottom: 2rem;
+            max-width: 500px;
+        }
+        
+        .hero-buttons {
+            display: flex;
+            gap: 1rem;
+            margin-bottom: 3rem;
+        }
+        
+        .hero-stats {
+            display: flex;
+            gap: 3rem;
+        }
+        
+        .stat-item {
+            text-align: center;
+        }
+        
+        .stat-value {
+            font-size: 2.5rem;
+            font-weight: 800;
+            color: var(--primary);
+        }
+        
+        .stat-label {
+            color: var(--text-light);
+            font-size: 0.9rem;
+        }
+        
+        .hero-image {
+            position: relative;
+        }
+        
+        .hero-mockup {
+            width: 100%;
+            max-width: 650px;
+            border-radius: 20px;
+            box-shadow: 0 30px 60px rgba(0,0,0,0.15);
+            border: 4px solid white;
+        }
+        
+        .floating-card {
+            position: absolute;
+            background: white;
+            border-radius: 16px;
+            padding: 1rem 1.5rem;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.1);
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            animation: float 3s ease-in-out infinite;
+        }
+        
+        .floating-card.ai {
+            top: 10%;
+            right: -30px;
+            animation-delay: 0.5s;
+        }
+        
+        .floating-card.stats {
+            bottom: 20%;
+            left: -30px;
+        }
+        
+        .floating-icon {
+            width: 50px;
+            height: 50px;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+        }
+        
+        .floating-icon.green { background: rgba(34, 197, 94, 0.1); color: var(--success); }
+        .floating-icon.orange { background: rgba(245, 166, 35, 0.1); color: var(--primary); }
+        
+        @keyframes float {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-10px); }
+        }
+        
+        /* Features Section */
+        .section {
+            padding: 6rem 2rem;
+        }
+        
+        .section-dark {
+            background: var(--secondary);
+            color: white;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        
+        .section-header {
+            text-align: center;
+            margin-bottom: 4rem;
+        }
+        
+        .section-badge {
+            display: inline-block;
+            padding: 0.5rem 1rem;
+            background: rgba(245, 166, 35, 0.1);
+            border-radius: 50px;
+            color: var(--primary);
+            font-weight: 600;
+            font-size: 0.85rem;
+            margin-bottom: 1rem;
+        }
+        
+        .section-title {
+            font-size: 2.5rem;
+            font-weight: 800;
+            margin-bottom: 1rem;
+        }
+        
+        .section-subtitle {
+            color: var(--text-light);
+            font-size: 1.1rem;
+            max-width: 600px;
+            margin: 0 auto;
+        }
+        
+        .features-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 2rem;
+        }
+        
+        .feature-card {
+            background: white;
+            border-radius: 20px;
+            padding: 2rem;
+            transition: all 0.3s;
+            border: 1px solid rgba(0,0,0,0.05);
+        }
+        
+        .feature-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+        }
+        
+        .feature-icon {
+            width: 60px;
+            height: 60px;
+            border-radius: 16px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.75rem;
+            margin-bottom: 1.5rem;
+        }
+        
+        .feature-icon.orange { background: linear-gradient(135deg, rgba(245, 166, 35, 0.15), rgba(255, 215, 0, 0.1)); color: var(--primary); }
+        .feature-icon.blue { background: linear-gradient(135deg, rgba(59, 130, 246, 0.15), rgba(99, 102, 241, 0.1)); color: #3B82F6; }
+        .feature-icon.green { background: linear-gradient(135deg, rgba(34, 197, 94, 0.15), rgba(16, 185, 129, 0.1)); color: #22C55E; }
+        .feature-icon.purple { background: linear-gradient(135deg, rgba(139, 92, 246, 0.15), rgba(168, 85, 247, 0.1)); color: #8B5CF6; }
+        .feature-icon.red { background: linear-gradient(135deg, rgba(239, 68, 68, 0.15), rgba(248, 113, 113, 0.1)); color: #EF4444; }
+        .feature-icon.cyan { background: linear-gradient(135deg, rgba(6, 182, 212, 0.15), rgba(34, 211, 238, 0.1)); color: #06B6D4; }
+        
+        .feature-title {
+            font-size: 1.25rem;
+            font-weight: 700;
+            margin-bottom: 0.75rem;
+        }
+        
+        .feature-desc {
+            color: var(--text-light);
+            font-size: 0.95rem;
+        }
+        
+        /* AI Features */
+        .ai-section {
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+            color: white;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .ai-section::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='42' viewBox='0 0 28 49'%3E%3Cg fill-rule='evenodd'%3E%3Cg fill='%23f5a623' fill-opacity='0.05'%3E%3Cpath d='M13.99 9.25l13 7.5v15l-13 7.5L1 31.75v-15l12.99-7.5zM3 17.9v12.7l10.99 6.34 11-6.35V17.9l-11-6.34L3 17.9zM0 15l12.98-7.5V0h-2v6.35L0 12.69v2.3zm0 18.5L12.98 41v8h-2v-6.85L0 35.81v-2.3zM15 0v7.5L27.99 15H28v-2.31h-.01L17 6.35V0h-2zm0 49v-8l12.99-7.5H28v2.31h-.01L17 42.15V49h-2z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+            opacity: 0.5;
+        }
+        
+        .ai-section .section-subtitle {
+            color: rgba(255,255,255,0.7);
+        }
+        
+        .ai-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 2rem;
+            position: relative;
+            z-index: 1;
+        }
+        
+        .ai-card {
+            background: rgba(255,255,255,0.05);
+            border: 1px solid rgba(255,255,255,0.1);
+            border-radius: 20px;
+            padding: 2rem;
+            backdrop-filter: blur(10px);
+            transition: all 0.3s;
+        }
+        
+        .ai-card:hover {
+            background: rgba(255,255,255,0.1);
+            transform: translateY(-5px);
+        }
+        
+        .ai-card-icon {
+            width: 50px;
+            height: 50px;
+            border-radius: 12px;
+            background: linear-gradient(135deg, var(--primary), var(--accent));
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+            margin-bottom: 1rem;
+        }
+        
+        .ai-card-title {
+            font-size: 1.1rem;
+            font-weight: 700;
+            margin-bottom: 0.5rem;
+        }
+        
+        .ai-card-desc {
+            color: rgba(255,255,255,0.7);
+            font-size: 0.9rem;
+        }
+        
+        /* Pricing Section */
+        .pricing-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 2rem;
+        }
+        
+        .price-card {
+            background: white;
+            border-radius: 24px;
+            padding: 2.5rem;
+            text-align: center;
+            border: 2px solid transparent;
+            transition: all 0.3s;
+            position: relative;
+        }
+        
+        .price-card:hover {
+            transform: translateY(-10px);
+            box-shadow: 0 30px 60px rgba(0,0,0,0.12);
+        }
+        
+        .price-card.popular {
+            border-color: var(--primary);
+            transform: scale(1.05);
+        }
+        
+        .price-card.popular:hover {
+            transform: scale(1.05) translateY(-10px);
+        }
+        
+        .popular-badge {
+            position: absolute;
+            top: -12px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: linear-gradient(135deg, var(--primary), var(--accent));
+            color: white;
+            padding: 0.5rem 1.5rem;
+            border-radius: 50px;
+            font-size: 0.8rem;
+            font-weight: 700;
+        }
+        
+        .price-icon {
+            width: 70px;
+            height: 70px;
+            border-radius: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 2rem;
+            margin: 0 auto 1.5rem;
+        }
+        
+        .price-name {
+            font-size: 1.5rem;
+            font-weight: 800;
+            margin-bottom: 0.5rem;
+        }
+        
+        .price-desc {
+            color: var(--text-light);
+            font-size: 0.9rem;
+            margin-bottom: 1.5rem;
+        }
+        
+        .price-value {
+            font-size: 3rem;
+            font-weight: 800;
+            color: var(--primary);
+        }
+        
+        .price-value span {
+            font-size: 1rem;
+            color: var(--text-light);
+            font-weight: 500;
+        }
+        
+        .price-period {
+            color: var(--text-light);
+            margin-bottom: 2rem;
+        }
+        
+        .price-features {
+            list-style: none;
+            text-align: left;
+            margin-bottom: 2rem;
+        }
+        
+        .price-features li {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            padding: 0.75rem 0;
+            border-bottom: 1px solid rgba(0,0,0,0.05);
+            font-size: 0.95rem;
+        }
+        
+        .price-features li i {
+            color: var(--success);
+            font-size: 1.2rem;
+        }
+        
+        /* Screenshots */
+        .screenshots-container {
+            display: flex;
+            gap: 2rem;
+            overflow-x: auto;
+            padding: 2rem 0;
+            scroll-snap-type: x mandatory;
+        }
+        
+        .screenshot-item {
+            flex: 0 0 auto;
+            width: 400px;
+            scroll-snap-align: center;
+        }
+        
+        .screenshot-img {
+            width: 100%;
+            border-radius: 16px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.15);
+            border: 3px solid white;
+            margin-bottom: 1rem;
+        }
+        
+        .screenshot-title {
+            font-weight: 700;
+            margin-bottom: 0.25rem;
+        }
+        
+        .screenshot-desc {
+            color: var(--text-light);
+            font-size: 0.9rem;
+        }
+        
+        /* CTA Section */
+        .cta-section {
+            background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
+            color: white;
+            text-align: center;
+            padding: 5rem 2rem;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .cta-section::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='42' viewBox='0 0 28 49'%3E%3Cg fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='0.1'%3E%3Cpath d='M13.99 9.25l13 7.5v15l-13 7.5L1 31.75v-15l12.99-7.5zM3 17.9v12.7l10.99 6.34 11-6.35V17.9l-11-6.34L3 17.9zM0 15l12.98-7.5V0h-2v6.35L0 12.69v2.3zm0 18.5L12.98 41v8h-2v-6.85L0 35.81v-2.3zM15 0v7.5L27.99 15H28v-2.31h-.01L17 6.35V0h-2zm0 49v-8l12.99-7.5H28v2.31h-.01L17 42.15V49h-2z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+        }
+        
+        .cta-title {
+            font-size: 2.5rem;
+            font-weight: 800;
+            margin-bottom: 1rem;
+            position: relative;
+            z-index: 1;
+        }
+        
+        .cta-subtitle {
+            font-size: 1.2rem;
+            opacity: 0.9;
+            margin-bottom: 2rem;
+            position: relative;
+            z-index: 1;
+        }
+        
+        .cta-buttons {
+            display: flex;
+            gap: 1rem;
+            justify-content: center;
+            position: relative;
+            z-index: 1;
+        }
+        
+        .btn-white {
+            background: white;
+            color: var(--primary);
+        }
+        
+        .btn-white:hover {
+            background: var(--bg-light);
+            transform: translateY(-2px);
+        }
+        
+        /* Footer */
+        .footer {
+            background: var(--secondary);
+            color: white;
+            padding: 4rem 2rem 2rem;
+        }
+        
+        .footer-grid {
+            display: grid;
+            grid-template-columns: 2fr 1fr 1fr 1fr;
+            gap: 3rem;
+            margin-bottom: 3rem;
+        }
+        
+        .footer-brand .logo-text {
+            color: var(--primary);
+            margin-bottom: 1rem;
+        }
+        
+        .footer-desc {
+            color: rgba(255,255,255,0.6);
+            font-size: 0.95rem;
+            margin-bottom: 1.5rem;
+        }
+        
+        .footer-social {
+            display: flex;
+            gap: 1rem;
+        }
+        
+        .footer-social a {
+            width: 40px;
+            height: 40px;
+            border-radius: 10px;
+            background: rgba(255,255,255,0.1);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            transition: all 0.3s;
+        }
+        
+        .footer-social a:hover {
+            background: var(--primary);
+        }
+        
+        .footer-title {
+            font-weight: 700;
+            margin-bottom: 1.5rem;
+            color: white;
+        }
+        
+        .footer-links {
+            list-style: none;
+        }
+        
+        .footer-links li {
+            margin-bottom: 0.75rem;
+        }
+        
+        .footer-links a {
+            color: rgba(255,255,255,0.6);
+            text-decoration: none;
+            transition: color 0.3s;
+        }
+        
+        .footer-links a:hover {
+            color: var(--primary);
+        }
+        
+        .footer-bottom {
+            border-top: 1px solid rgba(255,255,255,0.1);
+            padding-top: 2rem;
+            text-align: center;
+            color: rgba(255,255,255,0.5);
+            font-size: 0.9rem;
+        }
+        
+        /* Responsive */
+        @media (max-width: 1024px) {
+            .hero-container { grid-template-columns: 1fr; text-align: center; }
+            .hero-description { margin: 0 auto 2rem; }
+            .hero-buttons { justify-content: center; }
+            .hero-stats { justify-content: center; }
+            .hero-image { display: none; }
+            .features-grid { grid-template-columns: repeat(2, 1fr); }
+            .pricing-grid { grid-template-columns: 1fr; max-width: 400px; margin: 0 auto; }
+            .price-card.popular { transform: none; }
+            .footer-grid { grid-template-columns: 1fr 1fr; }
+        }
+        
+        @media (max-width: 768px) {
+            .navbar { padding: 1rem; }
+            .nav-links { display: none; }
+            .hero-title { font-size: 2.5rem; }
+            .features-grid { grid-template-columns: 1fr; }
+            .ai-grid { grid-template-columns: 1fr; }
+            .footer-grid { grid-template-columns: 1fr; text-align: center; }
+            .footer-social { justify-content: center; }
+        }
+    </style>
+</head>
+<body>
+    <div class="honeycomb-bg"></div>
+    
+    <!-- Navigation -->
+    <nav class="navbar">
+        <a href="/" class="logo">
+            <div class="logo-icon">
+                <i class="ti ti-bee"></i>
+            </div>
+            <div class="logo-text">AI BEE <span>CC</span></div>
+        </a>
+        <div class="nav-links">
+            <a href="#features">Özellikler</a>
+            <a href="#ai">Yapay Zeka</a>
+            <a href="#pricing">Fiyatlar</a>
+            <a href="#contact">İletişim</a>
+            <a href="/login" class="btn btn-primary">
+                <i class="ti ti-login"></i> Giriş Yap
+            </a>
+        </div>
+    </nav>
+    
+    <!-- Hero Section -->
+    <section class="hero">
+        <div class="hero-container">
+            <div class="hero-content">
+                <div class="hero-badge">
+                    <i class="ti ti-sparkles"></i>
+                    Yapay Zeka Destekli Yeni Nesil Platform
+                </div>
+                <h1 class="hero-title">
+                    Çağrı Merkezinizi <br>
+                    <span class="highlight">Geleceğe Taşıyın</span>
+                </h1>
+                <p class="hero-description">
+                    AI BEE CC ile çağrı merkezi operasyonlarınızı yapay zeka ile optimize edin. 
+                    Gerçek zamanlı analiz, otomatik transkripsiyon ve akıllı yönlendirme tek platformda.
+                </p>
+                <div class="hero-buttons">
+                    <a href="#pricing" class="btn btn-primary">
+                        <i class="ti ti-rocket"></i> Hemen Başla
+                    </a>
+                    <a href="#features" class="btn btn-outline">
+                        <i class="ti ti-player-play"></i> Demo İzle
+                    </a>
+                </div>
+                <div class="hero-stats">
+                    <div class="stat-item">
+                        <div class="stat-value">%40</div>
+                        <div class="stat-label">Verimlilik Artışı</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-value">%95</div>
+                        <div class="stat-label">Müşteri Memnuniyeti</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-value">7/24</div>
+                        <div class="stat-label">AI Desteği</div>
+                    </div>
+                </div>
+            </div>
+            <div class="hero-image">
+                <img src="https://images.unsplash.com/photo-1553877522-43269d4ea984?w=800&q=80" alt="Dashboard" class="hero-mockup">
+                <div class="floating-card ai">
+                    <div class="floating-icon orange">
+                        <i class="ti ti-brain"></i>
+                    </div>
+                    <div>
+                        <div style="font-weight: 700;">AI Analiz</div>
+                        <div style="font-size: 0.85rem; color: var(--text-light);">Gerçek zamanlı</div>
+                    </div>
+                </div>
+                <div class="floating-card stats">
+                    <div class="floating-icon green">
+                        <i class="ti ti-chart-line"></i>
+                    </div>
+                    <div>
+                        <div style="font-weight: 700;">+127%</div>
+                        <div style="font-size: 0.85rem; color: var(--text-light);">Satış artışı</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+    
+    <!-- Features Section -->
+    <section class="section" id="features">
+        <div class="container">
+            <div class="section-header">
+                <div class="section-badge">✨ Özellikler</div>
+                <h2 class="section-title">Her Şey Tek Platformda</h2>
+                <p class="section-subtitle">
+                    Çağrı merkezi yönetimi için ihtiyacınız olan tüm araçlar, güçlü ve kullanımı kolay bir arayüzde.
+                </p>
+            </div>
+            
+            <div class="features-grid">
+                <div class="feature-card">
+                    <div class="feature-icon orange">
+                        <i class="ti ti-phone-call"></i>
+                    </div>
+                    <h3 class="feature-title">Omnichannel İletişim</h3>
+                    <p class="feature-desc">Telefon, SMS, e-posta, WhatsApp ve sosyal medya - tüm kanalları tek ekrandan yönetin.</p>
+                </div>
+                
+                <div class="feature-card">
+                    <div class="feature-icon blue">
+                        <i class="ti ti-users"></i>
+                    </div>
+                    <h3 class="feature-title">CRM Entegrasyonu</h3>
+                    <p class="feature-desc">Müşteri bilgileri, geçmiş görüşmeler ve notlar anında erişilebilir. 360° müşteri görünümü.</p>
+                </div>
+                
+                <div class="feature-card">
+                    <div class="feature-icon green">
+                        <i class="ti ti-chart-bar"></i>
+                    </div>
+                    <h3 class="feature-title">Gerçek Zamanlı Raporlar</h3>
+                    <p class="feature-desc">Anlık dashboard'lar, performans metrikleri ve özelleştirilebilir raporlar.</p>
+                </div>
+                
+                <div class="feature-card">
+                    <div class="feature-icon purple">
+                        <i class="ti ti-headset"></i>
+                    </div>
+                    <h3 class="feature-title">Softphone & WebRTC</h3>
+                    <p class="feature-desc">Tarayıcı tabanlı çağrı, kurulum gerektirmez. HD ses kalitesi.</p>
+                </div>
+                
+                <div class="feature-card">
+                    <div class="feature-icon red">
+                        <i class="ti ti-target"></i>
+                    </div>
+                    <h3 class="feature-title">Kampanya Yönetimi</h3>
+                    <p class="feature-desc">Predictive, progressive ve preview dialer modları. Akıllı arama optimizasyonu.</p>
+                </div>
+                
+                <div class="feature-card">
+                    <div class="feature-icon cyan">
+                        <i class="ti ti-shield-check"></i>
+                    </div>
+                    <h3 class="feature-title">KVKK Uyumlu</h3>
+                    <p class="feature-desc">Veri güvenliği, kayıt maskeleme ve denetim logları ile tam uyumluluk.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+    
+    <!-- AI Section -->
+    <section class="section ai-section" id="ai">
+        <div class="container">
+            <div class="section-header">
+                <div class="section-badge">🤖 Yapay Zeka</div>
+                <h2 class="section-title">AI ile Çağrı Merkezi Devrimi</h2>
+                <p class="section-subtitle">
+                    Yapay zeka destekli özelliklerle agent'larınızı güçlendirin, maliyetleri düşürün.
+                </p>
+            </div>
+            
+            <div class="ai-grid">
+                <div class="ai-card">
+                    <div class="ai-card-icon"><i class="ti ti-message-chatbot"></i></div>
+                    <h3 class="ai-card-title">Otomatik Transkripsiyon (STT)</h3>
+                    <p class="ai-card-desc">Tüm görüşmeler otomatik olarak metne dönüştürülür. Türkçe ve Almanca desteği.</p>
+                </div>
+                
+                <div class="ai-card">
+                    <div class="ai-card-icon"><i class="ti ti-file-text"></i></div>
+                    <h3 class="ai-card-title">Akıllı Özet</h3>
+                    <p class="ai-card-desc">Her görüşme sonrası AI tarafından otomatik özet oluşturulur. CRM'e anında aktarım.</p>
+                </div>
+                
+                <div class="ai-card">
+                    <div class="ai-card-icon"><i class="ti ti-mood-happy"></i></div>
+                    <h3 class="ai-card-title">Duygu Analizi</h3>
+                    <p class="ai-card-desc">Müşteri memnuniyetini gerçek zamanlı ölçün. Riskli çağrıları anında tespit edin.</p>
+                </div>
+                
+                <div class="ai-card">
+                    <div class="ai-card-icon"><i class="ti ti-bulb"></i></div>
+                    <h3 class="ai-card-title">Agent Asistan</h3>
+                    <p class="ai-card-desc">Görüşme sırasında AI destekli öneriler, script yardımı ve bilgi tabanı erişimi.</p>
+                </div>
+                
+                <div class="ai-card">
+                    <div class="ai-card-icon"><i class="ti ti-robot"></i></div>
+                    <h3 class="ai-card-title">AI Voice Bot</h3>
+                    <p class="ai-card-desc">IVR öncesi AI bot ile basit işlemleri otomatize edin. %30 çağrı azaltma.</p>
+                </div>
+                
+                <div class="ai-card">
+                    <div class="ai-card-icon"><i class="ti ti-clipboard-check"></i></div>
+                    <h3 class="ai-card-title">Otomatik QA</h3>
+                    <p class="ai-card-desc">%100 çağrı değerlendirmesi. AI tabanlı kalite skoru ve uyumluluk kontrolü.</p>
+                </div>
+                
+                <div class="ai-card">
+                    <div class="ai-card-icon"><i class="ti ti-route"></i></div>
+                    <h3 class="ai-card-title">Akıllı Yönlendirme</h3>
+                    <p class="ai-card-desc">Müşteri niyetini anlayarak en uygun agent'a otomatik yönlendirme.</p>
+                </div>
+                
+                <div class="ai-card">
+                    <div class="ai-card-icon"><i class="ti ti-books"></i></div>
+                    <h3 class="ai-card-title">RAG Bilgi Tabanı</h3>
+                    <p class="ai-card-desc">Şirket dökümanlarından AI destekli anlık cevap üretimi. Güvenilirlik skoru.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+    
+    <!-- Pricing Section -->
+    <section class="section" id="pricing">
+        <div class="container">
+            <div class="section-header">
+                <div class="section-badge">💰 Fiyatlandırma</div>
+                <h2 class="section-title">İşinize Uygun Plan</h2>
+                <p class="section-subtitle">
+                    Ölçeklenebilir fiyatlandırma ile küçük ekiplerden büyük operasyonlara kadar herkes için.
+                </p>
+            </div>
+            
+            <div class="pricing-grid">
+                <div class="price-card">
+                    <div class="price-icon" style="background: rgba(107, 114, 128, 0.1); color: #6B7280;">
+                        <i class="ti ti-building-store"></i>
+                    </div>
+                    <h3 class="price-name">Starter</h3>
+                    <p class="price-desc">Küçük ekipler için ideal başlangıç</p>
+                    <div class="price-value">₺2.499<span>/ay</span></div>
+                    <p class="price-period">5 Agent dahil</p>
+                    <ul class="price-features">
+                        <li><i class="ti ti-check"></i> 5 Agent lisansı</li>
+                        <li><i class="ti ti-check"></i> Temel CRM</li>
+                        <li><i class="ti ti-check"></i> Çağrı kayıt (30 gün)</li>
+                        <li><i class="ti ti-check"></i> Temel raporlar</li>
+                        <li><i class="ti ti-check"></i> Email desteği</li>
+                    </ul>
+                    <a href="/login" class="btn btn-outline" style="width: 100%;">Başla</a>
+                </div>
+                
+                <div class="price-card popular">
+                    <div class="popular-badge">🔥 En Popüler</div>
+                    <div class="price-icon" style="background: rgba(245, 166, 35, 0.1); color: var(--primary);">
+                        <i class="ti ti-building"></i>
+                    </div>
+                    <h3 class="price-name">Professional</h3>
+                    <p class="price-desc">Büyüyen çağrı merkezleri için</p>
+                    <div class="price-value">₺7.999<span>/ay</span></div>
+                    <p class="price-period">20 Agent dahil</p>
+                    <ul class="price-features">
+                        <li><i class="ti ti-check"></i> 20 Agent lisansı</li>
+                        <li><i class="ti ti-check"></i> Tam CRM + Kampanya</li>
+                        <li><i class="ti ti-check"></i> AI Transkripsiyon</li>
+                        <li><i class="ti ti-check"></i> Duygu Analizi</li>
+                        <li><i class="ti ti-check"></i> Predictive Dialer</li>
+                        <li><i class="ti ti-check"></i> API Erişimi</li>
+                        <li><i class="ti ti-check"></i> 7/24 Destek</li>
+                    </ul>
+                    <a href="/login" class="btn btn-primary" style="width: 100%;">Başla</a>
+                </div>
+                
+                <div class="price-card">
+                    <div class="price-icon" style="background: rgba(139, 92, 246, 0.1); color: #8B5CF6;">
+                        <i class="ti ti-building-skyscraper"></i>
+                    </div>
+                    <h3 class="price-name">Enterprise</h3>
+                    <p class="price-desc">Büyük operasyonlar için özel</p>
+                    <div class="price-value">Özel<span> fiyat</span></div>
+                    <p class="price-period">Sınırsız Agent</p>
+                    <ul class="price-features">
+                        <li><i class="ti ti-check"></i> Sınırsız Agent</li>
+                        <li><i class="ti ti-check"></i> Tüm AI özellikleri</li>
+                        <li><i class="ti ti-check"></i> Voice Bot</li>
+                        <li><i class="ti ti-check"></i> Özel entegrasyonlar</li>
+                        <li><i class="ti ti-check"></i> Dedicated sunucu</li>
+                        <li><i class="ti ti-check"></i> SLA garantisi</li>
+                        <li><i class="ti ti-check"></i> Özel eğitim</li>
+                    </ul>
+                    <a href="#contact" class="btn btn-outline" style="width: 100%;">İletişime Geç</a>
+                </div>
+            </div>
+            
+            <!-- AI Usage Pricing -->
+            <div style="margin-top: 4rem; text-align: center;">
+                <h3 style="font-size: 1.5rem; font-weight: 700; margin-bottom: 2rem;">
+                    <i class="ti ti-brain" style="color: var(--primary);"></i> AI Kullanım Ücretleri
+                </h3>
+                <div style="display: flex; gap: 2rem; justify-content: center; flex-wrap: wrap;">
+                    <div style="background: white; padding: 1.5rem 2rem; border-radius: 16px; box-shadow: 0 4px 20px rgba(0,0,0,0.05);">
+                        <div style="font-size: 0.9rem; color: var(--text-light); margin-bottom: 0.5rem;">Transkripsiyon</div>
+                        <div style="font-size: 1.5rem; font-weight: 700; color: var(--primary);">₺0.15<span style="font-size: 0.9rem; color: var(--text-light);">/dakika</span></div>
+                    </div>
+                    <div style="background: white; padding: 1.5rem 2rem; border-radius: 16px; box-shadow: 0 4px 20px rgba(0,0,0,0.05);">
+                        <div style="font-size: 0.9rem; color: var(--text-light); margin-bottom: 0.5rem;">AI Özet & Analiz</div>
+                        <div style="font-size: 1.5rem; font-weight: 700; color: var(--primary);">₺0.25<span style="font-size: 0.9rem; color: var(--text-light);">/çağrı</span></div>
+                    </div>
+                    <div style="background: white; padding: 1.5rem 2rem; border-radius: 16px; box-shadow: 0 4px 20px rgba(0,0,0,0.05);">
+                        <div style="font-size: 0.9rem; color: var(--text-light); margin-bottom: 0.5rem;">Voice Bot</div>
+                        <div style="font-size: 1.5rem; font-weight: 700; color: var(--primary);">₺0.50<span style="font-size: 0.9rem; color: var(--text-light);">/dakika</span></div>
+                    </div>
+                    <div style="background: white; padding: 1.5rem 2rem; border-radius: 16px; box-shadow: 0 4px 20px rgba(0,0,0,0.05);">
+                        <div style="font-size: 0.9rem; color: var(--text-light); margin-bottom: 0.5rem;">QA Değerlendirme</div>
+                        <div style="font-size: 1.5rem; font-weight: 700; color: var(--primary);">₺0.10<span style="font-size: 0.9rem; color: var(--text-light);">/çağrı</span></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+    
+    <!-- CTA Section -->
+    <section class="cta-section">
+        <h2 class="cta-title">Çağrı Merkezinizi Dönüştürmeye Hazır mısınız?</h2>
+        <p class="cta-subtitle">14 gün ücretsiz deneyin. Kredi kartı gerekmez.</p>
+        <div class="cta-buttons">
+            <a href="/login" class="btn btn-white">
+                <i class="ti ti-rocket"></i> Ücretsiz Dene
+            </a>
+            <a href="#contact" class="btn btn-outline" style="border-color: white; color: white;">
+                <i class="ti ti-phone"></i> Bizi Arayın
+            </a>
+        </div>
+    </section>
+    
+    <!-- Footer -->
+    <footer class="footer" id="contact">
+        <div class="container">
+            <div class="footer-grid">
+                <div class="footer-brand">
+                    <div class="logo-text" style="font-size: 1.75rem; margin-bottom: 1rem;">AI BEE <span style="color: white;">CC</span></div>
+                    <p class="footer-desc">
+                        Yapay zeka destekli yeni nesil çağrı merkezi platformu. 
+                        Türkiye'nin en gelişmiş cloud call center çözümü.
+                    </p>
+                    <div class="footer-social">
+                        <a href="#"><i class="ti ti-brand-linkedin"></i></a>
+                        <a href="#"><i class="ti ti-brand-twitter"></i></a>
+                        <a href="#"><i class="ti ti-brand-youtube"></i></a>
+                        <a href="#"><i class="ti ti-brand-instagram"></i></a>
+                    </div>
+                </div>
+                
+                <div>
+                    <h4 class="footer-title">Ürün</h4>
+                    <ul class="footer-links">
+                        <li><a href="#features">Özellikler</a></li>
+                        <li><a href="#ai">Yapay Zeka</a></li>
+                        <li><a href="#pricing">Fiyatlar</a></li>
+                        <li><a href="#">Entegrasyonlar</a></li>
+                        <li><a href="#">API Dokümantasyon</a></li>
+                    </ul>
+                </div>
+                
+                <div>
+                    <h4 class="footer-title">Şirket</h4>
+                    <ul class="footer-links">
+                        <li><a href="#">Hakkımızda</a></li>
+                        <li><a href="#">Kariyer</a></li>
+                        <li><a href="#">Blog</a></li>
+                        <li><a href="#">Basın</a></li>
+                        <li><a href="#">İletişim</a></li>
+                    </ul>
+                </div>
+                
+                <div>
+                    <h4 class="footer-title">İletişim</h4>
+                    <ul class="footer-links">
+                        <li><i class="ti ti-mail"></i> info@ai-bee-cc.com</li>
+                        <li><i class="ti ti-phone"></i> +90 850 XXX XX XX</li>
+                        <li><i class="ti ti-map-pin"></i> İstanbul, Türkiye</li>
+                    </ul>
+                </div>
+            </div>
+            
+            <div class="footer-bottom">
+                <p>© 2025 AI BEE CC. Tüm hakları saklıdır. | <a href="#" style="color: var(--primary);">Gizlilik Politikası</a> | <a href="#" style="color: var(--primary);">Kullanım Şartları</a></p>
+            </div>
+        </div>
+    </footer>
+    
+    <script>
+        // Smooth scroll
+        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+            anchor.addEventListener('click', function (e) {
+                e.preventDefault();
+                document.querySelector(this.getAttribute('href')).scrollIntoView({
+                    behavior: 'smooth'
+                });
+            });
+        });
+        
+        // Navbar background on scroll
+        window.addEventListener('scroll', function() {
+            const navbar = document.querySelector('.navbar');
+            if (window.scrollY > 50) {
+                navbar.style.boxShadow = '0 4px 30px rgba(0,0,0,0.1)';
+            } else {
+                navbar.style.boxShadow = '0 2px 20px rgba(0,0,0,0.05)';
+            }
+        });
+    </script>
+</body>
+</html>
+
