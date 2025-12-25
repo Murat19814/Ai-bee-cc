@@ -5,8 +5,8 @@
 {% block content %}
 <div class="page-header">
     <div>
-        <h1 class="page-title">Yeni Ticket</h1>
-        <p class="page-subtitle">Destek talebi oluÅŸturun</p>
+        <h1 class="page-title" data-tr="Yeni Ticket" data-de="Neues Ticket">Yeni Ticket</h1>
+        <p class="page-subtitle" data-tr="Destek talebi oluÅŸturun" data-de="Erstellen Sie ein Support-Ticket">Destek talebi oluÅŸturun</p>
     </div>
 </div>
 
@@ -14,15 +14,18 @@
     <div class="card-body">
         <form method="POST">
             <div class="form-group">
-                <label class="form-label">Konu</label>
-                <input type="text" name="subject" class="form-control" required placeholder="Ã–rn: GiriÅŸ sorunu">
+                <label class="form-label" data-tr="Konu" data-de="Betreff">Konu</label>
+                <input type="text" name="subject" class="form-control" required
+                       placeholder="Ã–rn: GiriÅŸ sorunu"
+                       data-tr-placeholder="Ã–rn: GiriÅŸ sorunu"
+                       data-de-placeholder="Z.B.: Login-Problem">
             </div>
 
             <div class="grid grid-cols-2">
                 <div class="form-group">
-                    <label class="form-label">MÃ¼ÅŸteri (opsiyonel)</label>
+                    <label class="form-label" data-tr="MÃ¼ÅŸteri (opsiyonel)" data-de="Kunde (optional)">MÃ¼ÅŸteri (opsiyonel)</label>
                     <select name="customer_id" class="form-control">
-                        <option value="">- SeÃ§iniz -</option>
+                        <option value="" data-tr="- SeÃ§iniz -" data-de="- WÃ¤hlen -">- SeÃ§iniz -</option>
                         {% for c in customers %}
                         <option value="{{ c.id }}">{{ c.full_name }}{% if c.phone %} ({{ c.phone }}){% endif %}</option>
                         {% endfor %}
@@ -30,9 +33,9 @@
                 </div>
 
                 <div class="form-group">
-                    <label class="form-label">Kategori (opsiyonel)</label>
+                    <label class="form-label" data-tr="Kategori (opsiyonel)" data-de="Kategorie (optional)">Kategori (opsiyonel)</label>
                     <select name="category_id" class="form-control">
-                        <option value="">- SeÃ§iniz -</option>
+                        <option value="" data-tr="- SeÃ§iniz -" data-de="- WÃ¤hlen -">- SeÃ§iniz -</option>
                         {% for cat in categories %}
                         <option value="{{ cat.id }}">{{ cat.name }}</option>
                         {% endfor %}
@@ -42,30 +45,37 @@
 
             <div class="grid grid-cols-2">
                 <div class="form-group">
-                    <label class="form-label">Ã–ncelik</label>
+                    <label class="form-label" data-tr="Ã–ncelik" data-de="PrioritÃ¤t">Ã–ncelik</label>
                     <select name="priority" class="form-control">
-                        <option value="low">DÃ¼ÅŸÃ¼k</option>
-                        <option value="normal" selected>Normal</option>
-                        <option value="high">YÃ¼ksek</option>
-                        <option value="urgent">Acil</option>
+                        <option value="low" data-tr="DÃ¼ÅŸÃ¼k" data-de="Niedrig">DÃ¼ÅŸÃ¼k</option>
+                        <option value="normal" selected data-tr="Normal" data-de="Normal">Normal</option>
+                        <option value="high" data-tr="YÃ¼ksek" data-de="Hoch">YÃ¼ksek</option>
+                        <option value="urgent" data-tr="Acil" data-de="Dringend">Acil</option>
                     </select>
                 </div>
+
                 <div class="form-group">
-                    <label class="form-label">Durum</label>
+                    <label class="form-label" data-tr="Durum" data-de="Status">Durum</label>
                     <input type="text" class="form-control" value="open" disabled>
                 </div>
             </div>
 
             <div class="form-group">
-                <label class="form-label">AÃ§Ä±klama</label>
-                <textarea name="description" class="form-control" rows="5" placeholder="DetaylarÄ± yazÄ±n..."></textarea>
+                <label class="form-label" data-tr="AÃ§Ä±klama" data-de="Beschreibung">AÃ§Ä±klama</label>
+                <textarea name="description" class="form-control" rows="5"
+                          placeholder="DetaylarÄ± yazÄ±n..."
+                          data-tr-placeholder="DetaylarÄ± yazÄ±n..."
+                          data-de-placeholder="Beschreiben Sie die Details..."></textarea>
             </div>
 
             <div class="d-flex gap-2" style="margin-top: 2rem;">
                 <button type="submit" class="btn btn-primary">
-                    <i class="ti ti-check"></i> Kaydet
+                    <i class="ti ti-check"></i>
+                    <span data-tr="Kaydet" data-de="Speichern">Kaydet</span>
                 </button>
-                <a href="{{ url_for('tickets') }}" class="btn btn-secondary">Ä°ptal</a>
+                <a href="{{ url_for('tickets') }}" class="btn btn-secondary">
+                    <span data-tr="Ä°ptal" data-de="Abbrechen">Ä°ptal</span>
+                </a>
             </div>
         </form>
     </div>

@@ -10,6 +10,7 @@ document.addEventListener('DOMContentLoaded', function() {
     initSocket();
     initNotifications();
     initAgentStatus();
+    initLanguage();
 });
 
 /**
@@ -567,3 +568,49 @@ style.textContent = `
     }
 `;
 document.head.appendChild(style);
+
+
+/**
+ * Language (TR/DE) - Client side i18n
+ */
+function initLanguage() {
+    const saved = localStorage.getItem('lang');
+    const initial = (saved === 'de' || saved === 'tr') ? saved : 'tr';
+
+    const btnTr = document.getElementById('lang-tr');
+    const btnDe = document.getElementById('lang-de');
+    if (btnTr) btnTr.addEventListener('click', () => setLang('tr'));
+    if (btnDe) btnDe.addEventListener('click', () => setLang('de'));
+
+    setLang(initial);
+}
+
+function setLang(lang) {
+    if (lang !== 'tr' && lang !== 'de') lang = 'tr';
+    localStorage.setItem('lang', lang);
+
+    document.documentElement.setAttribute('lang', lang);
+
+    const btnTr = document.getElementById('lang-tr');
+    const btnDe = document.getElementById('lang-de');
+    if (btnTr) btnTr.classList.toggle('active', lang === 'tr');
+    if (btnDe) btnDe.classList.toggle('active', lang === 'de');
+
+    document.querySelectorAll('[data-tr]').forEach(el => {
+        const text = el.getAttribute(`data-${lang}`);
+        if (text) el.textContent = text;
+    });
+
+    document.querySelectorAll('[data-tr-placeholder]').forEach(el => {
+        const ph = el.getAttribute(`data-${lang}-placeholder`);
+        if (ph) el.placeholder = ph;
+    });
+
+    document.querySelectorAll('option[data-tr]').forEach(opt => {
+        const t = opt.getAttribute(`data-${lang}`);
+        if (t) opt.textContent = t;
+    });
+}
+
+// Expose for legacy inline handlers
+window.setLang = setLang;
