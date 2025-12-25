@@ -932,12 +932,14 @@ class Ticket(db.Model):
     call_id = db.Column(db.Integer, db.ForeignKey('calls.id'))
     
     created_by_id = db.Column(db.Integer, db.ForeignKey('users.id'))
-    \1
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
 
     # Relationships (no DB migration needed)
     customer = db.relationship('Customer', foreign_keys=[customer_id])
     category = db.relationship('TicketCategory', foreign_keys=[category_id])
     assigned_to = db.relationship('User', foreign_keys=[assigned_to_id])
+    assigned_team = db.relationship('Team', foreign_keys=[assigned_team_id])
     created_by = db.relationship('User', foreign_keys=[created_by_id])
 
 
@@ -2255,6 +2257,7 @@ class Report(db.Model):
     visible_to_roles = db.Column(db.JSON)
     
     created_by_id = db.Column(db.Integer, db.ForeignKey('users.id'))
+    updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
 
 
@@ -2278,6 +2281,7 @@ class Dashboard(db.Model):
     visible_to_roles = db.Column(db.JSON)
     
     created_by_id = db.Column(db.Integer, db.ForeignKey('users.id'))
+    updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
     
     widgets = db.relationship('DashboardWidget', backref='dashboard', lazy='dynamic')
@@ -2887,6 +2891,7 @@ class SystemAnnouncement(db.Model):
     maintenance_end = db.Column(db.DateTime)
     
     created_by_id = db.Column(db.Integer, db.ForeignKey('users.id'))
+    updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
 
 
