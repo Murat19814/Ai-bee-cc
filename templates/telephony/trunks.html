@@ -1,0 +1,70 @@
+{% extends "base.html" %}
+
+{% block title %}SIP Trunk Yönetimi - AI BEE CC{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <div>
+        <h1 class="page-title">SIP Trunk Yönetimi</h1>
+        <p class="page-subtitle">VoIP bağlantılarını yapılandırın</p>
+    </div>
+    <button class="btn btn-primary" onclick="showTrunkModal()">
+        <i class="ti ti-plus"></i> Yeni Trunk
+    </button>
+</div>
+
+<div class="card">
+    <div class="card-body">
+        <div class="table-wrapper">
+            <table class="table">
+                <thead>
+                    <tr>
+                        <th>Ad</th>
+                        <th>Sağlayıcı</th>
+                        <th>Host</th>
+                        <th>Max Kanal</th>
+                        <th>Kullanılan</th>
+                        <th>Durum</th>
+                        <th>Sağlık</th>
+                        <th>İşlemler</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for trunk in trunks %}
+                    <tr>
+                        <td><strong>{{ trunk.name }}</strong></td>
+                        <td>{{ trunk.provider or '-' }}</td>
+                        <td><code>{{ trunk.host }}:{{ trunk.port }}</code></td>
+                        <td>{{ trunk.max_channels }}</td>
+                        <td>{{ trunk.current_channels }}</td>
+                        <td>
+                            <span class="badge badge-{{ 'success' if trunk.status == 'active' else 'danger' }}">
+                                {{ trunk.status|capitalize }}
+                            </span>
+                        </td>
+                        <td>
+                            <span class="badge badge-{{ 'success' if trunk.health_status == 'healthy' else 'warning' if trunk.health_status == 'degraded' else 'danger' }}">
+                                {{ trunk.health_status or 'Bilinmiyor' }}
+                            </span>
+                        </td>
+                        <td>
+                            <button class="btn btn-sm btn-ghost" title="Test Et">
+                                <i class="ti ti-phone-check"></i>
+                            </button>
+                            <button class="btn btn-sm btn-ghost" title="Düzenle">
+                                <i class="ti ti-edit"></i>
+                            </button>
+                        </td>
+                    </tr>
+                    {% else %}
+                    <tr>
+                        <td colspan="8" class="text-muted">Henüz SIP trunk tanımlanmamış</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}
+

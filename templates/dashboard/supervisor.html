@@ -1,0 +1,64 @@
+{% extends "base.html" %}
+
+{% block title %}Supervisor Dashboard - {{ app_name }}{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <div>
+        <h1 class="page-title">Supervisor Dashboard</h1>
+        <p class="page-subtitle">Takım ve kuyruk yönetimi</p>
+    </div>
+</div>
+
+<div class="grid grid-cols-4">
+    <div class="stat-card">
+        <div class="stat-card-header">
+            <div class="stat-card-icon">
+                <i class="ti ti-users"></i>
+            </div>
+        </div>
+        <div class="stat-card-value">12</div>
+        <div class="stat-card-label">Aktif Agent</div>
+    </div>
+    
+    <div class="stat-card success">
+        <div class="stat-card-header">
+            <div class="stat-card-icon" style="background: rgba(16, 185, 129, 0.1); color: var(--success);">
+                <i class="ti ti-phone-check"></i>
+            </div>
+        </div>
+        <div class="stat-card-value">8</div>
+        <div class="stat-card-label">Müsait</div>
+    </div>
+    
+    <div class="stat-card warning">
+        <div class="stat-card-header">
+            <div class="stat-card-icon" style="background: rgba(245, 158, 11, 0.1); color: var(--warning);">
+                <i class="ti ti-phone-pause"></i>
+            </div>
+        </div>
+        <div class="stat-card-value">3</div>
+        <div class="stat-card-label">Molada</div>
+    </div>
+    
+    <div class="stat-card danger">
+        <div class="stat-card-header">
+            <div class="stat-card-icon" style="background: rgba(239, 68, 68, 0.1); color: var(--danger);">
+                <i class="ti ti-phone-call"></i>
+            </div>
+        </div>
+        <div class="stat-card-value">1</div>
+        <div class="stat-card-label">Görüşmede</div>
+    </div>
+</div>
+
+<div class="card mt-4">
+    <div class="card-header">
+        <h3 class="card-title"><i class="ti ti-users"></i> Agent Durumları</h3>
+    </div>
+    <div class="card-body">
+        <p class="text-muted text-center">Gerçek zamanlı agent listesi burada gösterilecek...</p>
+    </div>
+</div>
+{% endblock %}
+

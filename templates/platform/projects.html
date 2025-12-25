@@ -1,0 +1,54 @@
+{% extends "base.html" %}
+
+{% block title %}Tüm Projeler - AI BEE CC{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <div>
+        <h1 class="page-title">Tüm Projeler</h1>
+        <p class="page-subtitle">Platform genelindeki tüm projeler</p>
+    </div>
+</div>
+
+<div class="card">
+    <div class="card-body">
+        <div class="table-wrapper">
+            <table class="table">
+                <thead>
+                    <tr>
+                        <th>Tenant</th>
+                        <th>Kod</th>
+                        <th>Proje Adı</th>
+                        <th>Tür</th>
+                        <th>Durum</th>
+                        <th>Oluşturulma</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for project in projects %}
+                    <tr>
+                        <td>{{ project.tenant.name }}</td>
+                        <td><strong>{{ project.code }}</strong></td>
+                        <td>{{ project.name }}</td>
+                        <td>
+                            <span class="badge badge-info">{{ project.campaign_type }}</span>
+                        </td>
+                        <td>
+                            <span class="badge badge-{{ 'success' if project.status == 'active' else 'warning' }}">
+                                {{ project.status|capitalize }}
+                            </span>
+                        </td>
+                        <td>{{ project.created_at|datetime }}</td>
+                    </tr>
+                    {% else %}
+                    <tr>
+                        <td colspan="6" class="text-muted">Henüz proje bulunmuyor</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}
+

@@ -1,0 +1,68 @@
+{% extends "base.html" %}
+
+{% block title %}Kalite Raporu - AI BEE CC{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <div>
+        <h1 class="page-title">Kalite Raporu</h1>
+        <p class="page-subtitle">QA değerlendirme ve kalite metrikleri</p>
+    </div>
+</div>
+
+<!-- Quality Stats -->
+<div class="grid grid-cols-4 mb-4">
+    <div class="stat-card">
+        <div class="stat-card-header">
+            <div class="stat-card-icon">
+                <i class="ti ti-clipboard-check"></i>
+            </div>
+        </div>
+        <div class="stat-card-value">248</div>
+        <div class="stat-card-label">Değerlendirme</div>
+    </div>
+    
+    <div class="stat-card success">
+        <div class="stat-card-header">
+            <div class="stat-card-icon">
+                <i class="ti ti-trophy"></i>
+            </div>
+        </div>
+        <div class="stat-card-value">82%</div>
+        <div class="stat-card-label">Ort. Puan</div>
+    </div>
+    
+    <div class="stat-card warning">
+        <div class="stat-card-header">
+            <div class="stat-card-icon">
+                <i class="ti ti-thumb-up"></i>
+            </div>
+        </div>
+        <div class="stat-card-value">91%</div>
+        <div class="stat-card-label">Geçme Oranı</div>
+    </div>
+    
+    <div class="stat-card info">
+        <div class="stat-card-header">
+            <div class="stat-card-icon">
+                <i class="ti ti-robot"></i>
+            </div>
+        </div>
+        <div class="stat-card-value">156</div>
+        <div class="stat-card-label">AI Değerlendirme</div>
+    </div>
+</div>
+
+<div class="card">
+    <div class="card-header">
+        <h3 class="card-title">
+            <i class="ti ti-chart-bar"></i>
+            Kriter Bazlı Performans
+        </h3>
+    </div>
+    <div class="card-body">
+        <p class="text-muted">Yakında detaylı kriter raporları eklenecek.</p>
+    </div>
+</div>
+{% endblock %}
+

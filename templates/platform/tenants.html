@@ -1,0 +1,69 @@
+{% extends "base.html" %}
+
+{% block title %}Tenant Yönetimi - AI BEE CC{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <div>
+        <h1 class="page-title">Tenant Yönetimi</h1>
+        <p class="page-subtitle">Çağrı merkezlerini yönetin</p>
+    </div>
+    <a href="{{ url_for('platform_tenant_new') }}" class="btn btn-primary">
+        <i class="ti ti-plus"></i> Yeni Tenant
+    </a>
+</div>
+
+<div class="card">
+    <div class="card-body">
+        <div class="table-wrapper">
+            <table class="table">
+                <thead>
+                    <tr>
+                        <th>Kod</th>
+                        <th>Ad</th>
+                        <th>Domain</th>
+                        <th>Max Agent</th>
+                        <th>Max Çağrı</th>
+                        <th>Durum</th>
+                        <th>Oluşturulma</th>
+                        <th>İşlemler</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for tenant in tenants %}
+                    <tr>
+                        <td><strong>{{ tenant.code }}</strong></td>
+                        <td>{{ tenant.name }}</td>
+                        <td>{{ tenant.domain or '-' }}</td>
+                        <td>{{ tenant.max_agents }}</td>
+                        <td>{{ tenant.max_concurrent_calls }}</td>
+                        <td>
+                            <span class="badge badge-{{ 'success' if tenant.status == 'active' else 'warning' if tenant.status == 'trial' else 'danger' }}">
+                                {{ tenant.status|capitalize }}
+                            </span>
+                        </td>
+                        <td>{{ tenant.created_at|datetime }}</td>
+                        <td>
+                            <a href="{{ url_for('platform_tenant_detail', id=tenant.id) }}" class="btn btn-sm btn-ghost">
+                                <i class="ti ti-eye"></i>
+                            </a>
+                            <a href="{{ url_for('platform_tenant_edit', id=tenant.id) }}" class="btn btn-sm btn-ghost">
+                                <i class="ti ti-edit"></i>
+                            </a>
+                            <a href="{{ url_for('platform_tenant_modules', id=tenant.id) }}" class="btn btn-sm btn-ghost">
+                                <i class="ti ti-apps"></i>
+                            </a>
+                        </td>
+                    </tr>
+                    {% else %}
+                    <tr>
+                        <td colspan="8" class="text-muted">Henüz tenant bulunmuyor</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}
+

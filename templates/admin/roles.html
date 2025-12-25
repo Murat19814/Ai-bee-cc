@@ -1,0 +1,66 @@
+{% extends "base.html" %}
+
+{% block title %}Rol Yönetimi - AI BEE CC{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <div>
+        <h1 class="page-title">Rol Yönetimi</h1>
+        <p class="page-subtitle">Kullanıcı rollerini ve yetkilerini tanımlayın</p>
+    </div>
+    <button class="btn btn-primary">
+        <i class="ti ti-plus"></i> Yeni Rol
+    </button>
+</div>
+
+<div class="card">
+    <div class="card-body">
+        <div class="table-wrapper">
+            <table class="table">
+                <thead>
+                    <tr>
+                        <th>Kod</th>
+                        <th>Ad</th>
+                        <th>Açıklama</th>
+                        <th>Yetki Sayısı</th>
+                        <th>Sistem Rolü</th>
+                        <th>İşlemler</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for role in roles %}
+                    <tr>
+                        <td><code>{{ role.code }}</code></td>
+                        <td><strong>{{ role.name }}</strong></td>
+                        <td>{{ role.description or '-' }}</td>
+                        <td>{{ role.permissions.count() }}</td>
+                        <td>
+                            {% if role.is_system %}
+                            <span class="badge badge-info">Sistem</span>
+                            {% else %}
+                            <span class="badge badge-secondary">Özel</span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            <button class="btn btn-sm btn-ghost" title="Yetkileri Düzenle">
+                                <i class="ti ti-shield"></i>
+                            </button>
+                            {% if not role.is_system %}
+                            <button class="btn btn-sm btn-ghost" title="Düzenle">
+                                <i class="ti ti-edit"></i>
+                            </button>
+                            {% endif %}
+                        </td>
+                    </tr>
+                    {% else %}
+                    <tr>
+                        <td colspan="6" class="text-muted">Henüz rol tanımlanmamış</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}
+

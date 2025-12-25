@@ -1,0 +1,73 @@
+{% extends "base.html" %}
+
+{% block title %}{{ 'Proje Düzenle' if project else 'Yeni Proje' }} - AI BEE CC{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <div>
+        <h1 class="page-title">{{ 'Proje Düzenle' if project else 'Yeni Proje Oluştur' }}</h1>
+        <p class="page-subtitle">Proje bilgilerini {{ 'güncelleyin' if project else 'girin' }}</p>
+    </div>
+</div>
+
+<div class="card" style="max-width: 800px;">
+    <div class="card-body">
+        <form method="POST">
+            <div class="grid grid-cols-2">
+                <div class="form-group">
+                    <label class="form-label">
+                        <i class="ti ti-hash"></i> Proje Kodu
+                    </label>
+                    <input type="text" name="code" class="form-control" 
+                           value="{{ project.code if project else '' }}" placeholder="Örn: PRJ001" required>
+                </div>
+                
+                <div class="form-group">
+                    <label class="form-label">
+                        <i class="ti ti-folder"></i> Proje Adı
+                    </label>
+                    <input type="text" name="name" class="form-control" 
+                           value="{{ project.name if project else '' }}" placeholder="Proje adı" required>
+                </div>
+            </div>
+            
+            <div class="form-group">
+                <label class="form-label">
+                    <i class="ti ti-file-text"></i> Açıklama
+                </label>
+                <textarea name="description" class="form-control" rows="3" 
+                          placeholder="Proje açıklaması">{{ project.description if project else '' }}</textarea>
+            </div>
+            
+            <div class="grid grid-cols-2">
+                <div class="form-group">
+                    <label class="form-label">
+                        <i class="ti ti-building"></i> Sektör
+                    </label>
+                    <input type="text" name="sector" class="form-control" 
+                           value="{{ project.sector if project else '' }}" placeholder="Örn: Finans, Telekom">
+                </div>
+                
+                <div class="form-group">
+                    <label class="form-label">
+                        <i class="ti ti-phone"></i> Kampanya Türü
+                    </label>
+                    <select name="campaign_type" class="form-control">
+                        <option value="outbound" {{ 'selected' if project and project.campaign_type == 'outbound' else '' }}>Outbound (Dış Arama)</option>
+                        <option value="inbound" {{ 'selected' if project and project.campaign_type == 'inbound' else '' }}>Inbound (Gelen Çağrı)</option>
+                        <option value="blended" {{ 'selected' if not project or project.campaign_type == 'blended' else '' }}>Blended (Karma)</option>
+                    </select>
+                </div>
+            </div>
+            
+            <div class="d-flex gap-2" style="margin-top: 2rem;">
+                <button type="submit" class="btn btn-primary">
+                    <i class="ti ti-check"></i> {{ 'Güncelle' if project else 'Oluştur' }}
+                </button>
+                <a href="{{ url_for('projects') }}" class="btn btn-secondary">İptal</a>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}
+

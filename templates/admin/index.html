@@ -1,0 +1,45 @@
+{% extends "base.html" %}
+
+{% block title %}Admin Panel - {{ app_name }}{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <div>
+        <h1 class="page-title">Admin Panel</h1>
+        <p class="page-subtitle">Sistem yönetimi</p>
+    </div>
+</div>
+
+<div class="grid grid-cols-3">
+    <a href="{{ url_for('admin_users') }}" class="card" style="text-decoration: none;">
+        <div class="card-body text-center">
+            <div class="stat-card-icon" style="margin: 0 auto 1rem;">
+                <i class="ti ti-users"></i>
+            </div>
+            <h3 style="color: var(--text-primary);">Kullanıcı Yönetimi</h3>
+            <p class="text-muted">Agent, supervisor, admin hesapları</p>
+        </div>
+    </a>
+    
+    <a href="{{ url_for('admin_settings') }}" class="card" style="text-decoration: none;">
+        <div class="card-body text-center">
+            <div class="stat-card-icon" style="margin: 0 auto 1rem; background: rgba(168, 85, 247, 0.1); color: var(--accent-purple);">
+                <i class="ti ti-settings"></i>
+            </div>
+            <h3 style="color: var(--text-primary);">Sistem Ayarları</h3>
+            <p class="text-muted">Genel ayarlar, VoIP, AI</p>
+        </div>
+    </a>
+    
+    <div class="card">
+        <div class="card-body text-center">
+            <div class="stat-card-icon" style="margin: 0 auto 1rem; background: rgba(249, 115, 22, 0.1); color: var(--accent-orange);">
+                <i class="ti ti-database"></i>
+            </div>
+            <h3 style="color: var(--text-primary);">Veritabanı</h3>
+            <p class="text-muted">Yedekleme, temizlik</p>
+        </div>
+    </div>
+</div>
+{% endblock %}
+

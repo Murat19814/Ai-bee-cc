@@ -1,0 +1,64 @@
+{% extends "base.html" %}
+
+{% block title %}Script Yönetimi - AI BEE CC{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <div>
+        <h1 class="page-title">Script Yönetimi</h1>
+        <p class="page-subtitle">Agent konuşma scriptlerini oluşturun</p>
+    </div>
+    <button class="btn btn-primary">
+        <i class="ti ti-plus"></i> Yeni Script
+    </button>
+</div>
+
+<div class="card">
+    <div class="card-body">
+        <div class="table-wrapper">
+            <table class="table">
+                <thead>
+                    <tr>
+                        <th>Script Adı</th>
+                        <th>Tür</th>
+                        <th>Proje</th>
+                        <th>Versiyon</th>
+                        <th>Durum</th>
+                        <th>İşlemler</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for script in scripts %}
+                    <tr>
+                        <td><strong>{{ script.name }}</strong></td>
+                        <td>
+                            <span class="badge badge-info">{{ script.script_type|capitalize }}</span>
+                        </td>
+                        <td>{{ script.project.name if script.project else 'Genel' }}</td>
+                        <td>v{{ script.version }}</td>
+                        <td>
+                            <span class="badge badge-{{ 'success' if script.is_active else 'warning' }}">
+                                {{ 'Aktif' if script.is_active else 'Pasif' }}
+                            </span>
+                        </td>
+                        <td>
+                            <button class="btn btn-sm btn-ghost" title="Önizleme">
+                                <i class="ti ti-eye"></i>
+                            </button>
+                            <button class="btn btn-sm btn-ghost" title="Builder">
+                                <i class="ti ti-edit"></i>
+                            </button>
+                        </td>
+                    </tr>
+                    {% else %}
+                    <tr>
+                        <td colspan="6" class="text-muted">Henüz script oluşturulmamış</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}
+

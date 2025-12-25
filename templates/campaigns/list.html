@@ -1,0 +1,64 @@
+{% extends "base.html" %}
+
+{% block title %}Kampanyalar - {{ app_name }}{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <div>
+        <h1 class="page-title">Kampanya Yönetimi</h1>
+        <p class="page-subtitle">Outbound kampanyalarını yönetin</p>
+    </div>
+    <button class="btn btn-primary">
+        <i class="ti ti-plus"></i>
+        Yeni Kampanya
+    </button>
+</div>
+
+<div class="card">
+    <div class="card-body">
+        <div class="table-wrapper">
+            <table class="table">
+                <thead>
+                    <tr>
+                        <th>Kampanya Adı</th>
+                        <th>Tip</th>
+                        <th>Dialer Modu</th>
+                        <th>Toplam Kayıt</th>
+                        <th>İletişim</th>
+                        <th>Başarılı</th>
+                        <th>Durum</th>
+                        <th>İşlemler</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for campaign in campaigns %}
+                    <tr>
+                        <td>{{ campaign.name }}</td>
+                        <td>{{ campaign.campaign_type }}</td>
+                        <td>{{ campaign.dialer_mode }}</td>
+                        <td>{{ campaign.total_records }}</td>
+                        <td>{{ campaign.contacted_records }}</td>
+                        <td>{{ campaign.successful_records }}</td>
+                        <td>
+                            <span class="badge badge-{% if campaign.status == 'active' %}success{% elif campaign.status == 'paused' %}warning{% else %}info{% endif %}">
+                                {{ campaign.status }}
+                            </span>
+                        </td>
+                        <td>
+                            <button class="btn btn-ghost btn-sm">
+                                <i class="ti ti-edit"></i>
+                            </button>
+                        </td>
+                    </tr>
+                    {% else %}
+                    <tr>
+                        <td colspan="8" class="text-center text-muted">Henüz kampanya bulunmuyor</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}
+

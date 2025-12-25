@@ -1,0 +1,95 @@
+{% extends "base.html" %}
+
+{% block title %}Sistem Ayarları - {{ app_name }}{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <div>
+        <h1 class="page-title">Sistem Ayarları</h1>
+        <p class="page-subtitle">Genel sistem konfigürasyonu</p>
+    </div>
+</div>
+
+<div class="grid grid-cols-2">
+    <div class="card">
+        <div class="card-header">
+            <h3 class="card-title"><i class="ti ti-phone"></i> VoIP Ayarları</h3>
+        </div>
+        <div class="card-body">
+            <div class="form-group">
+                <label class="form-label">SIP Server</label>
+                <input type="text" class="form-control" value="sip.example.com" disabled>
+            </div>
+            <div class="form-group">
+                <label class="form-label">SIP Port</label>
+                <input type="text" class="form-control" value="5060" disabled>
+            </div>
+            <div class="form-group">
+                <label class="form-label">Transport</label>
+                <input type="text" class="form-control" value="TLS" disabled>
+            </div>
+        </div>
+    </div>
+    
+    <div class="card">
+        <div class="card-header">
+            <h3 class="card-title"><i class="ti ti-brain"></i> AI Ayarları</h3>
+        </div>
+        <div class="card-body">
+            <div class="form-group">
+                <label class="form-label">OpenAI Model</label>
+                <input type="text" class="form-control" value="gpt-4-turbo-preview" disabled>
+            </div>
+            <div class="form-group">
+                <label class="form-label">Whisper Model</label>
+                <input type="text" class="form-control" value="base" disabled>
+            </div>
+            <div class="form-group">
+                <label class="form-label">Özellikler</label>
+                <p class="text-muted">Speech-to-Text, Auto Summary, Sentiment Analysis, Agent Assist</p>
+            </div>
+        </div>
+    </div>
+    
+    <div class="card">
+        <div class="card-header">
+            <h3 class="card-title"><i class="ti ti-clock"></i> Çalışma Saatleri</h3>
+        </div>
+        <div class="card-body">
+            <div class="form-group">
+                <label class="form-label">Başlangıç</label>
+                <input type="text" class="form-control" value="09:00" disabled>
+            </div>
+            <div class="form-group">
+                <label class="form-label">Bitiş</label>
+                <input type="text" class="form-control" value="18:00" disabled>
+            </div>
+            <div class="form-group">
+                <label class="form-label">Zaman Dilimi</label>
+                <input type="text" class="form-control" value="Europe/Istanbul" disabled>
+            </div>
+        </div>
+    </div>
+    
+    <div class="card">
+        <div class="card-header">
+            <h3 class="card-title"><i class="ti ti-target"></i> KPI Hedefleri</h3>
+        </div>
+        <div class="card-body">
+            <div class="form-group">
+                <label class="form-label">AHT (Ortalama İşlem Süresi)</label>
+                <input type="text" class="form-control" value="300 saniye" disabled>
+            </div>
+            <div class="form-group">
+                <label class="form-label">SLA Hedefi</label>
+                <input type="text" class="form-control" value="80% / 20 saniye" disabled>
+            </div>
+            <div class="form-group">
+                <label class="form-label">Kalite Puanı</label>
+                <input type="text" class="form-control" value="Min 85%" disabled>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+

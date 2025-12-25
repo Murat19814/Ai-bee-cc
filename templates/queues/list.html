@@ -1,0 +1,62 @@
+{% extends "base.html" %}
+
+{% block title %}Kuyruklar - {{ app_name }}{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <div>
+        <h1 class="page-title">Kuyruk Yönetimi</h1>
+        <p class="page-subtitle">Çağrı kuyruklarını yönetin</p>
+    </div>
+    <button class="btn btn-primary">
+        <i class="ti ti-plus"></i>
+        Yeni Kuyruk
+    </button>
+</div>
+
+<div class="card">
+    <div class="card-body">
+        <div class="table-wrapper">
+            <table class="table">
+                <thead>
+                    <tr>
+                        <th>Kuyruk Adı</th>
+                        <th>Strateji</th>
+                        <th>Bekleyen</th>
+                        <th>Agent Sayısı</th>
+                        <th>SLA</th>
+                        <th>Durum</th>
+                        <th>İşlemler</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for queue in queues %}
+                    <tr>
+                        <td>{{ queue.name }}</td>
+                        <td>{{ queue.strategy }}</td>
+                        <td>0</td>
+                        <td>{{ queue.members.count() }}</td>
+                        <td>{{ queue.sla_percentage }}%</td>
+                        <td>
+                            <span class="badge {% if queue.is_active %}badge-success{% else %}badge-danger{% endif %}">
+                                {{ 'Aktif' if queue.is_active else 'Pasif' }}
+                            </span>
+                        </td>
+                        <td>
+                            <button class="btn btn-ghost btn-sm">
+                                <i class="ti ti-edit"></i>
+                            </button>
+                        </td>
+                    </tr>
+                    {% else %}
+                    <tr>
+                        <td colspan="7" class="text-center text-muted">Henüz kuyruk bulunmuyor</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}
+

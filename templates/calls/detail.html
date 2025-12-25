@@ -1,0 +1,42 @@
+{% extends "base.html" %}
+
+{% block title %}Çağrı Detayı - {{ app_name }}{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <div>
+        <h1 class="page-title">Çağrı Detayı</h1>
+        <p class="page-subtitle">ID: {{ call.call_id }}</p>
+    </div>
+    <a href="{{ url_for('calls') }}" class="btn btn-secondary">
+        <i class="ti ti-arrow-left"></i>
+        Geri
+    </a>
+</div>
+
+<div class="grid grid-cols-2">
+    <div class="card">
+        <div class="card-header">
+            <h3 class="card-title"><i class="ti ti-phone"></i> Çağrı Bilgileri</h3>
+        </div>
+        <div class="card-body">
+            <p><strong>Yön:</strong> {{ 'Gelen' if call.direction == 'inbound' else 'Giden' }}</p>
+            <p><strong>Arayan:</strong> {{ call.caller_number }}</p>
+            <p><strong>Aranan:</strong> {{ call.called_number }}</p>
+            <p><strong>Durum:</strong> {{ call.status }}</p>
+            <p><strong>Süre:</strong> {{ call.talk_duration|duration }}</p>
+        </div>
+    </div>
+    
+    <div class="card">
+        <div class="card-header">
+            <h3 class="card-title"><i class="ti ti-brain"></i> AI Analizi</h3>
+        </div>
+        <div class="card-body">
+            <p><strong>Duygu:</strong> {{ call.sentiment_label or 'Analiz edilmedi' }}</p>
+            <p><strong>Özet:</strong> {{ call.ai_summary or 'Henüz özet yok' }}</p>
+        </div>
+    </div>
+</div>
+{% endblock %}
+

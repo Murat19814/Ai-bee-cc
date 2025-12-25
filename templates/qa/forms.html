@@ -1,0 +1,64 @@
+{% extends "base.html" %}
+
+{% block title %}QA Formları - AI BEE CC{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <div>
+        <h1 class="page-title">QA Formları</h1>
+        <p class="page-subtitle">Değerlendirme form şablonlarını yönetin</p>
+    </div>
+    <button class="btn btn-primary">
+        <i class="ti ti-plus"></i> Yeni Form
+    </button>
+</div>
+
+<div class="card">
+    <div class="card-body">
+        <div class="table-wrapper">
+            <table class="table">
+                <thead>
+                    <tr>
+                        <th>Form Adı</th>
+                        <th>Açıklama</th>
+                        <th>Max Puan</th>
+                        <th>Geçme Puanı</th>
+                        <th>Kriter Sayısı</th>
+                        <th>Durum</th>
+                        <th>İşlemler</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for form in forms %}
+                    <tr>
+                        <td><strong>{{ form.name }}</strong></td>
+                        <td>{{ form.description or '-' }}</td>
+                        <td>{{ form.max_score }}</td>
+                        <td>{{ form.passing_score }}</td>
+                        <td>{{ form.criteria.count() }}</td>
+                        <td>
+                            <span class="badge badge-{{ 'success' if form.is_active else 'warning' }}">
+                                {{ 'Aktif' if form.is_active else 'Pasif' }}
+                            </span>
+                        </td>
+                        <td>
+                            <button class="btn btn-sm btn-ghost" title="Kriterleri Düzenle">
+                                <i class="ti ti-list-check"></i>
+                            </button>
+                            <button class="btn btn-sm btn-ghost" title="Düzenle">
+                                <i class="ti ti-edit"></i>
+                            </button>
+                        </td>
+                    </tr>
+                    {% else %}
+                    <tr>
+                        <td colspan="7" class="text-muted">Henüz QA formu oluşturulmamış</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}
+

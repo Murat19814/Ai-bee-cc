@@ -1,0 +1,64 @@
+{% extends "base.html" %}
+
+{% block title %}API Anahtarları - AI BEE CC{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <div>
+        <h1 class="page-title">API Anahtarları</h1>
+        <p class="page-subtitle">API erişim anahtarlarını yönetin</p>
+    </div>
+    <button class="btn btn-primary">
+        <i class="ti ti-plus"></i> Yeni API Anahtarı
+    </button>
+</div>
+
+<div class="card">
+    <div class="card-body">
+        <div class="table-wrapper">
+            <table class="table">
+                <thead>
+                    <tr>
+                        <th>Ad</th>
+                        <th>Anahtar</th>
+                        <th>İzinler</th>
+                        <th>Rate Limit</th>
+                        <th>Son Kullanım</th>
+                        <th>Durum</th>
+                        <th>İşlemler</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for key in api_keys %}
+                    <tr>
+                        <td><strong>{{ key.name }}</strong></td>
+                        <td><code>{{ key.key_prefix }}...****</code></td>
+                        <td>{{ key.permissions|length if key.permissions else 0 }} izin</td>
+                        <td>{{ key.rate_limit }}/saat</td>
+                        <td>{{ key.last_used_at|datetime if key.last_used_at else 'Hiç' }}</td>
+                        <td>
+                            <span class="badge badge-{{ 'success' if key.is_active else 'warning' }}">
+                                {{ 'Aktif' if key.is_active else 'Pasif' }}
+                            </span>
+                        </td>
+                        <td>
+                            <button class="btn btn-sm btn-ghost" title="Kopyala">
+                                <i class="ti ti-copy"></i>
+                            </button>
+                            <button class="btn btn-sm btn-ghost" title="İptal Et">
+                                <i class="ti ti-x"></i>
+                            </button>
+                        </td>
+                    </tr>
+                    {% else %}
+                    <tr>
+                        <td colspan="7" class="text-muted">Henüz API anahtarı oluşturulmamış</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}
+

@@ -1,0 +1,97 @@
+{% extends "base.html" %}
+
+{% block title %}Modül Yönetimi - {{ tenant.name }} - AI BEE CC{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <div>
+        <h1 class="page-title">Modül Yönetimi</h1>
+        <p class="page-subtitle">{{ tenant.name }} için modülleri yapılandırın</p>
+    </div>
+    <a href="{{ url_for('platform_tenant_detail', id=tenant.id) }}" class="btn btn-secondary">
+        <i class="ti ti-arrow-left"></i> Geri
+    </a>
+</div>
+
+<div class="card" style="max-width: 600px;">
+    <div class="card-body">
+        <form method="POST">
+            {% set modules = [
+                {'name': 'crm', 'label': 'CRM', 'desc': 'Müşteri ilişkileri yönetimi', 'icon': 'users'},
+                {'name': 'dialer', 'label': 'Dialer', 'desc': 'Otomatik arama sistemi', 'icon': 'phone-outgoing'},
+                {'name': 'ai', 'label': 'AI', 'desc': 'Yapay zeka özellikleri', 'icon': 'robot'},
+                {'name': 'omnichannel', 'label': 'Omnichannel', 'desc': 'Çok kanallı iletişim', 'icon': 'messages'},
+                {'name': 'wfm', 'label': 'WFM', 'desc': 'İş gücü yönetimi', 'icon': 'calendar'},
+                {'name': 'qa', 'label': 'QA', 'desc': 'Kalite kontrol', 'icon': 'clipboard-check'},
+                {'name': 'reporting', 'label': 'Reporting', 'desc': 'Gelişmiş raporlama', 'icon': 'chart-bar'}
+            ] %}
+            
+            {% for mod in modules %}
+            {% set tenant_mod = tenant.modules.filter_by(module_name=mod.name).first() %}
+            <div class="d-flex align-center justify-between" style="padding: 1rem 0; border-bottom: 1px solid var(--border-color);">
+                <div class="d-flex align-center gap-2">
+                    <div class="stat-card-icon" style="width: 40px; height: 40px; font-size: 1rem;">
+                        <i class="ti ti-{{ mod.icon }}"></i>
+                    </div>
+                    <div>
+                        <strong style="color: var(--text-primary);">{{ mod.label }}</strong>
+                        <p class="text-muted" style="font-size: 0.75rem; margin: 0;">{{ mod.desc }}</p>
+                    </div>
+                </div>
+                <label class="switch">
+                    <input type="checkbox" name="module_{{ mod.name }}" {{ 'checked' if tenant_mod and tenant_mod.is_enabled else '' }}>
+                    <span class="slider"></span>
+                </label>
+            </div>
+            {% endfor %}
+            
+            <button type="submit" class="btn btn-primary" style="margin-top: 2rem;">
+                <i class="ti ti-check"></i> Kaydet
+            </button>
+        </form>
+    </div>
+</div>
+
+<style>
+.switch {
+    position: relative;
+    width: 50px;
+    height: 26px;
+}
+.switch input {
+    opacity: 0;
+    width: 0;
+    height: 0;
+}
+.slider {
+    position: absolute;
+    cursor: pointer;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: var(--bg-elevated);
+    transition: 0.3s;
+    border-radius: 26px;
+}
+.slider:before {
+    position: absolute;
+    content: "";
+    height: 20px;
+    width: 20px;
+    left: 3px;
+    bottom: 3px;
+    background-color: var(--text-muted);
+    transition: 0.3s;
+    border-radius: 50%;
+}
+input:checked + .slider {
+    background-color: var(--primary);
+}
+input:checked + .slider:before {
+    transform: translateX(24px);
+    background-color: var(--bg-primary);
+}
+</style>
+{% endblock %}
+

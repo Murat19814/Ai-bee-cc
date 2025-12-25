@@ -1,0 +1,64 @@
+{% extends "base.html" %}
+
+{% block title %}Webhook Yönetimi - AI BEE CC{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <div>
+        <h1 class="page-title">Webhook Yönetimi</h1>
+        <p class="page-subtitle">Olay bildirimlerini yapılandırın</p>
+    </div>
+    <button class="btn btn-primary">
+        <i class="ti ti-plus"></i> Yeni Webhook
+    </button>
+</div>
+
+<div class="card">
+    <div class="card-body">
+        <div class="table-wrapper">
+            <table class="table">
+                <thead>
+                    <tr>
+                        <th>Ad</th>
+                        <th>URL</th>
+                        <th>Olaylar</th>
+                        <th>Gönderilen</th>
+                        <th>Başarısız</th>
+                        <th>Durum</th>
+                        <th>İşlemler</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for webhook in webhooks %}
+                    <tr>
+                        <td><strong>{{ webhook.name }}</strong></td>
+                        <td><code style="font-size: 0.75rem;">{{ webhook.url[:40] }}...</code></td>
+                        <td>{{ webhook.events|length if webhook.events else 0 }} olay</td>
+                        <td>{{ webhook.total_sent }}</td>
+                        <td>{{ webhook.total_failed }}</td>
+                        <td>
+                            <span class="badge badge-{{ 'success' if webhook.is_active else 'warning' }}">
+                                {{ 'Aktif' if webhook.is_active else 'Pasif' }}
+                            </span>
+                        </td>
+                        <td>
+                            <button class="btn btn-sm btn-ghost" title="Test Et">
+                                <i class="ti ti-send"></i>
+                            </button>
+                            <button class="btn btn-sm btn-ghost" title="Düzenle">
+                                <i class="ti ti-edit"></i>
+                            </button>
+                        </td>
+                    </tr>
+                    {% else %}
+                    <tr>
+                        <td colspan="7" class="text-muted">Henüz webhook tanımlanmamış</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}
+

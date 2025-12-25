@@ -1,0 +1,208 @@
+{% extends "base.html" %}
+
+{% block title %}Supervisor Paneli - AI BEE CC{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <div>
+        <h1 class="page-title">Supervisor Paneli</h1>
+        <p class="page-subtitle">Canlı izleme ve takım yönetimi</p>
+    </div>
+</div>
+
+<!-- Live Stats -->
+<div class="grid grid-cols-4 mb-4">
+    <div class="stat-card">
+        <div class="stat-card-header">
+            <div class="stat-card-icon">
+                <i class="ti ti-users"></i>
+            </div>
+        </div>
+        <div class="stat-card-value" id="activeAgents">{{ team_agents|length }}</div>
+        <div class="stat-card-label">Aktif Agent</div>
+    </div>
+    
+    <div class="stat-card success">
+        <div class="stat-card-header">
+            <div class="stat-card-icon">
+                <i class="ti ti-phone-call"></i>
+            </div>
+        </div>
+        <div class="stat-card-value" id="activeCalls">{{ active_calls|length }}</div>
+        <div class="stat-card-label">Aktif Çağrı</div>
+    </div>
+    
+    <div class="stat-card warning">
+        <div class="stat-card-header">
+            <div class="stat-card-icon">
+                <i class="ti ti-clock"></i>
+            </div>
+        </div>
+        <div class="stat-card-value" id="queueWaiting">0</div>
+        <div class="stat-card-label">Kuyrukta Bekleyen</div>
+    </div>
+    
+    <div class="stat-card info">
+        <div class="stat-card-header">
+            <div class="stat-card-icon">
+                <i class="ti ti-percentage"></i>
+            </div>
+        </div>
+        <div class="stat-card-value" id="slaPercent">87%</div>
+        <div class="stat-card-label">SLA</div>
+    </div>
+</div>
+
+<div class="grid grid-cols-2">
+    <!-- Agent Durumları -->
+    <div class="card">
+        <div class="card-header">
+            <h3 class="card-title">
+                <i class="ti ti-users"></i>
+                Agent Durumları
+            </h3>
+        </div>
+        <div class="card-body">
+            <div class="table-wrapper">
+                <table class="table">
+                    <thead>
+                        <tr>
+                            <th>Agent</th>
+                            <th>Durum</th>
+                            <th>Süre</th>
+                            <th>İşlemler</th>
+                        </tr>
+                    </thead>
+                    <tbody id="agentStatusTable">
+                        {% for agent in team_agents %}
+                        <tr>
+                            <td>
+                                <div class="d-flex align-center gap-1">
+                                    <div class="status-indicator {{ agent.status }}"></div>
+                                    {{ agent.full_name }}
+                                </div>
+                            </td>
+                            <td>
+                                <span class="badge badge-{{ 'success' if agent.status == 'available' else 'warning' if agent.status == 'break' else 'danger' if agent.status == 'busy' else 'info' }}">
+                                    {{ agent.status|capitalize }}
+                                </span>
+                            </td>
+                            <td>--:--</td>
+                            <td>
+                                <button class="btn btn-sm btn-ghost" title="Dinle">
+                                    <i class="ti ti-headphones"></i>
+                                </button>
+                                <button class="btn btn-sm btn-ghost" title="Fısılda">
+                                    <i class="ti ti-microphone"></i>
+                                </button>
+                                <button class="btn btn-sm btn-ghost" title="Katıl">
+                                    <i class="ti ti-users-plus"></i>
+                                </button>
+                            </td>
+                        </tr>
+                        {% else %}
+                        <tr>
+                            <td colspan="4" class="text-muted">Takımda agent bulunmuyor</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Aktif Çağrılar -->
+    <div class="card">
+        <div class="card-header">
+            <h3 class="card-title">
+                <i class="ti ti-phone-call"></i>
+                Aktif Çağrılar
+            </h3>
+        </div>
+        <div class="card-body">
+            <div class="table-wrapper">
+                <table class="table">
+                    <thead>
+                        <tr>
+                            <th>Agent</th>
+                            <th>Numara</th>
+                            <th>Süre</th>
+                            <th>Durum</th>
+                        </tr>
+                    </thead>
+                    <tbody id="activeCallsTable">
+                        {% for call in active_calls %}
+                        <tr>
+                            <td>{{ call.agent.full_name if call.agent else '-' }}</td>
+                            <td>{{ call.caller_number if call.direction == 'inbound' else call.called_number }}</td>
+                            <td>{{ call.talk_duration|duration }}</td>
+                            <td>
+                                <span class="badge badge-{{ 'success' if call.status == 'answered' else 'warning' }}">
+                                    {{ call.status }}
+                                </span>
+                            </td>
+                        </tr>
+                        {% else %}
+                        <tr>
+                            <td colspan="4" class="text-muted">Aktif çağrı bulunmuyor</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Kuyruk Durumları -->
+<div class="card mt-4">
+    <div class="card-header">
+        <h3 class="card-title">
+            <i class="ti ti-list-numbers"></i>
+            Kuyruk Durumları
+        </h3>
+    </div>
+    <div class="card-body">
+        <div class="table-wrapper">
+            <table class="table">
+                <thead>
+                    <tr>
+                        <th>Kuyruk</th>
+                        <th>Bekleyen</th>
+                        <th>Aktif Agent</th>
+                        <th>Ort. Bekleme</th>
+                        <th>SLA</th>
+                        <th>Durum</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for queue in queues %}
+                    <tr>
+                        <td><strong>{{ queue.name }}</strong></td>
+                        <td>0</td>
+                        <td>{{ queue.members.count() }}</td>
+                        <td>--:--</td>
+                        <td>
+                            <div class="d-flex align-center gap-1">
+                                <div style="flex: 1; background: var(--bg-elevated); border-radius: 4px; height: 8px;">
+                                    <div style="width: 85%; background: var(--success); border-radius: 4px; height: 100%;"></div>
+                                </div>
+                                <span>85%</span>
+                            </div>
+                        </td>
+                        <td>
+                            <span class="badge badge-success">Aktif</span>
+                        </td>
+                    </tr>
+                    {% else %}
+                    <tr>
+                        <td colspan="6" class="text-muted">Kuyruk bulunmuyor</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}
+

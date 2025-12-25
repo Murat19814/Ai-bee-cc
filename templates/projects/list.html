@@ -1,0 +1,65 @@
+{% extends "base.html" %}
+
+{% block title %}Projeler - AI BEE CC{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <div>
+        <h1 class="page-title">Proje Yönetimi</h1>
+        <p class="page-subtitle">Kampanya ve müşteri projelerini yönetin</p>
+    </div>
+    <a href="{{ url_for('project_new') }}" class="btn btn-primary">
+        <i class="ti ti-plus"></i> Yeni Proje
+    </a>
+</div>
+
+<div class="card">
+    <div class="card-body">
+        <div class="table-wrapper">
+            <table class="table">
+                <thead>
+                    <tr>
+                        <th>Kod</th>
+                        <th>Proje Adı</th>
+                        <th>Sektör</th>
+                        <th>Tür</th>
+                        <th>Durum</th>
+                        <th>Oluşturulma</th>
+                        <th>İşlemler</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for project in projects %}
+                    <tr>
+                        <td><strong>{{ project.code }}</strong></td>
+                        <td>{{ project.name }}</td>
+                        <td>{{ project.sector or '-' }}</td>
+                        <td>
+                            <span class="badge badge-{{ 'primary' if project.campaign_type == 'outbound' else 'info' if project.campaign_type == 'inbound' else 'warning' }}">
+                                {{ project.campaign_type|capitalize }}
+                            </span>
+                        </td>
+                        <td>
+                            <span class="badge badge-{{ 'success' if project.status == 'active' else 'warning' }}">
+                                {{ project.status|capitalize }}
+                            </span>
+                        </td>
+                        <td>{{ project.created_at|datetime }}</td>
+                        <td>
+                            <a href="{{ url_for('project_detail', id=project.id) }}" class="btn btn-sm btn-ghost">
+                                <i class="ti ti-eye"></i>
+                            </a>
+                        </td>
+                    </tr>
+                    {% else %}
+                    <tr>
+                        <td colspan="7" class="text-muted">Henüz proje bulunmuyor</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}
+

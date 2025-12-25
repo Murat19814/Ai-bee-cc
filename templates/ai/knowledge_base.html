@@ -1,0 +1,99 @@
+{% extends "base.html" %}
+
+{% block title %}Bilgi Tabanı - AI BEE CC{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <div>
+        <h1 class="page-title">Bilgi Tabanı (RAG)</h1>
+        <p class="page-subtitle">Agent asistan için dokümanları yönetin</p>
+    </div>
+    <button class="btn btn-primary">
+        <i class="ti ti-plus"></i> Yeni Bilgi Tabanı
+    </button>
+</div>
+
+<div class="card">
+    <div class="card-body">
+        <div class="table-wrapper">
+            <table class="table">
+                <thead>
+                    <tr>
+                        <th>Ad</th>
+                        <th>Açıklama</th>
+                        <th>Doküman Sayısı</th>
+                        <th>Embedding Model</th>
+                        <th>Durum</th>
+                        <th>İşlemler</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for kb in knowledge_bases %}
+                    <tr>
+                        <td><strong>{{ kb.name }}</strong></td>
+                        <td>{{ kb.description or '-' }}</td>
+                        <td>{{ kb.documents.count() }}</td>
+                        <td><code>{{ kb.embedding_model }}</code></td>
+                        <td>
+                            <span class="badge badge-{{ 'success' if kb.is_active else 'warning' }}">
+                                {{ 'Aktif' if kb.is_active else 'Pasif' }}
+                            </span>
+                        </td>
+                        <td>
+                            <button class="btn btn-sm btn-ghost" title="Dokümanlar">
+                                <i class="ti ti-files"></i>
+                            </button>
+                            <button class="btn btn-sm btn-ghost" title="Yükle">
+                                <i class="ti ti-upload"></i>
+                            </button>
+                            <button class="btn btn-sm btn-ghost" title="Düzenle">
+                                <i class="ti ti-edit"></i>
+                            </button>
+                        </td>
+                    </tr>
+                    {% else %}
+                    <tr>
+                        <td colspan="6" class="text-muted">Henüz bilgi tabanı oluşturulmamış</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<div class="card mt-4">
+    <div class="card-header">
+        <h3 class="card-title">
+            <i class="ti ti-info-circle"></i>
+            RAG Nasıl Çalışır?
+        </h3>
+    </div>
+    <div class="card-body">
+        <div class="grid grid-cols-3">
+            <div style="padding: 1rem; text-align: center;">
+                <div class="stat-card-icon" style="margin: 0 auto 1rem; width: 48px; height: 48px;">
+                    <i class="ti ti-upload"></i>
+                </div>
+                <h4 style="color: var(--text-primary);">1. Doküman Yükle</h4>
+                <p class="text-muted" style="font-size: 0.875rem;">PDF, Word, TXT formatlarında doküman yükleyin</p>
+            </div>
+            <div style="padding: 1rem; text-align: center;">
+                <div class="stat-card-icon" style="margin: 0 auto 1rem; width: 48px; height: 48px;">
+                    <i class="ti ti-transform"></i>
+                </div>
+                <h4 style="color: var(--text-primary);">2. Embedding</h4>
+                <p class="text-muted" style="font-size: 0.875rem;">AI dokümanları vektörlere dönüştürür</p>
+            </div>
+            <div style="padding: 1rem; text-align: center;">
+                <div class="stat-card-icon" style="margin: 0 auto 1rem; width: 48px; height: 48px;">
+                    <i class="ti ti-message-chatbot"></i>
+                </div>
+                <h4 style="color: var(--text-primary);">3. Agent Asistan</h4>
+                <p class="text-muted" style="font-size: 0.875rem;">Agent'lar anlık doğru cevap alır</p>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+

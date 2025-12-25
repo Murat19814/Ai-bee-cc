@@ -1,0 +1,61 @@
+{% extends "base.html" %}
+
+{% block title %}Departman Yönetimi - AI BEE CC{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <div>
+        <h1 class="page-title">Departman Yönetimi</h1>
+        <p class="page-subtitle">Organizasyon yapısını düzenleyin</p>
+    </div>
+    <button class="btn btn-primary">
+        <i class="ti ti-plus"></i> Yeni Departman
+    </button>
+</div>
+
+<div class="card">
+    <div class="card-body">
+        <div class="table-wrapper">
+            <table class="table">
+                <thead>
+                    <tr>
+                        <th>Kod</th>
+                        <th>Ad</th>
+                        <th>Takım Sayısı</th>
+                        <th>Çalışan Sayısı</th>
+                        <th>Yönetici</th>
+                        <th>Durum</th>
+                        <th>İşlemler</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for dept in departments %}
+                    <tr>
+                        <td><code>{{ dept.code or '-' }}</code></td>
+                        <td><strong>{{ dept.name }}</strong></td>
+                        <td>{{ dept.teams.count() }}</td>
+                        <td>{{ dept.users.count() }}</td>
+                        <td>{{ dept.manager.full_name if dept.manager else '-' }}</td>
+                        <td>
+                            <span class="badge badge-{{ 'success' if dept.is_active else 'warning' }}">
+                                {{ 'Aktif' if dept.is_active else 'Pasif' }}
+                            </span>
+                        </td>
+                        <td>
+                            <button class="btn btn-sm btn-ghost" title="Düzenle">
+                                <i class="ti ti-edit"></i>
+                            </button>
+                        </td>
+                    </tr>
+                    {% else %}
+                    <tr>
+                        <td colspan="7" class="text-muted">Henüz departman tanımlanmamış</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}
+

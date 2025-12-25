@@ -1,0 +1,57 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100">
+  <defs>
+    <linearGradient id="beeGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#FFD700"/>
+      <stop offset="50%" style="stop-color:#F5A623"/>
+      <stop offset="100%" style="stop-color:#D4920A"/>
+    </linearGradient>
+    <filter id="glow">
+      <feGaussianBlur stdDeviation="2" result="coloredBlur"/>
+      <feMerge>
+        <feMergeNode in="coloredBlur"/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+  </defs>
+  
+  <!-- Background hexagon -->
+  <polygon 
+    points="50,5 93,27.5 93,72.5 50,95 7,72.5 7,27.5" 
+    fill="url(#beeGradient)" 
+    filter="url(#glow)"
+  />
+  
+  <!-- Inner hexagon -->
+  <polygon 
+    points="50,15 83,32.5 83,67.5 50,85 17,67.5 17,32.5" 
+    fill="#0A0A0C"
+    stroke="url(#beeGradient)"
+    stroke-width="2"
+  />
+  
+  <!-- Headset icon -->
+  <path 
+    d="M50,30 C38,30 28,40 28,52 L28,58 C28,62 31,65 35,65 L38,65 L38,52 C38,45 43,40 50,40 C57,40 62,45 62,52 L62,65 L65,65 C69,65 72,62 72,58 L72,52 C72,40 62,30 50,30 Z" 
+    fill="none" 
+    stroke="url(#beeGradient)" 
+    stroke-width="3"
+    stroke-linecap="round"
+    stroke-linejoin="round"
+  />
+  
+  <!-- Left ear cup -->
+  <rect x="30" y="50" width="8" height="18" rx="3" fill="url(#beeGradient)"/>
+  
+  <!-- Right ear cup -->
+  <rect x="62" y="50" width="8" height="18" rx="3" fill="url(#beeGradient)"/>
+  
+  <!-- Microphone -->
+  <path 
+    d="M38,68 L38,72 C38,74 40,76 42,76 L50,76" 
+    fill="none" 
+    stroke="url(#beeGradient)" 
+    stroke-width="3"
+    stroke-linecap="round"
+  />
+  <circle cx="50" cy="76" r="4" fill="url(#beeGradient)"/>
+</svg>

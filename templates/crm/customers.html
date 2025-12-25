@@ -1,0 +1,77 @@
+{% extends "base.html" %}
+
+{% block title %}Müşteriler - {{ app_name }}{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <div>
+        <h1 class="page-title">Müşteri Yönetimi</h1>
+        <p class="page-subtitle">CRM müşteri veritabanı</p>
+    </div>
+    <button class="btn btn-primary">
+        <i class="ti ti-plus"></i>
+        Yeni Müşteri
+    </button>
+</div>
+
+<div class="card">
+    <div class="card-header">
+        <form method="GET" class="d-flex gap-2">
+            <div class="input-group" style="width: 300px;">
+                <span class="input-group-icon"><i class="ti ti-search"></i></span>
+                <input type="text" name="search" class="form-control" placeholder="Ara..." value="{{ search }}">
+            </div>
+            <select name="status" class="form-control" style="width: 150px;">
+                <option value="">Tüm Durumlar</option>
+                <option value="lead" {% if status == 'lead' %}selected{% endif %}>Lead</option>
+                <option value="prospect" {% if status == 'prospect' %}selected{% endif %}>Prospect</option>
+                <option value="customer" {% if status == 'customer' %}selected{% endif %}>Müşteri</option>
+            </select>
+            <button type="submit" class="btn btn-secondary">Filtrele</button>
+        </form>
+    </div>
+    <div class="card-body">
+        <div class="table-wrapper">
+            <table class="table">
+                <thead>
+                    <tr>
+                        <th>Müşteri No</th>
+                        <th>Ad Soyad</th>
+                        <th>Telefon</th>
+                        <th>E-posta</th>
+                        <th>Durum</th>
+                        <th>Son İletişim</th>
+                        <th>İşlemler</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for customer in customers.items %}
+                    <tr>
+                        <td>{{ customer.customer_no or '-' }}</td>
+                        <td>{{ customer.full_name }}</td>
+                        <td>{{ customer.phone }}</td>
+                        <td>{{ customer.email or '-' }}</td>
+                        <td>
+                            <span class="badge badge-{% if customer.status == 'customer' %}success{% elif customer.status == 'prospect' %}info{% else %}warning{% endif %}">
+                                {{ customer.status }}
+                            </span>
+                        </td>
+                        <td>{{ customer.last_contact|datetime if customer.last_contact else '-' }}</td>
+                        <td>
+                            <a href="{{ url_for('customer_detail', id=customer.id) }}" class="btn btn-ghost btn-sm">
+                                <i class="ti ti-eye"></i>
+                            </a>
+                        </td>
+                    </tr>
+                    {% else %}
+                    <tr>
+                        <td colspan="7" class="text-center text-muted">Henüz müşteri bulunmuyor</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}
+

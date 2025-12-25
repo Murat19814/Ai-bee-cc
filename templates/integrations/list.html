@@ -1,0 +1,102 @@
+{% extends "base.html" %}
+
+{% block title %}Entegrasyonlar - AI BEE CC{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <div>
+        <h1 class="page-title">Entegrasyonlar</h1>
+        <p class="page-subtitle">Harici sistemleri bağlayın</p>
+    </div>
+    <button class="btn btn-primary">
+        <i class="ti ti-plug"></i> Yeni Entegrasyon
+    </button>
+</div>
+
+<div class="grid grid-cols-3 mb-4">
+    <a href="{{ url_for('integration_webhooks') }}" class="card" style="text-decoration: none;">
+        <div class="card-body text-center" style="padding: 1.5rem;">
+            <div class="stat-card-icon" style="margin: 0 auto 1rem; width: 48px; height: 48px; font-size: 1.5rem;">
+                <i class="ti ti-webhook"></i>
+            </div>
+            <h4 style="color: var(--text-primary);">Webhooks</h4>
+            <p class="text-muted" style="font-size: 0.875rem;">Olay bildirimleri</p>
+        </div>
+    </a>
+    
+    <a href="{{ url_for('integration_api_keys') }}" class="card" style="text-decoration: none;">
+        <div class="card-body text-center" style="padding: 1.5rem;">
+            <div class="stat-card-icon" style="margin: 0 auto 1rem; width: 48px; height: 48px; font-size: 1.5rem;">
+                <i class="ti ti-key"></i>
+            </div>
+            <h4 style="color: var(--text-primary);">API Keys</h4>
+            <p class="text-muted" style="font-size: 0.875rem;">API erişim anahtarları</p>
+        </div>
+    </a>
+    
+    <div class="card" style="text-decoration: none; cursor: pointer;">
+        <div class="card-body text-center" style="padding: 1.5rem;">
+            <div class="stat-card-icon" style="margin: 0 auto 1rem; width: 48px; height: 48px; font-size: 1.5rem;">
+                <i class="ti ti-apps"></i>
+            </div>
+            <h4 style="color: var(--text-primary);">App Market</h4>
+            <p class="text-muted" style="font-size: 0.875rem;">Hazır entegrasyonlar</p>
+        </div>
+    </div>
+</div>
+
+<div class="card">
+    <div class="card-header">
+        <h3 class="card-title">
+            <i class="ti ti-plug"></i>
+            Aktif Entegrasyonlar
+        </h3>
+    </div>
+    <div class="card-body">
+        <div class="table-wrapper">
+            <table class="table">
+                <thead>
+                    <tr>
+                        <th>Ad</th>
+                        <th>Tür</th>
+                        <th>Sağlayıcı</th>
+                        <th>Son Senkron</th>
+                        <th>Durum</th>
+                        <th>İşlemler</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for integration in integrations %}
+                    <tr>
+                        <td><strong>{{ integration.name }}</strong></td>
+                        <td>
+                            <span class="badge badge-info">{{ integration.type|capitalize }}</span>
+                        </td>
+                        <td>{{ integration.provider or '-' }}</td>
+                        <td>{{ integration.last_sync_at|datetime if integration.last_sync_at else 'Hiç' }}</td>
+                        <td>
+                            <span class="badge badge-{{ 'success' if integration.is_active else 'warning' }}">
+                                {{ 'Aktif' if integration.is_active else 'Pasif' }}
+                            </span>
+                        </td>
+                        <td>
+                            <button class="btn btn-sm btn-ghost" title="Test Et">
+                                <i class="ti ti-refresh"></i>
+                            </button>
+                            <button class="btn btn-sm btn-ghost" title="Ayarlar">
+                                <i class="ti ti-settings"></i>
+                            </button>
+                        </td>
+                    </tr>
+                    {% else %}
+                    <tr>
+                        <td colspan="6" class="text-muted">Henüz entegrasyon yapılmamış</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}
+

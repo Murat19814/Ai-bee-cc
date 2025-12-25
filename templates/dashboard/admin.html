@@ -1,0 +1,84 @@
+{% extends "base.html" %}
+
+{% block title %}Admin Dashboard - {{ app_name }}{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <div>
+        <h1 class="page-title">Admin Dashboard</h1>
+        <p class="page-subtitle">Sistem genel durumu ve istatistikler</p>
+    </div>
+</div>
+
+<div class="grid grid-cols-4">
+    <div class="stat-card">
+        <div class="stat-card-header">
+            <div class="stat-card-icon">
+                <i class="ti ti-phone-call"></i>
+            </div>
+            <span class="stat-card-change positive">+12%</span>
+        </div>
+        <div class="stat-card-value">1,248</div>
+        <div class="stat-card-label">Bugünkü Çağrılar</div>
+    </div>
+    
+    <div class="stat-card purple">
+        <div class="stat-card-header">
+            <div class="stat-card-icon">
+                <i class="ti ti-users"></i>
+            </div>
+            <span class="stat-card-change positive">+3</span>
+        </div>
+        <div class="stat-card-value">24</div>
+        <div class="stat-card-label">Aktif Agent</div>
+    </div>
+    
+    <div class="stat-card orange">
+        <div class="stat-card-header">
+            <div class="stat-card-icon">
+                <i class="ti ti-clock"></i>
+            </div>
+        </div>
+        <div class="stat-card-value">2:34</div>
+        <div class="stat-card-label">Ort. Bekleme Süresi</div>
+    </div>
+    
+    <div class="stat-card success">
+        <div class="stat-card-header">
+            <div class="stat-card-icon">
+                <i class="ti ti-percentage"></i>
+            </div>
+            <span class="stat-card-change positive">+5%</span>
+        </div>
+        <div class="stat-card-value">87%</div>
+        <div class="stat-card-label">SLA Uyumu</div>
+    </div>
+</div>
+
+<div class="grid grid-cols-2 mt-4">
+    <div class="card">
+        <div class="card-header">
+            <h3 class="card-title">
+                <i class="ti ti-chart-line"></i>
+                Çağrı İstatistikleri
+            </h3>
+        </div>
+        <div class="card-body">
+            <p class="text-muted">Grafik buraya gelecek...</p>
+        </div>
+    </div>
+    
+    <div class="card">
+        <div class="card-header">
+            <h3 class="card-title">
+                <i class="ti ti-users"></i>
+                Agent Durumları
+            </h3>
+        </div>
+        <div class="card-body">
+            <p class="text-muted">Agent listesi buraya gelecek...</p>
+        </div>
+    </div>
+</div>
+{% endblock %}
+

@@ -1,0 +1,69 @@
+{% extends "base.html" %}
+
+{% block title %}DID Yönetimi - AI BEE CC{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <div>
+        <h1 class="page-title">DID / Numara Yönetimi</h1>
+        <p class="page-subtitle">Telefon numaralarını yönetin</p>
+    </div>
+    <button class="btn btn-primary">
+        <i class="ti ti-plus"></i> Yeni DID
+    </button>
+</div>
+
+<div class="card">
+    <div class="card-body">
+        <div class="table-wrapper">
+            <table class="table">
+                <thead>
+                    <tr>
+                        <th>Numara</th>
+                        <th>Açıklama</th>
+                        <th>Yönlendirme</th>
+                        <th>Outbound CLI</th>
+                        <th>Durum</th>
+                        <th>İşlemler</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for did in dids %}
+                    <tr>
+                        <td><strong>{{ did.number|phone }}</strong></td>
+                        <td>{{ did.description or '-' }}</td>
+                        <td>
+                            <span class="badge badge-info">
+                                {{ did.destination_type|capitalize if did.destination_type else 'Tanımsız' }}
+                            </span>
+                        </td>
+                        <td>
+                            {% if did.use_for_outbound %}
+                            <span class="badge badge-success">Evet</span>
+                            {% else %}
+                            <span class="badge badge-secondary">Hayır</span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            <span class="badge badge-{{ 'success' if did.status == 'active' else 'warning' }}">
+                                {{ did.status|capitalize }}
+                            </span>
+                        </td>
+                        <td>
+                            <button class="btn btn-sm btn-ghost" title="Düzenle">
+                                <i class="ti ti-edit"></i>
+                            </button>
+                        </td>
+                    </tr>
+                    {% else %}
+                    <tr>
+                        <td colspan="6" class="text-muted">Henüz DID tanımlanmamış</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}
+

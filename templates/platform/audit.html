@@ -1,0 +1,95 @@
+{% extends "base.html" %}
+
+{% block title %}Audit Logları - AI BEE CC{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <div>
+        <h1 class="page-title">Audit Logları</h1>
+        <p class="page-subtitle">Sistem aktiviteleri ve denetim kayıtları</p>
+    </div>
+</div>
+
+<!-- Filters -->
+<div class="card mb-4">
+    <div class="card-body">
+        <form method="GET" class="d-flex gap-2 align-center">
+            <input type="text" name="user" class="form-control" placeholder="Kullanıcı" style="max-width: 150px;">
+            <select name="action" class="form-control" style="max-width: 150px;">
+                <option value="">Tüm Aksiyonlar</option>
+                <option value="login">Giriş</option>
+                <option value="logout">Çıkış</option>
+                <option value="create">Oluşturma</option>
+                <option value="update">Güncelleme</option>
+                <option value="delete">Silme</option>
+                <option value="export">Export</option>
+            </select>
+            <input type="date" name="date_from" class="form-control" style="max-width: 150px;">
+            <input type="date" name="date_to" class="form-control" style="max-width: 150px;">
+            <button type="submit" class="btn btn-primary">Filtrele</button>
+        </form>
+    </div>
+</div>
+
+<!-- Logs Table -->
+<div class="card">
+    <div class="card-body">
+        <div class="table-wrapper">
+            <table class="table">
+                <thead>
+                    <tr>
+                        <th>Zaman</th>
+                        <th>Kullanıcı</th>
+                        <th>Aksiyon</th>
+                        <th>Kaynak</th>
+                        <th>Açıklama</th>
+                        <th>IP</th>
+                        <th>Durum</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for log in logs.items %}
+                    <tr>
+                        <td>{{ log.created_at|datetime }}</td>
+                        <td>{{ log.user.username if log.user else 'Sistem' }}</td>
+                        <td>
+                            <span class="badge badge-{{ 'danger' if log.action == 'delete' else 'success' if log.action == 'create' else 'info' }}">
+                                {{ log.action }}
+                            </span>
+                        </td>
+                        <td>{{ log.resource_type or '-' }}</td>
+                        <td style="max-width: 300px; overflow: hidden; text-overflow: ellipsis;">
+                            {{ log.description or '-' }}
+                        </td>
+                        <td><code>{{ log.ip_address or '-' }}</code></td>
+                        <td>
+                            <span class="badge badge-{{ 'success' if log.status == 'success' else 'danger' }}">
+                                {{ log.status }}
+                            </span>
+                        </td>
+                    </tr>
+                    {% else %}
+                    <tr>
+                        <td colspan="7" class="text-muted">Log kaydı bulunmuyor</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        
+        <!-- Pagination -->
+        {% if logs.pages > 1 %}
+        <div class="d-flex justify-center gap-2" style="margin-top: 1rem;">
+            {% if logs.has_prev %}
+            <a href="?page={{ logs.prev_num }}" class="btn btn-sm btn-secondary">Önceki</a>
+            {% endif %}
+            <span class="btn btn-sm btn-ghost">{{ logs.page }} / {{ logs.pages }}</span>
+            {% if logs.has_next %}
+            <a href="?page={{ logs.next_num }}" class="btn btn-sm btn-secondary">Sonraki</a>
+            {% endif %}
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}
+

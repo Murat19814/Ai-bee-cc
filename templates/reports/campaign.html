@@ -1,0 +1,23 @@
+{% extends "base.html" %}
+
+{% block title %}Kampanya Raporu - {{ app_name }}{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <div>
+        <h1 class="page-title">Kampanya Raporu</h1>
+        <p class="page-subtitle">Outbound kampanya performansı</p>
+    </div>
+    <a href="{{ url_for('reports') }}" class="btn btn-secondary">
+        <i class="ti ti-arrow-left"></i>
+        Geri
+    </a>
+</div>
+
+<div class="card">
+    <div class="card-body">
+        <p class="text-muted text-center">Kampanya verileri burada gösterilecek...</p>
+    </div>
+</div>
+{% endblock %}
+

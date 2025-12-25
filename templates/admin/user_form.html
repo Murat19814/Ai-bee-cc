@@ -1,0 +1,133 @@
+{% extends "base.html" %}
+
+{% block title %}{{ 'Kullanıcı Düzenle' if user else 'Yeni Kullanıcı' }} - AI BEE CC{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <div>
+        <h1 class="page-title">{{ 'Kullanıcı Düzenle' if user else 'Yeni Kullanıcı Oluştur' }}</h1>
+        <p class="page-subtitle">Kullanıcı bilgilerini {{ 'güncelleyin' if user else 'girin' }}</p>
+    </div>
+</div>
+
+<div class="card" style="max-width: 800px;">
+    <div class="card-body">
+        <form method="POST">
+            <div class="grid grid-cols-2">
+                <div class="form-group">
+                    <label class="form-label">
+                        <i class="ti ti-user"></i> Kullanıcı Adı
+                    </label>
+                    <input type="text" name="username" class="form-control" 
+                           value="{{ user.username if user else '' }}" required {{ 'readonly' if user else '' }}>
+                </div>
+                
+                <div class="form-group">
+                    <label class="form-label">
+                        <i class="ti ti-mail"></i> E-posta
+                    </label>
+                    <input type="email" name="email" class="form-control" 
+                           value="{{ user.email if user else '' }}" required>
+                </div>
+            </div>
+            
+            <div class="grid grid-cols-2">
+                <div class="form-group">
+                    <label class="form-label">
+                        <i class="ti ti-id"></i> Ad
+                    </label>
+                    <input type="text" name="first_name" class="form-control" 
+                           value="{{ user.first_name if user else '' }}" required>
+                </div>
+                
+                <div class="form-group">
+                    <label class="form-label">
+                        <i class="ti ti-id"></i> Soyad
+                    </label>
+                    <input type="text" name="last_name" class="form-control" 
+                           value="{{ user.last_name if user else '' }}" required>
+                </div>
+            </div>
+            
+            <div class="grid grid-cols-2">
+                <div class="form-group">
+                    <label class="form-label">
+                        <i class="ti ti-shield"></i> Rol
+                    </label>
+                    <select name="role" class="form-control" required>
+                        <option value="agent" {{ 'selected' if user and user.role == 'agent' else '' }}>Agent</option>
+                        <option value="supervisor" {{ 'selected' if user and user.role == 'supervisor' else '' }}>Supervisor</option>
+                        <option value="qa" {{ 'selected' if user and user.role == 'qa' else '' }}>QA</option>
+                        <option value="analyst" {{ 'selected' if user and user.role == 'analyst' else '' }}>Analyst</option>
+                        <option value="admin" {{ 'selected' if user and user.role == 'admin' else '' }}>Admin</option>
+                        <option value="client" {{ 'selected' if user and user.role == 'client' else '' }}>Client</option>
+                    </select>
+                </div>
+                
+                <div class="form-group">
+                    <label class="form-label">
+                        <i class="ti ti-phone"></i> Dahili
+                    </label>
+                    <input type="text" name="extension" class="form-control" 
+                           value="{{ user.extension if user else '' }}" placeholder="Örn: 101">
+                </div>
+            </div>
+            
+            <div class="grid grid-cols-2">
+                <div class="form-group">
+                    <label class="form-label">
+                        <i class="ti ti-building"></i> Departman
+                    </label>
+                    <select name="department_id" class="form-control">
+                        <option value="">Seçiniz</option>
+                        {% for dept in departments %}
+                        <option value="{{ dept.id }}" {{ 'selected' if user and user.department_id == dept.id else '' }}>
+                            {{ dept.name }}
+                        </option>
+                        {% endfor %}
+                    </select>
+                </div>
+                
+                <div class="form-group">
+                    <label class="form-label">
+                        <i class="ti ti-users"></i> Takım
+                    </label>
+                    <select name="team_id" class="form-control">
+                        <option value="">Seçiniz</option>
+                        {% for team in teams %}
+                        <option value="{{ team.id }}" {{ 'selected' if user and user.team_id == team.id else '' }}>
+                            {{ team.name }}
+                        </option>
+                        {% endfor %}
+                    </select>
+                </div>
+            </div>
+            
+            <div class="form-group">
+                <label class="form-label">
+                    <i class="ti ti-lock"></i> Şifre {{ '(Boş bırakırsanız değişmez)' if user else '' }}
+                </label>
+                <input type="password" name="password" class="form-control" 
+                       placeholder="Min. 8 karakter" {{ '' if user else 'required' }} minlength="8">
+            </div>
+            
+            {% if user %}
+            <div class="form-group">
+                <label class="d-flex align-center gap-2">
+                    <input type="checkbox" name="is_active" {{ 'checked' if user.is_active else '' }}>
+                    <span>Aktif</span>
+                </label>
+            </div>
+            {% endif %}
+            
+            <div class="d-flex gap-2" style="margin-top: 2rem;">
+                <button type="submit" class="btn btn-primary">
+                    <i class="ti ti-check"></i> {{ 'Güncelle' if user else 'Oluştur' }}
+                </button>
+                <a href="{{ url_for('admin_users') }}" class="btn btn-secondary">İptal</a>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}
+

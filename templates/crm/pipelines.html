@@ -1,0 +1,68 @@
+{% extends "base.html" %}
+
+{% block title %}Pipeline Yönetimi - AI BEE CC{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <div>
+        <h1 class="page-title">Pipeline Yönetimi</h1>
+        <p class="page-subtitle">Satış süreçlerini yapılandırın</p>
+    </div>
+    <button class="btn btn-primary">
+        <i class="ti ti-plus"></i> Yeni Pipeline
+    </button>
+</div>
+
+<div class="card">
+    <div class="card-body">
+        <div class="table-wrapper">
+            <table class="table">
+                <thead>
+                    <tr>
+                        <th>Pipeline Adı</th>
+                        <th>Açıklama</th>
+                        <th>Aşama Sayısı</th>
+                        <th>Varsayılan</th>
+                        <th>Durum</th>
+                        <th>İşlemler</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for pipeline in pipelines %}
+                    <tr>
+                        <td><strong>{{ pipeline.name }}</strong></td>
+                        <td>{{ pipeline.description or '-' }}</td>
+                        <td>{{ pipeline.stages.count() }}</td>
+                        <td>
+                            {% if pipeline.is_default %}
+                            <span class="badge badge-success">Evet</span>
+                            {% else %}
+                            <span class="badge badge-secondary">Hayır</span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            <span class="badge badge-{{ 'success' if pipeline.is_active else 'warning' }}">
+                                {{ 'Aktif' if pipeline.is_active else 'Pasif' }}
+                            </span>
+                        </td>
+                        <td>
+                            <button class="btn btn-sm btn-ghost" title="Aşamaları Düzenle">
+                                <i class="ti ti-layout-kanban"></i>
+                            </button>
+                            <button class="btn btn-sm btn-ghost" title="Düzenle">
+                                <i class="ti ti-edit"></i>
+                            </button>
+                        </td>
+                    </tr>
+                    {% else %}
+                    <tr>
+                        <td colspan="6" class="text-muted">Henüz pipeline oluşturulmamış</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}
+

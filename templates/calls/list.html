@@ -1,0 +1,78 @@
+{% extends "base.html" %}
+
+{% block title %}Çağrılar - {{ app_name }}{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <div>
+        <h1 class="page-title">Çağrı Listesi</h1>
+        <p class="page-subtitle">Tüm çağrı kayıtları</p>
+    </div>
+</div>
+
+<div class="card">
+    <div class="card-header">
+        <div class="d-flex gap-2">
+            <select class="form-control" style="width: 150px;">
+                <option value="">Tüm Yönler</option>
+                <option value="inbound">Gelen</option>
+                <option value="outbound">Giden</option>
+            </select>
+            <select class="form-control" style="width: 150px;">
+                <option value="">Tüm Durumlar</option>
+                <option value="answered">Cevaplanan</option>
+                <option value="missed">Kaçırılan</option>
+                <option value="abandoned">Terk Edilen</option>
+            </select>
+        </div>
+    </div>
+    <div class="card-body">
+        <div class="table-wrapper">
+            <table class="table">
+                <thead>
+                    <tr>
+                        <th>Tarih</th>
+                        <th>Yön</th>
+                        <th>Arayan</th>
+                        <th>Aranan</th>
+                        <th>Agent</th>
+                        <th>Süre</th>
+                        <th>Durum</th>
+                        <th>İşlemler</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for call in calls.items %}
+                    <tr>
+                        <td>{{ call.started_at|datetime }}</td>
+                        <td>
+                            <i class="ti ti-phone-{% if call.direction == 'inbound' %}incoming{% else %}outgoing{% endif %}"></i>
+                            {{ 'Gelen' if call.direction == 'inbound' else 'Giden' }}
+                        </td>
+                        <td>{{ call.caller_number }}</td>
+                        <td>{{ call.called_number }}</td>
+                        <td>{{ call.agent.full_name if call.agent else '-' }}</td>
+                        <td>{{ call.talk_duration|duration }}</td>
+                        <td>
+                            <span class="badge badge-{% if call.status == 'answered' %}success{% elif call.status == 'missed' %}warning{% else %}danger{% endif %}">
+                                {{ call.status }}
+                            </span>
+                        </td>
+                        <td>
+                            <a href="{{ url_for('call_detail', id=call.id) }}" class="btn btn-ghost btn-sm">
+                                <i class="ti ti-eye"></i>
+                            </a>
+                        </td>
+                    </tr>
+                    {% else %}
+                    <tr>
+                        <td colspan="8" class="text-center text-muted">Henüz çağrı kaydı bulunmuyor</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}
+

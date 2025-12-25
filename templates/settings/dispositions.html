@@ -1,0 +1,68 @@
+{% extends "base.html" %}
+
+{% block title %}Disposition Yönetimi - AI BEE CC{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <div>
+        <h1 class="page-title">Disposition Yönetimi</h1>
+        <p class="page-subtitle">Arama sonuç kodlarını tanımlayın</p>
+    </div>
+    <button class="btn btn-primary">
+        <i class="ti ti-plus"></i> Yeni Set
+    </button>
+</div>
+
+<div class="card">
+    <div class="card-body">
+        <div class="table-wrapper">
+            <table class="table">
+                <thead>
+                    <tr>
+                        <th>Set Adı</th>
+                        <th>Açıklama</th>
+                        <th>Disposition Sayısı</th>
+                        <th>Varsayılan</th>
+                        <th>Durum</th>
+                        <th>İşlemler</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for set in disposition_sets %}
+                    <tr>
+                        <td><strong>{{ set.name }}</strong></td>
+                        <td>{{ set.description or '-' }}</td>
+                        <td>{{ set.dispositions.count() }}</td>
+                        <td>
+                            {% if set.is_default %}
+                            <span class="badge badge-success">Evet</span>
+                            {% else %}
+                            <span class="badge badge-secondary">Hayır</span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            <span class="badge badge-{{ 'success' if set.is_active else 'warning' }}">
+                                {{ 'Aktif' if set.is_active else 'Pasif' }}
+                            </span>
+                        </td>
+                        <td>
+                            <button class="btn btn-sm btn-ghost" title="Disposition'lar">
+                                <i class="ti ti-list"></i>
+                            </button>
+                            <button class="btn btn-sm btn-ghost" title="Düzenle">
+                                <i class="ti ti-edit"></i>
+                            </button>
+                        </td>
+                    </tr>
+                    {% else %}
+                    <tr>
+                        <td colspan="6" class="text-muted">Henüz disposition seti oluşturulmamış</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}
+

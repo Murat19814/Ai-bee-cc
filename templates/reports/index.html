@@ -1,0 +1,45 @@
+{% extends "base.html" %}
+
+{% block title %}Raporlar - {{ app_name }}{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <div>
+        <h1 class="page-title">Raporlar</h1>
+        <p class="page-subtitle">Detaylı analiz ve raporlar</p>
+    </div>
+</div>
+
+<div class="grid grid-cols-3">
+    <a href="{{ url_for('report_agent_performance') }}" class="card" style="text-decoration: none;">
+        <div class="card-body text-center">
+            <div class="stat-card-icon" style="margin: 0 auto 1rem;">
+                <i class="ti ti-users"></i>
+            </div>
+            <h3 style="color: var(--text-primary);">Agent Performansı</h3>
+            <p class="text-muted">Çağrı süreleri, kalite puanları</p>
+        </div>
+    </a>
+    
+    <a href="{{ url_for('report_campaign') }}" class="card" style="text-decoration: none;">
+        <div class="card-body text-center">
+            <div class="stat-card-icon" style="margin: 0 auto 1rem; background: rgba(168, 85, 247, 0.1); color: var(--accent-purple);">
+                <i class="ti ti-speakerphone"></i>
+            </div>
+            <h3 style="color: var(--text-primary);">Kampanya Raporu</h3>
+            <p class="text-muted">Dönüşüm oranları, istatistikler</p>
+        </div>
+    </a>
+    
+    <a href="{{ url_for('report_sla') }}" class="card" style="text-decoration: none;">
+        <div class="card-body text-center">
+            <div class="stat-card-icon" style="margin: 0 auto 1rem; background: rgba(249, 115, 22, 0.1); color: var(--accent-orange);">
+                <i class="ti ti-clock"></i>
+            </div>
+            <h3 style="color: var(--text-primary);">SLA Raporu</h3>
+            <p class="text-muted">Servis seviyesi uyumu</p>
+        </div>
+    </a>
+</div>
+{% endblock %}
+

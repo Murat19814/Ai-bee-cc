@@ -1,0 +1,86 @@
+{% extends "base.html" %}
+
+{% block title %}Agent Panel - {{ app_name }}{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <div>
+        <h1 class="page-title">Agent Çalışma Paneli</h1>
+        <p class="page-subtitle">Dahili: {{ current_user.extension or 'Atanmadı' }}</p>
+    </div>
+</div>
+
+<div class="grid grid-cols-3">
+    <div class="card">
+        <div class="card-header">
+            <h3 class="card-title"><i class="ti ti-phone"></i> Telefon</h3>
+        </div>
+        <div class="card-body text-center">
+            <div id="dialpad" style="max-width: 250px; margin: 0 auto;">
+                <input type="text" class="form-control text-center mb-3" placeholder="Numara girin" style="font-size: 1.25rem; font-family: var(--font-mono);">
+                <div class="grid" style="grid-template-columns: repeat(3, 1fr); gap: 0.5rem;">
+                    <button class="btn btn-secondary">1</button>
+                    <button class="btn btn-secondary">2</button>
+                    <button class="btn btn-secondary">3</button>
+                    <button class="btn btn-secondary">4</button>
+                    <button class="btn btn-secondary">5</button>
+                    <button class="btn btn-secondary">6</button>
+                    <button class="btn btn-secondary">7</button>
+                    <button class="btn btn-secondary">8</button>
+                    <button class="btn btn-secondary">9</button>
+                    <button class="btn btn-secondary">*</button>
+                    <button class="btn btn-secondary">0</button>
+                    <button class="btn btn-secondary">#</button>
+                </div>
+                <button class="btn btn-success btn-lg mt-3" style="width: 100%;">
+                    <i class="ti ti-phone"></i>
+                    Ara
+                </button>
+            </div>
+        </div>
+    </div>
+    
+    <div class="card">
+        <div class="card-header">
+            <h3 class="card-title"><i class="ti ti-user"></i> Müşteri Bilgisi</h3>
+        </div>
+        <div class="card-body">
+            <div id="customerInfo">
+                <p class="text-muted text-center">Aktif çağrı yok</p>
+            </div>
+        </div>
+    </div>
+    
+    <div class="card">
+        <div class="card-header">
+            <h3 class="card-title"><i class="ti ti-brain"></i> AI Asistan</h3>
+        </div>
+        <div class="card-body">
+            <div id="aiAssistant">
+                <p class="text-muted text-center">Çağrı sırasında AI önerileri burada gösterilecek</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="card mt-4">
+    <div class="card-header">
+        <h3 class="card-title"><i class="ti ti-script"></i> Konuşma Akışı</h3>
+    </div>
+    <div class="card-body">
+        <div class="d-flex gap-2 mb-3">
+            <button class="btn btn-primary btn-sm">Açılış</button>
+            <button class="btn btn-secondary btn-sm">Ürün Tanıtımı</button>
+            <button class="btn btn-secondary btn-sm">İtiraz Yanıtları</button>
+            <button class="btn btn-secondary btn-sm">Kapanış</button>
+        </div>
+        <div class="card" style="background: var(--bg-elevated);">
+            <div class="card-body">
+                <p>"Merhaba, ben [İsim], [Şirket]'den arıyorum. Nasılsınız bugün?"</p>
+                <p class="text-muted mt-2"><small>İpucu: Müşterinin adını kullanın, samimi bir ton koruyun.</small></p>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+

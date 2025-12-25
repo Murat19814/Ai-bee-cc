@@ -1,0 +1,67 @@
+{% extends "base.html" %}
+
+{% block title %}Destek Talepleri - AI BEE CC{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <div>
+        <h1 class="page-title">Destek Talepleri</h1>
+        <p class="page-subtitle">Müşteri ticket'larını yönetin</p>
+    </div>
+    <button class="btn btn-primary">
+        <i class="ti ti-plus"></i> Yeni Ticket
+    </button>
+</div>
+
+<div class="card">
+    <div class="card-body">
+        <div class="table-wrapper">
+            <table class="table">
+                <thead>
+                    <tr>
+                        <th>Ticket No</th>
+                        <th>Konu</th>
+                        <th>Müşteri</th>
+                        <th>Öncelik</th>
+                        <th>Durum</th>
+                        <th>Atanan</th>
+                        <th>Oluşturulma</th>
+                        <th>İşlemler</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for ticket in tickets %}
+                    <tr>
+                        <td><strong>{{ ticket.ticket_no }}</strong></td>
+                        <td>{{ ticket.subject[:50] }}...</td>
+                        <td>{{ ticket.customer.full_name if ticket.customer else '-' }}</td>
+                        <td>
+                            <span class="badge badge-{{ 'danger' if ticket.priority == 'urgent' else 'warning' if ticket.priority == 'high' else 'info' }}">
+                                {{ ticket.priority|capitalize }}
+                            </span>
+                        </td>
+                        <td>
+                            <span class="badge badge-{{ 'success' if ticket.status == 'resolved' else 'warning' if ticket.status == 'pending' else 'info' }}">
+                                {{ ticket.status|capitalize }}
+                            </span>
+                        </td>
+                        <td>{{ ticket.assigned_to.full_name if ticket.assigned_to else 'Atanmamış' }}</td>
+                        <td>{{ ticket.created_at|datetime }}</td>
+                        <td>
+                            <button class="btn btn-sm btn-ghost" title="Detay">
+                                <i class="ti ti-eye"></i>
+                            </button>
+                        </td>
+                    </tr>
+                    {% else %}
+                    <tr>
+                        <td colspan="8" class="text-muted">Henüz ticket bulunmuyor</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}
+

@@ -1,0 +1,69 @@
+{% extends "base.html" %}
+
+{% block title %}Portal Dashboard - AI BEE CC{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <div>
+        <h1 class="page-title">Müşteri Portalı</h1>
+        <p class="page-subtitle">Projelerinizi ve performansınızı takip edin</p>
+    </div>
+</div>
+
+<div class="grid grid-cols-4 mb-4">
+    <div class="stat-card">
+        <div class="stat-card-header">
+            <div class="stat-card-icon">
+                <i class="ti ti-phone"></i>
+            </div>
+            <span class="stat-card-change positive">+12%</span>
+        </div>
+        <div class="stat-card-value">1,248</div>
+        <div class="stat-card-label">Bugünkü Çağrılar</div>
+    </div>
+    
+    <div class="stat-card success">
+        <div class="stat-card-header">
+            <div class="stat-card-icon">
+                <i class="ti ti-user-check"></i>
+            </div>
+        </div>
+        <div class="stat-card-value">87%</div>
+        <div class="stat-card-label">Bağlantı Oranı</div>
+    </div>
+    
+    <div class="stat-card warning">
+        <div class="stat-card-header">
+            <div class="stat-card-icon">
+                <i class="ti ti-percentage"></i>
+            </div>
+            <span class="stat-card-change positive">+5%</span>
+        </div>
+        <div class="stat-card-value">23%</div>
+        <div class="stat-card-label">Dönüşüm Oranı</div>
+    </div>
+    
+    <div class="stat-card info">
+        <div class="stat-card-header">
+            <div class="stat-card-icon">
+                <i class="ti ti-clock"></i>
+            </div>
+        </div>
+        <div class="stat-card-value">2:34</div>
+        <div class="stat-card-label">Ort. Çağrı Süresi</div>
+    </div>
+</div>
+
+<div class="card">
+    <div class="card-header">
+        <h3 class="card-title">
+            <i class="ti ti-folder"></i>
+            Projelerim
+        </h3>
+    </div>
+    <div class="card-body">
+        <p class="text-muted">Henüz proje ataması yapılmamış.</p>
+    </div>
+</div>
+{% endblock %}
+

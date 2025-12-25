@@ -1,0 +1,93 @@
+{% extends "base.html" %}
+
+{% block title %}Super Admin Dashboard - AI BEE CC{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <div>
+        <h1 class="page-title">Super Admin Dashboard</h1>
+        <p class="page-subtitle">Platform genel görünümü</p>
+    </div>
+    <a href="{{ url_for('platform_dashboard') }}" class="btn btn-primary">
+        <i class="ti ti-settings"></i> Platform Yönetimi
+    </a>
+</div>
+
+<!-- Quick Stats -->
+<div class="grid grid-cols-4 mb-4">
+    <div class="stat-card">
+        <div class="stat-card-header">
+            <div class="stat-card-icon">
+                <i class="ti ti-building"></i>
+            </div>
+            <span class="stat-card-change positive">+2</span>
+        </div>
+        <div class="stat-card-value">{{ tenants_count|default(1) }}</div>
+        <div class="stat-card-label">Aktif Tenant</div>
+    </div>
+    
+    <div class="stat-card success">
+        <div class="stat-card-header">
+            <div class="stat-card-icon">
+                <i class="ti ti-users"></i>
+            </div>
+        </div>
+        <div class="stat-card-value">{{ users_count|default(1) }}</div>
+        <div class="stat-card-label">Toplam Kullanıcı</div>
+    </div>
+    
+    <div class="stat-card warning">
+        <div class="stat-card-header">
+            <div class="stat-card-icon">
+                <i class="ti ti-phone"></i>
+            </div>
+        </div>
+        <div class="stat-card-value">{{ calls_today|default(0) }}</div>
+        <div class="stat-card-label">Bugünkü Çağrı</div>
+    </div>
+    
+    <div class="stat-card info">
+        <div class="stat-card-header">
+            <div class="stat-card-icon">
+                <i class="ti ti-activity"></i>
+            </div>
+        </div>
+        <div class="stat-card-value">99.9%</div>
+        <div class="stat-card-label">Uptime</div>
+    </div>
+</div>
+
+<!-- Quick Access -->
+<div class="grid grid-cols-3">
+    <a href="{{ url_for('platform_tenants') }}" class="card" style="text-decoration: none;">
+        <div class="card-body text-center" style="padding: 2rem;">
+            <div class="stat-card-icon" style="margin: 0 auto 1rem; width: 64px; height: 64px; font-size: 2rem;">
+                <i class="ti ti-building"></i>
+            </div>
+            <h3 style="color: var(--text-primary);">Tenant Yönetimi</h3>
+            <p class="text-muted">CC'leri yönetin</p>
+        </div>
+    </a>
+    
+    <a href="{{ url_for('platform_health') }}" class="card" style="text-decoration: none;">
+        <div class="card-body text-center" style="padding: 2rem;">
+            <div class="stat-card-icon" style="margin: 0 auto 1rem; width: 64px; height: 64px; font-size: 2rem;">
+                <i class="ti ti-heart-rate-monitor"></i>
+            </div>
+            <h3 style="color: var(--text-primary);">Sistem Sağlığı</h3>
+            <p class="text-muted">Sunucu durumları</p>
+        </div>
+    </a>
+    
+    <a href="{{ url_for('platform_audit') }}" class="card" style="text-decoration: none;">
+        <div class="card-body text-center" style="padding: 2rem;">
+            <div class="stat-card-icon" style="margin: 0 auto 1rem; width: 64px; height: 64px; font-size: 2rem;">
+                <i class="ti ti-file-analytics"></i>
+            </div>
+            <h3 style="color: var(--text-primary);">Audit Logları</h3>
+            <p class="text-muted">Sistem kayıtları</p>
+        </div>
+    </a>
+</div>
+{% endblock %}
+

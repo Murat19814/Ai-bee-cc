@@ -1,0 +1,141 @@
+{% extends "base.html" %}
+
+{% block title %}QA Dashboard - AI BEE CC{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <div>
+        <h1 class="page-title">QA Dashboard</h1>
+        <p class="page-subtitle">Kalite değerlendirme ve izleme</p>
+    </div>
+</div>
+
+<!-- QA Stats -->
+<div class="grid grid-cols-4 mb-4">
+    <div class="stat-card">
+        <div class="stat-card-header">
+            <div class="stat-card-icon">
+                <i class="ti ti-clipboard-check"></i>
+            </div>
+        </div>
+        <div class="stat-card-value">{{ recent_evaluations|length }}</div>
+        <div class="stat-card-label">Değerlendirme</div>
+    </div>
+    
+    <div class="stat-card success">
+        <div class="stat-card-header">
+            <div class="stat-card-icon">
+                <i class="ti ti-trophy"></i>
+            </div>
+        </div>
+        <div class="stat-card-value">78%</div>
+        <div class="stat-card-label">Ort. Puan</div>
+    </div>
+    
+    <div class="stat-card warning">
+        <div class="stat-card-header">
+            <div class="stat-card-icon">
+                <i class="ti ti-phone-x"></i>
+            </div>
+        </div>
+        <div class="stat-card-value">{{ unevaluated_calls|length }}</div>
+        <div class="stat-card-label">Bekleyen</div>
+    </div>
+    
+    <div class="stat-card info">
+        <div class="stat-card-header">
+            <div class="stat-card-icon">
+                <i class="ti ti-robot"></i>
+            </div>
+        </div>
+        <div class="stat-card-value">AI</div>
+        <div class="stat-card-label">Auto QA Aktif</div>
+    </div>
+</div>
+
+<div class="grid grid-cols-2">
+    <!-- Bekleyen Çağrılar -->
+    <div class="card">
+        <div class="card-header">
+            <h3 class="card-title">
+                <i class="ti ti-phone-pause"></i>
+                Değerlendirilmemiş Çağrılar
+            </h3>
+        </div>
+        <div class="card-body">
+            <div class="table-wrapper">
+                <table class="table">
+                    <thead>
+                        <tr>
+                            <th>Agent</th>
+                            <th>Süre</th>
+                            <th>Tarih</th>
+                            <th>İşlem</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for call in unevaluated_calls %}
+                        <tr>
+                            <td>{{ call.agent.full_name if call.agent else '-' }}</td>
+                            <td>{{ call.talk_duration|duration }}</td>
+                            <td>{{ call.started_at|datetime }}</td>
+                            <td>
+                                <a href="{{ url_for('qa_evaluate', call_id=call.id) }}" class="btn btn-sm btn-primary">
+                                    Değerlendir
+                                </a>
+                            </td>
+                        </tr>
+                        {% else %}
+                        <tr>
+                            <td colspan="4" class="text-muted">Bekleyen çağrı bulunmuyor</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Son Değerlendirmeler -->
+    <div class="card">
+        <div class="card-header">
+            <h3 class="card-title">
+                <i class="ti ti-clipboard-check"></i>
+                Son Değerlendirmeler
+            </h3>
+        </div>
+        <div class="card-body">
+            <div class="table-wrapper">
+                <table class="table">
+                    <thead>
+                        <tr>
+                            <th>Agent</th>
+                            <th>Puan</th>
+                            <th>Sonuç</th>
+                            <th>Tarih</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for eval in recent_evaluations %}
+                        <tr>
+                            <td>{{ eval.agent.full_name if eval.agent else '-' }}</td>
+                            <td><strong>{{ eval.percentage|round(1) }}%</strong></td>
+                            <td>
+                                <span class="badge badge-{{ 'success' if eval.passed else 'danger' }}">
+                                    {{ 'Geçti' if eval.passed else 'Kaldı' }}
+                                </span>
+                            </td>
+                            <td>{{ eval.evaluated_at|datetime }}</td>
+                        </tr>
+                        {% else %}
+                        <tr>
+                            <td colspan="4" class="text-muted">Henüz değerlendirme yapılmamış</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

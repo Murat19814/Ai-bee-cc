@@ -1,0 +1,160 @@
+{% extends "base.html" %}
+
+{% block title %}Sistem Sağlığı - AI BEE CC{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <div>
+        <h1 class="page-title">Sistem Sağlığı</h1>
+        <p class="page-subtitle">Platform durumu ve performans metrikleri</p>
+    </div>
+</div>
+
+<!-- Health Stats -->
+<div class="grid grid-cols-4 mb-4">
+    <div class="stat-card {{ 'success' if health.cpu_usage < 70 else 'warning' if health.cpu_usage < 90 else 'danger' }}">
+        <div class="stat-card-header">
+            <div class="stat-card-icon">
+                <i class="ti ti-cpu"></i>
+            </div>
+        </div>
+        <div class="stat-card-value">{{ health.cpu_usage }}%</div>
+        <div class="stat-card-label">CPU Kullanımı</div>
+    </div>
+    
+    <div class="stat-card {{ 'success' if health.memory_usage < 70 else 'warning' if health.memory_usage < 90 else 'danger' }}">
+        <div class="stat-card-header">
+            <div class="stat-card-icon">
+                <i class="ti ti-device-desktop-analytics"></i>
+            </div>
+        </div>
+        <div class="stat-card-value">{{ health.memory_usage }}%</div>
+        <div class="stat-card-label">Bellek Kullanımı</div>
+    </div>
+    
+    <div class="stat-card {{ 'success' if health.disk_usage < 70 else 'warning' if health.disk_usage < 90 else 'danger' }}">
+        <div class="stat-card-header">
+            <div class="stat-card-icon">
+                <i class="ti ti-database"></i>
+            </div>
+        </div>
+        <div class="stat-card-value">{{ health.disk_usage }}%</div>
+        <div class="stat-card-label">Disk Kullanımı</div>
+    </div>
+    
+    <div class="stat-card info">
+        <div class="stat-card-header">
+            <div class="stat-card-icon">
+                <i class="ti ti-phone-call"></i>
+            </div>
+        </div>
+        <div class="stat-card-value">{{ health.active_calls }}</div>
+        <div class="stat-card-label">Aktif Çağrı</div>
+    </div>
+</div>
+
+<!-- Service Status -->
+<div class="grid grid-cols-2 mb-4">
+    <div class="card">
+        <div class="card-header">
+            <h3 class="card-title">
+                <i class="ti ti-server"></i>
+                Servis Durumları
+            </h3>
+        </div>
+        <div class="card-body">
+            <div class="d-flex flex-column gap-2">
+                {% set services = [
+                    {'name': 'VoIP Gateway', 'status': 'healthy'},
+                    {'name': 'Database', 'status': 'healthy'},
+                    {'name': 'Redis Cache', 'status': 'healthy'},
+                    {'name': 'AI Service', 'status': 'healthy'},
+                    {'name': 'Recording Service', 'status': 'healthy'}
+                ] %}
+                {% for service in services %}
+                <div class="d-flex align-center justify-between" style="padding: 0.5rem 0; border-bottom: 1px solid var(--border-color);">
+                    <span>{{ service.name }}</span>
+                    <span class="badge badge-{{ 'success' if service.status == 'healthy' else 'warning' if service.status == 'degraded' else 'danger' }}">
+                        {{ service.status|capitalize }}
+                    </span>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+    
+    <div class="card">
+        <div class="card-header">
+            <h3 class="card-title">
+                <i class="ti ti-wave-sine"></i>
+                Çağrı Kalitesi
+            </h3>
+        </div>
+        <div class="card-body">
+            <div class="d-flex flex-column gap-2">
+                <div class="d-flex align-center justify-between" style="padding: 0.5rem 0; border-bottom: 1px solid var(--border-color);">
+                    <span>MOS Score</span>
+                    <strong style="color: var(--success);">4.2</strong>
+                </div>
+                <div class="d-flex align-center justify-between" style="padding: 0.5rem 0; border-bottom: 1px solid var(--border-color);">
+                    <span>Jitter</span>
+                    <strong>12ms</strong>
+                </div>
+                <div class="d-flex align-center justify-between" style="padding: 0.5rem 0; border-bottom: 1px solid var(--border-color);">
+                    <span>Packet Loss</span>
+                    <strong>0.1%</strong>
+                </div>
+                <div class="d-flex align-center justify-between" style="padding: 0.5rem 0;">
+                    <span>Latency</span>
+                    <strong>45ms</strong>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Recent Events -->
+<div class="card">
+    <div class="card-header">
+        <h3 class="card-title">
+            <i class="ti ti-bell"></i>
+            Son Sistem Olayları
+        </h3>
+    </div>
+    <div class="card-body">
+        <div class="table-wrapper">
+            <table class="table">
+                <thead>
+                    <tr>
+                        <th>Zaman</th>
+                        <th>Tür</th>
+                        <th>Kaynak</th>
+                        <th>Açıklama</th>
+                        <th>Önem</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for event in events %}
+                    <tr>
+                        <td>{{ event.created_at|datetime }}</td>
+                        <td><code>{{ event.event_type }}</code></td>
+                        <td>{{ event.source or '-' }}</td>
+                        <td>{{ event.description or '-' }}</td>
+                        <td>
+                            <span class="badge badge-{{ 'danger' if event.severity == 'critical' else 'warning' if event.severity == 'warning' else 'info' }}">
+                                {{ event.severity|capitalize }}
+                            </span>
+                        </td>
+                    </tr>
+                    {% else %}
+                    <tr>
+                        <td colspan="5" class="text-muted">Son olaylar bulunmuyor</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}
+

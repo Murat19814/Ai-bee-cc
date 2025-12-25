@@ -1,0 +1,391 @@
+<!DOCTYPE html>
+<html lang="tr" data-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}AI BEE CC{% endblock %}</title>
+    
+    <!-- Favicon -->
+    <link rel="icon" type="image/svg+xml" href="{{ url_for('static', filename='images/favicon.svg') }}">
+    
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600&family=Orbitron:wght@400;500;600;700;800;900&family=Rajdhani:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    
+    <!-- Tabler Icons -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@2.44.0/tabler-icons.min.css">
+    
+    <!-- Main CSS -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/main.css') }}">
+    
+    {% block extra_css %}{% endblock %}
+</head>
+<body>
+    {% if current_user.is_authenticated %}
+    <div class="app-layout">
+        <!-- Sidebar Overlay -->
+        <div class="sidebar-overlay" id="sidebarOverlay"></div>
+        
+        <!-- Sidebar -->
+        <aside class="sidebar" id="sidebar">
+            <div class="sidebar-header">
+                <a href="{{ url_for('dashboard') }}" class="logo">
+                    <div class="logo-icon">
+                        <i class="ti ti-hexagon-letter-b"></i>
+                    </div>
+                    <span class="logo-text">AI BEE CC</span>
+                </a>
+                <button class="sidebar-close" id="sidebarClose">
+                    <i class="ti ti-x"></i>
+                </button>
+            </div>
+            
+            <nav class="sidebar-nav">
+                <!-- Dashboard -->
+                <a href="{{ url_for('dashboard') }}" class="nav-item {{ 'active' if request.endpoint == 'dashboard' else '' }}">
+                    <i class="ti ti-dashboard"></i>
+                    <span>Dashboard</span>
+                </a>
+                
+                {% if current_user.is_super_admin %}
+                <!-- Platform Yönetimi -->
+                <div class="nav-group">
+                    <button class="nav-group-toggle" data-target="platform-menu">
+                        <i class="ti ti-building-skyscraper"></i>
+                        <span>Platform</span>
+                        <i class="ti ti-chevron-down nav-arrow"></i>
+                    </button>
+                    <div class="nav-group-menu" id="platform-menu">
+                        <a href="{{ url_for('platform_dashboard') }}" class="nav-subitem">
+                            <i class="ti ti-layout-dashboard"></i>
+                            <span>Platform Yönetimi</span>
+                        </a>
+                        <a href="{{ url_for('platform_tenants') }}" class="nav-subitem">
+                            <i class="ti ti-buildings"></i>
+                            <span>Tenant'lar</span>
+                        </a>
+                        <a href="{{ url_for('platform_health') }}" class="nav-subitem">
+                            <i class="ti ti-heart-rate-monitor"></i>
+                            <span>Sistem Sağlığı</span>
+                        </a>
+                        <a href="{{ url_for('platform_audit') }}" class="nav-subitem">
+                            <i class="ti ti-file-analytics"></i>
+                            <span>Audit Logları</span>
+                        </a>
+                    </div>
+                </div>
+                {% endif %}
+                
+                {% if current_user.role == 'agent' %}
+                <!-- Agent -->
+                <a href="{{ url_for('agent_panel') }}" class="nav-item {{ 'active' if request.endpoint == 'agent_panel' else '' }}">
+                    <i class="ti ti-headset"></i>
+                    <span>Agent Paneli</span>
+                </a>
+                {% endif %}
+                
+                {% if current_user.role == 'supervisor' or current_user.role == 'admin' or current_user.is_super_admin %}
+                <!-- Supervisor -->
+                <a href="{{ url_for('supervisor_panel') }}" class="nav-item {{ 'active' if 'supervisor' in request.endpoint else '' }}">
+                    <i class="ti ti-eye"></i>
+                    <span>Canlı İzleme</span>
+                </a>
+                {% endif %}
+                
+                {% if current_user.role in ['admin', 'supervisor', 'qa'] or current_user.is_super_admin %}
+                <!-- CRM -->
+                <div class="nav-group">
+                    <button class="nav-group-toggle" data-target="crm-menu">
+                        <i class="ti ti-address-book"></i>
+                        <span>CRM</span>
+                        <i class="ti ti-chevron-down nav-arrow"></i>
+                    </button>
+                    <div class="nav-group-menu" id="crm-menu">
+                        <a href="{{ url_for('customers') }}" class="nav-subitem">
+                            <i class="ti ti-users"></i>
+                            <span>Müşteriler</span>
+                        </a>
+                        <a href="{{ url_for('tickets') }}" class="nav-subitem">
+                            <i class="ti ti-ticket"></i>
+                            <span>Destek Talepleri</span>
+                        </a>
+                        <a href="{{ url_for('calls') }}" class="nav-subitem">
+                            <i class="ti ti-phone"></i>
+                            <span>Çağrılar</span>
+                        </a>
+                    </div>
+                </div>
+                {% endif %}
+                
+                {% if current_user.role in ['admin', 'supervisor'] or current_user.is_super_admin %}
+                <!-- Kampanya -->
+                <div class="nav-group">
+                    <button class="nav-group-toggle" data-target="campaign-menu">
+                        <i class="ti ti-speakerphone"></i>
+                        <span>Kampanya</span>
+                        <i class="ti ti-chevron-down nav-arrow"></i>
+                    </button>
+                    <div class="nav-group-menu" id="campaign-menu">
+                        <a href="{{ url_for('campaigns') }}" class="nav-subitem">
+                            <i class="ti ti-broadcast"></i>
+                            <span>Kampanyalar</span>
+                        </a>
+                        <a href="{{ url_for('queues') }}" class="nav-subitem">
+                            <i class="ti ti-list-numbers"></i>
+                            <span>Kuyruklar</span>
+                        </a>
+                        <a href="{{ url_for('dialer_lists') }}" class="nav-subitem">
+                            <i class="ti ti-phone-outgoing"></i>
+                            <span>Arama Listeleri</span>
+                        </a>
+                    </div>
+                </div>
+                {% endif %}
+                
+                {% if current_user.role in ['qa', 'admin', 'supervisor'] or current_user.is_super_admin %}
+                <!-- Kalite -->
+                <div class="nav-group">
+                    <button class="nav-group-toggle" data-target="qa-menu">
+                        <i class="ti ti-clipboard-check"></i>
+                        <span>Kalite (QA)</span>
+                        <i class="ti ti-chevron-down nav-arrow"></i>
+                    </button>
+                    <div class="nav-group-menu" id="qa-menu">
+                        <a href="{{ url_for('qa_dashboard') }}" class="nav-subitem">
+                            <i class="ti ti-chart-dots"></i>
+                            <span>QA Dashboard</span>
+                        </a>
+                        <a href="{{ url_for('qa_forms') }}" class="nav-subitem">
+                            <i class="ti ti-forms"></i>
+                            <span>QA Formları</span>
+                        </a>
+                    </div>
+                </div>
+                {% endif %}
+                
+                {% if current_user.role == 'admin' or current_user.is_super_admin %}
+                <!-- Telefoni -->
+                <div class="nav-group">
+                    <button class="nav-group-toggle" data-target="telephony-menu">
+                        <i class="ti ti-phone-call"></i>
+                        <span>Telefoni</span>
+                        <i class="ti ti-chevron-down nav-arrow"></i>
+                    </button>
+                    <div class="nav-group-menu" id="telephony-menu">
+                        <a href="{{ url_for('telephony_trunks') }}" class="nav-subitem">
+                            <i class="ti ti-network"></i>
+                            <span>SIP Trunk</span>
+                        </a>
+                        <a href="{{ url_for('telephony_dids') }}" class="nav-subitem">
+                            <i class="ti ti-hash"></i>
+                            <span>DID Numaraları</span>
+                        </a>
+                        <a href="{{ url_for('telephony_ivrs') }}" class="nav-subitem">
+                            <i class="ti ti-sitemap"></i>
+                            <span>IVR</span>
+                        </a>
+                    </div>
+                </div>
+                
+                <!-- Yapay Zeka -->
+                <div class="nav-group">
+                    <button class="nav-group-toggle" data-target="ai-menu">
+                        <i class="ti ti-brain"></i>
+                        <span>Yapay Zeka</span>
+                        <i class="ti ti-chevron-down nav-arrow"></i>
+                    </button>
+                    <div class="nav-group-menu" id="ai-menu">
+                        <a href="{{ url_for('ai_panel') }}" class="nav-subitem">
+                            <i class="ti ti-robot"></i>
+                            <span>AI Yönetimi</span>
+                        </a>
+                        <a href="{{ url_for('ai_knowledge_base') }}" class="nav-subitem">
+                            <i class="ti ti-books"></i>
+                            <span>Bilgi Tabanı</span>
+                        </a>
+                    </div>
+                </div>
+                {% endif %}
+                
+                <!-- Raporlar -->
+                <div class="nav-group">
+                    <button class="nav-group-toggle" data-target="reports-menu">
+                        <i class="ti ti-chart-bar"></i>
+                        <span>Raporlar</span>
+                        <i class="ti ti-chevron-down nav-arrow"></i>
+                    </button>
+                    <div class="nav-group-menu" id="reports-menu">
+                        <a href="{{ url_for('reports') }}" class="nav-subitem">
+                            <i class="ti ti-report-analytics"></i>
+                            <span>Genel Raporlar</span>
+                        </a>
+                        <a href="{{ url_for('report_agent_performance') }}" class="nav-subitem">
+                            <i class="ti ti-user-check"></i>
+                            <span>Agent Performans</span>
+                        </a>
+                        <a href="{{ url_for('report_campaign') }}" class="nav-subitem">
+                            <i class="ti ti-chart-pie"></i>
+                            <span>Kampanya Raporu</span>
+                        </a>
+                    </div>
+                </div>
+                
+                {% if current_user.role == 'admin' or current_user.is_super_admin %}
+                <!-- Yönetim -->
+                <div class="nav-group">
+                    <button class="nav-group-toggle" data-target="admin-menu">
+                        <i class="ti ti-settings"></i>
+                        <span>Yönetim</span>
+                        <i class="ti ti-chevron-down nav-arrow"></i>
+                    </button>
+                    <div class="nav-group-menu" id="admin-menu">
+                        <a href="{{ url_for('admin_panel') }}" class="nav-subitem">
+                            <i class="ti ti-adjustments"></i>
+                            <span>Admin Paneli</span>
+                        </a>
+                        <a href="{{ url_for('admin_users') }}" class="nav-subitem">
+                            <i class="ti ti-users-group"></i>
+                            <span>Kullanıcılar</span>
+                        </a>
+                        <a href="{{ url_for('admin_roles') }}" class="nav-subitem">
+                            <i class="ti ti-shield"></i>
+                            <span>Roller</span>
+                        </a>
+                        <a href="{{ url_for('admin_departments') }}" class="nav-subitem">
+                            <i class="ti ti-building"></i>
+                            <span>Departmanlar</span>
+                        </a>
+                        <a href="{{ url_for('admin_teams') }}" class="nav-subitem">
+                            <i class="ti ti-users"></i>
+                            <span>Takımlar</span>
+                        </a>
+                        <a href="{{ url_for('projects') }}" class="nav-subitem">
+                            <i class="ti ti-folder"></i>
+                            <span>Projeler</span>
+                        </a>
+                        <a href="{{ url_for('integrations') }}" class="nav-subitem">
+                            <i class="ti ti-plug"></i>
+                            <span>Entegrasyonlar</span>
+                        </a>
+                        <a href="{{ url_for('settings_dispositions') }}" class="nav-subitem">
+                            <i class="ti ti-list-check"></i>
+                            <span>Disposition</span>
+                        </a>
+                        <a href="{{ url_for('settings_scripts') }}" class="nav-subitem">
+                            <i class="ti ti-file-text"></i>
+                            <span>Scriptler</span>
+                        </a>
+                    </div>
+                </div>
+                {% endif %}
+                
+                {% if current_user.role == 'client' %}
+                <!-- Müşteri Portal -->
+                <a href="{{ url_for('client_portal') }}" class="nav-item {{ 'active' if 'portal' in request.endpoint else '' }}">
+                    <i class="ti ti-home"></i>
+                    <span>Portal</span>
+                </a>
+                {% endif %}
+            </nav>
+            
+            <!-- Sidebar Footer -->
+            <div class="sidebar-footer">
+                <div class="user-info-card">
+                    <div class="user-avatar">
+                        {{ current_user.get_initials() }}
+                    </div>
+                    <div class="user-details">
+                        <span class="user-name">{{ current_user.full_name or current_user.username }}</span>
+                        <span class="user-role">{{ current_user.role|upper }}</span>
+                    </div>
+                    <a href="{{ url_for('logout') }}" class="logout-btn" title="Çıkış">
+                        <i class="ti ti-logout"></i>
+                    </a>
+                </div>
+            </div>
+        </aside>
+        
+        <!-- Main Content -->
+        <main class="main-content">
+            <!-- Top Header -->
+            <header class="top-header">
+                <div class="header-left">
+                    <button class="sidebar-toggle" id="sidebarToggle">
+                        <i class="ti ti-menu-2"></i>
+                    </button>
+                    <div class="breadcrumb">
+                        <span class="breadcrumb-app">AI BEE CC</span>
+                        <i class="ti ti-chevron-right"></i>
+                        <span class="breadcrumb-page">{% block breadcrumb %}Dashboard{% endblock %}</span>
+                    </div>
+                </div>
+                
+                <div class="header-right">
+                    {% if current_user.role == 'agent' %}
+                    <!-- Agent Status -->
+                    <div class="agent-status-select">
+                        <select id="agentStatus" class="status-dropdown">
+                            <option value="available" {{ 'selected' if current_user.status == 'available' else '' }}>🟢 Müsait</option>
+                            <option value="busy" {{ 'selected' if current_user.status == 'busy' else '' }}>🔴 Meşgul</option>
+                            <option value="break" {{ 'selected' if current_user.status == 'break' else '' }}>🟡 Mola</option>
+                            <option value="training" {{ 'selected' if current_user.status == 'training' else '' }}>🟣 Eğitim</option>
+                            <option value="after_call_work" {{ 'selected' if current_user.status == 'after_call_work' else '' }}>🟠 ACW</option>
+                        </select>
+                    </div>
+                    {% endif %}
+                    
+                    <!-- Notifications -->
+                    <button class="header-btn notification-btn">
+                        <i class="ti ti-bell"></i>
+                        <span class="notification-badge">3</span>
+                    </button>
+                    
+                    <!-- User Avatar -->
+                    <div class="header-user">
+                        <div class="user-avatar small">
+                            {{ current_user.get_initials() }}
+                        </div>
+                    </div>
+                </div>
+            </header>
+            
+            <!-- Flash Messages -->
+            {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+            <div class="flash-messages">
+                {% for category, message in messages %}
+                <div class="alert alert-{{ category }}">
+                    <i class="ti ti-{{ 'check' if category == 'success' else 'alert-circle' if category == 'danger' else 'info-circle' }}"></i>
+                    <span>{{ message }}</span>
+                    <button class="alert-close" onclick="this.parentElement.remove()">
+                        <i class="ti ti-x"></i>
+                    </button>
+                </div>
+                {% endfor %}
+            </div>
+            {% endif %}
+            {% endwith %}
+            
+            <!-- Page Content -->
+            <div class="page-content">
+                {% block content %}{% endblock %}
+            </div>
+        </main>
+    </div>
+    
+    {% else %}
+    <!-- Auth Layout -->
+    <div class="auth-layout">
+        {% block auth_content %}{% endblock %}
+    </div>
+    {% endif %}
+    
+    <!-- Socket.IO -->
+    <script src="https://cdn.socket.io/4.6.0/socket.io.min.js"></script>
+    <!-- Main JS -->
+    <script src="{{ url_for('static', filename='js/main.js') }}"></script>
+    
+    {% block extra_js %}{% endblock %}
+</body>
+</html>

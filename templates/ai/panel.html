@@ -1,0 +1,159 @@
+{% extends "base.html" %}
+
+{% block title %}AI Yönetimi - AI BEE CC{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <div>
+        <h1 class="page-title">AI Yönetim Paneli</h1>
+        <p class="page-subtitle">Yapay zeka özelliklerini yapılandırın</p>
+    </div>
+</div>
+
+<!-- AI Stats -->
+<div class="grid grid-cols-4 mb-4">
+    <div class="stat-card">
+        <div class="stat-card-header">
+            <div class="stat-card-icon">
+                <i class="ti ti-microphone"></i>
+            </div>
+        </div>
+        <div class="stat-card-value">1,248</div>
+        <div class="stat-card-label">Transkript</div>
+    </div>
+    
+    <div class="stat-card success">
+        <div class="stat-card-header">
+            <div class="stat-card-icon">
+                <i class="ti ti-file-text"></i>
+            </div>
+        </div>
+        <div class="stat-card-value">856</div>
+        <div class="stat-card-label">Otomatik Özet</div>
+    </div>
+    
+    <div class="stat-card warning">
+        <div class="stat-card-header">
+            <div class="stat-card-icon">
+                <i class="ti ti-mood-smile"></i>
+            </div>
+        </div>
+        <div class="stat-card-value">72%</div>
+        <div class="stat-card-label">Pozitif Sentiment</div>
+    </div>
+    
+    <div class="stat-card info">
+        <div class="stat-card-header">
+            <div class="stat-card-icon">
+                <i class="ti ti-database"></i>
+            </div>
+        </div>
+        <div class="stat-card-value">{{ knowledge_bases|length }}</div>
+        <div class="stat-card-label">Bilgi Tabanı</div>
+    </div>
+</div>
+
+<!-- AI Modules -->
+<div class="grid grid-cols-3 mb-4">
+    <a href="{{ url_for('ai_settings') }}" class="card" style="text-decoration: none;">
+        <div class="card-body text-center" style="padding: 2rem;">
+            <div class="stat-card-icon" style="margin: 0 auto 1rem; width: 64px; height: 64px; font-size: 2rem;">
+                <i class="ti ti-settings"></i>
+            </div>
+            <h3 style="color: var(--text-primary);">AI Ayarları</h3>
+            <p class="text-muted">STT, LLM, özellik ayarları</p>
+        </div>
+    </a>
+    
+    <a href="{{ url_for('ai_knowledge_base') }}" class="card" style="text-decoration: none;">
+        <div class="card-body text-center" style="padding: 2rem;">
+            <div class="stat-card-icon" style="margin: 0 auto 1rem; width: 64px; height: 64px; font-size: 2rem;">
+                <i class="ti ti-books"></i>
+            </div>
+            <h3 style="color: var(--text-primary);">Bilgi Tabanı</h3>
+            <p class="text-muted">RAG dokümanları yönetimi</p>
+        </div>
+    </a>
+    
+    <div class="card" style="text-decoration: none; cursor: pointer;">
+        <div class="card-body text-center" style="padding: 2rem;">
+            <div class="stat-card-icon" style="margin: 0 auto 1rem; width: 64px; height: 64px; font-size: 2rem;">
+                <i class="ti ti-chart-line"></i>
+            </div>
+            <h3 style="color: var(--text-primary);">Model Performansı</h3>
+            <p class="text-muted">Doğruluk ve geri bildirim</p>
+        </div>
+    </div>
+</div>
+
+<!-- Feature Status -->
+<div class="card">
+    <div class="card-header">
+        <h3 class="card-title">
+            <i class="ti ti-sparkles"></i>
+            AI Özellikleri Durumu
+        </h3>
+    </div>
+    <div class="card-body">
+        <div class="table-wrapper">
+            <table class="table">
+                <thead>
+                    <tr>
+                        <th>Özellik</th>
+                        <th>Açıklama</th>
+                        <th>Durum</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td><strong>Speech-to-Text (STT)</strong></td>
+                        <td>Çağrı kayıtlarını metne dönüştürme</td>
+                        <td>
+                            <span class="badge badge-{{ 'success' if settings and settings.auto_summary_enabled else 'warning' }}">
+                                {{ 'Aktif' if settings and settings.auto_summary_enabled else 'Pasif' }}
+                            </span>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td><strong>Otomatik Özet</strong></td>
+                        <td>Çağrı sonrası AI özeti oluşturma</td>
+                        <td>
+                            <span class="badge badge-{{ 'success' if settings and settings.auto_summary_enabled else 'warning' }}">
+                                {{ 'Aktif' if settings and settings.auto_summary_enabled else 'Pasif' }}
+                            </span>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td><strong>Sentiment Analizi</strong></td>
+                        <td>Müşteri duygu durumu tespiti</td>
+                        <td>
+                            <span class="badge badge-{{ 'success' if settings and settings.sentiment_analysis_enabled else 'warning' }}">
+                                {{ 'Aktif' if settings and settings.sentiment_analysis_enabled else 'Pasif' }}
+                            </span>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td><strong>Agent Asistan</strong></td>
+                        <td>Canlı görüşme önerileri</td>
+                        <td>
+                            <span class="badge badge-{{ 'success' if settings and settings.agent_assist_enabled else 'warning' }}">
+                                {{ 'Aktif' if settings and settings.agent_assist_enabled else 'Pasif' }}
+                            </span>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td><strong>Otomatik QA</strong></td>
+                        <td>AI destekli kalite puanlaması</td>
+                        <td>
+                            <span class="badge badge-{{ 'success' if settings and settings.auto_qa_enabled else 'warning' }}">
+                                {{ 'Aktif' if settings and settings.auto_qa_enabled else 'Pasif' }}
+                            </span>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}
+

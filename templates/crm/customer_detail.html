@@ -1,0 +1,88 @@
+{% extends "base.html" %}
+
+{% block title %}{{ customer.full_name }} - {{ app_name }}{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <div>
+        <h1 class="page-title">{{ customer.full_name }}</h1>
+        <p class="page-subtitle">Müşteri No: {{ customer.customer_no or 'Atanmadı' }}</p>
+    </div>
+    <a href="{{ url_for('customers') }}" class="btn btn-secondary">
+        <i class="ti ti-arrow-left"></i>
+        Geri
+    </a>
+</div>
+
+<div class="grid grid-cols-3">
+    <div class="card">
+        <div class="card-header">
+            <h3 class="card-title"><i class="ti ti-user"></i> Kişisel Bilgiler</h3>
+        </div>
+        <div class="card-body">
+            <p><strong>Telefon:</strong> {{ customer.phone }}</p>
+            <p><strong>E-posta:</strong> {{ customer.email or '-' }}</p>
+            <p><strong>Adres:</strong> {{ customer.address or '-' }}</p>
+            <p><strong>Şehir:</strong> {{ customer.city or '-' }}</p>
+        </div>
+    </div>
+    
+    <div class="card">
+        <div class="card-header">
+            <h3 class="card-title"><i class="ti ti-chart-pie"></i> CRM Bilgileri</h3>
+        </div>
+        <div class="card-body">
+            <p><strong>Durum:</strong> {{ customer.status }}</p>
+            <p><strong>Pipeline:</strong> {{ customer.pipeline_stage or '-' }}</p>
+            <p><strong>Lead Puanı:</strong> {{ customer.lead_score }}</p>
+            <p><strong>Kaynak:</strong> {{ customer.source or '-' }}</p>
+        </div>
+    </div>
+    
+    <div class="card">
+        <div class="card-header">
+            <h3 class="card-title"><i class="ti ti-shield-check"></i> KVKK</h3>
+        </div>
+        <div class="card-body">
+            <p><strong>KVKK Onayı:</strong> {{ 'Var' if customer.kvkk_consent else 'Yok' }}</p>
+            <p><strong>Pazarlama İzni:</strong> {{ 'Var' if customer.marketing_consent else 'Yok' }}</p>
+            <p><strong>Arama İzni:</strong> {{ 'Var' if customer.call_consent else 'Yok' }}</p>
+        </div>
+    </div>
+</div>
+
+<div class="card mt-4">
+    <div class="card-header">
+        <h3 class="card-title"><i class="ti ti-phone"></i> Son Çağrılar</h3>
+    </div>
+    <div class="card-body">
+        {% if calls %}
+        <div class="table-wrapper">
+            <table class="table">
+                <thead>
+                    <tr>
+                        <th>Tarih</th>
+                        <th>Yön</th>
+                        <th>Süre</th>
+                        <th>Durum</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for call in calls %}
+                    <tr>
+                        <td>{{ call.started_at|datetime }}</td>
+                        <td>{{ 'Gelen' if call.direction == 'inbound' else 'Giden' }}</td>
+                        <td>{{ call.talk_duration|duration }}</td>
+                        <td>{{ call.status }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% else %}
+        <p class="text-muted">Henüz çağrı kaydı yok</p>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}
+

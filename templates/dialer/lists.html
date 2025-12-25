@@ -1,0 +1,68 @@
+{% extends "base.html" %}
+
+{% block title %}Arama Listeleri - AI BEE CC{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <div>
+        <h1 class="page-title">Arama Listeleri</h1>
+        <p class="page-subtitle">Lead ve arama listelerini yönetin</p>
+    </div>
+    <button class="btn btn-primary">
+        <i class="ti ti-upload"></i> Liste İçe Aktar
+    </button>
+</div>
+
+<div class="card">
+    <div class="card-body">
+        <div class="table-wrapper">
+            <table class="table">
+                <thead>
+                    <tr>
+                        <th>Ad</th>
+                        <th>Kampanya</th>
+                        <th>Toplam Kayıt</th>
+                        <th>Geçerli</th>
+                        <th>Duplicate</th>
+                        <th>Kaynak</th>
+                        <th>Durum</th>
+                        <th>İşlemler</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for list in lists %}
+                    <tr>
+                        <td><strong>{{ list.name }}</strong></td>
+                        <td>{{ list.campaign.name if list.campaign else '-' }}</td>
+                        <td>{{ list.total_records }}</td>
+                        <td>{{ list.valid_records }}</td>
+                        <td>{{ list.duplicate_records }}</td>
+                        <td>
+                            <span class="badge badge-info">{{ list.source or 'manual' }}</span>
+                        </td>
+                        <td>
+                            <span class="badge badge-{{ 'success' if list.status == 'active' else 'warning' }}">
+                                {{ list.status|capitalize }}
+                            </span>
+                        </td>
+                        <td>
+                            <button class="btn btn-sm btn-ghost" title="Detay">
+                                <i class="ti ti-eye"></i>
+                            </button>
+                            <button class="btn btn-sm btn-ghost" title="Düzenle">
+                                <i class="ti ti-edit"></i>
+                            </button>
+                        </td>
+                    </tr>
+                    {% else %}
+                    <tr>
+                        <td colspan="8" class="text-muted">Henüz liste oluşturulmamış</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}
+

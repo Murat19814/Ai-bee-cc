@@ -1,0 +1,87 @@
+{% extends "base.html" %}
+
+{% block title %}AI Ayarları - AI BEE CC{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <div>
+        <h1 class="page-title">AI Ayarları</h1>
+        <p class="page-subtitle">Yapay zeka özelliklerini yapılandırın</p>
+    </div>
+</div>
+
+<div class="card" style="max-width: 800px;">
+    <div class="card-body">
+        <form method="POST">
+            <h3 style="color: var(--primary); margin-bottom: 1.5rem;">
+                <i class="ti ti-microphone"></i> Konuşmadan Metne (STT)
+            </h3>
+            
+            <div class="grid grid-cols-2">
+                <div class="form-group">
+                    <label class="form-label">STT Sağlayıcı</label>
+                    <select name="stt_provider" class="form-control">
+                        <option value="whisper" {{ 'selected' if settings and settings.stt_provider == 'whisper' else '' }}>OpenAI Whisper</option>
+                        <option value="google" {{ 'selected' if settings and settings.stt_provider == 'google' else '' }}>Google Speech</option>
+                        <option value="azure" {{ 'selected' if settings and settings.stt_provider == 'azure' else '' }}>Azure Speech</option>
+                    </select>
+                </div>
+                
+                <div class="form-group">
+                    <label class="form-label">Model</label>
+                    <select name="stt_model" class="form-control">
+                        <option value="tiny" {{ 'selected' if settings and settings.stt_model == 'tiny' else '' }}>Tiny (Hızlı)</option>
+                        <option value="base" {{ 'selected' if settings and settings.stt_model == 'base' else '' }}>Base (Dengeli)</option>
+                        <option value="small" {{ 'selected' if settings and settings.stt_model == 'small' else '' }}>Small</option>
+                        <option value="medium" {{ 'selected' if settings and settings.stt_model == 'medium' else '' }}>Medium</option>
+                        <option value="large" {{ 'selected' if settings and settings.stt_model == 'large' else '' }}>Large (En Doğru)</option>
+                    </select>
+                </div>
+            </div>
+            
+            <hr style="border-color: var(--border-color); margin: 2rem 0;">
+            
+            <h3 style="color: var(--primary); margin-bottom: 1.5rem;">
+                <i class="ti ti-sparkles"></i> AI Özellikleri
+            </h3>
+            
+            <div class="d-flex flex-column gap-3">
+                <label class="d-flex align-center gap-2">
+                    <input type="checkbox" name="auto_summary_enabled" 
+                           {{ 'checked' if settings and settings.auto_summary_enabled else '' }}>
+                    <span><strong>Otomatik Özet</strong> - Çağrı sonrası AI özeti oluştur</span>
+                </label>
+                
+                <label class="d-flex align-center gap-2">
+                    <input type="checkbox" name="sentiment_analysis_enabled" 
+                           {{ 'checked' if settings and settings.sentiment_analysis_enabled else '' }}>
+                    <span><strong>Sentiment Analizi</strong> - Müşteri duygu durumu tespiti</span>
+                </label>
+                
+                <label class="d-flex align-center gap-2">
+                    <input type="checkbox" name="agent_assist_enabled" 
+                           {{ 'checked' if settings and settings.agent_assist_enabled else '' }}>
+                    <span><strong>Agent Asistan</strong> - Canlı görüşme önerileri</span>
+                </label>
+                
+                <label class="d-flex align-center gap-2">
+                    <input type="checkbox" name="auto_qa_enabled" 
+                           {{ 'checked' if settings and settings.auto_qa_enabled else '' }}>
+                    <span><strong>Otomatik QA</strong> - AI destekli kalite puanlaması</span>
+                </label>
+                
+                <label class="d-flex align-center gap-2">
+                    <input type="checkbox" name="forbidden_words_enabled" 
+                           {{ 'checked' if settings and settings.forbidden_words_enabled else '' }}>
+                    <span><strong>Yasaklı Kelime Tespiti</strong> - KVKK ve kalite ihlali algılama</span>
+                </label>
+            </div>
+            
+            <button type="submit" class="btn btn-primary" style="margin-top: 2rem;">
+                <i class="ti ti-check"></i> Kaydet
+            </button>
+        </form>
+    </div>
+</div>
+{% endblock %}
+

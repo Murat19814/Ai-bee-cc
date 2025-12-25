@@ -1,0 +1,69 @@
+{% extends "base.html" %}
+
+{% block title %}Özel Alanlar - AI BEE CC{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <div>
+        <h1 class="page-title">Özel Alan Yönetimi</h1>
+        <p class="page-subtitle">CRM için özel alanlar tanımlayın</p>
+    </div>
+    <button class="btn btn-primary">
+        <i class="ti ti-plus"></i> Yeni Alan
+    </button>
+</div>
+
+<div class="card">
+    <div class="card-body">
+        <div class="table-wrapper">
+            <table class="table">
+                <thead>
+                    <tr>
+                        <th>Alan Adı</th>
+                        <th>Etiket</th>
+                        <th>Entity</th>
+                        <th>Tür</th>
+                        <th>Zorunlu</th>
+                        <th>Durum</th>
+                        <th>İşlemler</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for field in fields %}
+                    <tr>
+                        <td><code>{{ field.field_name }}</code></td>
+                        <td><strong>{{ field.field_label }}</strong></td>
+                        <td>
+                            <span class="badge badge-info">{{ field.entity_type|capitalize }}</span>
+                        </td>
+                        <td>{{ field.field_type }}</td>
+                        <td>
+                            {% if field.is_required %}
+                            <span class="badge badge-danger">Evet</span>
+                            {% else %}
+                            <span class="badge badge-secondary">Hayır</span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            <span class="badge badge-{{ 'success' if field.is_visible else 'warning' }}">
+                                {{ 'Görünür' if field.is_visible else 'Gizli' }}
+                            </span>
+                        </td>
+                        <td>
+                            <button class="btn btn-sm btn-ghost" title="Düzenle">
+                                <i class="ti ti-edit"></i>
+                            </button>
+                        </td>
+                    </tr>
+                    {% else %}
+                    <tr>
+                        <td colspan="7" class="text-muted">Henüz özel alan tanımlanmamış</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}
+

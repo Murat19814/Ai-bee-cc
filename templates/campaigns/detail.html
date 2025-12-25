@@ -1,0 +1,36 @@
+{% extends "base.html" %}
+
+{% block title %}{{ campaign.name }} - {{ app_name }}{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <div>
+        <h1 class="page-title">{{ campaign.name }}</h1>
+        <p class="page-subtitle">{{ campaign.description }}</p>
+    </div>
+    <a href="{{ url_for('campaigns') }}" class="btn btn-secondary">
+        <i class="ti ti-arrow-left"></i>
+        Geri
+    </a>
+</div>
+
+<div class="grid grid-cols-4">
+    <div class="stat-card">
+        <div class="stat-card-value">{{ campaign.total_records }}</div>
+        <div class="stat-card-label">Toplam Kayıt</div>
+    </div>
+    <div class="stat-card purple">
+        <div class="stat-card-value">{{ campaign.contacted_records }}</div>
+        <div class="stat-card-label">İletişim Kurulan</div>
+    </div>
+    <div class="stat-card success">
+        <div class="stat-card-value">{{ campaign.successful_records }}</div>
+        <div class="stat-card-label">Başarılı</div>
+    </div>
+    <div class="stat-card orange">
+        <div class="stat-card-value">{{ ((campaign.successful_records / campaign.contacted_records * 100) if campaign.contacted_records else 0)|round(1) }}%</div>
+        <div class="stat-card-label">Dönüşüm Oranı</div>
+    </div>
+</div>
+{% endblock %}
+

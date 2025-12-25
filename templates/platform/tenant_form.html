@@ -1,0 +1,117 @@
+{% extends "base.html" %}
+
+{% block title %}{{ 'Tenant Düzenle' if tenant else 'Yeni Tenant' }} - AI BEE CC{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <div>
+        <h1 class="page-title">{{ 'Tenant Düzenle' if tenant else 'Yeni Tenant Oluştur' }}</h1>
+        <p class="page-subtitle">Çağrı merkezi bilgilerini {{ 'güncelleyin' if tenant else 'girin' }}</p>
+    </div>
+</div>
+
+<div class="card" style="max-width: 800px;">
+    <div class="card-body">
+        <form method="POST">
+            <div class="grid grid-cols-2">
+                <div class="form-group">
+                    <label class="form-label">
+                        <i class="ti ti-hash"></i> Tenant Kodu
+                    </label>
+                    <input type="text" name="code" class="form-control" value="{{ tenant.code if tenant else '' }}" 
+                           placeholder="Örn: DEMO" required {{ 'readonly' if tenant else '' }}>
+                </div>
+                
+                <div class="form-group">
+                    <label class="form-label">
+                        <i class="ti ti-building"></i> Tenant Adı
+                    </label>
+                    <input type="text" name="name" class="form-control" value="{{ tenant.name if tenant else '' }}" 
+                           placeholder="Çağrı Merkezi Adı" required>
+                </div>
+            </div>
+            
+            <div class="grid grid-cols-2">
+                <div class="form-group">
+                    <label class="form-label">
+                        <i class="ti ti-world"></i> Domain
+                    </label>
+                    <input type="text" name="domain" class="form-control" value="{{ tenant.domain if tenant else '' }}" 
+                           placeholder="subdomain.aibeecc.com">
+                </div>
+                
+                <div class="form-group">
+                    <label class="form-label">
+                        <i class="ti ti-clock"></i> Saat Dilimi
+                    </label>
+                    <select name="timezone" class="form-control">
+                        <option value="Europe/Istanbul" {{ 'selected' if not tenant or tenant.timezone == 'Europe/Istanbul' else '' }}>Europe/Istanbul (UTC+3)</option>
+                        <option value="UTC" {{ 'selected' if tenant and tenant.timezone == 'UTC' else '' }}>UTC</option>
+                    </select>
+                </div>
+            </div>
+            
+            <div class="grid grid-cols-2">
+                <div class="form-group">
+                    <label class="form-label">
+                        <i class="ti ti-users"></i> Max Agent Sayısı
+                    </label>
+                    <input type="number" name="max_agents" class="form-control" 
+                           value="{{ tenant.max_agents if tenant else 10 }}" min="1">
+                </div>
+                
+                <div class="form-group">
+                    <label class="form-label">
+                        <i class="ti ti-phone"></i> Max Eşzamanlı Çağrı
+                    </label>
+                    <input type="number" name="max_concurrent_calls" class="form-control" 
+                           value="{{ tenant.max_concurrent_calls if tenant else 20 }}" min="1">
+                </div>
+            </div>
+            
+            {% if tenant %}
+            <div class="form-group">
+                <label class="form-label">
+                    <i class="ti ti-toggle-left"></i> Durum
+                </label>
+                <select name="status" class="form-control">
+                    <option value="active" {{ 'selected' if tenant.status == 'active' else '' }}>Aktif</option>
+                    <option value="trial" {{ 'selected' if tenant.status == 'trial' else '' }}>Deneme</option>
+                    <option value="suspended" {{ 'selected' if tenant.status == 'suspended' else '' }}>Askıya Alınmış</option>
+                    <option value="cancelled" {{ 'selected' if tenant.status == 'cancelled' else '' }}>İptal</option>
+                </select>
+            </div>
+            {% else %}
+            <hr style="border-color: var(--border-color); margin: 2rem 0;">
+            <h3 style="color: var(--primary); margin-bottom: 1rem;">Admin Kullanıcı</h3>
+            
+            <div class="grid grid-cols-2">
+                <div class="form-group">
+                    <label class="form-label">
+                        <i class="ti ti-mail"></i> Admin E-posta
+                    </label>
+                    <input type="email" name="admin_email" class="form-control" 
+                           placeholder="admin@example.com" required>
+                </div>
+                
+                <div class="form-group">
+                    <label class="form-label">
+                        <i class="ti ti-lock"></i> Admin Şifre
+                    </label>
+                    <input type="password" name="admin_password" class="form-control" 
+                           placeholder="Min. 8 karakter" required minlength="8">
+                </div>
+            </div>
+            {% endif %}
+            
+            <div class="d-flex gap-2" style="margin-top: 2rem;">
+                <button type="submit" class="btn btn-primary">
+                    <i class="ti ti-check"></i> {{ 'Güncelle' if tenant else 'Oluştur' }}
+                </button>
+                <a href="{{ url_for('platform_tenants') }}" class="btn btn-secondary">İptal</a>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}
+

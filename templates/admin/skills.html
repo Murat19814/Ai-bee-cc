@@ -1,0 +1,61 @@
+{% extends "base.html" %}
+
+{% block title %}Beceri Yönetimi - AI BEE CC{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <div>
+        <h1 class="page-title">Beceri Yönetimi</h1>
+        <p class="page-subtitle">Skill-based routing için beceri tanımları</p>
+    </div>
+    <button class="btn btn-primary">
+        <i class="ti ti-plus"></i> Yeni Beceri
+    </button>
+</div>
+
+<div class="card">
+    <div class="card-body">
+        <div class="table-wrapper">
+            <table class="table">
+                <thead>
+                    <tr>
+                        <th>Kod</th>
+                        <th>Ad</th>
+                        <th>Kategori</th>
+                        <th>Açıklama</th>
+                        <th>Durum</th>
+                        <th>İşlemler</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for skill in skills %}
+                    <tr>
+                        <td><code>{{ skill.code or '-' }}</code></td>
+                        <td><strong>{{ skill.name }}</strong></td>
+                        <td>
+                            <span class="badge badge-info">{{ skill.category or 'Genel' }}</span>
+                        </td>
+                        <td>{{ skill.description or '-' }}</td>
+                        <td>
+                            <span class="badge badge-{{ 'success' if skill.is_active else 'warning' }}">
+                                {{ 'Aktif' if skill.is_active else 'Pasif' }}
+                            </span>
+                        </td>
+                        <td>
+                            <button class="btn btn-sm btn-ghost" title="Düzenle">
+                                <i class="ti ti-edit"></i>
+                            </button>
+                        </td>
+                    </tr>
+                    {% else %}
+                    <tr>
+                        <td colspan="6" class="text-muted">Henüz beceri tanımlanmamış</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}
+

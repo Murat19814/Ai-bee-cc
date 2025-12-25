@@ -1,0 +1,134 @@
+{% extends "base.html" %}
+
+{% block title %}Platform Yönetimi - AI BEE CC{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <div>
+        <h1 class="page-title">Platform Yönetimi</h1>
+        <p class="page-subtitle">Tüm tenant'ları ve sistem durumunu yönetin</p>
+    </div>
+</div>
+
+<!-- Platform Stats -->
+<div class="grid grid-cols-4 mb-4">
+    <div class="stat-card">
+        <div class="stat-card-header">
+            <div class="stat-card-icon">
+                <i class="ti ti-building"></i>
+            </div>
+        </div>
+        <div class="stat-card-value">{{ stats.total_tenants }}</div>
+        <div class="stat-card-label">Toplam Tenant</div>
+    </div>
+    
+    <div class="stat-card success">
+        <div class="stat-card-header">
+            <div class="stat-card-icon">
+                <i class="ti ti-check"></i>
+            </div>
+        </div>
+        <div class="stat-card-value">{{ stats.active_tenants }}</div>
+        <div class="stat-card-label">Aktif Tenant</div>
+    </div>
+    
+    <div class="stat-card info">
+        <div class="stat-card-header">
+            <div class="stat-card-icon">
+                <i class="ti ti-users"></i>
+            </div>
+        </div>
+        <div class="stat-card-value">{{ stats.total_users }}</div>
+        <div class="stat-card-label">Toplam Kullanıcı</div>
+    </div>
+    
+    <div class="stat-card warning">
+        <div class="stat-card-header">
+            <div class="stat-card-icon">
+                <i class="ti ti-phone"></i>
+            </div>
+        </div>
+        <div class="stat-card-value">{{ stats.total_calls_today }}</div>
+        <div class="stat-card-label">Bugünkü Çağrılar</div>
+    </div>
+</div>
+
+<!-- Quick Actions -->
+<div class="grid grid-cols-3 mb-4">
+    <a href="{{ url_for('platform_tenants') }}" class="card" style="text-decoration: none;">
+        <div class="card-body text-center" style="padding: 2rem;">
+            <div class="stat-card-icon" style="margin: 0 auto 1rem; width: 64px; height: 64px; font-size: 2rem;">
+                <i class="ti ti-building"></i>
+            </div>
+            <h3 style="color: var(--text-primary); margin-bottom: 0.5rem;">Tenant Yönetimi</h3>
+            <p style="color: var(--text-muted); font-size: 0.875rem;">Çağrı merkezlerini yönetin</p>
+        </div>
+    </a>
+    
+    <a href="{{ url_for('platform_projects') }}" class="card" style="text-decoration: none;">
+        <div class="card-body text-center" style="padding: 2rem;">
+            <div class="stat-card-icon" style="margin: 0 auto 1rem; width: 64px; height: 64px; font-size: 2rem;">
+                <i class="ti ti-folder"></i>
+            </div>
+            <h3 style="color: var(--text-primary); margin-bottom: 0.5rem;">Projeler</h3>
+            <p style="color: var(--text-muted); font-size: 0.875rem;">Tüm projeleri görüntüleyin</p>
+        </div>
+    </a>
+    
+    <a href="{{ url_for('platform_health') }}" class="card" style="text-decoration: none;">
+        <div class="card-body text-center" style="padding: 2rem;">
+            <div class="stat-card-icon" style="margin: 0 auto 1rem; width: 64px; height: 64px; font-size: 2rem;">
+                <i class="ti ti-activity"></i>
+            </div>
+            <h3 style="color: var(--text-primary); margin-bottom: 0.5rem;">Sistem Sağlığı</h3>
+            <p style="color: var(--text-muted); font-size: 0.875rem;">Sistem durumunu izleyin</p>
+        </div>
+    </a>
+</div>
+
+<!-- Recent Tenants -->
+<div class="card">
+    <div class="card-header">
+        <h3 class="card-title">
+            <i class="ti ti-building"></i>
+            Son Eklenen Tenant'lar
+        </h3>
+        <a href="{{ url_for('platform_tenants') }}" class="btn btn-sm btn-secondary">Tümünü Gör</a>
+    </div>
+    <div class="card-body">
+        <div class="table-wrapper">
+            <table class="table">
+                <thead>
+                    <tr>
+                        <th>Kod</th>
+                        <th>Ad</th>
+                        <th>Max Agent</th>
+                        <th>Durum</th>
+                        <th>Oluşturulma</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for tenant in tenants[:5] %}
+                    <tr>
+                        <td><strong>{{ tenant.code }}</strong></td>
+                        <td>{{ tenant.name }}</td>
+                        <td>{{ tenant.max_agents }}</td>
+                        <td>
+                            <span class="badge badge-{{ 'success' if tenant.status == 'active' else 'warning' }}">
+                                {{ tenant.status|capitalize }}
+                            </span>
+                        </td>
+                        <td>{{ tenant.created_at|datetime }}</td>
+                    </tr>
+                    {% else %}
+                    <tr>
+                        <td colspan="5" class="text-muted">Henüz tenant bulunmuyor</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}
+

@@ -1,0 +1,91 @@
+{% extends "base.html" %}
+
+{% block title %}Çağrı Değerlendirme - AI BEE CC{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <div>
+        <h1 class="page-title">Çağrı Değerlendirme</h1>
+        <p class="page-subtitle">Çağrı #{{ call.id }} - {{ call.agent.full_name if call.agent else 'Bilinmiyor' }}</p>
+    </div>
+    <a href="{{ url_for('qa_dashboard') }}" class="btn btn-secondary">
+        <i class="ti ti-arrow-left"></i> Geri
+    </a>
+</div>
+
+<div class="grid grid-cols-3">
+    <!-- Call Info -->
+    <div class="card">
+        <div class="card-header">
+            <h3 class="card-title">
+                <i class="ti ti-phone"></i>
+                Çağrı Bilgileri
+            </h3>
+        </div>
+        <div class="card-body">
+            <table class="table">
+                <tr>
+                    <td class="text-muted">Yön</td>
+                    <td>{{ call.direction|capitalize }}</td>
+                </tr>
+                <tr>
+                    <td class="text-muted">Numara</td>
+                    <td>{{ call.caller_number if call.direction == 'inbound' else call.called_number }}</td>
+                </tr>
+                <tr>
+                    <td class="text-muted">Süre</td>
+                    <td>{{ call.talk_duration|duration }}</td>
+                </tr>
+                <tr>
+                    <td class="text-muted">Tarih</td>
+                    <td>{{ call.started_at|datetime }}</td>
+                </tr>
+            </table>
+            
+            {% if call.recording %}
+            <div style="margin-top: 1rem;">
+                <audio controls style="width: 100%;">
+                    <source src="{{ call.recording.file_url }}" type="audio/wav">
+                </audio>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+    
+    <!-- Evaluation Form -->
+    <div class="card" style="grid-column: span 2;">
+        <div class="card-header">
+            <h3 class="card-title">
+                <i class="ti ti-clipboard-check"></i>
+                Değerlendirme Formu
+            </h3>
+        </div>
+        <div class="card-body">
+            <form method="POST">
+                <div class="form-group">
+                    <label class="form-label">Değerlendirme Formu</label>
+                    <select name="form_id" class="form-control" required>
+                        {% for form in forms %}
+                        <option value="{{ form.id }}">{{ form.name }} (Max: {{ form.max_score }})</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                
+                <hr style="border-color: var(--border-color); margin: 1.5rem 0;">
+                
+                <p class="text-muted">Lütfen bir değerlendirme formu seçin. Form seçildikten sonra kriterler otomatik yüklenecektir.</p>
+                
+                <div class="form-group" style="margin-top: 1.5rem;">
+                    <label class="form-label">Genel Geri Bildirim</label>
+                    <textarea name="feedback" class="form-control" rows="4" placeholder="Agent'a geri bildirim notu..."></textarea>
+                </div>
+                
+                <button type="submit" class="btn btn-primary">
+                    <i class="ti ti-check"></i> Değerlendirmeyi Kaydet
+                </button>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}
+

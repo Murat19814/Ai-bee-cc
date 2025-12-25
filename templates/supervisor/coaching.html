@@ -1,0 +1,73 @@
+{% extends "base.html" %}
+
+{% block title %}Koçluk - AI BEE CC{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <div>
+        <h1 class="page-title">Koçluk ve Gelişim</h1>
+        <p class="page-subtitle">Agent performansını izleyin ve geliştirin</p>
+    </div>
+</div>
+
+<div class="grid grid-cols-2">
+    <!-- Agent Listesi -->
+    <div class="card">
+        <div class="card-header">
+            <h3 class="card-title">
+                <i class="ti ti-users"></i>
+                Agent'lar
+            </h3>
+        </div>
+        <div class="card-body">
+            <div class="table-wrapper">
+                <table class="table">
+                    <thead>
+                        <tr>
+                            <th>Agent</th>
+                            <th>QA Skoru</th>
+                            <th>Son Koçluk</th>
+                            <th>İşlem</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for agent in agents %}
+                        <tr>
+                            <td>
+                                <div class="d-flex align-center gap-2">
+                                    <div class="user-avatar small">{{ agent.get_initials() }}</div>
+                                    {{ agent.full_name }}
+                                </div>
+                            </td>
+                            <td><strong>--</strong></td>
+                            <td>-</td>
+                            <td>
+                                <button class="btn btn-sm btn-primary">Koçluk</button>
+                            </td>
+                        </tr>
+                        {% else %}
+                        <tr>
+                            <td colspan="4" class="text-muted">Agent bulunmuyor</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Koçluk Notları -->
+    <div class="card">
+        <div class="card-header">
+            <h3 class="card-title">
+                <i class="ti ti-notes"></i>
+                Son Koçluk Notları
+            </h3>
+        </div>
+        <div class="card-body">
+            <p class="text-muted">Henüz koçluk notu eklenmemiş.</p>
+        </div>
+    </div>
+</div>
+{% endblock %}
+

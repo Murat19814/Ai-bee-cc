@@ -1,0 +1,19 @@
+{% extends "base.html" %}
+
+{% block title %}Sayfa Bulunamadı - {{ app_name }}{% endblock %}
+
+{% block auth_content %}
+<div class="auth-card text-center">
+    <div class="auth-logo" style="background: linear-gradient(135deg, var(--danger), var(--accent-orange));">
+        <i class="ti ti-error-404"></i>
+    </div>
+    <h1 style="font-size: 4rem; color: var(--text-primary); margin-bottom: 0.5rem;">404</h1>
+    <h2 style="font-size: 1.5rem; color: var(--text-secondary); margin-bottom: 1rem;">Sayfa Bulunamadı</h2>
+    <p class="text-muted mb-4">Aradığınız sayfa mevcut değil veya taşınmış olabilir.</p>
+    <a href="{{ url_for('dashboard') }}" class="btn btn-primary">
+        <i class="ti ti-home"></i>
+        Ana Sayfaya Dön
+    </a>
+</div>
+{% endblock %}
+

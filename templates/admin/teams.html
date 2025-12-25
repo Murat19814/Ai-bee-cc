@@ -1,0 +1,64 @@
+{% extends "base.html" %}
+
+{% block title %}Takım Yönetimi - AI BEE CC{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <div>
+        <h1 class="page-title">Takım Yönetimi</h1>
+        <p class="page-subtitle">Takımları ve üyelerini yönetin</p>
+    </div>
+    <button class="btn btn-primary">
+        <i class="ti ti-plus"></i> Yeni Takım
+    </button>
+</div>
+
+<div class="card">
+    <div class="card-body">
+        <div class="table-wrapper">
+            <table class="table">
+                <thead>
+                    <tr>
+                        <th>Kod</th>
+                        <th>Ad</th>
+                        <th>Departman</th>
+                        <th>Üye Sayısı</th>
+                        <th>Supervisor</th>
+                        <th>Durum</th>
+                        <th>İşlemler</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for team in teams %}
+                    <tr>
+                        <td><code>{{ team.code or '-' }}</code></td>
+                        <td><strong>{{ team.name }}</strong></td>
+                        <td>{{ team.department.name if team.department else '-' }}</td>
+                        <td>{{ team.members.count() }}</td>
+                        <td>{{ team.supervisor.full_name if team.supervisor else '-' }}</td>
+                        <td>
+                            <span class="badge badge-{{ 'success' if team.is_active else 'warning' }}">
+                                {{ 'Aktif' if team.is_active else 'Pasif' }}
+                            </span>
+                        </td>
+                        <td>
+                            <button class="btn btn-sm btn-ghost" title="Üyeler">
+                                <i class="ti ti-users"></i>
+                            </button>
+                            <button class="btn btn-sm btn-ghost" title="Düzenle">
+                                <i class="ti ti-edit"></i>
+                            </button>
+                        </td>
+                    </tr>
+                    {% else %}
+                    <tr>
+                        <td colspan="7" class="text-muted">Henüz takım tanımlanmamış</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
