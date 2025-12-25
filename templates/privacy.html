@@ -1,0 +1,407 @@
+<!DOCTYPE html>
+<html lang="tr" id="htmlRoot">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gizlilik Politikası | Datenschutzrichtlinie - AI BEE CC</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@latest/tabler-icons.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary: #F5A623;
+            --primary-dark: #D4880C;
+            --secondary: #1a1a2e;
+            --text-dark: #1a1a2e;
+            --text-light: #6B7280;
+        }
+        
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        
+        body {
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            color: var(--text-dark);
+            line-height: 1.8;
+            background-color: #FFFDF7;
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='42' viewBox='0 0 28 49'%3E%3Cg fill-rule='evenodd'%3E%3Cg fill='%23f5a623' fill-opacity='0.04'%3E%3Cpath d='M13.99 9.25l13 7.5v15l-13 7.5L1 31.75v-15l12.99-7.5zM3 17.9v12.7l10.99 6.34 11-6.35V17.9l-11-6.34L3 17.9zM0 15l12.98-7.5V0h-2v6.35L0 12.69v2.3zm0 18.5L12.98 41v8h-2v-6.85L0 35.81v-2.3zM15 0v7.5L27.99 15H28v-2.31h-.01L17 6.35V0h-2zm0 49v-8l12.99-7.5H28v2.31h-.01L17 42.15V49h-2z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+        }
+        
+        .navbar {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            z-index: 1000;
+            padding: 1rem 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            box-shadow: 0 2px 20px rgba(0,0,0,0.05);
+        }
+        
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            text-decoration: none;
+        }
+        
+        .logo-icon {
+            width: 42px;
+            height: 42px;
+            background: linear-gradient(135deg, var(--primary), #FFD700);
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 1.25rem;
+        }
+        
+        .logo-text {
+            font-size: 1.35rem;
+            font-weight: 800;
+            color: var(--primary);
+        }
+        
+        .logo-text span { color: var(--text-dark); }
+        
+        .nav-right {
+            display: flex;
+            align-items: center;
+            gap: 1.5rem;
+        }
+        
+        .lang-switcher {
+            display: flex;
+            gap: 0.25rem;
+            background: rgba(0,0,0,0.05);
+            padding: 0.25rem;
+            border-radius: 8px;
+        }
+        
+        .lang-btn {
+            padding: 0.5rem 0.75rem;
+            border: none;
+            background: transparent;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: 600;
+            font-size: 0.85rem;
+            transition: all 0.3s;
+        }
+        
+        .lang-btn.active {
+            background: white;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            color: var(--primary);
+        }
+        
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.6rem 1.25rem;
+            border-radius: 8px;
+            font-weight: 600;
+            text-decoration: none;
+            background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+            color: white;
+            transition: all 0.3s;
+        }
+        
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 15px rgba(245, 166, 35, 0.3);
+        }
+        
+        .content {
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 8rem 2rem 4rem;
+        }
+        
+        .page-header {
+            text-align: center;
+            margin-bottom: 3rem;
+        }
+        
+        .page-icon {
+            width: 80px;
+            height: 80px;
+            background: linear-gradient(135deg, var(--primary), #FFD700);
+            border-radius: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 2.5rem;
+            color: white;
+            margin: 0 auto 1.5rem;
+        }
+        
+        .page-title {
+            font-size: 2.5rem;
+            font-weight: 800;
+            margin-bottom: 0.5rem;
+        }
+        
+        .page-subtitle {
+            color: var(--text-light);
+            font-size: 1.1rem;
+        }
+        
+        .last-update {
+            display: inline-block;
+            padding: 0.5rem 1rem;
+            background: rgba(245, 166, 35, 0.1);
+            border-radius: 50px;
+            color: var(--primary-dark);
+            font-size: 0.85rem;
+            margin-top: 1rem;
+        }
+        
+        .policy-content {
+            background: white;
+            border-radius: 20px;
+            padding: 3rem;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.05);
+        }
+        
+        .policy-section {
+            margin-bottom: 2.5rem;
+        }
+        
+        .policy-section:last-child {
+            margin-bottom: 0;
+        }
+        
+        .policy-section h2 {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: var(--secondary);
+            margin-bottom: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+        
+        .policy-section h2 i {
+            color: var(--primary);
+        }
+        
+        .policy-section p {
+            color: var(--text-light);
+            margin-bottom: 1rem;
+        }
+        
+        .policy-section ul {
+            margin-left: 1.5rem;
+            color: var(--text-light);
+        }
+        
+        .policy-section ul li {
+            margin-bottom: 0.5rem;
+        }
+        
+        .highlight-box {
+            background: rgba(245, 166, 35, 0.08);
+            border-left: 4px solid var(--primary);
+            padding: 1.25rem 1.5rem;
+            border-radius: 0 12px 12px 0;
+            margin: 1.5rem 0;
+        }
+        
+        .highlight-box p {
+            margin: 0;
+            color: var(--text-dark);
+        }
+        
+        .contact-box {
+            background: var(--secondary);
+            color: white;
+            border-radius: 16px;
+            padding: 2rem;
+            margin-top: 2rem;
+            text-align: center;
+        }
+        
+        .contact-box h3 {
+            margin-bottom: 1rem;
+        }
+        
+        .contact-box p {
+            color: rgba(255,255,255,0.7);
+            margin-bottom: 0.5rem;
+        }
+        
+        .contact-box a {
+            color: var(--primary);
+        }
+        
+        .footer {
+            background: var(--secondary);
+            color: white;
+            padding: 2rem;
+            text-align: center;
+            margin-top: 4rem;
+        }
+        
+        .footer a {
+            color: var(--primary);
+            text-decoration: none;
+        }
+        
+        @media (max-width: 768px) {
+            .content { padding: 6rem 1rem 2rem; }
+            .policy-content { padding: 1.5rem; }
+            .page-title { font-size: 1.75rem; }
+        }
+    </style>
+</head>
+<body>
+    <!-- Navbar -->
+    <nav class="navbar">
+        <a href="/" class="logo">
+            <div class="logo-icon"><i class="ti ti-bee"></i></div>
+            <div class="logo-text">AI BEE <span>CC</span></div>
+        </a>
+        <div class="nav-right">
+            <div class="lang-switcher">
+                <button class="lang-btn active" onclick="setLang('tr')" id="lang-tr">🇹🇷 TR</button>
+                <button class="lang-btn" onclick="setLang('de')" id="lang-de">🇩🇪 DE</button>
+            </div>
+            <a href="/" class="btn">
+                <i class="ti ti-arrow-left"></i>
+                <span data-tr="Ana Sayfa" data-de="Startseite">Ana Sayfa</span>
+            </a>
+        </div>
+    </nav>
+    
+    <!-- Content -->
+    <div class="content">
+        <div class="page-header">
+            <div class="page-icon"><i class="ti ti-shield-lock"></i></div>
+            <h1 class="page-title" data-tr="Gizlilik Politikası" data-de="Datenschutzrichtlinie">Gizlilik Politikası</h1>
+            <p class="page-subtitle" data-tr="Verilerinizin güvenliği bizim için önemlidir" data-de="Die Sicherheit Ihrer Daten ist uns wichtig">Verilerinizin güvenliği bizim için önemlidir</p>
+            <div class="last-update">
+                <i class="ti ti-calendar"></i>
+                <span data-tr="Son Güncelleme: 26 Aralık 2024" data-de="Letzte Aktualisierung: 26. Dezember 2024">Son Güncelleme: 26 Aralık 2024</span>
+            </div>
+        </div>
+        
+        <div class="policy-content">
+            <!-- Section 1 -->
+            <div class="policy-section">
+                <h2><i class="ti ti-info-circle"></i> <span data-tr="1. Genel Bilgiler" data-de="1. Allgemeine Informationen">1. Genel Bilgiler</span></h2>
+                <p data-tr="AI BEE CC olarak, kullanıcılarımızın gizliliğini korumayı taahhüt ediyoruz. Bu gizlilik politikası, kişisel verilerinizin nasıl toplandığını, kullanıldığını ve korunduğunu açıklar." data-de="Als AI BEE CC verpflichten wir uns, die Privatsphäre unserer Nutzer zu schützen. Diese Datenschutzrichtlinie erklärt, wie Ihre persönlichen Daten gesammelt, verwendet und geschützt werden.">
+                    AI BEE CC olarak, kullanıcılarımızın gizliliğini korumayı taahhüt ediyoruz. Bu gizlilik politikası, kişisel verilerinizin nasıl toplandığını, kullanıldığını ve korunduğunu açıklar.
+                </p>
+                <div class="highlight-box">
+                    <p data-tr="Bu politika, KVKK (6698 Sayılı Kişisel Verilerin Korunması Kanunu) ve GDPR (Avrupa Genel Veri Koruma Tüzüğü) gerekliliklerine uygun olarak hazırlanmıştır." data-de="Diese Richtlinie wurde in Übereinstimmung mit den Anforderungen der KVKK (Türkisches Datenschutzgesetz Nr. 6698) und der DSGVO (Europäische Datenschutz-Grundverordnung) erstellt.">
+                        Bu politika, KVKK (6698 Sayılı Kişisel Verilerin Korunması Kanunu) ve GDPR (Avrupa Genel Veri Koruma Tüzüğü) gerekliliklerine uygun olarak hazırlanmıştır.
+                    </p>
+                </div>
+            </div>
+            
+            <!-- Section 2 -->
+            <div class="policy-section">
+                <h2><i class="ti ti-database"></i> <span data-tr="2. Toplanan Veriler" data-de="2. Gesammelte Daten">2. Toplanan Veriler</span></h2>
+                <p data-tr="Hizmetlerimizi sunmak için aşağıdaki verileri topluyoruz:" data-de="Zur Bereitstellung unserer Dienste sammeln wir folgende Daten:">Hizmetlerimizi sunmak için aşağıdaki verileri topluyoruz:</p>
+                <ul>
+                    <li data-tr="Ad, soyad ve iletişim bilgileri" data-de="Name, Nachname und Kontaktdaten">Ad, soyad ve iletişim bilgileri</li>
+                    <li data-tr="E-posta adresi ve telefon numarası" data-de="E-Mail-Adresse und Telefonnummer">E-posta adresi ve telefon numarası</li>
+                    <li data-tr="Çağrı kayıtları ve transkriptleri (iş amaçlı)" data-de="Anrufaufzeichnungen und Transkripte (geschäftlich)">Çağrı kayıtları ve transkriptleri (iş amaçlı)</li>
+                    <li data-tr="IP adresi ve tarayıcı bilgileri" data-de="IP-Adresse und Browser-Informationen">IP adresi ve tarayıcı bilgileri</li>
+                    <li data-tr="Kullanım istatistikleri ve performans verileri" data-de="Nutzungsstatistiken und Leistungsdaten">Kullanım istatistikleri ve performans verileri</li>
+                </ul>
+            </div>
+            
+            <!-- Section 3 -->
+            <div class="policy-section">
+                <h2><i class="ti ti-target"></i> <span data-tr="3. Verilerin Kullanım Amacı" data-de="3. Verwendungszweck der Daten">3. Verilerin Kullanım Amacı</span></h2>
+                <p data-tr="Topladığımız veriler aşağıdaki amaçlarla kullanılır:" data-de="Die gesammelten Daten werden für folgende Zwecke verwendet:">Topladığımız veriler aşağıdaki amaçlarla kullanılır:</p>
+                <ul>
+                    <li data-tr="Çağrı merkezi hizmetlerinin sunulması" data-de="Bereitstellung von Call Center-Diensten">Çağrı merkezi hizmetlerinin sunulması</li>
+                    <li data-tr="AI destekli özelliklerin çalıştırılması" data-de="Betrieb von KI-gestützten Funktionen">AI destekli özelliklerin çalıştırılması</li>
+                    <li data-tr="Kalite kontrol ve performans analizi" data-de="Qualitätskontrolle und Leistungsanalyse">Kalite kontrol ve performans analizi</li>
+                    <li data-tr="Yasal yükümlülüklerin yerine getirilmesi" data-de="Erfüllung gesetzlicher Verpflichtungen">Yasal yükümlülüklerin yerine getirilmesi</li>
+                    <li data-tr="Müşteri desteği ve iletişim" data-de="Kundensupport und Kommunikation">Müşteri desteği ve iletişim</li>
+                </ul>
+            </div>
+            
+            <!-- Section 4 -->
+            <div class="policy-section">
+                <h2><i class="ti ti-lock"></i> <span data-tr="4. Veri Güvenliği" data-de="4. Datensicherheit">4. Veri Güvenliği</span></h2>
+                <p data-tr="Verilerinizin güvenliği için aldığımız önlemler:" data-de="Maßnahmen zum Schutz Ihrer Daten:">Verilerinizin güvenliği için aldığımız önlemler:</p>
+                <ul>
+                    <li data-tr="256-bit SSL şifreleme" data-de="256-Bit SSL-Verschlüsselung">256-bit SSL şifreleme</li>
+                    <li data-tr="Veri merkezlerinde fiziksel güvenlik" data-de="Physische Sicherheit in Rechenzentren">Veri merkezlerinde fiziksel güvenlik</li>
+                    <li data-tr="Düzenli güvenlik denetimleri" data-de="Regelmäßige Sicherheitsaudits">Düzenli güvenlik denetimleri</li>
+                    <li data-tr="Erişim kontrolü ve yetkilendirme" data-de="Zugriffskontrolle und Autorisierung">Erişim kontrolü ve yetkilendirme</li>
+                    <li data-tr="Hassas verilerin maskelenmesi" data-de="Maskierung sensibler Daten">Hassas verilerin maskelenmesi</li>
+                </ul>
+            </div>
+            
+            <!-- Section 5 -->
+            <div class="policy-section">
+                <h2><i class="ti ti-user-check"></i> <span data-tr="5. Kullanıcı Hakları" data-de="5. Benutzerrechte">5. Kullanıcı Hakları</span></h2>
+                <p data-tr="KVKK ve GDPR kapsamında sahip olduğunuz haklar:" data-de="Ihre Rechte gemäß KVKK und DSGVO:">KVKK ve GDPR kapsamında sahip olduğunuz haklar:</p>
+                <ul>
+                    <li data-tr="Verilerinize erişim hakkı" data-de="Recht auf Zugang zu Ihren Daten">Verilerinize erişim hakkı</li>
+                    <li data-tr="Verilerin düzeltilmesini talep etme hakkı" data-de="Recht auf Berichtigung der Daten">Verilerin düzeltilmesini talep etme hakkı</li>
+                    <li data-tr="Verilerin silinmesini talep etme hakkı" data-de="Recht auf Löschung der Daten">Verilerin silinmesini talep etme hakkı</li>
+                    <li data-tr="Veri işlemeye itiraz hakkı" data-de="Recht auf Widerspruch gegen die Datenverarbeitung">Veri işlemeye itiraz hakkı</li>
+                    <li data-tr="Veri taşınabilirliği hakkı" data-de="Recht auf Datenübertragbarkeit">Veri taşınabilirliği hakkı</li>
+                </ul>
+            </div>
+            
+            <!-- Section 6 -->
+            <div class="policy-section">
+                <h2><i class="ti ti-cookie"></i> <span data-tr="6. Çerezler" data-de="6. Cookies">6. Çerezler</span></h2>
+                <p data-tr="Web sitemiz, deneyiminizi geliştirmek için çerezler kullanır. Çerezler, tercihlerinizi hatırlamak ve site kullanımını analiz etmek için kullanılır. Tarayıcı ayarlarınızdan çerezleri yönetebilirsiniz." data-de="Unsere Website verwendet Cookies, um Ihre Erfahrung zu verbessern. Cookies werden verwendet, um Ihre Präferenzen zu speichern und die Nutzung der Website zu analysieren. Sie können Cookies in Ihren Browser-Einstellungen verwalten.">
+                    Web sitemiz, deneyiminizi geliştirmek için çerezler kullanır. Çerezler, tercihlerinizi hatırlamak ve site kullanımını analiz etmek için kullanılır. Tarayıcı ayarlarınızdan çerezleri yönetebilirsiniz.
+                </p>
+            </div>
+            
+            <!-- Contact Box -->
+            <div class="contact-box">
+                <h3 data-tr="İletişim" data-de="Kontakt">İletişim</h3>
+                <p data-tr="Gizlilik politikamız hakkında sorularınız için:" data-de="Bei Fragen zu unserer Datenschutzrichtlinie:">Gizlilik politikamız hakkında sorularınız için:</p>
+                <p><i class="ti ti-mail"></i> <a href="mailto:privacy@ai-bee-cc.com">privacy@ai-bee-cc.com</a></p>
+                <p><i class="ti ti-phone"></i> +90 850 XXX XX XX | +49 XXX XXX XXXX</p>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Footer -->
+    <footer class="footer">
+        <p>© 2025 AI BEE CC. <span data-tr="Tüm hakları saklıdır." data-de="Alle Rechte vorbehalten.">Tüm hakları saklıdır.</span></p>
+        <p style="margin-top: 0.5rem;">
+            <a href="/privacy" data-tr="Gizlilik Politikası" data-de="Datenschutzrichtlinie">Gizlilik Politikası</a> | 
+            <a href="/terms" data-tr="Kullanım Şartları" data-de="Nutzungsbedingungen">Kullanım Şartları</a>
+        </p>
+    </footer>
+    
+    <script>
+        let currentLang = localStorage.getItem('lang') || 'tr';
+        
+        function setLang(lang) {
+            currentLang = lang;
+            localStorage.setItem('lang', lang);
+            
+            document.getElementById('lang-tr').classList.toggle('active', lang === 'tr');
+            document.getElementById('lang-de').classList.toggle('active', lang === 'de');
+            document.getElementById('htmlRoot').setAttribute('lang', lang);
+            
+            document.querySelectorAll('[data-tr]').forEach(el => {
+                const text = el.getAttribute(`data-${lang}`);
+                if (text) el.textContent = text;
+            });
+        }
+        
+        document.addEventListener('DOMContentLoaded', () => setLang(currentLang));
+    </script>
+</body>
+</html>
+

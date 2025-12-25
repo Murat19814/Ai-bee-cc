@@ -330,6 +330,16 @@ def landing():
         return redirect(url_for('dashboard'))
     return render_template('landing.html')
 
+@app.route('/privacy')
+def privacy():
+    """Gizlilik Politikası / Datenschutzrichtlinie"""
+    return render_template('privacy.html')
+
+@app.route('/terms')
+def terms():
+    """Kullanım Şartları / Nutzungsbedingungen"""
+    return render_template('terms.html')
+
 @app.route('/dashboard')
 @login_required
 def dashboard():

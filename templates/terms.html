@@ -1,0 +1,452 @@
+<!DOCTYPE html>
+<html lang="tr" id="htmlRoot">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Kullanım Şartları | Nutzungsbedingungen - AI BEE CC</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@latest/tabler-icons.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary: #F5A623;
+            --primary-dark: #D4880C;
+            --secondary: #1a1a2e;
+            --text-dark: #1a1a2e;
+            --text-light: #6B7280;
+        }
+        
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        
+        body {
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            color: var(--text-dark);
+            line-height: 1.8;
+            background-color: #FFFDF7;
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='42' viewBox='0 0 28 49'%3E%3Cg fill-rule='evenodd'%3E%3Cg fill='%23f5a623' fill-opacity='0.04'%3E%3Cpath d='M13.99 9.25l13 7.5v15l-13 7.5L1 31.75v-15l12.99-7.5zM3 17.9v12.7l10.99 6.34 11-6.35V17.9l-11-6.34L3 17.9zM0 15l12.98-7.5V0h-2v6.35L0 12.69v2.3zm0 18.5L12.98 41v8h-2v-6.85L0 35.81v-2.3zM15 0v7.5L27.99 15H28v-2.31h-.01L17 6.35V0h-2zm0 49v-8l12.99-7.5H28v2.31h-.01L17 42.15V49h-2z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+        }
+        
+        .navbar {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            z-index: 1000;
+            padding: 1rem 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            box-shadow: 0 2px 20px rgba(0,0,0,0.05);
+        }
+        
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            text-decoration: none;
+        }
+        
+        .logo-icon {
+            width: 42px;
+            height: 42px;
+            background: linear-gradient(135deg, var(--primary), #FFD700);
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 1.25rem;
+        }
+        
+        .logo-text {
+            font-size: 1.35rem;
+            font-weight: 800;
+            color: var(--primary);
+        }
+        
+        .logo-text span { color: var(--text-dark); }
+        
+        .nav-right {
+            display: flex;
+            align-items: center;
+            gap: 1.5rem;
+        }
+        
+        .lang-switcher {
+            display: flex;
+            gap: 0.25rem;
+            background: rgba(0,0,0,0.05);
+            padding: 0.25rem;
+            border-radius: 8px;
+        }
+        
+        .lang-btn {
+            padding: 0.5rem 0.75rem;
+            border: none;
+            background: transparent;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: 600;
+            font-size: 0.85rem;
+            transition: all 0.3s;
+        }
+        
+        .lang-btn.active {
+            background: white;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            color: var(--primary);
+        }
+        
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.6rem 1.25rem;
+            border-radius: 8px;
+            font-weight: 600;
+            text-decoration: none;
+            background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+            color: white;
+            transition: all 0.3s;
+        }
+        
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 15px rgba(245, 166, 35, 0.3);
+        }
+        
+        .content {
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 8rem 2rem 4rem;
+        }
+        
+        .page-header {
+            text-align: center;
+            margin-bottom: 3rem;
+        }
+        
+        .page-icon {
+            width: 80px;
+            height: 80px;
+            background: linear-gradient(135deg, var(--primary), #FFD700);
+            border-radius: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 2.5rem;
+            color: white;
+            margin: 0 auto 1.5rem;
+        }
+        
+        .page-title {
+            font-size: 2.5rem;
+            font-weight: 800;
+            margin-bottom: 0.5rem;
+        }
+        
+        .page-subtitle {
+            color: var(--text-light);
+            font-size: 1.1rem;
+        }
+        
+        .last-update {
+            display: inline-block;
+            padding: 0.5rem 1rem;
+            background: rgba(245, 166, 35, 0.1);
+            border-radius: 50px;
+            color: var(--primary-dark);
+            font-size: 0.85rem;
+            margin-top: 1rem;
+        }
+        
+        .policy-content {
+            background: white;
+            border-radius: 20px;
+            padding: 3rem;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.05);
+        }
+        
+        .policy-section {
+            margin-bottom: 2.5rem;
+        }
+        
+        .policy-section:last-child {
+            margin-bottom: 0;
+        }
+        
+        .policy-section h2 {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: var(--secondary);
+            margin-bottom: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+        
+        .policy-section h2 i {
+            color: var(--primary);
+        }
+        
+        .policy-section p {
+            color: var(--text-light);
+            margin-bottom: 1rem;
+        }
+        
+        .policy-section ul {
+            margin-left: 1.5rem;
+            color: var(--text-light);
+        }
+        
+        .policy-section ul li {
+            margin-bottom: 0.5rem;
+        }
+        
+        .highlight-box {
+            background: rgba(245, 166, 35, 0.08);
+            border-left: 4px solid var(--primary);
+            padding: 1.25rem 1.5rem;
+            border-radius: 0 12px 12px 0;
+            margin: 1.5rem 0;
+        }
+        
+        .highlight-box p {
+            margin: 0;
+            color: var(--text-dark);
+        }
+        
+        .warning-box {
+            background: rgba(239, 68, 68, 0.08);
+            border-left: 4px solid #EF4444;
+            padding: 1.25rem 1.5rem;
+            border-radius: 0 12px 12px 0;
+            margin: 1.5rem 0;
+        }
+        
+        .warning-box p {
+            margin: 0;
+            color: var(--text-dark);
+        }
+        
+        .contact-box {
+            background: var(--secondary);
+            color: white;
+            border-radius: 16px;
+            padding: 2rem;
+            margin-top: 2rem;
+            text-align: center;
+        }
+        
+        .contact-box h3 {
+            margin-bottom: 1rem;
+        }
+        
+        .contact-box p {
+            color: rgba(255,255,255,0.7);
+            margin-bottom: 0.5rem;
+        }
+        
+        .contact-box a {
+            color: var(--primary);
+        }
+        
+        .footer {
+            background: var(--secondary);
+            color: white;
+            padding: 2rem;
+            text-align: center;
+            margin-top: 4rem;
+        }
+        
+        .footer a {
+            color: var(--primary);
+            text-decoration: none;
+        }
+        
+        @media (max-width: 768px) {
+            .content { padding: 6rem 1rem 2rem; }
+            .policy-content { padding: 1.5rem; }
+            .page-title { font-size: 1.75rem; }
+        }
+    </style>
+</head>
+<body>
+    <!-- Navbar -->
+    <nav class="navbar">
+        <a href="/" class="logo">
+            <div class="logo-icon"><i class="ti ti-bee"></i></div>
+            <div class="logo-text">AI BEE <span>CC</span></div>
+        </a>
+        <div class="nav-right">
+            <div class="lang-switcher">
+                <button class="lang-btn active" onclick="setLang('tr')" id="lang-tr">🇹🇷 TR</button>
+                <button class="lang-btn" onclick="setLang('de')" id="lang-de">🇩🇪 DE</button>
+            </div>
+            <a href="/" class="btn">
+                <i class="ti ti-arrow-left"></i>
+                <span data-tr="Ana Sayfa" data-de="Startseite">Ana Sayfa</span>
+            </a>
+        </div>
+    </nav>
+    
+    <!-- Content -->
+    <div class="content">
+        <div class="page-header">
+            <div class="page-icon"><i class="ti ti-file-text"></i></div>
+            <h1 class="page-title" data-tr="Kullanım Şartları" data-de="Nutzungsbedingungen">Kullanım Şartları</h1>
+            <p class="page-subtitle" data-tr="AI BEE CC hizmetlerini kullanmadan önce lütfen okuyun" data-de="Bitte lesen Sie vor der Nutzung der AI BEE CC-Dienste">AI BEE CC hizmetlerini kullanmadan önce lütfen okuyun</p>
+            <div class="last-update">
+                <i class="ti ti-calendar"></i>
+                <span data-tr="Son Güncelleme: 26 Aralık 2024" data-de="Letzte Aktualisierung: 26. Dezember 2024">Son Güncelleme: 26 Aralık 2024</span>
+            </div>
+        </div>
+        
+        <div class="policy-content">
+            <!-- Section 1 -->
+            <div class="policy-section">
+                <h2><i class="ti ti-check"></i> <span data-tr="1. Kabul ve Onay" data-de="1. Akzeptanz und Zustimmung">1. Kabul ve Onay</span></h2>
+                <p data-tr="AI BEE CC platformunu kullanarak bu kullanım şartlarını kabul etmiş sayılırsınız. Bu şartları kabul etmiyorsanız, lütfen hizmetlerimizi kullanmayın." data-de="Durch die Nutzung der AI BEE CC-Plattform akzeptieren Sie diese Nutzungsbedingungen. Wenn Sie diese Bedingungen nicht akzeptieren, nutzen Sie bitte unsere Dienste nicht.">
+                    AI BEE CC platformunu kullanarak bu kullanım şartlarını kabul etmiş sayılırsınız. Bu şartları kabul etmiyorsanız, lütfen hizmetlerimizi kullanmayın.
+                </p>
+                <div class="highlight-box">
+                    <p data-tr="Bu sözleşme, Türkiye Cumhuriyeti ve Avrupa Birliği yasalarına tabidir." data-de="Dieser Vertrag unterliegt den Gesetzen der Republik Türkei und der Europäischen Union.">
+                        Bu sözleşme, Türkiye Cumhuriyeti ve Avrupa Birliği yasalarına tabidir.
+                    </p>
+                </div>
+            </div>
+            
+            <!-- Section 2 -->
+            <div class="policy-section">
+                <h2><i class="ti ti-list-check"></i> <span data-tr="2. Hizmet Kapsamı" data-de="2. Leistungsumfang">2. Hizmet Kapsamı</span></h2>
+                <p data-tr="AI BEE CC aşağıdaki hizmetleri sunar:" data-de="AI BEE CC bietet folgende Dienste:">AI BEE CC aşağıdaki hizmetleri sunar:</p>
+                <ul>
+                    <li data-tr="Bulut tabanlı çağrı merkezi yazılımı" data-de="Cloud-basierte Call-Center-Software">Bulut tabanlı çağrı merkezi yazılımı</li>
+                    <li data-tr="AI destekli transkripsiyon ve analiz" data-de="KI-gestützte Transkription und Analyse">AI destekli transkripsiyon ve analiz</li>
+                    <li data-tr="CRM ve müşteri yönetimi araçları" data-de="CRM- und Kundenverwaltungstools">CRM ve müşteri yönetimi araçları</li>
+                    <li data-tr="VoIP ve telefon hizmetleri" data-de="VoIP- und Telefondienste">VoIP ve telefon hizmetleri</li>
+                    <li data-tr="Raporlama ve analitik araçları" data-de="Berichts- und Analysetools">Raporlama ve analitik araçları</li>
+                </ul>
+            </div>
+            
+            <!-- Section 3 -->
+            <div class="policy-section">
+                <h2><i class="ti ti-user-check"></i> <span data-tr="3. Kullanıcı Yükümlülükleri" data-de="3. Benutzerpflichten">3. Kullanıcı Yükümlülükleri</span></h2>
+                <p data-tr="Kullanıcı olarak aşağıdaki yükümlülükleri kabul edersiniz:" data-de="Als Benutzer akzeptieren Sie folgende Pflichten:">Kullanıcı olarak aşağıdaki yükümlülükleri kabul edersiniz:</p>
+                <ul>
+                    <li data-tr="Doğru ve güncel bilgiler sağlamak" data-de="Bereitstellung korrekter und aktueller Informationen">Doğru ve güncel bilgiler sağlamak</li>
+                    <li data-tr="Hesap güvenliğini sağlamak ve şifrenizi gizli tutmak" data-de="Kontosicherheit gewährleisten und Passwort geheim halten">Hesap güvenliğini sağlamak ve şifrenizi gizli tutmak</li>
+                    <li data-tr="Platformu yasal amaçlar için kullanmak" data-de="Plattform nur für legale Zwecke nutzen">Platformu yasal amaçlar için kullanmak</li>
+                    <li data-tr="Üçüncü taraf haklarına saygı göstermek" data-de="Rechte Dritter respektieren">Üçüncü taraf haklarına saygı göstermek</li>
+                    <li data-tr="KVKK/GDPR uyumluluğunu sağlamak" data-de="KVKK/DSGVO-Konformität sicherstellen">KVKK/GDPR uyumluluğunu sağlamak</li>
+                </ul>
+            </div>
+            
+            <!-- Section 4 -->
+            <div class="policy-section">
+                <h2><i class="ti ti-ban"></i> <span data-tr="4. Yasaklı Kullanımlar" data-de="4. Verbotene Nutzungen">4. Yasaklı Kullanımlar</span></h2>
+                <p data-tr="Aşağıdaki kullanımlar kesinlikle yasaktır:" data-de="Folgende Nutzungen sind strengstens verboten:">Aşağıdaki kullanımlar kesinlikle yasaktır:</p>
+                <ul>
+                    <li data-tr="Spam veya istenmeyen çağrı yapmak" data-de="Spam oder unerwünschte Anrufe tätigen">Spam veya istenmeyen çağrı yapmak</li>
+                    <li data-tr="Dolandırıcılık veya aldatıcı faaliyetler" data-de="Betrug oder irreführende Aktivitäten">Dolandırıcılık veya aldatıcı faaliyetler</li>
+                    <li data-tr="Sisteme yetkisiz erişim girişimleri" data-de="Unbefugte Zugriffsversuche auf das System">Sisteme yetkisiz erişim girişimleri</li>
+                    <li data-tr="Zararlı yazılım dağıtmak" data-de="Verbreitung von Schadsoftware">Zararlı yazılım dağıtmak</li>
+                    <li data-tr="Yasadışı içerik paylaşmak" data-de="Teilen illegaler Inhalte">Yasadışı içerik paylaşmak</li>
+                </ul>
+                <div class="warning-box">
+                    <p data-tr="⚠️ Bu kuralların ihlali hesabın derhal askıya alınmasına ve yasal işlemlere neden olabilir." data-de="⚠️ Ein Verstoß gegen diese Regeln kann zur sofortigen Kontosperrung und rechtlichen Schritten führen.">
+                        ⚠️ Bu kuralların ihlali hesabın derhal askıya alınmasına ve yasal işlemlere neden olabilir.
+                    </p>
+                </div>
+            </div>
+            
+            <!-- Section 5 -->
+            <div class="policy-section">
+                <h2><i class="ti ti-credit-card"></i> <span data-tr="5. Ödeme ve Faturalandırma" data-de="5. Zahlung und Rechnungsstellung">5. Ödeme ve Faturalandırma</span></h2>
+                <p data-tr="Ödeme koşulları:" data-de="Zahlungsbedingungen:">Ödeme koşulları:</p>
+                <ul>
+                    <li data-tr="Abonelik ücretleri her ay başında tahsil edilir" data-de="Abonnementgebühren werden zu Beginn jedes Monats erhoben">Abonelik ücretleri her ay başında tahsil edilir</li>
+                    <li data-tr="VoIP ücretleri kullanım bazlı faturalandırılır" data-de="VoIP-Gebühren werden nutzungsbasiert abgerechnet">VoIP ücretleri kullanım bazlı faturalandırılır</li>
+                    <li data-tr="AI kullanım ücretleri dakika/işlem bazında hesaplanır" data-de="KI-Nutzungsgebühren werden pro Minute/Transaktion berechnet">AI kullanım ücretleri dakika/işlem bazında hesaplanır</li>
+                    <li data-tr="Ödemeler Euro (€) üzerinden yapılır" data-de="Zahlungen erfolgen in Euro (€)">Ödemeler Euro (€) üzerinden yapılır</li>
+                    <li data-tr="Geç ödemeler için %2 gecikme faizi uygulanır" data-de="Bei verspäteten Zahlungen werden 2% Verzugszinsen berechnet">Geç ödemeler için %2 gecikme faizi uygulanır</li>
+                </ul>
+            </div>
+            
+            <!-- Section 6 -->
+            <div class="policy-section">
+                <h2><i class="ti ti-x"></i> <span data-tr="6. İptal ve Fesih" data-de="6. Kündigung und Beendigung">6. İptal ve Fesih</span></h2>
+                <p data-tr="Hizmet iptali koşulları:" data-de="Bedingungen für die Dienstkündigung:">Hizmet iptali koşulları:</p>
+                <ul>
+                    <li data-tr="Aylık aboneliklerde 30 gün önceden bildirim gereklidir" data-de="Bei monatlichen Abonnements ist eine 30-tägige Kündigungsfrist erforderlich">Aylık aboneliklerde 30 gün önceden bildirim gereklidir</li>
+                    <li data-tr="Yıllık aboneliklerde erken iptal ücreti uygulanabilir" data-de="Bei Jahresabonnements können Gebühren für vorzeitige Kündigung anfallen">Yıllık aboneliklerde erken iptal ücreti uygulanabilir</li>
+                    <li data-tr="İptal sonrası veriler 30 gün saklanır" data-de="Nach der Kündigung werden Daten 30 Tage gespeichert">İptal sonrası veriler 30 gün saklanır</li>
+                    <li data-tr="Kural ihlalinde hesap derhal kapatılabilir" data-de="Bei Regelverstößen kann das Konto sofort geschlossen werden">Kural ihlalinde hesap derhal kapatılabilir</li>
+                </ul>
+            </div>
+            
+            <!-- Section 7 -->
+            <div class="policy-section">
+                <h2><i class="ti ti-shield"></i> <span data-tr="7. Sorumluluk Sınırlaması" data-de="7. Haftungsbeschränkung">7. Sorumluluk Sınırlaması</span></h2>
+                <p data-tr="AI BEE CC, aşağıdaki durumlardan kaynaklanan zararlardan sorumlu tutulamaz:" data-de="AI BEE CC kann für Schäden aus folgenden Situationen nicht haftbar gemacht werden:">AI BEE CC, aşağıdaki durumlardan kaynaklanan zararlardan sorumlu tutulamaz:</p>
+                <ul>
+                    <li data-tr="Kullanıcı hatasından kaynaklanan veri kayıpları" data-de="Datenverluste durch Benutzerfehler">Kullanıcı hatasından kaynaklanan veri kayıpları</li>
+                    <li data-tr="Üçüncü taraf hizmet kesintileri" data-de="Serviceunterbrechungen durch Dritte">Üçüncü taraf hizmet kesintileri</li>
+                    <li data-tr="Mücbir sebepler (doğal afetler, savaş vb.)" data-de="Höhere Gewalt (Naturkatastrophen, Krieg usw.)">Mücbir sebepler (doğal afetler, savaş vb.)</li>
+                    <li data-tr="Dolaylı veya sonuç olarak ortaya çıkan zararlar" data-de="Indirekte oder Folgeschäden">Dolaylı veya sonuç olarak ortaya çıkan zararlar</li>
+                </ul>
+            </div>
+            
+            <!-- Section 8 -->
+            <div class="policy-section">
+                <h2><i class="ti ti-gavel"></i> <span data-tr="8. Uyuşmazlık Çözümü" data-de="8. Streitbeilegung">8. Uyuşmazlık Çözümü</span></h2>
+                <p data-tr="Bu sözleşmeden doğan uyuşmazlıklarda:" data-de="Bei Streitigkeiten aus diesem Vertrag:">Bu sözleşmeden doğan uyuşmazlıklarda:</p>
+                <ul>
+                    <li data-tr="Öncelikle dostane çözüm yolları aranacaktır" data-de="Zunächst werden gütliche Lösungswege gesucht">Öncelikle dostane çözüm yolları aranacaktır</li>
+                    <li data-tr="Türkiye'deki müşteriler için İstanbul Mahkemeleri yetkilidir" data-de="Für Kunden in der Türkei sind die Gerichte in Istanbul zuständig">Türkiye'deki müşteriler için İstanbul Mahkemeleri yetkilidir</li>
+                    <li data-tr="AB müşterileri için Berlin Mahkemeleri yetkilidir" data-de="Für EU-Kunden sind die Gerichte in Berlin zuständig">AB müşterileri için Berlin Mahkemeleri yetkilidir</li>
+                </ul>
+            </div>
+            
+            <!-- Contact Box -->
+            <div class="contact-box">
+                <h3 data-tr="Sorularınız mı var?" data-de="Haben Sie Fragen?">Sorularınız mı var?</h3>
+                <p data-tr="Kullanım şartları hakkında sorularınız için bize ulaşın:" data-de="Kontaktieren Sie uns bei Fragen zu den Nutzungsbedingungen:">Kullanım şartları hakkında sorularınız için bize ulaşın:</p>
+                <p><i class="ti ti-mail"></i> <a href="mailto:legal@ai-bee-cc.com">legal@ai-bee-cc.com</a></p>
+                <p><i class="ti ti-phone"></i> +90 850 XXX XX XX | +49 XXX XXX XXXX</p>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Footer -->
+    <footer class="footer">
+        <p>© 2025 AI BEE CC. <span data-tr="Tüm hakları saklıdır." data-de="Alle Rechte vorbehalten.">Tüm hakları saklıdır.</span></p>
+        <p style="margin-top: 0.5rem;">
+            <a href="/privacy" data-tr="Gizlilik Politikası" data-de="Datenschutzrichtlinie">Gizlilik Politikası</a> | 
+            <a href="/terms" data-tr="Kullanım Şartları" data-de="Nutzungsbedingungen">Kullanım Şartları</a>
+        </p>
+    </footer>
+    
+    <script>
+        let currentLang = localStorage.getItem('lang') || 'tr';
+        
+        function setLang(lang) {
+            currentLang = lang;
+            localStorage.setItem('lang', lang);
+            
+            document.getElementById('lang-tr').classList.toggle('active', lang === 'tr');
+            document.getElementById('lang-de').classList.toggle('active', lang === 'de');
+            document.getElementById('htmlRoot').setAttribute('lang', lang);
+            
+            document.querySelectorAll('[data-tr]').forEach(el => {
+                const text = el.getAttribute(`data-${lang}`);
+                if (text) el.textContent = text;
+            });
+        }
+        
+        document.addEventListener('DOMContentLoaded', () => setLang(currentLang));
+    </script>
+</body>
+</html>
+
