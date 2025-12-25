@@ -1279,6 +1279,51 @@ def tickets():
     tickets = Ticket.query.filter_by(tenant_id=current_user.tenant_id).order_by(Ticket.created_at.desc()).all()
     return render_template('crm/tickets.html', tickets=tickets)
 
+@app.route('/tickets/new', methods=['GET', 'POST'])
+@login_required
+def ticket_new():
+    """Yeni ticket oluÅŸtur"""
+    customers = Customer.query.filter_by(tenant_id=current_user.tenant_id).order_by(Customer.full_name.asc()).all()
+    categories = TicketCategory.query.filter_by(tenant_id=current_user.tenant_id, is_active=True).order_by(TicketCategory.name.asc()).all()
+
+    if request.method == 'POST':
+        subject = (request.form.get('subject') or '').strip()
+        description = (request.form.get('description') or '').strip() or None
+        priority = request.form.get('priority', 'normal')
+
+        customer_id = request.form.get('customer_id', type=int)
+        category_id = request.form.get('category_id', type=int)
+
+        if not subject:
+            flash('Konu alanÄ± zorunludur.', 'danger')
+            return render_template('crm/ticket_form.html', customers=customers, categories=categories)
+
+        import random
+        ticket_no = f"TCK-{random.randint(100000, 999999)}"
+        while Ticket.query.filter_by(ticket_no=ticket_no).first() is not None:
+            ticket_no = f"TCK-{random.randint(100000, 999999)}"
+
+        ticket = Ticket(
+            tenant_id=current_user.tenant_id,
+            ticket_no=ticket_no,
+            subject=subject,
+            description=description,
+            priority=priority,
+            status='open',
+            customer_id=customer_id or None,
+            category_id=category_id or None,
+            created_by_id=current_user.id,
+        )
+        db.session.add(ticket)
+        db.session.commit()
+
+        log_audit('create', 'ticket', ticket.id, f'Yeni ticket oluÅŸturuldu: {ticket.ticket_no}')
+        flash('Ticket baÅŸarÄ±yla oluÅŸturuldu.', 'success')
+        return redirect(url_for('tickets'))
+
+    return render_template('crm/ticket_form.html', customers=customers, categories=categories)
+
+
 
 @app.route('/pipelines')
 @login_required

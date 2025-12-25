@@ -932,8 +932,13 @@ class Ticket(db.Model):
     call_id = db.Column(db.Integer, db.ForeignKey('calls.id'))
     
     created_by_id = db.Column(db.Integer, db.ForeignKey('users.id'))
-    created_at = db.Column(db.DateTime, default=datetime.utcnow)
-    updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+    \1
+
+    # Relationships (no DB migration needed)
+    customer = db.relationship('Customer', foreign_keys=[customer_id])
+    category = db.relationship('TicketCategory', foreign_keys=[category_id])
+    assigned_to = db.relationship('User', foreign_keys=[assigned_to_id])
+    created_by = db.relationship('User', foreign_keys=[created_by_id])
 
 
 class TicketCategory(db.Model):
