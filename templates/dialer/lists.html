@@ -1,70 +1,913 @@
 {% extends "base.html" %}
 
-{% block title %}Arama Listeleri - AI BEE CC{% endblock %}
+{% block title %}Arama Listeleri - {{ app_name }}{% endblock %}
+
+{% block extra_css %}
+<style>
+.lists-page { padding: 1.5rem; }
+
+/* Upload Panel */
+.upload-panel {
+    background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+    border-radius: 20px;
+    margin-bottom: 2rem;
+    overflow: hidden;
+    color: white;
+}
+
+.upload-panel-header {
+    padding: 1.25rem 1.5rem;
+    background: rgba(255,255,255,0.05);
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    border-bottom: 1px solid rgba(255,255,255,0.1);
+}
+
+.upload-panel-header i {
+    font-size: 1.5rem;
+    color: #4CAF50;
+}
+
+.upload-panel-header h3 {
+    margin: 0;
+    font-size: 1.1rem;
+}
+
+.upload-panel-body {
+    padding: 1.5rem;
+}
+
+/* Intelligent System Info */
+.system-info {
+    margin-bottom: 1.5rem;
+}
+
+.system-info p {
+    color: rgba(255,255,255,0.7);
+    margin-bottom: 1rem;
+}
+
+.data-categories {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 1rem;
+    margin-bottom: 1rem;
+}
+
+.data-category {
+    background: rgba(255,255,255,0.05);
+    border-radius: 12px;
+    padding: 1.25rem;
+    text-align: center;
+    border: 2px solid transparent;
+    transition: all 0.3s;
+}
+
+.data-category:hover {
+    border-color: rgba(255,255,255,0.2);
+}
+
+.data-category.iban { border-top: 3px solid #4CAF50; }
+.data-category.email { border-top: 3px solid #2196F3; }
+.data-category.nobank { border-top: 3px solid #FF9800; }
+
+.data-category-icon {
+    width: 50px;
+    height: 50px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto 0.75rem;
+    font-size: 1.25rem;
+}
+
+.data-category.iban .data-category-icon { background: rgba(76, 175, 80, 0.2); color: #4CAF50; }
+.data-category.email .data-category-icon { background: rgba(33, 150, 243, 0.2); color: #2196F3; }
+.data-category.nobank .data-category-icon { background: rgba(255, 152, 0, 0.2); color: #FF9800; }
+
+.data-category h4 {
+    margin: 0 0 0.25rem;
+    font-size: 0.95rem;
+}
+
+.data-category.iban h4 { color: #4CAF50; }
+.data-category.email h4 { color: #2196F3; }
+.data-category.nobank h4 { color: #FF9800; }
+
+.data-category p {
+    font-size: 0.75rem;
+    color: rgba(255,255,255,0.5);
+    margin: 0;
+}
+
+/* Error Warning */
+.error-warning {
+    background: linear-gradient(135deg, #f44336, #D32F2F);
+    padding: 0.75rem 1rem;
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s;
+}
+
+.error-warning:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 15px rgba(244, 67, 54, 0.4);
+}
+
+/* Upload Section */
+.upload-section {
+    background: rgba(255,255,255,0.05);
+    border-radius: 12px;
+    padding: 1.5rem;
+    margin-top: 1.5rem;
+}
+
+.upload-section-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 1rem;
+}
+
+.upload-section-header h4 {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    margin: 0;
+}
+
+.upload-section-header a {
+    color: #2196F3;
+    font-size: 0.9rem;
+}
+
+.file-upload-area {
+    border: 2px dashed rgba(255,255,255,0.2);
+    border-radius: 10px;
+    padding: 2rem;
+    text-align: center;
+    cursor: pointer;
+    transition: all 0.3s;
+    margin-bottom: 1rem;
+}
+
+.file-upload-area:hover {
+    border-color: #4CAF50;
+    background: rgba(76, 175, 80, 0.1);
+}
+
+.file-upload-area input[type="file"] {
+    display: none;
+}
+
+.file-upload-area i {
+    font-size: 2.5rem;
+    color: #4CAF50;
+    margin-bottom: 0.5rem;
+}
+
+.file-upload-area p {
+    margin: 0;
+    color: rgba(255,255,255,0.7);
+}
+
+.file-formats {
+    font-size: 0.8rem;
+    color: rgba(255,255,255,0.5);
+    margin-bottom: 1rem;
+}
+
+.analyze-btn {
+    width: 100%;
+    padding: 1rem;
+    background: linear-gradient(135deg, #4CAF50, #388E3C);
+    border: none;
+    border-radius: 10px;
+    color: white;
+    font-weight: 700;
+    font-size: 1rem;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    transition: all 0.3s;
+}
+
+.analyze-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 15px rgba(76, 175, 80, 0.4);
+}
+
+/* Required Fields */
+.required-fields {
+    background: rgba(255,255,255,0.05);
+    border-radius: 12px;
+    padding: 1.5rem;
+    margin-top: 1.5rem;
+}
+
+.required-fields-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 1rem;
+}
+
+.required-fields-header h4 {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    margin: 0;
+}
+
+.fields-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1.5rem;
+}
+
+.field-group h5 {
+    color: #f44336;
+    font-size: 0.9rem;
+    margin-bottom: 0.75rem;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.field-group.recognized h5 {
+    color: #4CAF50;
+}
+
+.field-group ul {
+    list-style: disc;
+    margin: 0;
+    padding-left: 1.25rem;
+    color: rgba(255,255,255,0.8);
+    font-size: 0.85rem;
+}
+
+.field-group ul li {
+    margin-bottom: 0.25rem;
+}
+
+.recognized-columns {
+    color: rgba(255,255,255,0.6);
+    font-size: 0.8rem;
+}
+
+/* Statistics Panel */
+.stats-panel {
+    background: white;
+    border-radius: 16px;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.06);
+    margin-bottom: 1.5rem;
+    overflow: hidden;
+}
+
+.stats-panel-header {
+    padding: 1rem 1.5rem;
+    background: linear-gradient(135deg, #9C27B0, #7B1FA2);
+    color: white;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.stats-panel-title {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-weight: 700;
+}
+
+.stats-grid {
+    display: grid;
+    grid-template-columns: repeat(6, 1fr);
+    gap: 0;
+}
+
+.stat-item {
+    padding: 1.25rem;
+    text-align: center;
+    border-right: 1px solid #eee;
+    border-bottom: 1px solid #eee;
+}
+
+.stat-item:last-child {
+    border-right: none;
+}
+
+.stat-item-value {
+    font-size: 1.5rem;
+    font-weight: 800;
+    margin-bottom: 0.25rem;
+}
+
+.stat-item-value.total { color: #9C27B0; }
+.stat-item-value.valid { color: #4CAF50; }
+.stat-item-value.duplicate { color: #FF9800; }
+.stat-item-value.blacklist { color: #f44336; }
+.stat-item-value.nointerest { color: #607D8B; }
+.stat-item-value.error { color: #E91E63; }
+
+.stat-item-label {
+    font-size: 0.75rem;
+    color: #888;
+}
+
+/* Customer Status Stats */
+.customer-stats-panel {
+    background: white;
+    border-radius: 16px;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.06);
+    margin-bottom: 1.5rem;
+}
+
+.customer-stats-header {
+    padding: 1rem 1.5rem;
+    border-bottom: 1px solid #eee;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.customer-stats-header h3 {
+    margin: 0;
+    font-size: 1rem;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.customer-stats-body {
+    padding: 1.5rem;
+}
+
+.status-stats-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 1rem;
+}
+
+.status-stat {
+    background: #f8f9fa;
+    border-radius: 12px;
+    padding: 1rem;
+    text-align: center;
+}
+
+.status-stat-value {
+    font-size: 1.75rem;
+    font-weight: 800;
+}
+
+.status-stat-label {
+    font-size: 0.75rem;
+    color: #888;
+    margin-top: 0.25rem;
+}
+
+.status-stat-bar {
+    height: 4px;
+    background: #e0e0e0;
+    border-radius: 2px;
+    margin-top: 0.75rem;
+    overflow: hidden;
+}
+
+.status-stat-bar-fill {
+    height: 100%;
+    border-radius: 2px;
+}
+
+/* Lists Table */
+.lists-table-panel {
+    background: white;
+    border-radius: 16px;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.06);
+    overflow: hidden;
+}
+
+.lists-table-header {
+    padding: 1rem 1.5rem;
+    border-bottom: 1px solid #eee;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.lists-table-header h3 {
+    margin: 0;
+    font-size: 1rem;
+}
+
+.lists-table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.lists-table th,
+.lists-table td {
+    padding: 1rem 1.5rem;
+    text-align: left;
+    border-bottom: 1px solid #eee;
+}
+
+.lists-table th {
+    background: #f8f9fa;
+    font-weight: 600;
+    font-size: 0.8rem;
+    color: #666;
+    text-transform: uppercase;
+}
+
+.lists-table tr:hover {
+    background: #f8f9fa;
+}
+
+.list-name {
+    font-weight: 600;
+}
+
+.list-badge {
+    display: inline-block;
+    padding: 0.25rem 0.75rem;
+    border-radius: 20px;
+    font-size: 0.75rem;
+    font-weight: 600;
+}
+
+.list-badge.active { background: #E8F5E9; color: #2E7D32; }
+.list-badge.processing { background: #FFF3E0; color: #E65100; }
+.list-badge.completed { background: #E3F2FD; color: #1565C0; }
+
+/* Selected File Display */
+.selected-file {
+    display: none;
+    background: rgba(76, 175, 80, 0.1);
+    border: 2px solid #4CAF50;
+    border-radius: 10px;
+    padding: 1rem;
+    margin-bottom: 1rem;
+}
+
+.selected-file.show {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+}
+
+.selected-file-icon {
+    width: 48px;
+    height: 48px;
+    background: #4CAF50;
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-size: 1.25rem;
+}
+
+.selected-file-info {
+    flex: 1;
+}
+
+.selected-file-name {
+    font-weight: 600;
+    color: white;
+}
+
+.selected-file-size {
+    font-size: 0.8rem;
+    color: rgba(255,255,255,0.6);
+}
+
+.selected-file-remove {
+    background: transparent;
+    border: none;
+    color: #f44336;
+    cursor: pointer;
+    font-size: 1.25rem;
+}
+</style>
+{% endblock %}
 
 {% block content %}
-<div class="page-header">
-    <div>
-        <h1 class="page-title">Arama Listeleri</h1>
-        <p class="page-subtitle">Lead ve arama listelerini yönetin</p>
-    </div>
-    <button class="btn btn-primary">
-        <i class="ti ti-upload"></i> Liste İçe Aktar
-    </button>
-</div>
-
-<div class="card">
-    <div class="card-body">
-        <div class="table-wrapper">
-            <table class="table">
-                <thead>
-                    <tr>
-                        <th>Ad</th>
-                        <th>Kampanya</th>
-                        <th>Toplam Kayıt</th>
-                        <th>Geçerli</th>
-                        <th>Duplicate</th>
-                        <th>Kaynak</th>
-                        <th>Durum</th>
-                        <th>İşlemler</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {% for list in lists %}
-                    <tr>
-                        <td><strong>{{ list.name }}</strong></td>
-                        <td>{{ list.campaign.name if list.campaign else '-' }}</td>
-                        <td>{{ list.total_records }}</td>
-                        <td>{{ list.valid_records }}</td>
-                        <td>{{ list.duplicate_records }}</td>
-                        <td>
-                            <span class="badge badge-info">{{ list.source or 'manual' }}</span>
-                        </td>
-                        <td>
-                            <span class="badge badge-{{ 'success' if list.status == 'active' else 'warning' }}">
-                                {{ list.status|capitalize }}
-                            </span>
-                        </td>
-                        <td>
-                            <button class="btn btn-sm btn-ghost" title="Detay">
-                                <i class="ti ti-eye"></i>
-                            </button>
-                            <button class="btn btn-sm btn-ghost" title="Düzenle">
-                                <i class="ti ti-edit"></i>
-                            </button>
-                        </td>
-                    </tr>
-                    {% else %}
-                    <tr>
-                        <td colspan="8" class="text-muted">Henüz liste oluşturulmamış</td>
-                    </tr>
-                    {% endfor %}
-                </tbody>
-            </table>
+<div class="lists-page">
+    <div class="page-header">
+        <div>
+            <h1 class="page-title">
+                <i class="ti ti-database" style="color: #9C27B0;"></i>
+                <span data-tr="Arama Listeleri" data-de="Anruflisten">Arama Listeleri</span>
+            </h1>
+            <p class="page-subtitle" data-tr="Lead ve arama listelerini yönetin, data yükleyin" data-de="Verwalten Sie Lead- und Anruflisten, laden Sie Daten hoch">Lead ve arama listelerini yönetin, data yükleyin</p>
         </div>
+    </div>
+
+    <!-- Upload Statistics (shows after upload) -->
+    <div class="stats-panel" id="uploadStats" style="display: none;">
+        <div class="stats-panel-header">
+            <div class="stats-panel-title">
+                <i class="ti ti-chart-bar"></i>
+                <span data-tr="Yükleme İstatistikleri" data-de="Upload-Statistiken">Yükleme İstatistikleri</span>
+            </div>
+            <span style="background: rgba(255,255,255,0.2); padding: 0.25rem 0.75rem; border-radius: 20px; font-size: 0.8rem;">
+                <span data-tr="Son yükleme:" data-de="Letzter Upload:">Son yükleme:</span> <span id="lastUploadTime">-</span>
+            </span>
+        </div>
+        <div class="stats-grid">
+            <div class="stat-item">
+                <div class="stat-item-value total" id="statTotal">0</div>
+                <div class="stat-item-label" data-tr="Toplam Kayıt" data-de="Gesamt">Toplam Kayıt</div>
+            </div>
+            <div class="stat-item">
+                <div class="stat-item-value valid" id="statValid">0</div>
+                <div class="stat-item-label" data-tr="Geçerli" data-de="Gültig">Geçerli</div>
+            </div>
+            <div class="stat-item">
+                <div class="stat-item-value duplicate" id="statDuplicate">0</div>
+                <div class="stat-item-label" data-tr="Dublet" data-de="Duplikate">Dublet</div>
+            </div>
+            <div class="stat-item">
+                <div class="stat-item-value blacklist" id="statBlacklist">0</div>
+                <div class="stat-item-label" data-tr="Blacklist" data-de="Blacklist">Blacklist</div>
+            </div>
+            <div class="stat-item">
+                <div class="stat-item-value nointerest" id="statNoInterest">0</div>
+                <div class="stat-item-label" data-tr="Keine Interesse" data-de="Kein Interesse">Keine Interesse</div>
+            </div>
+            <div class="stat-item">
+                <div class="stat-item-value error" id="statError">0</div>
+                <div class="stat-item-label" data-tr="Hatalı" data-de="Fehlerhaft">Hatalı</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Customer Status Statistics -->
+    <div class="customer-stats-panel" id="customerStats" style="display: none;">
+        <div class="customer-stats-header">
+            <h3>
+                <i class="ti ti-users" style="color: #9C27B0;"></i>
+                <span data-tr="Müşteri Durum İstatistikleri" data-de="Kundenstatusstatistiken">Müşteri Durum İstatistikleri</span>
+            </h3>
+            <button class="btn btn-sm btn-secondary" onclick="downloadDetailedStats()">
+                <i class="ti ti-download"></i> <span data-tr="Detaylı Rapor" data-de="Detaillierter Bericht">Detaylı Rapor</span>
+            </button>
+        </div>
+        <div class="customer-stats-body">
+            <div class="status-stats-grid">
+                <div class="status-stat">
+                    <div class="status-stat-value" style="color: #f44336;">500</div>
+                    <div class="status-stat-label">Keine Interesse</div>
+                    <div class="status-stat-bar">
+                        <div class="status-stat-bar-fill" style="width: 35%; background: #f44336;"></div>
+                    </div>
+                </div>
+                <div class="status-stat">
+                    <div class="status-stat-value" style="color: #FF9800;">320</div>
+                    <div class="status-stat-label">Termin</div>
+                    <div class="status-stat-bar">
+                        <div class="status-stat-bar-fill" style="width: 22%; background: #FF9800;"></div>
+                    </div>
+                </div>
+                <div class="status-stat">
+                    <div class="status-stat-value" style="color: #4CAF50;">280</div>
+                    <div class="status-stat-label">Verkauft</div>
+                    <div class="status-stat-bar">
+                        <div class="status-stat-bar-fill" style="width: 20%; background: #4CAF50;"></div>
+                    </div>
+                </div>
+                <div class="status-stat">
+                    <div class="status-stat-value" style="color: #2196F3;">180</div>
+                    <div class="status-stat-label">Rückruf</div>
+                    <div class="status-stat-bar">
+                        <div class="status-stat-bar-fill" style="width: 13%; background: #2196F3;"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Intelligent Upload Panel -->
+    <div class="upload-panel">
+        <div class="upload-panel-header">
+            <i class="ti ti-brain"></i>
+            <h3 data-tr="Akıllı Sistem" data-de="Intelligentes System">Akıllı Sistem</h3>
+        </div>
+        <div class="upload-panel-body">
+            <div class="system-info">
+                <p data-tr="Sistem verilerinizi otomatik analiz eder ve doğru kampanyalara dağıtır:" data-de="Das System analysiert Ihre Daten automatisch und verteilt sie auf die richtigen Kampagnen:">Sistem verilerinizi otomatik analiz eder ve doğru kampanyalara dağıtır:</p>
+                
+                <div class="data-categories">
+                    <div class="data-category iban">
+                        <div class="data-category-icon"><i class="ti ti-building-bank"></i></div>
+                        <h4>IBAN Data</h4>
+                        <p data-tr="IBAN mevcut veya BLZ+Konto'dan hesaplanmış" data-de="IBAN vorhanden oder aus BLZ+Konto berechnet">IBAN mevcut veya BLZ+Konto'dan hesaplanmış</p>
+                    </div>
+                    <div class="data-category email">
+                        <div class="data-category-icon"><i class="ti ti-mail"></i></div>
+                        <h4>Email Data</h4>
+                        <p data-tr="E-Mail mevcut, banka verisi yok" data-de="E-Mail vorhanden, keine Bankdaten">E-Mail mevcut, banka verisi yok</p>
+                    </div>
+                    <div class="data-category nobank">
+                        <div class="data-category-icon"><i class="ti ti-user"></i></div>
+                        <h4 data-tr="Bankasız Data" data-de="Ohne Bankdaten">Bankasız Data</h4>
+                        <p data-tr="IBAN yok, E-Mail yok" data-de="Keine IBAN, keine E-Mail">IBAN yok, E-Mail yok</p>
+                    </div>
+                </div>
+
+                <div class="error-warning" onclick="downloadErrorReport()" id="errorWarning" style="display: none;">
+                    <i class="ti ti-alert-triangle"></i>
+                    <span data-tr="Hatalı Veriler import EDİLMEYECEK - Düzeltmek için İndir" data-de="Fehlerhafte Daten werden NICHT importiert - Download zum Korrigieren">Hatalı Veriler import EDİLMEYECEK - Düzeltmek için İndir</span>
+                </div>
+            </div>
+
+            <!-- File Upload Section -->
+            <div class="upload-section">
+                <div class="upload-section-header">
+                    <h4>
+                        <i class="ti ti-upload"></i>
+                        <span data-tr="Dosya Yükle" data-de="Datei hochladen">Dosya Yükle</span>
+                    </h4>
+                    <a href="#" onclick="downloadTemplate()" data-tr="Şablon İndir" data-de="Vorlage herunterladen">Şablon İndir</a>
+                </div>
+
+                <div class="selected-file" id="selectedFile">
+                    <div class="selected-file-icon"><i class="ti ti-file-spreadsheet"></i></div>
+                    <div class="selected-file-info">
+                        <div class="selected-file-name" id="fileName">-</div>
+                        <div class="selected-file-size" id="fileSize">-</div>
+                    </div>
+                    <button class="selected-file-remove" onclick="removeFile()"><i class="ti ti-x"></i></button>
+                </div>
+
+                <div class="file-upload-area" onclick="document.getElementById('fileInput').click()">
+                    <input type="file" id="fileInput" accept=".xlsx,.xls,.csv" onchange="handleFileSelect(event)">
+                    <i class="ti ti-cloud-upload"></i>
+                    <p data-tr="Excel/CSV Dosyası seçin veya sürükleyip bırakın" data-de="Excel/CSV Datei auswählen oder hierher ziehen">Excel/CSV Dosyası seçin veya sürükleyip bırakın</p>
+                </div>
+
+                <div class="file-formats" data-tr="Desteklenen formatlar: .xlsx, .xls, .csv" data-de="Unterstützte Formate: .xlsx, .xls, .csv">Desteklenen formatlar: .xlsx, .xls, .csv</div>
+
+                <button class="analyze-btn" onclick="analyzeAndImport()">
+                    <i class="ti ti-settings"></i>
+                    <span data-tr="Analiz Et & İçe Aktar" data-de="Analysieren & Importieren">Analiz Et & İçe Aktar</span>
+                </button>
+            </div>
+
+            <!-- Required Fields -->
+            <div class="required-fields">
+                <div class="required-fields-header">
+                    <h4>
+                        <i class="ti ti-check" style="color: #4CAF50;"></i>
+                        <span data-tr="Zorunlu Alanlar" data-de="Pflichtfelder">Zorunlu Alanlar</span>
+                    </h4>
+                </div>
+
+                <div class="fields-grid">
+                    <div class="field-group">
+                        <h5><i class="ti ti-x"></i> <span data-tr="Bunlar Yoksa = Reddedilir" data-de="Ohne diese = Abgelehnt">Bunlar Yoksa = Reddedilir</span></h5>
+                        <ul>
+                            <li><strong>Telefon</strong> <span data-tr="(49 ile başlamalı)" data-de="(muss mit 49 beginnen)">(49 ile başlamalı)</span></li>
+                            <li><strong>Vorname</strong> & <strong>Nachname</strong></li>
+                            <li><strong>PLZ</strong>, <strong>Ort</strong>, <strong>Straße</strong></li>
+                        </ul>
+                    </div>
+                    <div class="field-group recognized">
+                        <h5><i class="ti ti-check"></i> <span data-tr="Tanınan Sütunlar" data-de="Erkannte Spalten">Tanınan Sütunlar</span></h5>
+                        <div class="recognized-columns">
+                            <p>Telefon, Tel, Phone, Handy</p>
+                            <p>Vorname, Name, Nachname</p>
+                            <p>PLZ, Ort, Strasse, Nr</p>
+                            <p>IBAN, BIC, BLZ, Konto</p>
+                            <p>Email, E-Mail</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Lists Table -->
+    <div class="lists-table-panel">
+        <div class="lists-table-header">
+            <h3>
+                <i class="ti ti-list" style="color: #9C27B0;"></i>
+                <span data-tr="Yüklenen Listeler" data-de="Hochgeladene Listen">Yüklenen Listeler</span>
+            </h3>
+            <span class="text-muted">{{ lists|length if lists else 0 }} <span data-tr="liste" data-de="Listen">liste</span></span>
+        </div>
+        <table class="lists-table">
+            <thead>
+                <tr>
+                    <th data-tr="Liste Adı" data-de="Listenname">Liste Adı</th>
+                    <th data-tr="Kampanya" data-de="Kampagne">Kampanya</th>
+                    <th data-tr="Toplam" data-de="Gesamt">Toplam</th>
+                    <th data-tr="Geçerli" data-de="Gültig">Geçerli</th>
+                    <th data-tr="Dublet" data-de="Duplikate">Dublet</th>
+                    <th data-tr="Blacklist" data-de="Blacklist">Blacklist</th>
+                    <th data-tr="Durum" data-de="Status">Durum</th>
+                    <th data-tr="İşlemler" data-de="Aktionen">İşlemler</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for list in lists %}
+                <tr>
+                    <td class="list-name">{{ list.name }}</td>
+                    <td>{{ list.campaign.name if list.campaign else '-' }}</td>
+                    <td><strong>{{ list.total_records }}</strong></td>
+                    <td style="color: #4CAF50;">{{ list.valid_records }}</td>
+                    <td style="color: #FF9800;">{{ list.duplicate_records }}</td>
+                    <td style="color: #f44336;">{{ list.blacklist_records or 0 }}</td>
+                    <td>
+                        <span class="list-badge {{ list.status }}">
+                            {{ list.status|capitalize }}
+                        </span>
+                    </td>
+                    <td>
+                        <button class="btn btn-sm btn-ghost" title="Detay" onclick="viewListDetail({{ list.id }})">
+                            <i class="ti ti-eye"></i>
+                        </button>
+                        <button class="btn btn-sm btn-ghost" title="İndir" onclick="downloadList({{ list.id }})">
+                            <i class="ti ti-download"></i>
+                        </button>
+                        <button class="btn btn-sm btn-ghost text-danger" title="Sil" onclick="deleteList({{ list.id }})">
+                            <i class="ti ti-trash"></i>
+                        </button>
+                    </td>
+                </tr>
+                {% else %}
+                <tr>
+                    <td colspan="8" class="text-muted text-center" style="padding: 3rem;" data-tr="Henüz liste yüklenmemiş. Yukarıdan dosya yükleyin." data-de="Noch keine Liste hochgeladen. Laden Sie eine Datei oben hoch.">Henüz liste yüklenmemiş. Yukarıdan dosya yükleyin.</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
     </div>
 </div>
 {% endblock %}
 
+{% block extra_js %}
+<script>
+let selectedFile = null;
 
+// Handle file selection
+function handleFileSelect(event) {
+    const file = event.target.files[0];
+    if (file) {
+        selectedFile = file;
+        document.getElementById('selectedFile').classList.add('show');
+        document.getElementById('fileName').textContent = file.name;
+        document.getElementById('fileSize').textContent = formatFileSize(file.size);
+    }
+}
 
+// Format file size
+function formatFileSize(bytes) {
+    if (bytes === 0) return '0 Bytes';
+    const k = 1024;
+    const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+    const i = Math.floor(Math.log(bytes) / Math.log(k));
+    return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+}
+
+// Remove selected file
+function removeFile() {
+    selectedFile = null;
+    document.getElementById('selectedFile').classList.remove('show');
+    document.getElementById('fileInput').value = '';
+}
+
+// Analyze and Import
+function analyzeAndImport() {
+    if (!selectedFile) {
+        alert(document.documentElement.lang === 'de' 
+            ? 'Bitte wählen Sie zuerst eine Datei aus' 
+            : 'Lütfen önce bir dosya seçin');
+        return;
+    }
+
+    // Show loading
+    const btn = document.querySelector('.analyze-btn');
+    btn.innerHTML = '<i class="ti ti-loader"></i> ' + 
+        (document.documentElement.lang === 'de' ? 'Wird analysiert...' : 'Analiz ediliyor...');
+    btn.disabled = true;
+
+    // Simulate analysis (replace with actual API call)
+    setTimeout(() => {
+        // Show statistics
+        document.getElementById('uploadStats').style.display = 'block';
+        document.getElementById('customerStats').style.display = 'block';
+        document.getElementById('errorWarning').style.display = 'flex';
+
+        // Set fake stats (replace with real data)
+        document.getElementById('statTotal').textContent = '1,450';
+        document.getElementById('statValid').textContent = '1,180';
+        document.getElementById('statDuplicate').textContent = '120';
+        document.getElementById('statBlacklist').textContent = '45';
+        document.getElementById('statNoInterest').textContent = '80';
+        document.getElementById('statError').textContent = '25';
+        document.getElementById('lastUploadTime').textContent = new Date().toLocaleTimeString('tr-TR');
+
+        // Reset button
+        btn.innerHTML = '<i class="ti ti-settings"></i> ' + 
+            (document.documentElement.lang === 'de' ? 'Analysieren & Importieren' : 'Analiz Et & İçe Aktar');
+        btn.disabled = false;
+
+        // Scroll to stats
+        document.getElementById('uploadStats').scrollIntoView({ behavior: 'smooth' });
+
+        alert(document.documentElement.lang === 'de' 
+            ? 'Analyse abgeschlossen! 1.180 gültige Datensätze importiert.' 
+            : 'Analiz tamamlandı! 1.180 geçerli kayıt içe aktarıldı.');
+
+    }, 2000);
+}
+
+// Download error report
+function downloadErrorReport() {
+    alert(document.documentElement.lang === 'de' 
+        ? 'Fehlerbericht wird heruntergeladen...' 
+        : 'Hata raporu indiriliyor...');
+}
+
+// Download template
+function downloadTemplate() {
+    alert(document.documentElement.lang === 'de' 
+        ? 'Vorlage wird heruntergeladen...' 
+        : 'Şablon indiriliyor...');
+}
+
+// Download detailed stats
+function downloadDetailedStats() {
+    alert(document.documentElement.lang === 'de' 
+        ? 'Detaillierter Bericht wird heruntergeladen...' 
+        : 'Detaylı rapor indiriliyor...');
+}
+
+// View list detail
+function viewListDetail(id) {
+    alert('Liste #' + id + ' detayları');
+}
+
+// Download list
+function downloadList(id) {
+    alert('Liste #' + id + ' indiriliyor...');
+}
+
+// Delete list
+function deleteList(id) {
+    const msg = document.documentElement.lang === 'de' 
+        ? 'Diese Liste wirklich löschen?' 
+        : 'Bu listeyi silmek istediğinize emin misiniz?';
+    
+    if (confirm(msg)) {
+        alert(document.documentElement.lang === 'de' ? 'Liste gelöscht' : 'Liste silindi');
+        location.reload();
+    }
+}
+
+// Drag and drop support
+const uploadArea = document.querySelector('.file-upload-area');
+
+uploadArea.addEventListener('dragover', (e) => {
+    e.preventDefault();
+    uploadArea.style.borderColor = '#4CAF50';
+    uploadArea.style.background = 'rgba(76, 175, 80, 0.1)';
+});
+
+uploadArea.addEventListener('dragleave', (e) => {
+    e.preventDefault();
+    uploadArea.style.borderColor = 'rgba(255,255,255,0.2)';
+    uploadArea.style.background = 'transparent';
+});
+
+uploadArea.addEventListener('drop', (e) => {
+    e.preventDefault();
+    uploadArea.style.borderColor = 'rgba(255,255,255,0.2)';
+    uploadArea.style.background = 'transparent';
+    
+    const file = e.dataTransfer.files[0];
+    if (file && (file.name.endsWith('.xlsx') || file.name.endsWith('.xls') || file.name.endsWith('.csv'))) {
+        selectedFile = file;
+        document.getElementById('selectedFile').classList.add('show');
+        document.getElementById('fileName').textContent = file.name;
+        document.getElementById('fileSize').textContent = formatFileSize(file.size);
+    } else {
+        alert(document.documentElement.lang === 'de' 
+            ? 'Nur .xlsx, .xls oder .csv Dateien werden unterstützt' 
+            : 'Sadece .xlsx, .xls veya .csv dosyaları desteklenir');
+    }
+});
+</script>
+{% endblock %}
