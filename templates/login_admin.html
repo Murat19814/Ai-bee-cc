@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CC Admin Girişi - AI BEE CC</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/main.css') }}">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@latest/tabler-icons.min.css">
+    <style>
+        .auth-layout {
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
+        }
+        .auth-layout::before {
+            background-image: 
+                url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='42' viewBox='0 0 28 49'%3E%3Cg fill-rule='evenodd'%3E%3Cg fill='%233498db' fill-opacity='0.12'%3E%3Cpath d='M13.99 9.25l13 7.5v15l-13 7.5L1 31.75v-15l12.99-7.5zM3 17.9v12.7l10.99 6.34 11-6.35V17.9l-11-6.34L3 17.9zM0 15l12.98-7.5V0h-2v6.35L0 12.69v2.3zm0 18.5L12.98 41v8h-2v-6.85L0 35.81v-2.3zM15 0v7.5L27.99 15H28v-2.31h-.01L17 6.35V0h-2zm0 49v-8l12.99-7.5H28v2.31h-.01L17 42.15V49h-2z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+        }
+        .auth-card {
+            border-top: 4px solid #3498db;
+        }
+        .auth-logo {
+            background: linear-gradient(135deg, #3498db, #2980b9);
+        }
+        .auth-title {
+            color: #3498db;
+        }
+        .btn-primary {
+            background: linear-gradient(135deg, #3498db, #2980b9);
+        }
+        .btn-primary:hover {
+            background: linear-gradient(135deg, #2980b9, #1a5276);
+        }
+        .admin-badge {
+            display: inline-block;
+            padding: 0.25rem 0.75rem;
+            background: rgba(52, 152, 219, 0.15);
+            color: #3498db;
+            border-radius: 20px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            margin-bottom: 1rem;
+        }
+    </style>
+</head>
+<body>
+    <div class="auth-layout">
+        <div class="auth-card">
+            <div class="auth-header">
+                <div class="auth-logo">
+                    <i class="ti ti-building"></i>
+                </div>
+                <span class="admin-badge">
+                    <i class="ti ti-shield-check"></i> CC Admin Portal
+                </span>
+                <h1 class="auth-title">Yönetim Paneli</h1>
+                <p class="auth-subtitle">Çağrı Merkezi Yönetimi</p>
+            </div>
+            
+            {% with messages = get_flashed_messages(with_categories=true) %}
+                {% if messages %}
+                    {% for category, message in messages %}
+                        <div class="alert alert-{{ category }}">
+                            <i class="ti ti-{% if category == 'success' %}check{% elif category == 'danger' %}alert-circle{% else %}info-circle{% endif %}"></i>
+                            {{ message }}
+                        </div>
+                    {% endfor %}
+                {% endif %}
+            {% endwith %}
+            
+            <form method="POST" class="auth-form">
+                <div class="form-group">
+                    <label class="form-label">
+                        <i class="ti ti-user"></i> Kullanıcı Adı
+                    </label>
+                    <div class="input-group">
+                        <i class="ti ti-user input-icon"></i>
+                        <input type="text" name="username" class="form-control" placeholder="Admin kullanıcı adınız" required autofocus>
+                    </div>
+                </div>
+                
+                <div class="form-group">
+                    <label class="form-label">
+                        <i class="ti ti-lock"></i> Şifre
+                    </label>
+                    <div class="input-group">
+                        <i class="ti ti-lock input-icon"></i>
+                        <input type="password" name="password" id="password" class="form-control" placeholder="Şifrenizi girin" required>
+                        <button type="button" class="password-toggle" onclick="togglePassword()">
+                            <i class="ti ti-eye" id="toggleIcon"></i>
+                        </button>
+                    </div>
+                </div>
+                
+                <button type="submit" class="btn btn-primary btn-block">
+                    <i class="ti ti-login"></i> Yönetici Girişi
+                </button>
+            </form>
+            
+            <div class="auth-footer">
+                <p>AI BEE CC v2.0</p>
+                <a href="{{ url_for('agent_login') }}" style="color: #3498db; font-size: 0.85rem;">
+                    <i class="ti ti-headset"></i> Agent Girişi
+                </a>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        function togglePassword() {
+            const password = document.getElementById('password');
+            const icon = document.getElementById('toggleIcon');
+            if (password.type === 'password') {
+                password.type = 'text';
+                icon.className = 'ti ti-eye-off';
+            } else {
+                password.type = 'password';
+                icon.className = 'ti ti-eye';
+            }
+        }
+    </script>
+</body>
+</html>
+

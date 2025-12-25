@@ -200,8 +200,60 @@ def server_error(e):
 
 # ==================== AUTH ROUTES ====================
 
+def process_login(username, password, allowed_roles=None, template='login.html', redirect_url='dashboard'):
+    """Ortak login işlemi"""
+    user = User.query.filter_by(username=username).first()
+    
+    if user and user.check_password(password):
+        # Rol kontrolü
+        if allowed_roles and user.role not in allowed_roles:
+            flash('Bu sayfadan giriş yetkiniz yok.', 'danger')
+            return None
+        
+        if not user.is_active:
+            flash('Hesabınız pasif durumda. Yönetici ile iletişime geçin.', 'danger')
+            return None
+        
+        if user.is_locked:
+            flash(f'Hesabınız kilitli: {user.lock_reason}', 'danger')
+            return None
+        
+        login_user(user)
+        user.last_login = datetime.utcnow()
+        user.current_ip = request.remote_addr
+        user.failed_login_attempts = 0
+        db.session.commit()
+        
+        log_audit('login', 'user', user.id, 'Kullanıcı giriş yaptı')
+        return user
+    else:
+        if user:
+            user.failed_login_attempts = (user.failed_login_attempts or 0) + 1
+            user.last_failed_login = datetime.utcnow()
+            
+            if user.failed_login_attempts >= 5:
+                user.is_locked = True
+                user.lock_reason = 'Çok fazla başarısız giriş denemesi'
+                
+                event = SecurityEvent(
+                    tenant_id=user.tenant_id,
+                    user_id=user.id,
+                    event_type='brute_force',
+                    severity='critical',
+                    description=f'Hesap kilitlendi: {user.failed_login_attempts} başarısız deneme',
+                    ip_address=request.remote_addr
+                )
+                db.session.add(event)
+            
+            db.session.commit()
+        
+        flash('Geçersiz kullanıcı adı veya şifre.', 'danger')
+        return None
+
+
 @app.route('/login', methods=['GET', 'POST'])
 def login():
+    """Super Admin Giriş Sayfası"""
     if current_user.is_authenticated:
         return redirect(url_for('dashboard'))
     
@@ -209,55 +261,71 @@ def login():
         username = request.form.get('username')
         password = request.form.get('password')
         
-        user = User.query.filter_by(username=username).first()
-        
-        if user and user.check_password(password):
-            if not user.is_active:
-                flash('Hesabınız pasif durumda. Yönetici ile iletişime geçin.', 'danger')
-                return render_template('login.html')
-            
-            if user.is_locked:
-                flash(f'Hesabınız kilitli: {user.lock_reason}', 'danger')
-                return render_template('login.html')
-            
-            login_user(user)
-            user.last_login = datetime.utcnow()
-            user.current_ip = request.remote_addr
-            user.failed_login_attempts = 0
-            db.session.commit()
-            
-            # Audit log
-            log_audit('login', 'user', user.id, 'Kullanıcı giriş yaptı')
-            
+        user = process_login(username, password, allowed_roles=['super_admin'])
+        if user:
             next_page = request.args.get('next')
             return redirect(next_page or url_for('dashboard'))
-        else:
-            # Başarısız giriş
-            if user:
-                user.failed_login_attempts = (user.failed_login_attempts or 0) + 1
-                user.last_failed_login = datetime.utcnow()
-                
-                # 5 başarısız denemeden sonra kilitle
-                if user.failed_login_attempts >= 5:
-                    user.is_locked = True
-                    user.lock_reason = 'Çok fazla başarısız giriş denemesi'
-                    
-                    # Güvenlik olayı
-                    event = SecurityEvent(
-                        tenant_id=user.tenant_id,
-                        user_id=user.id,
-                        event_type='brute_force',
-                        severity='critical',
-                        description=f'Hesap kilitlendi: {user.failed_login_attempts} başarısız deneme',
-                        ip_address=request.remote_addr
-                    )
-                    db.session.add(event)
-                
-                db.session.commit()
-            
-            flash('Geçersiz kullanıcı adı veya şifre.', 'danger')
     
-    return render_template('login.html')
+    return render_template('login.html', login_type='superadmin')
+
+
+@app.route('/admin', methods=['GET', 'POST'])
+@app.route('/admin/login', methods=['GET', 'POST'])
+def admin_login():
+    """CC Admin Giriş Sayfası"""
+    if current_user.is_authenticated:
+        if current_user.role in ['admin', 'super_admin']:
+            return redirect(url_for('dashboard'))
+        else:
+            logout_user()
+    
+    if request.method == 'POST':
+        username = request.form.get('username')
+        password = request.form.get('password')
+        
+        user = process_login(username, password, allowed_roles=['admin', 'super_admin', 'supervisor'])
+        if user:
+            return redirect(url_for('dashboard'))
+    
+    return render_template('login_admin.html', login_type='admin')
+
+
+@app.route('/agent', methods=['GET', 'POST'])
+@app.route('/agent/login', methods=['GET', 'POST'])
+def agent_login():
+    """Agent Giriş Sayfası"""
+    if current_user.is_authenticated:
+        if current_user.role == 'agent':
+            return redirect(url_for('agent_panel'))
+        else:
+            logout_user()
+    
+    if request.method == 'POST':
+        username = request.form.get('username')
+        password = request.form.get('password')
+        
+        user = process_login(username, password, allowed_roles=['agent'])
+        if user:
+            return redirect(url_for('agent_panel'))
+    
+    return render_template('login_agent.html', login_type='agent')
+
+
+@app.route('/agent/panel')
+@login_required
+def agent_panel():
+    """Agent Ana Paneli"""
+    if current_user.role != 'agent':
+        flash('Bu sayfaya erişim yetkiniz yok.', 'danger')
+        return redirect(url_for('dashboard'))
+    
+    today = datetime.now().replace(hour=0, minute=0, second=0)
+    today_calls = Call.query.filter(
+        Call.agent_id == current_user.id,
+        Call.started_at >= today
+    ).count()
+    
+    return render_template('agent/panel.html', today_calls=today_calls)
 
 
 @app.route('/logout')

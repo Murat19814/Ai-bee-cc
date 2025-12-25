@@ -1,15 +1,18 @@
 {% extends "base.html" %}
 
-{% block title %}Giriş - AI BEE CC{% endblock %}
+{% block title %}Platform Yönetimi - AI BEE CC{% endblock %}
 
 {% block auth_content %}
 <div class="auth-card">
     <div class="auth-header">
         <div class="auth-logo">
-            <i class="ti ti-headset"></i>
+            <i class="ti ti-crown"></i>
         </div>
+        <span class="super-admin-badge">
+            <i class="ti ti-shield-lock"></i> Platform Yönetimi
+        </span>
         <h1 class="auth-title">AI BEE CC</h1>
-        <p class="auth-subtitle">Call Center</p>
+        <p class="auth-subtitle">Super Admin Portal</p>
     </div>
     
     {% with messages = get_flashed_messages(with_categories=true) %}
@@ -59,12 +62,88 @@
         </button>
     </form>
     
+    <div class="auth-divider">
+        <span>Diğer Giriş Sayfaları</span>
+    </div>
+    
+    <div class="auth-links">
+        <a href="{{ url_for('admin_login') }}" class="auth-link admin-link">
+            <i class="ti ti-building"></i> CC Admin Girişi
+        </a>
+        <a href="{{ url_for('agent_login') }}" class="auth-link agent-link">
+            <i class="ti ti-headset"></i> Agent Girişi
+        </a>
+    </div>
+    
     <div class="auth-footer">
         <p>
             AI BEE CC <span class="version">v2.0</span>
         </p>
     </div>
 </div>
+
+<style>
+.super-admin-badge {
+    display: inline-block;
+    padding: 0.25rem 0.75rem;
+    background: rgba(245, 166, 35, 0.15);
+    color: var(--primary);
+    border-radius: 20px;
+    font-size: 0.75rem;
+    font-weight: 600;
+    margin-bottom: 0.5rem;
+}
+.auth-divider {
+    display: flex;
+    align-items: center;
+    margin: 1.5rem 0;
+    color: var(--text-muted);
+    font-size: 0.8rem;
+}
+.auth-divider::before,
+.auth-divider::after {
+    content: '';
+    flex: 1;
+    height: 1px;
+    background: var(--border-color);
+}
+.auth-divider span {
+    padding: 0 1rem;
+}
+.auth-links {
+    display: flex;
+    gap: 1rem;
+}
+.auth-link {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    padding: 0.75rem;
+    border-radius: 8px;
+    font-size: 0.85rem;
+    font-weight: 500;
+    text-decoration: none;
+    transition: all 0.2s;
+}
+.auth-link.admin-link {
+    background: rgba(52, 152, 219, 0.1);
+    color: #3498db;
+    border: 1px solid rgba(52, 152, 219, 0.2);
+}
+.auth-link.admin-link:hover {
+    background: rgba(52, 152, 219, 0.2);
+}
+.auth-link.agent-link {
+    background: rgba(39, 174, 96, 0.1);
+    color: #27ae60;
+    border: 1px solid rgba(39, 174, 96, 0.2);
+}
+.auth-link.agent-link:hover {
+    background: rgba(39, 174, 96, 0.2);
+}
+</style>
 
 <script>
 function togglePassword() {

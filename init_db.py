@@ -21,3 +21,5 @@ with app.app_context():
     for t in tables:
         print(f"  - {t}")
 
+
+
