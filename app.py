@@ -269,8 +269,8 @@ def login():
     return render_template('login.html', login_type='superadmin')
 
 
-@app.route('/admin', methods=['GET', 'POST'])
-@app.route('/admin/login', methods=['GET', 'POST'])
+@app.route('/cc/login', methods=['GET', 'POST'])
+@app.route('/cc-admin', methods=['GET', 'POST'])
 def admin_login():
     """CC Admin Giriş Sayfası"""
     if current_user.is_authenticated:
@@ -290,7 +290,6 @@ def admin_login():
     return render_template('login_admin.html', login_type='admin')
 
 
-@app.route('/agent', methods=['GET', 'POST'])
 @app.route('/agent/login', methods=['GET', 'POST'])
 def agent_login():
     """Agent Giriş Sayfası"""
@@ -309,23 +308,6 @@ def agent_login():
             return redirect(url_for('agent_panel'))
     
     return render_template('login_agent.html', login_type='agent')
-
-
-@app.route('/agent/panel')
-@login_required
-def agent_panel():
-    """Agent Ana Paneli"""
-    if current_user.role != 'agent':
-        flash('Bu sayfaya erişim yetkiniz yok.', 'danger')
-        return redirect(url_for('dashboard'))
-    
-    today = datetime.now().replace(hour=0, minute=0, second=0)
-    today_calls = Call.query.filter(
-        Call.agent_id == current_user.id,
-        Call.started_at >= today
-    ).count()
-    
-    return render_template('agent/panel.html', today_calls=today_calls)
 
 
 @app.route('/logout')
