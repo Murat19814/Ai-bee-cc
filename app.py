@@ -345,9 +345,9 @@ def about():
     """Hakkımızda / Über Uns"""
     return render_template('about.html')
 
-@app.route('/integrations')
-def integrations():
-    """Entegrasyonlar / Integrationen"""
+@app.route('/our-integrations')
+def our_integrations():
+    """Entegrasyonlar / Integrationen - Public sayfa"""
     return render_template('integrations.html')
 
 @app.route('/api-docs')
