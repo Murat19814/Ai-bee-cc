@@ -1,0 +1,127 @@
+{% extends "base.html" %}
+
+{% block title %}{{ 'Kampanya Düzenle' if campaign else 'Yeni Kampanya' }} - AI BEE CC{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <div>
+        <h1 class="page-title" data-tr="{{ 'Kampanya Düzenle' if campaign else 'Yeni Kampanya' }}" data-de="{{ 'Kampagne bearbeiten' if campaign else 'Neue Kampagne' }}">{{ 'Kampanya Düzenle' if campaign else 'Yeni Kampanya' }}</h1>
+        <p class="page-subtitle" data-tr="Kampanya bilgilerini girin" data-de="Kampagneninformationen eingeben">Kampanya bilgilerini girin</p>
+    </div>
+</div>
+
+<div class="card" style="max-width: 900px;">
+    <div class="card-body">
+        <form method="POST">
+            <!-- Temel Bilgiler -->
+            <h4 class="mb-3" data-tr="Temel Bilgiler" data-de="Grundinformationen">Temel Bilgiler</h4>
+            
+            <div class="form-group">
+                <label class="form-label" data-tr="Kampanya Adı" data-de="Kampagnenname">Kampanya Adı *</label>
+                <input type="text" name="name" class="form-control" required
+                       value="{{ campaign.name if campaign else '' }}"
+                       placeholder="Örn: Satış Kampanyası Q1"
+                       data-tr-placeholder="Örn: Satış Kampanyası Q1"
+                       data-de-placeholder="z.B.: Verkaufskampagne Q1">
+            </div>
+
+            <div class="grid grid-cols-2">
+                <div class="form-group">
+                    <label class="form-label" data-tr="Proje" data-de="Projekt">Proje *</label>
+                    <select name="project_id" class="form-control" required>
+                        <option value="" data-tr="- Seçiniz -" data-de="- Wählen -">- Seçiniz -</option>
+                        {% for p in projects %}
+                        <option value="{{ p.id }}" {{ 'selected' if campaign and campaign.project_id == p.id else '' }}>{{ p.name }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label" data-tr="Dialer Tipi" data-de="Dialer-Typ">Dialer Tipi</label>
+                    <select name="dialer_type" class="form-control">
+                        <option value="preview" {{ 'selected' if not campaign or campaign.dialer_type == 'preview' else '' }} data-tr="Preview" data-de="Preview">Preview</option>
+                        <option value="progressive" {{ 'selected' if campaign and campaign.dialer_type == 'progressive' else '' }} data-tr="Progressive" data-de="Progressive">Progressive</option>
+                        <option value="predictive" {{ 'selected' if campaign and campaign.dialer_type == 'predictive' else '' }} data-tr="Predictive" data-de="Predictive">Predictive</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label class="form-label" data-tr="Açıklama" data-de="Beschreibung">Açıklama</label>
+                <textarea name="description" class="form-control" rows="3"
+                          placeholder="Kampanya hakkında kısa bilgi..."
+                          data-tr-placeholder="Kampanya hakkında kısa bilgi..."
+                          data-de-placeholder="Kurze Informationen zur Kampagne...">{{ campaign.description if campaign else '' }}</textarea>
+            </div>
+
+            <!-- Kuyruk Ayarları -->
+            <h4 class="mb-3 mt-4" data-tr="Kuyruk Ayarları" data-de="Warteschlangeneinstellungen">Kuyruk Ayarları</h4>
+            
+            <div class="grid grid-cols-2">
+                <div class="form-group">
+                    <label class="form-label" data-tr="Kuyruk" data-de="Warteschlange">Kuyruk</label>
+                    <select name="queue_id" class="form-control">
+                        <option value="" data-tr="- Seçiniz -" data-de="- Wählen -">- Seçiniz -</option>
+                        {% for q in queues %}
+                        <option value="{{ q.id }}" {{ 'selected' if campaign and campaign.queue_id == q.id else '' }}>{{ q.name }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label" data-tr="Pacing Oranı" data-de="Pacing-Rate">Pacing Oranı</label>
+                    <input type="number" name="pacing_ratio" class="form-control" step="0.1" min="0.1" max="5"
+                           value="{{ campaign.pacing_ratio if campaign else '1.0' }}">
+                    <small class="text-muted" data-tr="Agent başına eşzamanlı çağrı" data-de="Gleichzeitige Anrufe pro Agent">Agent başına eşzamanlı çağrı</small>
+                </div>
+            </div>
+
+            <!-- Zaman Ayarları -->
+            <h4 class="mb-3 mt-4" data-tr="Zaman Ayarları" data-de="Zeiteinstellungen">Zaman Ayarları</h4>
+            
+            <div class="grid grid-cols-2">
+                <div class="form-group">
+                    <label class="form-label" data-tr="Başlangıç Saati" data-de="Startzeit">Başlangıç Saati</label>
+                    <input type="time" name="start_time" class="form-control"
+                           value="{{ campaign.start_time if campaign else '09:00' }}">
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label" data-tr="Bitiş Saati" data-de="Endzeit">Bitiş Saati</label>
+                    <input type="time" name="end_time" class="form-control"
+                           value="{{ campaign.end_time if campaign else '18:00' }}">
+                </div>
+            </div>
+
+            <!-- Deneme Kuralları -->
+            <h4 class="mb-3 mt-4" data-tr="Deneme Kuralları" data-de="Versuchsregeln">Deneme Kuralları</h4>
+            
+            <div class="grid grid-cols-2">
+                <div class="form-group">
+                    <label class="form-label" data-tr="Maks. Deneme Sayısı" data-de="Max. Versuche">Maks. Deneme Sayısı</label>
+                    <input type="number" name="max_attempts" class="form-control" min="1" max="20"
+                           value="{{ campaign.max_attempts if campaign else '5' }}">
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label" data-tr="Tekrar Aralığı (dk)" data-de="Wiederholungsintervall (Min.)">Tekrar Aralığı (dk)</label>
+                    <input type="number" name="retry_interval_minutes" class="form-control" min="5" max="1440"
+                           value="{{ campaign.retry_interval_minutes if campaign else '60' }}">
+                </div>
+            </div>
+
+            <!-- Butonlar -->
+            <div class="d-flex gap-2" style="margin-top: 2rem;">
+                <button type="submit" class="btn btn-primary">
+                    <i class="ti ti-check"></i>
+                    <span data-tr="{{ 'Güncelle' if campaign else 'Oluştur' }}" data-de="{{ 'Aktualisieren' if campaign else 'Erstellen' }}">{{ 'Güncelle' if campaign else 'Oluştur' }}</span>
+                </button>
+                <a href="{{ url_for('campaigns') }}" class="btn btn-secondary">
+                    <span data-tr="İptal" data-de="Abbrechen">İptal</span>
+                </a>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}
+
