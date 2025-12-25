@@ -1,122 +1,229 @@
-<!DOCTYPE html>
-<html lang="tr">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>CC Admin Girişi - AI BEE CC</title>
-    <link rel="stylesheet" href="{{ url_for('static', filename='css/main.css') }}">
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@latest/tabler-icons.min.css">
-    <style>
-        .auth-layout {
-            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
-        }
-        .auth-layout::before {
-            background-image: 
-                url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='42' viewBox='0 0 28 49'%3E%3Cg fill-rule='evenodd'%3E%3Cg fill='%233498db' fill-opacity='0.12'%3E%3Cpath d='M13.99 9.25l13 7.5v15l-13 7.5L1 31.75v-15l12.99-7.5zM3 17.9v12.7l10.99 6.34 11-6.35V17.9l-11-6.34L3 17.9zM0 15l12.98-7.5V0h-2v6.35L0 12.69v2.3zm0 18.5L12.98 41v8h-2v-6.85L0 35.81v-2.3zM15 0v7.5L27.99 15H28v-2.31h-.01L17 6.35V0h-2zm0 49v-8l12.99-7.5H28v2.31h-.01L17 42.15V49h-2z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
-        }
-        .auth-card {
-            border-top: 4px solid #3498db;
-        }
-        .auth-logo {
-            background: linear-gradient(135deg, #3498db, #2980b9);
-        }
-        .auth-title {
-            color: #3498db;
-        }
-        .btn-primary {
-            background: linear-gradient(135deg, #3498db, #2980b9);
-        }
-        .btn-primary:hover {
-            background: linear-gradient(135deg, #2980b9, #1a5276);
-        }
-        .admin-badge {
-            display: inline-block;
-            padding: 0.25rem 0.75rem;
-            background: rgba(52, 152, 219, 0.15);
-            color: #3498db;
-            border-radius: 20px;
-            font-size: 0.75rem;
-            font-weight: 600;
-            margin-bottom: 1rem;
-        }
-    </style>
-</head>
-<body>
-    <div class="auth-layout">
-        <div class="auth-card">
-            <div class="auth-header">
-                <div class="auth-logo">
-                    <i class="ti ti-building"></i>
-                </div>
-                <span class="admin-badge">
-                    <i class="ti ti-shield-check"></i> CC Admin Portal
-                </span>
-                <h1 class="auth-title">Yönetim Paneli</h1>
-                <p class="auth-subtitle">Çağrı Merkezi Yönetimi</p>
-            </div>
-            
-            {% with messages = get_flashed_messages(with_categories=true) %}
-                {% if messages %}
-                    {% for category, message in messages %}
-                        <div class="alert alert-{{ category }}">
-                            <i class="ti ti-{% if category == 'success' %}check{% elif category == 'danger' %}alert-circle{% else %}info-circle{% endif %}"></i>
-                            {{ message }}
-                        </div>
-                    {% endfor %}
-                {% endif %}
-            {% endwith %}
-            
-            <form method="POST" class="auth-form">
-                <div class="form-group">
-                    <label class="form-label">
-                        <i class="ti ti-user"></i> Kullanıcı Adı
-                    </label>
-                    <div class="input-group">
-                        <i class="ti ti-user input-icon"></i>
-                        <input type="text" name="username" class="form-control" placeholder="Admin kullanıcı adınız" required autofocus>
-                    </div>
-                </div>
-                
-                <div class="form-group">
-                    <label class="form-label">
-                        <i class="ti ti-lock"></i> Şifre
-                    </label>
-                    <div class="input-group">
-                        <i class="ti ti-lock input-icon"></i>
-                        <input type="password" name="password" id="password" class="form-control" placeholder="Şifrenizi girin" required>
-                        <button type="button" class="password-toggle" onclick="togglePassword()">
-                            <i class="ti ti-eye" id="toggleIcon"></i>
-                        </button>
-                    </div>
-                </div>
-                
-                <button type="submit" class="btn btn-primary btn-block">
-                    <i class="ti ti-login"></i> Yönetici Girişi
-                </button>
-            </form>
-            
-            <div class="auth-footer">
-                <p>AI BEE CC v2.0</p>
-                <a href="/agent/login" style="color: #3498db; font-size: 0.85rem;">
-                    <i class="ti ti-headset"></i> Agent Girişi
-                </a>
-            </div>
-        </div>
+{% extends "base.html" %}
+
+{% block title %}CC Admin Giriş - AI BEE CC{% endblock %}
+
+{% block auth_content %}
+<div class="auth-card">
+    <!-- Language Switcher -->
+    <div class="lang-switcher-auth">
+        <button class="lang-btn-auth active" onclick="setLang('tr')" id="lang-tr">🇹🇷 TR</button>
+        <button class="lang-btn-auth" onclick="setLang('de')" id="lang-de">🇩🇪 DE</button>
     </div>
     
-    <script>
-        function togglePassword() {
-            const password = document.getElementById('password');
-            const icon = document.getElementById('toggleIcon');
-            if (password.type === 'password') {
-                password.type = 'text';
-                icon.className = 'ti ti-eye-off';
-            } else {
-                password.type = 'password';
-                icon.className = 'ti ti-eye';
-            }
-        }
-    </script>
-</body>
-</html>
+    <div class="auth-header">
+        <div class="auth-logo" style="background: linear-gradient(135deg, #3B82F6, #2563EB);">
+            <i class="ti ti-building-community"></i>
+        </div>
+        <span class="admin-badge">
+            <i class="ti ti-building"></i> <span data-tr="Çağrı Merkezi Yönetimi" data-de="Call Center Verwaltung">Çağrı Merkezi Yönetimi</span>
+        </span>
+        <h1 class="auth-title">AI BEE CC</h1>
+        <p class="auth-subtitle" data-tr="CC Admin Panel" data-de="CC Admin Panel">CC Admin Panel</p>
+    </div>
+    
+    {% with messages = get_flashed_messages(with_categories=true) %}
+    {% if messages %}
+    {% for category, message in messages %}
+    <div class="auth-message {% if category == 'success' %}success{% else %}danger{% endif %}">
+        <i class="ti ti-{% if category == 'success' %}check{% else %}alert-circle{% endif %}"></i>
+        {{ message }}
+    </div>
+    {% endfor %}
+    {% endif %}
+    {% endwith %}
+    
+    <form method="POST" action="{{ url_for('cc_admin_login') }}" class="auth-form">
+        <div class="form-group">
+            <label class="form-label">
+                <i class="ti ti-user"></i>
+                <span data-tr="Kullanıcı Adı" data-de="Benutzername">Kullanıcı Adı</span>
+            </label>
+            <div class="input-group">
+                <span class="input-group-icon">
+                    <i class="ti ti-user"></i>
+                </span>
+                <input type="text" name="username" class="form-control" data-tr-placeholder="Kullanıcı adınızı girin" data-de-placeholder="Benutzernamen eingeben" placeholder="Kullanıcı adınızı girin" required autofocus>
+            </div>
+        </div>
+        
+        <div class="form-group">
+            <label class="form-label">
+                <i class="ti ti-lock"></i>
+                <span data-tr="Şifre" data-de="Passwort">Şifre</span>
+            </label>
+            <div class="input-group">
+                <span class="input-group-icon">
+                    <i class="ti ti-lock"></i>
+                </span>
+                <input type="password" name="password" id="passwordInput" class="form-control" data-tr-placeholder="Şifrenizi girin" data-de-placeholder="Passwort eingeben" placeholder="Şifrenizi girin" required>
+                <button type="button" class="input-group-action" onclick="togglePassword()">
+                    <i class="ti ti-eye" id="passwordToggleIcon"></i>
+                </button>
+            </div>
+        </div>
+        
+        <button type="submit" class="btn btn-admin btn-lg" style="width: 100%; margin-top: 0.5rem;">
+            <i class="ti ti-login"></i>
+            <span data-tr="Giriş Yap" data-de="Anmelden">Giriş Yap</span>
+        </button>
+    </form>
+    
+    <div class="auth-divider">
+        <span data-tr="Diğer Giriş Sayfaları" data-de="Andere Anmeldeseiten">Diğer Giriş Sayfaları</span>
+    </div>
+    
+    <div class="auth-links">
+        <a href="/login" class="auth-link super-link">
+            <i class="ti ti-crown"></i> <span data-tr="Super Admin" data-de="Super Admin">Super Admin</span>
+        </a>
+        <a href="/agent/login" class="auth-link agent-link">
+            <i class="ti ti-headset"></i> <span data-tr="Agent Girişi" data-de="Agenten Login">Agent Girişi</span>
+        </a>
+    </div>
+    
+    <div class="auth-footer">
+        <p>
+            AI BEE CC <span class="version">v2.0</span>
+        </p>
+    </div>
+</div>
 
+<style>
+.lang-switcher-auth {
+    position: absolute;
+    top: 1rem;
+    right: 1rem;
+    display: flex;
+    gap: 0.25rem;
+    background: rgba(0,0,0,0.05);
+    padding: 0.2rem;
+    border-radius: 6px;
+}
+.lang-btn-auth {
+    padding: 0.35rem 0.6rem;
+    border: none;
+    background: transparent;
+    border-radius: 4px;
+    cursor: pointer;
+    font-weight: 600;
+    font-size: 0.75rem;
+    transition: all 0.2s;
+}
+.lang-btn-auth.active {
+    background: white;
+    box-shadow: 0 1px 4px rgba(0,0,0,0.1);
+    color: #3B82F6;
+}
+.admin-badge {
+    display: inline-block;
+    padding: 0.25rem 0.75rem;
+    background: rgba(59, 130, 246, 0.15);
+    color: #3B82F6;
+    border-radius: 20px;
+    font-size: 0.75rem;
+    font-weight: 600;
+    margin-bottom: 0.5rem;
+}
+.btn-admin {
+    background: linear-gradient(135deg, #3B82F6, #2563EB);
+    color: white;
+    border: none;
+    box-shadow: 0 4px 15px rgba(59, 130, 246, 0.3);
+}
+.btn-admin:hover {
+    box-shadow: 0 6px 20px rgba(59, 130, 246, 0.4);
+}
+.auth-divider {
+    display: flex;
+    align-items: center;
+    margin: 1.5rem 0;
+    color: var(--text-muted);
+    font-size: 0.8rem;
+}
+.auth-divider::before,
+.auth-divider::after {
+    content: '';
+    flex: 1;
+    height: 1px;
+    background: var(--border-color);
+}
+.auth-divider span {
+    padding: 0 1rem;
+}
+.auth-links {
+    display: flex;
+    gap: 1rem;
+}
+.auth-link {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    padding: 0.75rem;
+    border-radius: 8px;
+    font-size: 0.85rem;
+    font-weight: 500;
+    text-decoration: none;
+    transition: all 0.2s;
+}
+.auth-link.super-link {
+    background: rgba(245, 166, 35, 0.1);
+    color: #F5A623;
+    border: 1px solid rgba(245, 166, 35, 0.2);
+}
+.auth-link.super-link:hover {
+    background: rgba(245, 166, 35, 0.2);
+}
+.auth-link.agent-link {
+    background: rgba(39, 174, 96, 0.1);
+    color: #27ae60;
+    border: 1px solid rgba(39, 174, 96, 0.2);
+}
+.auth-link.agent-link:hover {
+    background: rgba(39, 174, 96, 0.2);
+}
+.auth-card {
+    position: relative;
+}
+</style>
+
+<script>
+let currentLang = localStorage.getItem('lang') || 'tr';
+
+function setLang(lang) {
+    currentLang = lang;
+    localStorage.setItem('lang', lang);
+    
+    document.getElementById('lang-tr').classList.toggle('active', lang === 'tr');
+    document.getElementById('lang-de').classList.toggle('active', lang === 'de');
+    
+    document.querySelectorAll('[data-tr]').forEach(el => {
+        const text = el.getAttribute(`data-${lang}`);
+        if (text) el.textContent = text;
+    });
+    
+    document.querySelectorAll('[data-tr-placeholder]').forEach(el => {
+        const text = el.getAttribute(`data-${lang}-placeholder`);
+        if (text) el.placeholder = text;
+    });
+}
+
+document.addEventListener('DOMContentLoaded', () => setLang(currentLang));
+
+function togglePassword() {
+    const input = document.getElementById('passwordInput');
+    const icon = document.getElementById('passwordToggleIcon');
+    
+    if (input.type === 'password') {
+        input.type = 'text';
+        icon.classList.remove('ti-eye');
+        icon.classList.add('ti-eye-off');
+    } else {
+        input.type = 'password';
+        icon.classList.remove('ti-eye-off');
+        icon.classList.add('ti-eye');
+    }
+}
+</script>
+{% endblock %}

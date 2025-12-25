@@ -4,15 +4,21 @@
 
 {% block auth_content %}
 <div class="auth-card">
+    <!-- Language Switcher -->
+    <div class="lang-switcher-auth">
+        <button class="lang-btn-auth active" onclick="setLang('tr')" id="lang-tr">🇹🇷 TR</button>
+        <button class="lang-btn-auth" onclick="setLang('de')" id="lang-de">🇩🇪 DE</button>
+    </div>
+    
     <div class="auth-header">
         <div class="auth-logo">
             <i class="ti ti-crown"></i>
         </div>
         <span class="super-admin-badge">
-            <i class="ti ti-shield-lock"></i> Platform Yönetimi
+            <i class="ti ti-shield-lock"></i> <span data-tr="Platform Yönetimi" data-de="Plattform-Verwaltung">Platform Yönetimi</span>
         </span>
         <h1 class="auth-title">AI BEE CC</h1>
-        <p class="auth-subtitle">Super Admin Portal</p>
+        <p class="auth-subtitle" data-tr="Super Admin Portal" data-de="Super Admin Portal">Super Admin Portal</p>
     </div>
     
     {% with messages = get_flashed_messages(with_categories=true) %}
@@ -30,26 +36,26 @@
         <div class="form-group">
             <label class="form-label">
                 <i class="ti ti-user"></i>
-                Kullanıcı Adı
+                <span data-tr="Kullanıcı Adı" data-de="Benutzername">Kullanıcı Adı</span>
             </label>
             <div class="input-group">
                 <span class="input-group-icon">
                     <i class="ti ti-user"></i>
                 </span>
-                <input type="text" name="username" class="form-control" placeholder="Kullanıcı adınızı girin" required autofocus>
+                <input type="text" name="username" class="form-control" data-tr-placeholder="Kullanıcı adınızı girin" data-de-placeholder="Benutzernamen eingeben" placeholder="Kullanıcı adınızı girin" required autofocus>
             </div>
         </div>
         
         <div class="form-group">
             <label class="form-label">
                 <i class="ti ti-lock"></i>
-                Şifre
+                <span data-tr="Şifre" data-de="Passwort">Şifre</span>
             </label>
             <div class="input-group">
                 <span class="input-group-icon">
                     <i class="ti ti-lock"></i>
                 </span>
-                <input type="password" name="password" id="passwordInput" class="form-control" placeholder="Şifrenizi girin" required>
+                <input type="password" name="password" id="passwordInput" class="form-control" data-tr-placeholder="Şifrenizi girin" data-de-placeholder="Passwort eingeben" placeholder="Şifrenizi girin" required>
                 <button type="button" class="input-group-action" onclick="togglePassword()">
                     <i class="ti ti-eye" id="passwordToggleIcon"></i>
                 </button>
@@ -58,20 +64,20 @@
         
         <button type="submit" class="btn btn-primary btn-lg" style="width: 100%; margin-top: 0.5rem;">
             <i class="ti ti-login"></i>
-            Giriş Yap
+            <span data-tr="Giriş Yap" data-de="Anmelden">Giriş Yap</span>
         </button>
     </form>
     
     <div class="auth-divider">
-        <span>Diğer Giriş Sayfaları</span>
+        <span data-tr="Diğer Giriş Sayfaları" data-de="Andere Anmeldeseiten">Diğer Giriş Sayfaları</span>
     </div>
     
     <div class="auth-links">
         <a href="/cc-admin" class="auth-link admin-link">
-            <i class="ti ti-building"></i> CC Admin Girişi
+            <i class="ti ti-building"></i> <span data-tr="CC Admin Girişi" data-de="CC Admin Login">CC Admin Girişi</span>
         </a>
         <a href="/agent/login" class="auth-link agent-link">
-            <i class="ti ti-headset"></i> Agent Girişi
+            <i class="ti ti-headset"></i> <span data-tr="Agent Girişi" data-de="Agenten Login">Agent Girişi</span>
         </a>
     </div>
     
@@ -83,6 +89,31 @@
 </div>
 
 <style>
+.lang-switcher-auth {
+    position: absolute;
+    top: 1rem;
+    right: 1rem;
+    display: flex;
+    gap: 0.25rem;
+    background: rgba(0,0,0,0.05);
+    padding: 0.2rem;
+    border-radius: 6px;
+}
+.lang-btn-auth {
+    padding: 0.35rem 0.6rem;
+    border: none;
+    background: transparent;
+    border-radius: 4px;
+    cursor: pointer;
+    font-weight: 600;
+    font-size: 0.75rem;
+    transition: all 0.2s;
+}
+.lang-btn-auth.active {
+    background: white;
+    box-shadow: 0 1px 4px rgba(0,0,0,0.1);
+    color: var(--primary);
+}
 .super-admin-badge {
     display: inline-block;
     padding: 0.25rem 0.75rem;
@@ -143,9 +174,34 @@
 .auth-link.agent-link:hover {
     background: rgba(39, 174, 96, 0.2);
 }
+.auth-card {
+    position: relative;
+}
 </style>
 
 <script>
+let currentLang = localStorage.getItem('lang') || 'tr';
+
+function setLang(lang) {
+    currentLang = lang;
+    localStorage.setItem('lang', lang);
+    
+    document.getElementById('lang-tr').classList.toggle('active', lang === 'tr');
+    document.getElementById('lang-de').classList.toggle('active', lang === 'de');
+    
+    document.querySelectorAll('[data-tr]').forEach(el => {
+        const text = el.getAttribute(`data-${lang}`);
+        if (text) el.textContent = text;
+    });
+    
+    document.querySelectorAll('[data-tr-placeholder]').forEach(el => {
+        const text = el.getAttribute(`data-${lang}-placeholder`);
+        if (text) el.placeholder = text;
+    });
+}
+
+document.addEventListener('DOMContentLoaded', () => setLang(currentLang));
+
 function togglePassword() {
     const input = document.getElementById('passwordInput');
     const icon = document.getElementById('passwordToggleIcon');

@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="tr">
+<html lang="tr" id="htmlRoot">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -45,6 +45,46 @@
             z-index: -1;
             background-color: #FFFDF7;
             background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='42' viewBox='0 0 28 49'%3E%3Cg fill-rule='evenodd'%3E%3Cg fill='%23f5a623' fill-opacity='0.06'%3E%3Cpath d='M13.99 9.25l13 7.5v15l-13 7.5L1 31.75v-15l12.99-7.5zM3 17.9v12.7l10.99 6.34 11-6.35V17.9l-11-6.34L3 17.9zM0 15l12.98-7.5V0h-2v6.35L0 12.69v2.3zm0 18.5L12.98 41v8h-2v-6.85L0 35.81v-2.3zM15 0v7.5L27.99 15H28v-2.31h-.01L17 6.35V0h-2zm0 49v-8l12.99-7.5H28v2.31h-.01L17 42.15V49h-2z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+        }
+        
+        /* Language Switcher */
+        .lang-switcher {
+            display: flex;
+            gap: 0.25rem;
+            background: rgba(0,0,0,0.05);
+            padding: 0.25rem;
+            border-radius: 8px;
+        }
+        
+        .lang-btn {
+            padding: 0.5rem 0.75rem;
+            border: none;
+            background: transparent;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: 600;
+            font-size: 0.85rem;
+            transition: all 0.3s;
+            display: flex;
+            align-items: center;
+            gap: 0.35rem;
+        }
+        
+        .lang-btn.active {
+            background: white;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            color: var(--primary);
+        }
+        
+        .lang-btn:hover:not(.active) {
+            background: rgba(255,255,255,0.5);
+        }
+        
+        .lang-flag {
+            width: 20px;
+            height: 14px;
+            border-radius: 2px;
+            object-fit: cover;
         }
         
         /* Navigation */
@@ -517,7 +557,17 @@
         
         .price-period {
             color: var(--text-light);
-            margin-bottom: 2rem;
+            margin-bottom: 0.5rem;
+        }
+        
+        .price-voip {
+            font-size: 0.85rem;
+            color: var(--primary-dark);
+            background: rgba(245, 166, 35, 0.1);
+            padding: 0.35rem 0.75rem;
+            border-radius: 20px;
+            display: inline-block;
+            margin-bottom: 1.5rem;
         }
         
         .price-features {
@@ -540,37 +590,24 @@
             font-size: 1.2rem;
         }
         
-        /* Screenshots */
-        .screenshots-container {
-            display: flex;
-            gap: 2rem;
-            overflow-x: auto;
-            padding: 2rem 0;
-            scroll-snap-type: x mandatory;
-        }
-        
-        .screenshot-item {
-            flex: 0 0 auto;
-            width: 400px;
-            scroll-snap-align: center;
-        }
-        
-        .screenshot-img {
-            width: 100%;
+        /* Special Offer Banner */
+        .special-offer {
+            background: linear-gradient(135deg, #1a1a2e, #16213e);
+            color: white;
+            text-align: center;
+            padding: 1.5rem;
+            margin-top: 3rem;
             border-radius: 16px;
-            box-shadow: 0 20px 40px rgba(0,0,0,0.15);
-            border: 3px solid white;
-            margin-bottom: 1rem;
         }
         
-        .screenshot-title {
-            font-weight: 700;
-            margin-bottom: 0.25rem;
+        .special-offer h4 {
+            font-size: 1.25rem;
+            margin-bottom: 0.5rem;
         }
         
-        .screenshot-desc {
-            color: var(--text-light);
-            font-size: 0.9rem;
+        .special-offer p {
+            opacity: 0.8;
+            font-size: 0.95rem;
         }
         
         /* CTA Section */
@@ -727,6 +764,21 @@
             .footer-grid { grid-template-columns: 1fr; text-align: center; }
             .footer-social { justify-content: center; }
         }
+        
+        /* Mobile menu */
+        .mobile-menu-btn {
+            display: none;
+            background: none;
+            border: none;
+            font-size: 1.5rem;
+            cursor: pointer;
+            color: var(--text-dark);
+        }
+        
+        @media (max-width: 768px) {
+            .mobile-menu-btn { display: block; }
+            .nav-links.mobile-hidden { display: none; }
+        }
     </style>
 </head>
 <body>
@@ -741,14 +793,28 @@
             <div class="logo-text">AI BEE <span>CC</span></div>
         </a>
         <div class="nav-links">
-            <a href="#features">Özellikler</a>
-            <a href="#ai">Yapay Zeka</a>
-            <a href="#pricing">Fiyatlar</a>
-            <a href="#contact">İletişim</a>
+            <a href="#features" data-tr="Özellikler" data-de="Funktionen">Özellikler</a>
+            <a href="#ai" data-tr="Yapay Zeka" data-de="Künstliche Intelligenz">Yapay Zeka</a>
+            <a href="#pricing" data-tr="Fiyatlar" data-de="Preise">Fiyatlar</a>
+            <a href="#contact" data-tr="İletişim" data-de="Kontakt">İletişim</a>
+            
+            <!-- Language Switcher -->
+            <div class="lang-switcher">
+                <button class="lang-btn active" onclick="setLang('tr')" id="lang-tr">
+                    🇹🇷 TR
+                </button>
+                <button class="lang-btn" onclick="setLang('de')" id="lang-de">
+                    🇩🇪 DE
+                </button>
+            </div>
+            
             <a href="/login" class="btn btn-primary">
-                <i class="ti ti-login"></i> Giriş Yap
+                <i class="ti ti-login"></i> <span data-tr="Giriş Yap" data-de="Anmelden">Giriş Yap</span>
             </a>
         </div>
+        <button class="mobile-menu-btn">
+            <i class="ti ti-menu-2"></i>
+        </button>
     </nav>
     
     <!-- Hero Section -->
@@ -757,36 +823,36 @@
             <div class="hero-content">
                 <div class="hero-badge">
                     <i class="ti ti-sparkles"></i>
-                    Yapay Zeka Destekli Yeni Nesil Platform
+                    <span data-tr="Yapay Zeka Destekli Yeni Nesil Platform" data-de="KI-gestützte Plattform der nächsten Generation">Yapay Zeka Destekli Yeni Nesil Platform</span>
                 </div>
                 <h1 class="hero-title">
-                    Çağrı Merkezinizi <br>
-                    <span class="highlight">Geleceğe Taşıyın</span>
+                    <span data-tr="Çağrı Merkezinizi" data-de="Bringen Sie Ihr">Çağrı Merkezinizi</span> <br>
+                    <span class="highlight" data-tr="Geleceğe Taşıyın" data-de="Call Center in die Zukunft">Geleceğe Taşıyın</span>
                 </h1>
-                <p class="hero-description">
+                <p class="hero-description" data-tr="AI BEE CC ile çağrı merkezi operasyonlarınızı yapay zeka ile optimize edin. Gerçek zamanlı analiz, otomatik transkripsiyon ve akıllı yönlendirme tek platformda." data-de="Optimieren Sie Ihre Call Center-Operationen mit AI BEE CC und künstlicher Intelligenz. Echtzeitanalyse, automatische Transkription und intelligentes Routing auf einer Plattform.">
                     AI BEE CC ile çağrı merkezi operasyonlarınızı yapay zeka ile optimize edin. 
                     Gerçek zamanlı analiz, otomatik transkripsiyon ve akıllı yönlendirme tek platformda.
                 </p>
                 <div class="hero-buttons">
                     <a href="#pricing" class="btn btn-primary">
-                        <i class="ti ti-rocket"></i> Hemen Başla
+                        <i class="ti ti-rocket"></i> <span data-tr="Hemen Başla" data-de="Jetzt Starten">Hemen Başla</span>
                     </a>
                     <a href="#features" class="btn btn-outline">
-                        <i class="ti ti-player-play"></i> Demo İzle
+                        <i class="ti ti-player-play"></i> <span data-tr="Demo İzle" data-de="Demo Ansehen">Demo İzle</span>
                     </a>
                 </div>
                 <div class="hero-stats">
                     <div class="stat-item">
                         <div class="stat-value">%40</div>
-                        <div class="stat-label">Verimlilik Artışı</div>
+                        <div class="stat-label" data-tr="Verimlilik Artışı" data-de="Effizienzsteigerung">Verimlilik Artışı</div>
                     </div>
                     <div class="stat-item">
                         <div class="stat-value">%95</div>
-                        <div class="stat-label">Müşteri Memnuniyeti</div>
+                        <div class="stat-label" data-tr="Müşteri Memnuniyeti" data-de="Kundenzufriedenheit">Müşteri Memnuniyeti</div>
                     </div>
                     <div class="stat-item">
                         <div class="stat-value">7/24</div>
-                        <div class="stat-label">AI Desteği</div>
+                        <div class="stat-label" data-tr="AI Desteği" data-de="KI-Unterstützung">AI Desteği</div>
                     </div>
                 </div>
             </div>
@@ -797,8 +863,8 @@
                         <i class="ti ti-brain"></i>
                     </div>
                     <div>
-                        <div style="font-weight: 700;">AI Analiz</div>
-                        <div style="font-size: 0.85rem; color: var(--text-light);">Gerçek zamanlı</div>
+                        <div style="font-weight: 700;" data-tr="AI Analiz" data-de="KI-Analyse">AI Analiz</div>
+                        <div style="font-size: 0.85rem; color: var(--text-light);" data-tr="Gerçek zamanlı" data-de="Echtzeit">Gerçek zamanlı</div>
                     </div>
                 </div>
                 <div class="floating-card stats">
@@ -807,7 +873,7 @@
                     </div>
                     <div>
                         <div style="font-weight: 700;">+127%</div>
-                        <div style="font-size: 0.85rem; color: var(--text-light);">Satış artışı</div>
+                        <div style="font-size: 0.85rem; color: var(--text-light);" data-tr="Satış artışı" data-de="Umsatzsteigerung">Satış artışı</div>
                     </div>
                 </div>
             </div>
@@ -818,9 +884,9 @@
     <section class="section" id="features">
         <div class="container">
             <div class="section-header">
-                <div class="section-badge">✨ Özellikler</div>
-                <h2 class="section-title">Her Şey Tek Platformda</h2>
-                <p class="section-subtitle">
+                <div class="section-badge">✨ <span data-tr="Özellikler" data-de="Funktionen">Özellikler</span></div>
+                <h2 class="section-title" data-tr="Her Şey Tek Platformda" data-de="Alles auf einer Plattform">Her Şey Tek Platformda</h2>
+                <p class="section-subtitle" data-tr="Çağrı merkezi yönetimi için ihtiyacınız olan tüm araçlar, güçlü ve kullanımı kolay bir arayüzde." data-de="Alle Tools, die Sie für das Call Center-Management benötigen, in einer leistungsstarken und benutzerfreundlichen Oberfläche.">
                     Çağrı merkezi yönetimi için ihtiyacınız olan tüm araçlar, güçlü ve kullanımı kolay bir arayüzde.
                 </p>
             </div>
@@ -830,48 +896,48 @@
                     <div class="feature-icon orange">
                         <i class="ti ti-phone-call"></i>
                     </div>
-                    <h3 class="feature-title">Omnichannel İletişim</h3>
-                    <p class="feature-desc">Telefon, SMS, e-posta, WhatsApp ve sosyal medya - tüm kanalları tek ekrandan yönetin.</p>
+                    <h3 class="feature-title" data-tr="Omnichannel İletişim" data-de="Omnichannel-Kommunikation">Omnichannel İletişim</h3>
+                    <p class="feature-desc" data-tr="Telefon, SMS, e-posta, WhatsApp ve sosyal medya - tüm kanalları tek ekrandan yönetin." data-de="Telefon, SMS, E-Mail, WhatsApp und Social Media - verwalten Sie alle Kanäle von einem Bildschirm aus.">Telefon, SMS, e-posta, WhatsApp ve sosyal medya - tüm kanalları tek ekrandan yönetin.</p>
                 </div>
                 
                 <div class="feature-card">
                     <div class="feature-icon blue">
                         <i class="ti ti-users"></i>
                     </div>
-                    <h3 class="feature-title">CRM Entegrasyonu</h3>
-                    <p class="feature-desc">Müşteri bilgileri, geçmiş görüşmeler ve notlar anında erişilebilir. 360° müşteri görünümü.</p>
+                    <h3 class="feature-title" data-tr="CRM Entegrasyonu" data-de="CRM-Integration">CRM Entegrasyonu</h3>
+                    <p class="feature-desc" data-tr="Müşteri bilgileri, geçmiş görüşmeler ve notlar anında erişilebilir. 360° müşteri görünümü." data-de="Kundeninformationen, vergangene Gespräche und Notizen sofort zugänglich. 360°-Kundenansicht.">Müşteri bilgileri, geçmiş görüşmeler ve notlar anında erişilebilir. 360° müşteri görünümü.</p>
                 </div>
                 
                 <div class="feature-card">
                     <div class="feature-icon green">
                         <i class="ti ti-chart-bar"></i>
                     </div>
-                    <h3 class="feature-title">Gerçek Zamanlı Raporlar</h3>
-                    <p class="feature-desc">Anlık dashboard'lar, performans metrikleri ve özelleştirilebilir raporlar.</p>
+                    <h3 class="feature-title" data-tr="Gerçek Zamanlı Raporlar" data-de="Echtzeitberichte">Gerçek Zamanlı Raporlar</h3>
+                    <p class="feature-desc" data-tr="Anlık dashboard'lar, performans metrikleri ve özelleştirilebilir raporlar." data-de="Echtzeit-Dashboards, Leistungsmetriken und anpassbare Berichte.">Anlık dashboard'lar, performans metrikleri ve özelleştirilebilir raporlar.</p>
                 </div>
                 
                 <div class="feature-card">
                     <div class="feature-icon purple">
                         <i class="ti ti-headset"></i>
                     </div>
-                    <h3 class="feature-title">Softphone & WebRTC</h3>
-                    <p class="feature-desc">Tarayıcı tabanlı çağrı, kurulum gerektirmez. HD ses kalitesi.</p>
+                    <h3 class="feature-title" data-tr="Softphone & WebRTC" data-de="Softphone & WebRTC">Softphone & WebRTC</h3>
+                    <p class="feature-desc" data-tr="Tarayıcı tabanlı çağrı, kurulum gerektirmez. HD ses kalitesi." data-de="Browserbasierte Anrufe, keine Installation erforderlich. HD-Audioqualität.">Tarayıcı tabanlı çağrı, kurulum gerektirmez. HD ses kalitesi.</p>
                 </div>
                 
                 <div class="feature-card">
                     <div class="feature-icon red">
                         <i class="ti ti-target"></i>
                     </div>
-                    <h3 class="feature-title">Kampanya Yönetimi</h3>
-                    <p class="feature-desc">Predictive, progressive ve preview dialer modları. Akıllı arama optimizasyonu.</p>
+                    <h3 class="feature-title" data-tr="Kampanya Yönetimi" data-de="Kampagnenverwaltung">Kampanya Yönetimi</h3>
+                    <p class="feature-desc" data-tr="Predictive, progressive ve preview dialer modları. Akıllı arama optimizasyonu." data-de="Predictive, Progressive und Preview Dialer-Modi. Intelligente Anrufoptimierung.">Predictive, progressive ve preview dialer modları. Akıllı arama optimizasyonu.</p>
                 </div>
                 
                 <div class="feature-card">
                     <div class="feature-icon cyan">
                         <i class="ti ti-shield-check"></i>
                     </div>
-                    <h3 class="feature-title">KVKK Uyumlu</h3>
-                    <p class="feature-desc">Veri güvenliği, kayıt maskeleme ve denetim logları ile tam uyumluluk.</p>
+                    <h3 class="feature-title" data-tr="KVKK / DSGVO Uyumlu" data-de="DSGVO-Konform">KVKK / DSGVO Uyumlu</h3>
+                    <p class="feature-desc" data-tr="Veri güvenliği, kayıt maskeleme ve denetim logları ile tam uyumluluk." data-de="Volle Compliance mit Datensicherheit, Aufzeichnungsmaskierung und Audit-Logs.">Veri güvenliği, kayıt maskeleme ve denetim logları ile tam uyumluluk.</p>
                 </div>
             </div>
         </div>
@@ -881,9 +947,9 @@
     <section class="section ai-section" id="ai">
         <div class="container">
             <div class="section-header">
-                <div class="section-badge">🤖 Yapay Zeka</div>
-                <h2 class="section-title">AI ile Çağrı Merkezi Devrimi</h2>
-                <p class="section-subtitle">
+                <div class="section-badge">🤖 <span data-tr="Yapay Zeka" data-de="Künstliche Intelligenz">Yapay Zeka</span></div>
+                <h2 class="section-title" data-tr="AI ile Çağrı Merkezi Devrimi" data-de="Call Center Revolution mit KI">AI ile Çağrı Merkezi Devrimi</h2>
+                <p class="section-subtitle" data-tr="Yapay zeka destekli özelliklerle agent'larınızı güçlendirin, maliyetleri düşürün." data-de="Stärken Sie Ihre Agenten mit KI-gestützten Funktionen und senken Sie die Kosten.">
                     Yapay zeka destekli özelliklerle agent'larınızı güçlendirin, maliyetleri düşürün.
                 </p>
             </div>
@@ -891,50 +957,50 @@
             <div class="ai-grid">
                 <div class="ai-card">
                     <div class="ai-card-icon"><i class="ti ti-message-chatbot"></i></div>
-                    <h3 class="ai-card-title">Otomatik Transkripsiyon (STT)</h3>
-                    <p class="ai-card-desc">Tüm görüşmeler otomatik olarak metne dönüştürülür. Türkçe ve Almanca desteği.</p>
+                    <h3 class="ai-card-title" data-tr="Otomatik Transkripsiyon (STT)" data-de="Automatische Transkription (STT)">Otomatik Transkripsiyon (STT)</h3>
+                    <p class="ai-card-desc" data-tr="Tüm görüşmeler otomatik olarak metne dönüştürülür. Türkçe ve Almanca desteği." data-de="Alle Gespräche werden automatisch in Text umgewandelt. Türkisch und Deutsch unterstützt.">Tüm görüşmeler otomatik olarak metne dönüştürülür. Türkçe ve Almanca desteği.</p>
                 </div>
                 
                 <div class="ai-card">
                     <div class="ai-card-icon"><i class="ti ti-file-text"></i></div>
-                    <h3 class="ai-card-title">Akıllı Özet</h3>
-                    <p class="ai-card-desc">Her görüşme sonrası AI tarafından otomatik özet oluşturulur. CRM'e anında aktarım.</p>
+                    <h3 class="ai-card-title" data-tr="Akıllı Özet" data-de="Intelligente Zusammenfassung">Akıllı Özet</h3>
+                    <p class="ai-card-desc" data-tr="Her görüşme sonrası AI tarafından otomatik özet oluşturulur. CRM'e anında aktarım." data-de="Nach jedem Gespräch wird automatisch eine KI-Zusammenfassung erstellt. Sofortiger CRM-Transfer.">Her görüşme sonrası AI tarafından otomatik özet oluşturulur. CRM'e anında aktarım.</p>
                 </div>
                 
                 <div class="ai-card">
                     <div class="ai-card-icon"><i class="ti ti-mood-happy"></i></div>
-                    <h3 class="ai-card-title">Duygu Analizi</h3>
-                    <p class="ai-card-desc">Müşteri memnuniyetini gerçek zamanlı ölçün. Riskli çağrıları anında tespit edin.</p>
+                    <h3 class="ai-card-title" data-tr="Duygu Analizi" data-de="Sentiment-Analyse">Duygu Analizi</h3>
+                    <p class="ai-card-desc" data-tr="Müşteri memnuniyetini gerçek zamanlı ölçün. Riskli çağrıları anında tespit edin." data-de="Messen Sie die Kundenzufriedenheit in Echtzeit. Erkennen Sie riskante Anrufe sofort.">Müşteri memnuniyetini gerçek zamanlı ölçün. Riskli çağrıları anında tespit edin.</p>
                 </div>
                 
                 <div class="ai-card">
                     <div class="ai-card-icon"><i class="ti ti-bulb"></i></div>
-                    <h3 class="ai-card-title">Agent Asistan</h3>
-                    <p class="ai-card-desc">Görüşme sırasında AI destekli öneriler, script yardımı ve bilgi tabanı erişimi.</p>
+                    <h3 class="ai-card-title" data-tr="Agent Asistan" data-de="Agenten-Assistent">Agent Asistan</h3>
+                    <p class="ai-card-desc" data-tr="Görüşme sırasında AI destekli öneriler, script yardımı ve bilgi tabanı erişimi." data-de="KI-gestützte Vorschläge während des Gesprächs, Skripthilfe und Wissensdatenbankzugriff.">Görüşme sırasında AI destekli öneriler, script yardımı ve bilgi tabanı erişimi.</p>
                 </div>
                 
                 <div class="ai-card">
                     <div class="ai-card-icon"><i class="ti ti-robot"></i></div>
-                    <h3 class="ai-card-title">AI Voice Bot</h3>
-                    <p class="ai-card-desc">IVR öncesi AI bot ile basit işlemleri otomatize edin. %30 çağrı azaltma.</p>
+                    <h3 class="ai-card-title" data-tr="AI Voice Bot" data-de="KI-Sprachbot">AI Voice Bot</h3>
+                    <p class="ai-card-desc" data-tr="IVR öncesi AI bot ile basit işlemleri otomatize edin. %30 çağrı azaltma." data-de="Automatisieren Sie einfache Aufgaben mit KI-Bot vor IVR. 30% weniger Anrufe.">IVR öncesi AI bot ile basit işlemleri otomatize edin. %30 çağrı azaltma.</p>
                 </div>
                 
                 <div class="ai-card">
                     <div class="ai-card-icon"><i class="ti ti-clipboard-check"></i></div>
-                    <h3 class="ai-card-title">Otomatik QA</h3>
-                    <p class="ai-card-desc">%100 çağrı değerlendirmesi. AI tabanlı kalite skoru ve uyumluluk kontrolü.</p>
+                    <h3 class="ai-card-title" data-tr="Otomatik QA" data-de="Automatische QA">Otomatik QA</h3>
+                    <p class="ai-card-desc" data-tr="%100 çağrı değerlendirmesi. AI tabanlı kalite skoru ve uyumluluk kontrolü." data-de="100% Anrufbewertung. KI-basierte Qualitätsbewertung und Compliance-Prüfung.">%100 çağrı değerlendirmesi. AI tabanlı kalite skoru ve uyumluluk kontrolü.</p>
                 </div>
                 
                 <div class="ai-card">
                     <div class="ai-card-icon"><i class="ti ti-route"></i></div>
-                    <h3 class="ai-card-title">Akıllı Yönlendirme</h3>
-                    <p class="ai-card-desc">Müşteri niyetini anlayarak en uygun agent'a otomatik yönlendirme.</p>
+                    <h3 class="ai-card-title" data-tr="Akıllı Yönlendirme" data-de="Intelligentes Routing">Akıllı Yönlendirme</h3>
+                    <p class="ai-card-desc" data-tr="Müşteri niyetini anlayarak en uygun agent'a otomatik yönlendirme." data-de="Automatische Weiterleitung zum passenden Agenten durch Verstehen der Kundenabsicht.">Müşteri niyetini anlayarak en uygun agent'a otomatik yönlendirme.</p>
                 </div>
                 
                 <div class="ai-card">
                     <div class="ai-card-icon"><i class="ti ti-books"></i></div>
-                    <h3 class="ai-card-title">RAG Bilgi Tabanı</h3>
-                    <p class="ai-card-desc">Şirket dökümanlarından AI destekli anlık cevap üretimi. Güvenilirlik skoru.</p>
+                    <h3 class="ai-card-title" data-tr="RAG Bilgi Tabanı" data-de="RAG-Wissensdatenbank">RAG Bilgi Tabanı</h3>
+                    <p class="ai-card-desc" data-tr="Şirket dökümanlarından AI destekli anlık cevap üretimi. Güvenilirlik skoru." data-de="KI-gestützte sofortige Antwortgenerierung aus Firmendokumenten. Vertrauenswürdigkeitsbewertung.">Şirket dökümanlarından AI destekli anlık cevap üretimi. Güvenilirlik skoru.</p>
                 </div>
             </div>
         </div>
@@ -944,9 +1010,9 @@
     <section class="section" id="pricing">
         <div class="container">
             <div class="section-header">
-                <div class="section-badge">💰 Fiyatlandırma</div>
-                <h2 class="section-title">İşinize Uygun Plan</h2>
-                <p class="section-subtitle">
+                <div class="section-badge">💰 <span data-tr="Fiyatlandırma" data-de="Preise">Fiyatlandırma</span></div>
+                <h2 class="section-title" data-tr="İşinize Uygun Plan" data-de="Der richtige Plan für Ihr Unternehmen">İşinize Uygun Plan</h2>
+                <p class="section-subtitle" data-tr="Ölçeklenebilir fiyatlandırma ile küçük ekiplerden büyük operasyonlara kadar herkes için." data-de="Skalierbare Preise für alle, von kleinen Teams bis zu großen Operationen.">
                     Ölçeklenebilir fiyatlandırma ile küçük ekiplerden büyük operasyonlara kadar herkes için.
                 </p>
             </div>
@@ -957,38 +1023,40 @@
                         <i class="ti ti-building-store"></i>
                     </div>
                     <h3 class="price-name">Starter</h3>
-                    <p class="price-desc">Küçük ekipler için ideal başlangıç</p>
-                    <div class="price-value">₺2.499<span>/ay</span></div>
-                    <p class="price-period">5 Agent dahil</p>
+                    <p class="price-desc" data-tr="Küçük ekipler için ideal başlangıç" data-de="Idealer Start für kleine Teams">Küçük ekipler için ideal başlangıç</p>
+                    <div class="price-value">€99<span>/ay | Monat</span></div>
+                    <p class="price-period" data-tr="5 Agent dahil" data-de="5 Agenten inklusive">5 Agent dahil</p>
+                    <div class="price-voip" data-tr="+ VoIP ücreti ayrıdır" data-de="+ VoIP-Gebühren separat">+ VoIP ücreti ayrıdır</div>
                     <ul class="price-features">
-                        <li><i class="ti ti-check"></i> 5 Agent lisansı</li>
-                        <li><i class="ti ti-check"></i> Temel CRM</li>
-                        <li><i class="ti ti-check"></i> Çağrı kayıt (30 gün)</li>
-                        <li><i class="ti ti-check"></i> Temel raporlar</li>
-                        <li><i class="ti ti-check"></i> Email desteği</li>
+                        <li><i class="ti ti-check"></i> <span data-tr="5 Agent lisansı" data-de="5 Agenten-Lizenzen">5 Agent lisansı</span></li>
+                        <li><i class="ti ti-check"></i> <span data-tr="Temel CRM" data-de="Basis-CRM">Temel CRM</span></li>
+                        <li><i class="ti ti-check"></i> <span data-tr="Çağrı kayıt (30 gün)" data-de="Anrufaufzeichnung (30 Tage)">Çağrı kayıt (30 gün)</span></li>
+                        <li><i class="ti ti-check"></i> <span data-tr="Temel raporlar" data-de="Basisberichte">Temel raporlar</span></li>
+                        <li><i class="ti ti-check"></i> <span data-tr="Email desteği" data-de="E-Mail-Support">Email desteği</span></li>
                     </ul>
-                    <a href="/login" class="btn btn-outline" style="width: 100%;">Başla</a>
+                    <a href="/login" class="btn btn-outline" style="width: 100%;" data-tr="Başla" data-de="Starten">Başla</a>
                 </div>
                 
                 <div class="price-card popular">
-                    <div class="popular-badge">🔥 En Popüler</div>
+                    <div class="popular-badge">🔥 <span data-tr="En Popüler" data-de="Am Beliebtesten">En Popüler</span></div>
                     <div class="price-icon" style="background: rgba(245, 166, 35, 0.1); color: var(--primary);">
                         <i class="ti ti-building"></i>
                     </div>
                     <h3 class="price-name">Professional</h3>
-                    <p class="price-desc">Büyüyen çağrı merkezleri için</p>
-                    <div class="price-value">₺7.999<span>/ay</span></div>
-                    <p class="price-period">20 Agent dahil</p>
+                    <p class="price-desc" data-tr="Büyüyen çağrı merkezleri için" data-de="Für wachsende Call Center">Büyüyen çağrı merkezleri için</p>
+                    <div class="price-value">€299<span>/ay | Monat</span></div>
+                    <p class="price-period" data-tr="20 Agent dahil" data-de="20 Agenten inklusive">20 Agent dahil</p>
+                    <div class="price-voip" data-tr="+ VoIP ücreti ayrıdır" data-de="+ VoIP-Gebühren separat">+ VoIP ücreti ayrıdır</div>
                     <ul class="price-features">
-                        <li><i class="ti ti-check"></i> 20 Agent lisansı</li>
-                        <li><i class="ti ti-check"></i> Tam CRM + Kampanya</li>
-                        <li><i class="ti ti-check"></i> AI Transkripsiyon</li>
-                        <li><i class="ti ti-check"></i> Duygu Analizi</li>
-                        <li><i class="ti ti-check"></i> Predictive Dialer</li>
-                        <li><i class="ti ti-check"></i> API Erişimi</li>
-                        <li><i class="ti ti-check"></i> 7/24 Destek</li>
+                        <li><i class="ti ti-check"></i> <span data-tr="20 Agent lisansı" data-de="20 Agenten-Lizenzen">20 Agent lisansı</span></li>
+                        <li><i class="ti ti-check"></i> <span data-tr="Tam CRM + Kampanya" data-de="Vollständiges CRM + Kampagne">Tam CRM + Kampanya</span></li>
+                        <li><i class="ti ti-check"></i> <span data-tr="AI Transkripsiyon" data-de="KI-Transkription">AI Transkripsiyon</span></li>
+                        <li><i class="ti ti-check"></i> <span data-tr="Duygu Analizi" data-de="Sentiment-Analyse">Duygu Analizi</span></li>
+                        <li><i class="ti ti-check"></i> <span data-tr="Predictive Dialer" data-de="Predictive Dialer">Predictive Dialer</span></li>
+                        <li><i class="ti ti-check"></i> <span data-tr="API Erişimi" data-de="API-Zugang">API Erişimi</span></li>
+                        <li><i class="ti ti-check"></i> <span data-tr="7/24 Destek" data-de="24/7 Support">7/24 Destek</span></li>
                     </ul>
-                    <a href="/login" class="btn btn-primary" style="width: 100%;">Başla</a>
+                    <a href="/login" class="btn btn-primary" style="width: 100%;" data-tr="Başla" data-de="Starten">Başla</a>
                 </div>
                 
                 <div class="price-card">
@@ -996,59 +1064,66 @@
                         <i class="ti ti-building-skyscraper"></i>
                     </div>
                     <h3 class="price-name">Enterprise</h3>
-                    <p class="price-desc">Büyük operasyonlar için özel</p>
-                    <div class="price-value">Özel<span> fiyat</span></div>
-                    <p class="price-period">Sınırsız Agent</p>
+                    <p class="price-desc" data-tr="Büyük operasyonlar için özel" data-de="Maßgeschneidert für große Operationen">Büyük operasyonlar için özel</p>
+                    <div class="price-value" style="font-size: 2rem;" data-tr="Özel Fiyat" data-de="Sonderpreis">Özel Fiyat</div>
+                    <p class="price-period" data-tr="Sınırsız Agent" data-de="Unbegrenzte Agenten">Sınırsız Agent</p>
+                    <div class="price-voip" data-tr="+ VoIP özel tarife" data-de="+ VoIP-Sondertarif">+ VoIP özel tarife</div>
                     <ul class="price-features">
-                        <li><i class="ti ti-check"></i> Sınırsız Agent</li>
-                        <li><i class="ti ti-check"></i> Tüm AI özellikleri</li>
-                        <li><i class="ti ti-check"></i> Voice Bot</li>
-                        <li><i class="ti ti-check"></i> Özel entegrasyonlar</li>
-                        <li><i class="ti ti-check"></i> Dedicated sunucu</li>
-                        <li><i class="ti ti-check"></i> SLA garantisi</li>
-                        <li><i class="ti ti-check"></i> Özel eğitim</li>
+                        <li><i class="ti ti-check"></i> <span data-tr="Sınırsız Agent" data-de="Unbegrenzte Agenten">Sınırsız Agent</span></li>
+                        <li><i class="ti ti-check"></i> <span data-tr="Tüm AI özellikleri" data-de="Alle KI-Funktionen">Tüm AI özellikleri</span></li>
+                        <li><i class="ti ti-check"></i> <span data-tr="Voice Bot" data-de="Sprachbot">Voice Bot</span></li>
+                        <li><i class="ti ti-check"></i> <span data-tr="Özel entegrasyonlar" data-de="Benutzerdefinierte Integrationen">Özel entegrasyonlar</span></li>
+                        <li><i class="ti ti-check"></i> <span data-tr="Dedicated sunucu" data-de="Dedizierter Server">Dedicated sunucu</span></li>
+                        <li><i class="ti ti-check"></i> <span data-tr="SLA garantisi" data-de="SLA-Garantie">SLA garantisi</span></li>
+                        <li><i class="ti ti-check"></i> <span data-tr="Özel eğitim" data-de="Individuelle Schulung">Özel eğitim</span></li>
                     </ul>
-                    <a href="#contact" class="btn btn-outline" style="width: 100%;">İletişime Geç</a>
+                    <a href="#contact" class="btn btn-outline" style="width: 100%;" data-tr="İletişime Geç" data-de="Kontaktieren">İletişime Geç</a>
                 </div>
             </div>
             
             <!-- AI Usage Pricing -->
             <div style="margin-top: 4rem; text-align: center;">
                 <h3 style="font-size: 1.5rem; font-weight: 700; margin-bottom: 2rem;">
-                    <i class="ti ti-brain" style="color: var(--primary);"></i> AI Kullanım Ücretleri
+                    <i class="ti ti-brain" style="color: var(--primary);"></i> <span data-tr="AI Kullanım Ücretleri" data-de="KI-Nutzungsgebühren">AI Kullanım Ücretleri</span>
                 </h3>
                 <div style="display: flex; gap: 2rem; justify-content: center; flex-wrap: wrap;">
                     <div style="background: white; padding: 1.5rem 2rem; border-radius: 16px; box-shadow: 0 4px 20px rgba(0,0,0,0.05);">
-                        <div style="font-size: 0.9rem; color: var(--text-light); margin-bottom: 0.5rem;">Transkripsiyon</div>
-                        <div style="font-size: 1.5rem; font-weight: 700; color: var(--primary);">₺0.15<span style="font-size: 0.9rem; color: var(--text-light);">/dakika</span></div>
+                        <div style="font-size: 0.9rem; color: var(--text-light); margin-bottom: 0.5rem;" data-tr="Transkripsiyon" data-de="Transkription">Transkripsiyon</div>
+                        <div style="font-size: 1.5rem; font-weight: 700; color: var(--primary);">€0.008<span style="font-size: 0.9rem; color: var(--text-light);" data-tr="/dakika" data-de="/Minute">/dakika</span></div>
                     </div>
                     <div style="background: white; padding: 1.5rem 2rem; border-radius: 16px; box-shadow: 0 4px 20px rgba(0,0,0,0.05);">
-                        <div style="font-size: 0.9rem; color: var(--text-light); margin-bottom: 0.5rem;">AI Özet & Analiz</div>
-                        <div style="font-size: 1.5rem; font-weight: 700; color: var(--primary);">₺0.25<span style="font-size: 0.9rem; color: var(--text-light);">/çağrı</span></div>
+                        <div style="font-size: 0.9rem; color: var(--text-light); margin-bottom: 0.5rem;" data-tr="AI Özet & Analiz" data-de="KI-Zusammenfassung">AI Özet & Analiz</div>
+                        <div style="font-size: 1.5rem; font-weight: 700; color: var(--primary);">€0.015<span style="font-size: 0.9rem; color: var(--text-light);" data-tr="/çağrı" data-de="/Anruf">/çağrı</span></div>
                     </div>
                     <div style="background: white; padding: 1.5rem 2rem; border-radius: 16px; box-shadow: 0 4px 20px rgba(0,0,0,0.05);">
-                        <div style="font-size: 0.9rem; color: var(--text-light); margin-bottom: 0.5rem;">Voice Bot</div>
-                        <div style="font-size: 1.5rem; font-weight: 700; color: var(--primary);">₺0.50<span style="font-size: 0.9rem; color: var(--text-light);">/dakika</span></div>
+                        <div style="font-size: 0.9rem; color: var(--text-light); margin-bottom: 0.5rem;" data-tr="Voice Bot" data-de="Sprachbot">Voice Bot</div>
+                        <div style="font-size: 1.5rem; font-weight: 700; color: var(--primary);">€0.025<span style="font-size: 0.9rem; color: var(--text-light);" data-tr="/dakika" data-de="/Minute">/dakika</span></div>
                     </div>
                     <div style="background: white; padding: 1.5rem 2rem; border-radius: 16px; box-shadow: 0 4px 20px rgba(0,0,0,0.05);">
-                        <div style="font-size: 0.9rem; color: var(--text-light); margin-bottom: 0.5rem;">QA Değerlendirme</div>
-                        <div style="font-size: 1.5rem; font-weight: 700; color: var(--primary);">₺0.10<span style="font-size: 0.9rem; color: var(--text-light);">/çağrı</span></div>
+                        <div style="font-size: 0.9rem; color: var(--text-light); margin-bottom: 0.5rem;" data-tr="QA Değerlendirme" data-de="QA-Bewertung">QA Değerlendirme</div>
+                        <div style="font-size: 1.5rem; font-weight: 700; color: var(--primary);">€0.005<span style="font-size: 0.9rem; color: var(--text-light);" data-tr="/çağrı" data-de="/Anruf">/çağrı</span></div>
                     </div>
                 </div>
+            </div>
+            
+            <!-- Special Offer -->
+            <div class="special-offer">
+                <h4>🎁 <span data-tr="Özel Fiyatlar Sizi Bekliyor!" data-de="Sonderpreise warten auf Sie!">Özel Fiyatlar Sizi Bekliyor!</span></h4>
+                <p data-tr="Yıllık ödeme ile %20 indirim • İlk 3 ay VoIP ücretsiz • Kurulum desteği hediye" data-de="20% Rabatt bei jährlicher Zahlung • Erste 3 Monate VoIP kostenlos • Kostenlose Einrichtungsunterstützung">Yıllık ödeme ile %20 indirim • İlk 3 ay VoIP ücretsiz • Kurulum desteği hediye</p>
             </div>
         </div>
     </section>
     
     <!-- CTA Section -->
     <section class="cta-section">
-        <h2 class="cta-title">Çağrı Merkezinizi Dönüştürmeye Hazır mısınız?</h2>
-        <p class="cta-subtitle">14 gün ücretsiz deneyin. Kredi kartı gerekmez.</p>
+        <h2 class="cta-title" data-tr="Çağrı Merkezinizi Dönüştürmeye Hazır mısınız?" data-de="Bereit, Ihr Call Center zu transformieren?">Çağrı Merkezinizi Dönüştürmeye Hazır mısınız?</h2>
+        <p class="cta-subtitle" data-tr="14 gün ücretsiz deneyin. Kredi kartı gerekmez." data-de="14 Tage kostenlos testen. Keine Kreditkarte erforderlich.">14 gün ücretsiz deneyin. Kredi kartı gerekmez.</p>
         <div class="cta-buttons">
             <a href="/login" class="btn btn-white">
-                <i class="ti ti-rocket"></i> Ücretsiz Dene
+                <i class="ti ti-rocket"></i> <span data-tr="Ücretsiz Dene" data-de="Kostenlos Testen">Ücretsiz Dene</span>
             </a>
             <a href="#contact" class="btn btn-outline" style="border-color: white; color: white;">
-                <i class="ti ti-phone"></i> Bizi Arayın
+                <i class="ti ti-phone"></i> <span data-tr="Bizi Arayın" data-de="Rufen Sie Uns An">Bizi Arayın</span>
             </a>
         </div>
     </section>
@@ -1059,9 +1134,9 @@
             <div class="footer-grid">
                 <div class="footer-brand">
                     <div class="logo-text" style="font-size: 1.75rem; margin-bottom: 1rem;">AI BEE <span style="color: white;">CC</span></div>
-                    <p class="footer-desc">
+                    <p class="footer-desc" data-tr="Yapay zeka destekli yeni nesil çağrı merkezi platformu. Türkiye ve Avrupa'nın en gelişmiş cloud call center çözümü." data-de="KI-gestützte Call Center-Plattform der nächsten Generation. Die fortschrittlichste Cloud Call Center-Lösung in der Türkei und Europa.">
                         Yapay zeka destekli yeni nesil çağrı merkezi platformu. 
-                        Türkiye'nin en gelişmiş cloud call center çözümü.
+                        Türkiye ve Avrupa'nın en gelişmiş cloud call center çözümü.
                     </p>
                     <div class="footer-social">
                         <a href="#"><i class="ti ti-brand-linkedin"></i></a>
@@ -1072,51 +1147,86 @@
                 </div>
                 
                 <div>
-                    <h4 class="footer-title">Ürün</h4>
+                    <h4 class="footer-title" data-tr="Ürün" data-de="Produkt">Ürün</h4>
                     <ul class="footer-links">
-                        <li><a href="#features">Özellikler</a></li>
-                        <li><a href="#ai">Yapay Zeka</a></li>
-                        <li><a href="#pricing">Fiyatlar</a></li>
-                        <li><a href="#">Entegrasyonlar</a></li>
-                        <li><a href="#">API Dokümantasyon</a></li>
+                        <li><a href="#features" data-tr="Özellikler" data-de="Funktionen">Özellikler</a></li>
+                        <li><a href="#ai" data-tr="Yapay Zeka" data-de="Künstliche Intelligenz">Yapay Zeka</a></li>
+                        <li><a href="#pricing" data-tr="Fiyatlar" data-de="Preise">Fiyatlar</a></li>
+                        <li><a href="#" data-tr="Entegrasyonlar" data-de="Integrationen">Entegrasyonlar</a></li>
+                        <li><a href="#" data-tr="API Dokümantasyon" data-de="API-Dokumentation">API Dokümantasyon</a></li>
                     </ul>
                 </div>
                 
                 <div>
-                    <h4 class="footer-title">Şirket</h4>
+                    <h4 class="footer-title" data-tr="Şirket" data-de="Unternehmen">Şirket</h4>
                     <ul class="footer-links">
-                        <li><a href="#">Hakkımızda</a></li>
-                        <li><a href="#">Kariyer</a></li>
+                        <li><a href="#" data-tr="Hakkımızda" data-de="Über Uns">Hakkımızda</a></li>
+                        <li><a href="#" data-tr="Kariyer" data-de="Karriere">Kariyer</a></li>
                         <li><a href="#">Blog</a></li>
-                        <li><a href="#">Basın</a></li>
-                        <li><a href="#">İletişim</a></li>
+                        <li><a href="#" data-tr="Basın" data-de="Presse">Basın</a></li>
+                        <li><a href="#contact" data-tr="İletişim" data-de="Kontakt">İletişim</a></li>
                     </ul>
                 </div>
                 
                 <div>
-                    <h4 class="footer-title">İletişim</h4>
+                    <h4 class="footer-title" data-tr="İletişim" data-de="Kontakt">İletişim</h4>
                     <ul class="footer-links">
                         <li><i class="ti ti-mail"></i> info@ai-bee-cc.com</li>
                         <li><i class="ti ti-phone"></i> +90 850 XXX XX XX</li>
+                        <li><i class="ti ti-phone"></i> +49 XXX XXX XXXX</li>
                         <li><i class="ti ti-map-pin"></i> İstanbul, Türkiye</li>
+                        <li><i class="ti ti-map-pin"></i> Berlin, Deutschland</li>
                     </ul>
                 </div>
             </div>
             
             <div class="footer-bottom">
-                <p>© 2025 AI BEE CC. Tüm hakları saklıdır. | <a href="#" style="color: var(--primary);">Gizlilik Politikası</a> | <a href="#" style="color: var(--primary);">Kullanım Şartları</a></p>
+                <p>© 2025 AI BEE CC. <span data-tr="Tüm hakları saklıdır." data-de="Alle Rechte vorbehalten.">Tüm hakları saklıdır.</span> | <a href="#" style="color: var(--primary);" data-tr="Gizlilik Politikası" data-de="Datenschutzrichtlinie">Gizlilik Politikası</a> | <a href="#" style="color: var(--primary);" data-tr="Kullanım Şartları" data-de="Nutzungsbedingungen">Kullanım Şartları</a></p>
             </div>
         </div>
     </footer>
     
     <script>
+        // Language switching
+        let currentLang = localStorage.getItem('lang') || 'tr';
+        
+        function setLang(lang) {
+            currentLang = lang;
+            localStorage.setItem('lang', lang);
+            
+            // Update buttons
+            document.getElementById('lang-tr').classList.toggle('active', lang === 'tr');
+            document.getElementById('lang-de').classList.toggle('active', lang === 'de');
+            
+            // Update HTML lang
+            document.getElementById('htmlRoot').setAttribute('lang', lang);
+            
+            // Update all translatable elements
+            document.querySelectorAll('[data-tr]').forEach(el => {
+                const text = el.getAttribute(`data-${lang}`);
+                if (text) {
+                    if (el.tagName === 'INPUT' || el.tagName === 'TEXTAREA') {
+                        el.placeholder = text;
+                    } else {
+                        el.textContent = text;
+                    }
+                }
+            });
+        }
+        
+        // Initialize language on load
+        document.addEventListener('DOMContentLoaded', () => {
+            setLang(currentLang);
+        });
+        
         // Smooth scroll
         document.querySelectorAll('a[href^="#"]').forEach(anchor => {
             anchor.addEventListener('click', function (e) {
                 e.preventDefault();
-                document.querySelector(this.getAttribute('href')).scrollIntoView({
-                    behavior: 'smooth'
-                });
+                const target = document.querySelector(this.getAttribute('href'));
+                if (target) {
+                    target.scrollIntoView({ behavior: 'smooth' });
+                }
             });
         });
         
@@ -1132,4 +1242,3 @@
     </script>
 </body>
 </html>
-
