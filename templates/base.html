@@ -132,8 +132,12 @@
                             <span>Kampanyalar</span>
                         </a>
                         <a href="{{ url_for('voip_queues') }}" class="nav-subitem">
-                            <i class="ti ti-list-numbers"></i>
-                            <span>Kuyruklar</span>
+                            <i class="ti ti-chart-bar"></i>
+                            <span>CC Satış & QC</span>
+                        </a>
+                        <a href="{{ url_for('call_queue') }}" class="nav-subitem">
+                            <i class="ti ti-phone-call"></i>
+                            <span>Çağrı Kuyruğu</span>
                         </a>
                         <a href="{{ url_for('dialer_lists') }}" class="nav-subitem">
                             <i class="ti ti-phone-outgoing"></i>
@@ -446,12 +450,6 @@
                     </div>
                     {% endif %}
                     
-                    <!-- Language -->
-                    <div class="lang-switcher-app">
-                        <button type="button" class="lang-btn-app" id="lang-tr">TR</button>
-                        <button type="button" class="lang-btn-app" id="lang-de">DE</button>
-                    </div>
-
                     <!-- Notifications -->
                     <button class="header-btn notification-btn">
                         <i class="ti ti-bell"></i>

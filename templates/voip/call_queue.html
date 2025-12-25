@@ -1,0 +1,845 @@
+{% extends "base.html" %}
+
+{% block title %}Çağrı Kuyruğu - {{ app_name }}{% endblock %}
+
+{% block extra_css %}
+<style>
+.queue-page { padding: 1.5rem; }
+
+/* Queue Stats */
+.queue-stats-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 1rem;
+    margin-bottom: 1.5rem;
+}
+
+.queue-stat-card {
+    background: white;
+    border-radius: 16px;
+    padding: 1.5rem;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.06);
+    text-align: center;
+    position: relative;
+    overflow: hidden;
+}
+
+.queue-stat-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 4px;
+}
+
+.queue-stat-card.waiting::before { background: #FF9800; }
+.queue-stat-card.active::before { background: #4CAF50; }
+.queue-stat-card.completed::before { background: #2196F3; }
+.queue-stat-card.failed::before { background: #f44336; }
+
+.queue-stat-icon {
+    width: 60px;
+    height: 60px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto 1rem;
+    font-size: 1.5rem;
+}
+
+.queue-stat-card.waiting .queue-stat-icon { background: #FFF3E0; color: #FF9800; }
+.queue-stat-card.active .queue-stat-icon { background: #E8F5E9; color: #4CAF50; }
+.queue-stat-card.completed .queue-stat-icon { background: #E3F2FD; color: #2196F3; }
+.queue-stat-card.failed .queue-stat-icon { background: #FFEBEE; color: #f44336; }
+
+.queue-stat-value {
+    font-size: 2.5rem;
+    font-weight: 800;
+    font-family: var(--font-display);
+    margin-bottom: 0.25rem;
+}
+
+.queue-stat-card.waiting .queue-stat-value { color: #FF9800; }
+.queue-stat-card.active .queue-stat-value { color: #4CAF50; }
+.queue-stat-card.completed .queue-stat-value { color: #2196F3; }
+.queue-stat-card.failed .queue-stat-value { color: #f44336; }
+
+.queue-stat-label {
+    font-size: 0.85rem;
+    color: #666;
+}
+
+/* Queue Control Panel */
+.queue-control-panel {
+    background: white;
+    border-radius: 16px;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.06);
+    margin-bottom: 1.5rem;
+    overflow: hidden;
+}
+
+.queue-control-header {
+    padding: 1rem 1.5rem;
+    background: linear-gradient(135deg, #f44336, #D32F2F);
+    color: white;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.queue-control-title {
+    font-size: 1.1rem;
+    font-weight: 700;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.queue-control-body {
+    padding: 1.5rem;
+}
+
+.queue-control-actions {
+    display: flex;
+    gap: 1rem;
+    flex-wrap: wrap;
+}
+
+.queue-action-btn {
+    padding: 1rem 2rem;
+    border-radius: 12px;
+    border: none;
+    font-size: 1rem;
+    font-weight: 600;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    transition: all 0.3s;
+}
+
+.queue-action-btn.reset {
+    background: linear-gradient(135deg, #f44336, #D32F2F);
+    color: white;
+}
+
+.queue-action-btn.reset:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 15px rgba(244, 67, 54, 0.4);
+}
+
+.queue-action-btn.pause {
+    background: linear-gradient(135deg, #FF9800, #F57C00);
+    color: white;
+}
+
+.queue-action-btn.pause:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 15px rgba(255, 152, 0, 0.4);
+}
+
+.queue-action-btn.start {
+    background: linear-gradient(135deg, #4CAF50, #388E3C);
+    color: white;
+}
+
+.queue-action-btn.start:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 15px rgba(76, 175, 80, 0.4);
+}
+
+/* Call Speed Panel */
+.call-speed-panel {
+    background: white;
+    border-radius: 16px;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.06);
+    margin-bottom: 1.5rem;
+    overflow: hidden;
+}
+
+.call-speed-header {
+    padding: 1rem 1.5rem;
+    background: linear-gradient(135deg, #9C27B0, #7B1FA2);
+    color: white;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.call-speed-body {
+    padding: 1.5rem;
+}
+
+.speed-info {
+    background: #f8f9fa;
+    padding: 1rem;
+    border-radius: 10px;
+    margin-bottom: 1.5rem;
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+}
+
+.speed-info i {
+    font-size: 1.5rem;
+    color: #9C27B0;
+}
+
+.speed-info-text {
+    flex: 1;
+}
+
+.speed-info-text strong {
+    display: block;
+    margin-bottom: 0.25rem;
+}
+
+.speed-info-text span {
+    font-size: 0.85rem;
+    color: #666;
+}
+
+/* Agent Speed Grid */
+.agent-speed-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    gap: 1rem;
+}
+
+.agent-speed-card {
+    background: #f8f9fa;
+    border-radius: 12px;
+    padding: 1rem;
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+}
+
+.agent-speed-avatar {
+    width: 48px;
+    height: 48px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #667eea, #764ba2);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-weight: 700;
+}
+
+.agent-speed-info {
+    flex: 1;
+}
+
+.agent-speed-name {
+    font-weight: 700;
+    margin-bottom: 0.25rem;
+}
+
+.agent-speed-status {
+    font-size: 0.75rem;
+    color: #4CAF50;
+    display: flex;
+    align-items: center;
+    gap: 0.25rem;
+}
+
+.agent-speed-status::before {
+    content: '';
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: #4CAF50;
+}
+
+.speed-selector {
+    display: flex;
+    gap: 0.25rem;
+}
+
+.speed-btn {
+    width: 32px;
+    height: 32px;
+    border-radius: 8px;
+    border: 2px solid #e0e0e0;
+    background: white;
+    font-weight: 700;
+    cursor: pointer;
+    transition: all 0.2s;
+    font-size: 0.85rem;
+}
+
+.speed-btn:hover {
+    border-color: #9C27B0;
+    color: #9C27B0;
+}
+
+.speed-btn.active {
+    background: linear-gradient(135deg, #9C27B0, #7B1FA2);
+    color: white;
+    border-color: #9C27B0;
+}
+
+/* Active Calls Table */
+.active-calls-panel {
+    background: white;
+    border-radius: 16px;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.06);
+    overflow: hidden;
+}
+
+.active-calls-header {
+    padding: 1rem 1.5rem;
+    background: linear-gradient(135deg, #4CAF50, #388E3C);
+    color: white;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.active-calls-body {
+    padding: 0;
+}
+
+.calls-table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.calls-table th,
+.calls-table td {
+    padding: 1rem;
+    text-align: left;
+    border-bottom: 1px solid #eee;
+}
+
+.calls-table th {
+    background: #f8f9fa;
+    font-weight: 600;
+    font-size: 0.85rem;
+    color: #666;
+    text-transform: uppercase;
+}
+
+.calls-table tr:hover {
+    background: #f8f9fa;
+}
+
+.call-status {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.25rem 0.75rem;
+    border-radius: 20px;
+    font-size: 0.75rem;
+    font-weight: 600;
+}
+
+.call-status.ringing {
+    background: #FFF3E0;
+    color: #FF9800;
+}
+
+.call-status.ringing::before {
+    content: '';
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: #FF9800;
+    animation: pulse 1s infinite;
+}
+
+.call-status.connected {
+    background: #E8F5E9;
+    color: #4CAF50;
+}
+
+.call-status.connected::before {
+    content: '';
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: #4CAF50;
+}
+
+.call-duration {
+    font-family: var(--font-display);
+    font-weight: 600;
+}
+
+@keyframes pulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.5; }
+}
+
+/* Waiting Queue */
+.waiting-queue-panel {
+    background: white;
+    border-radius: 16px;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.06);
+    margin-top: 1.5rem;
+    overflow: hidden;
+}
+
+.waiting-queue-header {
+    padding: 1rem 1.5rem;
+    background: linear-gradient(135deg, #FF9800, #F57C00);
+    color: white;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.waiting-item {
+    display: flex;
+    align-items: center;
+    padding: 1rem 1.5rem;
+    border-bottom: 1px solid #eee;
+}
+
+.waiting-item:last-child {
+    border-bottom: none;
+}
+
+.waiting-position {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    background: #FF9800;
+    color: white;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 700;
+    margin-right: 1rem;
+}
+
+.waiting-info {
+    flex: 1;
+}
+
+.waiting-phone {
+    font-weight: 600;
+}
+
+.waiting-time {
+    font-size: 0.8rem;
+    color: #888;
+}
+
+.waiting-action {
+    display: flex;
+    gap: 0.5rem;
+}
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="queue-page">
+    <div class="page-header">
+        <div>
+            <h1 class="page-title">
+                <i class="ti ti-phone-call" style="color: #4CAF50;"></i>
+                <span data-tr="Çağrı Kuyruğu" data-de="Anrufwarteschlange">Çağrı Kuyruğu</span>
+            </h1>
+            <p class="page-subtitle" data-tr="Aktif çağrılar, kuyruk durumu ve arama hızı yönetimi" data-de="Aktive Anrufe, Warteschlangenstatus und Anrufgeschwindigkeitsverwaltung">Aktif çağrılar, kuyruk durumu ve arama hızı yönetimi</p>
+        </div>
+        <div class="page-header-actions">
+            <button class="btn btn-success" onclick="refreshQueue()">
+                <i class="ti ti-refresh"></i> <span data-tr="Yenile" data-de="Aktualisieren">Yenile</span>
+            </button>
+        </div>
+    </div>
+
+    <!-- Queue Stats -->
+    <div class="queue-stats-grid">
+        <div class="queue-stat-card waiting">
+            <div class="queue-stat-icon"><i class="ti ti-clock"></i></div>
+            <div class="queue-stat-value" id="waitingCount">8</div>
+            <div class="queue-stat-label" data-tr="Kuyrukta Bekleyen" data-de="In Warteschlange">Kuyrukta Bekleyen</div>
+        </div>
+        <div class="queue-stat-card active">
+            <div class="queue-stat-icon"><i class="ti ti-phone-calling"></i></div>
+            <div class="queue-stat-value" id="activeCount">12</div>
+            <div class="queue-stat-label" data-tr="Aktif Çağrı" data-de="Aktive Anrufe">Aktif Çağrı</div>
+        </div>
+        <div class="queue-stat-card completed">
+            <div class="queue-stat-icon"><i class="ti ti-check"></i></div>
+            <div class="queue-stat-value" id="completedCount">156</div>
+            <div class="queue-stat-label" data-tr="Tamamlanan (Bugün)" data-de="Abgeschlossen (Heute)">Tamamlanan (Bugün)</div>
+        </div>
+        <div class="queue-stat-card failed">
+            <div class="queue-stat-icon"><i class="ti ti-phone-off"></i></div>
+            <div class="queue-stat-value" id="failedCount">23</div>
+            <div class="queue-stat-label" data-tr="Başarısız" data-de="Fehlgeschlagen">Başarısız</div>
+        </div>
+    </div>
+
+    <!-- Queue Control Panel -->
+    <div class="queue-control-panel">
+        <div class="queue-control-header">
+            <div class="queue-control-title">
+                <i class="ti ti-settings"></i>
+                <span data-tr="Kuyruk Kontrolü" data-de="Warteschlangensteuerung">Kuyruk Kontrolü</span>
+            </div>
+            <span style="background: rgba(255,255,255,0.2); padding: 0.25rem 0.75rem; border-radius: 20px; font-size: 0.8rem;">
+                <span data-tr="Son güncelleme:" data-de="Letzte Aktualisierung:">Son güncelleme:</span> <span id="lastUpdate">14:32:45</span>
+            </span>
+        </div>
+        <div class="queue-control-body">
+            <div class="queue-control-actions">
+                <button class="queue-action-btn reset" onclick="resetQueue()">
+                    <i class="ti ti-refresh-alert"></i>
+                    <span data-tr="Kuyruğu Sıfırla" data-de="Warteschlange zurücksetzen">Kuyruğu Sıfırla</span>
+                </button>
+                <button class="queue-action-btn pause" onclick="pauseQueue()">
+                    <i class="ti ti-player-pause"></i>
+                    <span data-tr="Aramayı Durdur" data-de="Anrufe pausieren">Aramayı Durdur</span>
+                </button>
+                <button class="queue-action-btn start" onclick="startQueue()">
+                    <i class="ti ti-player-play"></i>
+                    <span data-tr="Aramayı Başlat" data-de="Anrufe starten">Aramayı Başlat</span>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Call Speed Panel -->
+    <div class="call-speed-panel">
+        <div class="call-speed-header">
+            <div class="queue-control-title">
+                <i class="ti ti-gauge"></i>
+                <span data-tr="Arama Hızı Ayarları" data-de="Anrufgeschwindigkeitseinstellungen">Arama Hızı Ayarları</span>
+            </div>
+        </div>
+        <div class="call-speed-body">
+            <div class="speed-info">
+                <i class="ti ti-info-circle"></i>
+                <div class="speed-info-text">
+                    <strong data-tr="Arama Hızı Nedir?" data-de="Was ist Anrufgeschwindigkeit?">Arama Hızı Nedir?</strong>
+                    <span data-tr="Her agent için aynı anda kaç müşteri aranacağını belirler. 1 = tek tek, 8 = aynı anda 8 müşteri" data-de="Bestimmt, wie viele Kunden gleichzeitig pro Agent angerufen werden. 1 = einzeln, 8 = 8 Kunden gleichzeitig">Her agent için aynı anda kaç müşteri aranacağını belirler. 1 = tek tek, 8 = aynı anda 8 müşteri</span>
+                </div>
+            </div>
+
+            <div class="agent-speed-grid">
+                <!-- Agent 1 -->
+                <div class="agent-speed-card">
+                    <div class="agent-speed-avatar">AK</div>
+                    <div class="agent-speed-info">
+                        <div class="agent-speed-name">Ahmet K.</div>
+                        <div class="agent-speed-status" data-tr="Çevrimiçi" data-de="Online">Çevrimiçi</div>
+                    </div>
+                    <div class="speed-selector" data-agent="1">
+                        <button class="speed-btn" data-speed="1">1</button>
+                        <button class="speed-btn" data-speed="2">2</button>
+                        <button class="speed-btn active" data-speed="3">3</button>
+                        <button class="speed-btn" data-speed="4">4</button>
+                        <button class="speed-btn" data-speed="5">5</button>
+                        <button class="speed-btn" data-speed="6">6</button>
+                        <button class="speed-btn" data-speed="7">7</button>
+                        <button class="speed-btn" data-speed="8">8</button>
+                    </div>
+                </div>
+
+                <!-- Agent 2 -->
+                <div class="agent-speed-card">
+                    <div class="agent-speed-avatar">BY</div>
+                    <div class="agent-speed-info">
+                        <div class="agent-speed-name">Buse Y.</div>
+                        <div class="agent-speed-status" data-tr="Çevrimiçi" data-de="Online">Çevrimiçi</div>
+                    </div>
+                    <div class="speed-selector" data-agent="2">
+                        <button class="speed-btn" data-speed="1">1</button>
+                        <button class="speed-btn active" data-speed="2">2</button>
+                        <button class="speed-btn" data-speed="3">3</button>
+                        <button class="speed-btn" data-speed="4">4</button>
+                        <button class="speed-btn" data-speed="5">5</button>
+                        <button class="speed-btn" data-speed="6">6</button>
+                        <button class="speed-btn" data-speed="7">7</button>
+                        <button class="speed-btn" data-speed="8">8</button>
+                    </div>
+                </div>
+
+                <!-- Agent 3 -->
+                <div class="agent-speed-card">
+                    <div class="agent-speed-avatar">CD</div>
+                    <div class="agent-speed-info">
+                        <div class="agent-speed-name">Can D.</div>
+                        <div class="agent-speed-status" data-tr="Çevrimiçi" data-de="Online">Çevrimiçi</div>
+                    </div>
+                    <div class="speed-selector" data-agent="3">
+                        <button class="speed-btn" data-speed="1">1</button>
+                        <button class="speed-btn" data-speed="2">2</button>
+                        <button class="speed-btn" data-speed="3">3</button>
+                        <button class="speed-btn active" data-speed="4">4</button>
+                        <button class="speed-btn" data-speed="5">5</button>
+                        <button class="speed-btn" data-speed="6">6</button>
+                        <button class="speed-btn" data-speed="7">7</button>
+                        <button class="speed-btn" data-speed="8">8</button>
+                    </div>
+                </div>
+
+                <!-- Agent 4 -->
+                <div class="agent-speed-card">
+                    <div class="agent-speed-avatar">EF</div>
+                    <div class="agent-speed-info">
+                        <div class="agent-speed-name">Elif F.</div>
+                        <div class="agent-speed-status" data-tr="Çevrimiçi" data-de="Online">Çevrimiçi</div>
+                    </div>
+                    <div class="speed-selector" data-agent="4">
+                        <button class="speed-btn" data-speed="1">1</button>
+                        <button class="speed-btn" data-speed="2">2</button>
+                        <button class="speed-btn" data-speed="3">3</button>
+                        <button class="speed-btn" data-speed="4">4</button>
+                        <button class="speed-btn active" data-speed="5">5</button>
+                        <button class="speed-btn" data-speed="6">6</button>
+                        <button class="speed-btn" data-speed="7">7</button>
+                        <button class="speed-btn" data-speed="8">8</button>
+                    </div>
+                </div>
+
+                <!-- Agent 5 -->
+                <div class="agent-speed-card">
+                    <div class="agent-speed-avatar">GH</div>
+                    <div class="agent-speed-info">
+                        <div class="agent-speed-name">Gül H.</div>
+                        <div class="agent-speed-status" data-tr="Çevrimiçi" data-de="Online">Çevrimiçi</div>
+                    </div>
+                    <div class="speed-selector" data-agent="5">
+                        <button class="speed-btn" data-speed="1">1</button>
+                        <button class="speed-btn active" data-speed="2">2</button>
+                        <button class="speed-btn" data-speed="3">3</button>
+                        <button class="speed-btn" data-speed="4">4</button>
+                        <button class="speed-btn" data-speed="5">5</button>
+                        <button class="speed-btn" data-speed="6">6</button>
+                        <button class="speed-btn" data-speed="7">7</button>
+                        <button class="speed-btn" data-speed="8">8</button>
+                    </div>
+                </div>
+
+                <!-- Agent 6 -->
+                <div class="agent-speed-card">
+                    <div class="agent-speed-avatar">IJ</div>
+                    <div class="agent-speed-info">
+                        <div class="agent-speed-name">İsmail J.</div>
+                        <div class="agent-speed-status" data-tr="Çevrimiçi" data-de="Online">Çevrimiçi</div>
+                    </div>
+                    <div class="speed-selector" data-agent="6">
+                        <button class="speed-btn" data-speed="1">1</button>
+                        <button class="speed-btn" data-speed="2">2</button>
+                        <button class="speed-btn" data-speed="3">3</button>
+                        <button class="speed-btn" data-speed="4">4</button>
+                        <button class="speed-btn" data-speed="5">5</button>
+                        <button class="speed-btn active" data-speed="6">6</button>
+                        <button class="speed-btn" data-speed="7">7</button>
+                        <button class="speed-btn" data-speed="8">8</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Active Calls -->
+    <div class="active-calls-panel">
+        <div class="active-calls-header">
+            <div class="queue-control-title">
+                <i class="ti ti-phone-calling"></i>
+                <span data-tr="Aktif Çağrılar" data-de="Aktive Anrufe">Aktif Çağrılar</span>
+            </div>
+            <span style="background: rgba(255,255,255,0.2); padding: 0.25rem 0.75rem; border-radius: 20px; font-size: 0.85rem;">
+                12 <span data-tr="çağrı" data-de="Anrufe">çağrı</span>
+            </span>
+        </div>
+        <div class="active-calls-body">
+            <table class="calls-table">
+                <thead>
+                    <tr>
+                        <th data-tr="Agent" data-de="Agent">Agent</th>
+                        <th data-tr="Müşteri" data-de="Kunde">Müşteri</th>
+                        <th data-tr="Telefon" data-de="Telefon">Telefon</th>
+                        <th data-tr="Durum" data-de="Status">Durum</th>
+                        <th data-tr="Süre" data-de="Dauer">Süre</th>
+                        <th data-tr="İşlem" data-de="Aktion">İşlem</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td><strong>Ahmet K.</strong></td>
+                        <td>Mehmet Yılmaz</td>
+                        <td>+90 532 XXX XX 12</td>
+                        <td><span class="call-status connected" data-tr="Bağlandı" data-de="Verbunden">Bağlandı</span></td>
+                        <td class="call-duration">03:24</td>
+                        <td><button class="btn btn-sm btn-danger"><i class="ti ti-phone-off"></i></button></td>
+                    </tr>
+                    <tr>
+                        <td><strong>Buse Y.</strong></td>
+                        <td>Ali Demir</td>
+                        <td>+90 533 XXX XX 45</td>
+                        <td><span class="call-status ringing" data-tr="Çalıyor" data-de="Klingelt">Çalıyor</span></td>
+                        <td class="call-duration">00:15</td>
+                        <td><button class="btn btn-sm btn-danger"><i class="ti ti-phone-off"></i></button></td>
+                    </tr>
+                    <tr>
+                        <td><strong>Can D.</strong></td>
+                        <td>Fatma Kaya</td>
+                        <td>+90 535 XXX XX 78</td>
+                        <td><span class="call-status connected" data-tr="Bağlandı" data-de="Verbunden">Bağlandı</span></td>
+                        <td class="call-duration">01:45</td>
+                        <td><button class="btn btn-sm btn-danger"><i class="ti ti-phone-off"></i></button></td>
+                    </tr>
+                    <tr>
+                        <td><strong>Elif F.</strong></td>
+                        <td>Hasan Çelik</td>
+                        <td>+90 536 XXX XX 90</td>
+                        <td><span class="call-status connected" data-tr="Bağlandı" data-de="Verbunden">Bağlandı</span></td>
+                        <td class="call-duration">05:12</td>
+                        <td><button class="btn btn-sm btn-danger"><i class="ti ti-phone-off"></i></button></td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- Waiting Queue -->
+    <div class="waiting-queue-panel">
+        <div class="waiting-queue-header">
+            <div class="queue-control-title">
+                <i class="ti ti-clock"></i>
+                <span data-tr="Kuyrukta Bekleyenler" data-de="In Warteschlange">Kuyrukta Bekleyenler</span>
+            </div>
+            <span style="background: rgba(255,255,255,0.2); padding: 0.25rem 0.75rem; border-radius: 20px; font-size: 0.85rem;">
+                8 <span data-tr="müşteri" data-de="Kunden">müşteri</span>
+            </span>
+        </div>
+        <div class="waiting-queue-body">
+            <div class="waiting-item">
+                <div class="waiting-position">1</div>
+                <div class="waiting-info">
+                    <div class="waiting-phone">+90 537 XXX XX 01</div>
+                    <div class="waiting-time" data-tr="2 dk bekliyor" data-de="2 Min. wartend">2 dk bekliyor</div>
+                </div>
+                <div class="waiting-action">
+                    <button class="btn btn-sm btn-success"><i class="ti ti-phone"></i></button>
+                    <button class="btn btn-sm btn-danger"><i class="ti ti-x"></i></button>
+                </div>
+            </div>
+            <div class="waiting-item">
+                <div class="waiting-position">2</div>
+                <div class="waiting-info">
+                    <div class="waiting-phone">+90 538 XXX XX 02</div>
+                    <div class="waiting-time" data-tr="1 dk bekliyor" data-de="1 Min. wartend">1 dk bekliyor</div>
+                </div>
+                <div class="waiting-action">
+                    <button class="btn btn-sm btn-success"><i class="ti ti-phone"></i></button>
+                    <button class="btn btn-sm btn-danger"><i class="ti ti-x"></i></button>
+                </div>
+            </div>
+            <div class="waiting-item">
+                <div class="waiting-position">3</div>
+                <div class="waiting-info">
+                    <div class="waiting-phone">+90 539 XXX XX 03</div>
+                    <div class="waiting-time" data-tr="45 sn bekliyor" data-de="45 Sek. wartend">45 sn bekliyor</div>
+                </div>
+                <div class="waiting-action">
+                    <button class="btn btn-sm btn-success"><i class="ti ti-phone"></i></button>
+                    <button class="btn btn-sm btn-danger"><i class="ti ti-x"></i></button>
+                </div>
+            </div>
+            <div class="waiting-item">
+                <div class="waiting-position">4</div>
+                <div class="waiting-info">
+                    <div class="waiting-phone">+90 540 XXX XX 04</div>
+                    <div class="waiting-time" data-tr="30 sn bekliyor" data-de="30 Sek. wartend">30 sn bekliyor</div>
+                </div>
+                <div class="waiting-action">
+                    <button class="btn btn-sm btn-success"><i class="ti ti-phone"></i></button>
+                    <button class="btn btn-sm btn-danger"><i class="ti ti-x"></i></button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+// Update time
+function updateTime() {
+    const now = new Date();
+    document.getElementById('lastUpdate').textContent = 
+        now.toLocaleTimeString('tr-TR');
+}
+setInterval(updateTime, 1000);
+
+// Refresh queue
+function refreshQueue() {
+    location.reload();
+}
+
+// Reset queue
+function resetQueue() {
+    const msg = document.documentElement.lang === 'de' 
+        ? 'Warteschlange wirklich zurücksetzen? Alle wartenden Anrufe werden gelöscht.'
+        : 'Kuyruğu sıfırlamak istediğinize emin misiniz? Bekleyen tüm çağrılar silinecek.';
+    
+    if (confirm(msg)) {
+        // API call to reset queue
+        alert(document.documentElement.lang === 'de' ? 'Warteschlange zurückgesetzt' : 'Kuyruk sıfırlandı');
+        location.reload();
+    }
+}
+
+// Pause queue
+function pauseQueue() {
+    alert(document.documentElement.lang === 'de' ? 'Anrufe pausiert' : 'Aramalar durduruldu');
+}
+
+// Start queue
+function startQueue() {
+    alert(document.documentElement.lang === 'de' ? 'Anrufe gestartet' : 'Aramalar başlatıldı');
+}
+
+// Speed selector
+document.querySelectorAll('.speed-selector').forEach(selector => {
+    const buttons = selector.querySelectorAll('.speed-btn');
+    
+    buttons.forEach(btn => {
+        btn.addEventListener('click', function() {
+            const agentId = selector.dataset.agent;
+            const speed = this.dataset.speed;
+            
+            // Remove active from all
+            buttons.forEach(b => b.classList.remove('active'));
+            // Add active to clicked
+            this.classList.add('active');
+            
+            // Show saving message
+            const msg = document.documentElement.lang === 'de' 
+                ? `Agent ${agentId}: Geschwindigkeit auf ${speed} gesetzt. Seite wird aktualisiert...`
+                : `Agent ${agentId}: Hız ${speed} olarak ayarlandı. Sayfa yenileniyor...`;
+            
+            alert(msg);
+            
+            // Reload page after speed change
+            setTimeout(() => {
+                location.reload();
+            }, 500);
+        });
+    });
+});
+
+// Simulate real-time updates
+setInterval(() => {
+    // Random waiting count
+    const waiting = Math.floor(Math.random() * 10) + 3;
+    document.getElementById('waitingCount').textContent = waiting;
+    
+    // Random active count
+    const active = Math.floor(Math.random() * 8) + 8;
+    document.getElementById('activeCount').textContent = active;
+}, 5000);
+</script>
+{% endblock %}
+
