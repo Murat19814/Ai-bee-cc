@@ -271,7 +271,36 @@ def dashboard():
     elif current_user.role == 'client':
         return render_template('dashboard/client.html')
     else:  # agent
-        return render_template('dashboard/agent.html')
+        # Agent için bugünkü istatistikler
+        today = datetime.now().replace(hour=0, minute=0, second=0)
+        today_calls = Call.query.filter(
+            Call.agent_id == current_user.id,
+            Call.started_at >= today
+        ).all()
+        
+        today_stats = {
+            'calls': len(today_calls),
+            'sales': sum(1 for c in today_calls if c.disposition == 'sale_ok'),
+            'callbacks': Lead.query.filter_by(
+                assigned_agent_id=current_user.id, 
+                status='callback'
+            ).count(),
+            'avg_duration': '{}:{:02d}'.format(
+                int(sum(c.talk_duration or 0 for c in today_calls) / max(len(today_calls), 1) // 60),
+                int(sum(c.talk_duration or 0 for c in today_calls) / max(len(today_calls), 1) % 60)
+            )
+        }
+        
+        # Bugünkü geri aramalar
+        callbacks = Lead.query.filter(
+            Lead.assigned_agent_id == current_user.id,
+            Lead.status == 'callback',
+            Lead.callback_at >= today
+        ).order_by(Lead.callback_at.asc()).limit(10).all()
+        
+        return render_template('dashboard/agent.html', 
+                              today_stats=today_stats,
+                              callbacks=callbacks)
 
 
 # ==================== SUPER ADMIN ROUTES ====================
@@ -828,7 +857,19 @@ def call_detail(id):
 @app.route('/agent')
 @login_required
 def agent_panel():
-    """Agent paneli"""
+    """Agent paneli - Kampanya seçimi veya ana panel"""
+    # Session'da aktif kampanya var mı kontrol et
+    active_campaign_id = request.cookies.get('active_campaign_id')
+    
+    if not active_campaign_id:
+        # Kampanya seçim sayfasına yönlendir
+        return redirect(url_for('agent_campaign_select'))
+    
+    # Aktif kampanyayı al
+    campaign = Campaign.query.get(active_campaign_id)
+    if not campaign:
+        return redirect(url_for('agent_campaign_select'))
+    
     # Agent'ın kuyrukları
     queue_memberships = QueueMember.query.filter_by(user_id=current_user.id).all()
     queues = [qm.queue for qm in queue_memberships]
@@ -839,27 +880,254 @@ def agent_panel():
         Call.started_at >= datetime.now().replace(hour=0, minute=0, second=0)
     ).all()
     
-    # Görevler
-    leads = Lead.query.filter_by(assigned_agent_id=current_user.id, status='new').limit(10).all()
+    # İstatistikler
+    stats = {
+        'total_calls': len(today_calls),
+        'qc_ok': sum(1 for c in today_calls if c.qa_status == 'passed'),
+        'cancelled_sales': sum(1 for c in today_calls if c.disposition == 'sale_cancelled'),
+        'total_pause_time': current_user.total_pause_time or 0,
+        'callbacks': Lead.query.filter_by(assigned_agent_id=current_user.id, status='callback').count(),
+        'total_sales': sum(1 for c in today_calls if c.disposition == 'sale_ok'),
+    }
     
-    return render_template('agent/panel.html', queues=queues, today_calls=today_calls, leads=leads)
+    # Bekleyen lead'ler
+    leads = Lead.query.filter_by(
+        assigned_agent_id=current_user.id, 
+        status='new'
+    ).limit(10).all()
+    
+    # Disposition setleri
+    disposition_sets = DispositionSet.query.filter_by(
+        tenant_id=current_user.tenant_id,
+        is_active=True
+    ).all()
+    
+    # Scriptler
+    scripts = Script.query.filter(
+        (Script.tenant_id == current_user.tenant_id) | (Script.is_global == True),
+        Script.is_active == True
+    ).all()
+    
+    return render_template('agent/panel.html', 
+                          campaign=campaign,
+                          queues=queues, 
+                          today_calls=today_calls, 
+                          leads=leads,
+                          stats=stats,
+                          disposition_sets=disposition_sets,
+                          scripts=scripts)
+
+
+@app.route('/agent/select-campaign')
+@login_required
+def agent_campaign_select():
+    """Agent kampanya seçim sayfası"""
+    # Super admin ise tüm aktif kampanyaları göster
+    if current_user.is_super_admin:
+        campaigns = Campaign.query.filter(Campaign.status == 'active').all()
+    else:
+        # Normal kullanıcılar sadece kendi tenant'ının kampanyalarını görür
+        campaigns = Campaign.query.filter(
+            Campaign.tenant_id == current_user.tenant_id,
+            Campaign.status == 'active'
+        ).all()
+    
+    return render_template('agent/login.html', campaigns=campaigns)
+
+
+@app.route('/agent/enter-campaign', methods=['POST'])
+@login_required
+def agent_enter_campaign():
+    """Agent kampanyaya giriş"""
+    campaign_id = request.form.get('campaign_id')
+    
+    if not campaign_id:
+        flash('Lütfen bir kampanya seçin.', 'warning')
+        return redirect(url_for('agent_campaign_select'))
+    
+    campaign = Campaign.query.get(campaign_id)
+    if not campaign:
+        flash('Geçersiz kampanya.', 'danger')
+        return redirect(url_for('agent_campaign_select'))
+    
+    # Super admin tüm kampanyalara erişebilir, diğerleri sadece kendi tenant'ına
+    if not current_user.is_super_admin and campaign.tenant_id != current_user.tenant_id:
+        flash('Bu kampanyaya erişim yetkiniz yok.', 'danger')
+        return redirect(url_for('agent_campaign_select'))
+    
+    # Agent durumunu güncelle
+    current_user.status = 'available'
+    current_user.current_campaign_id = campaign.id
+    db.session.commit()
+    
+    # Audit log
+    log_audit('agent_login', 'campaign', campaign.id, 
+              f'Agent kampanyaya giriş yaptı: {campaign.name}')
+    
+    # WebSocket ile bildir
+    socketio.emit('agent_logged_in', {
+        'agent_id': current_user.id,
+        'agent_name': current_user.full_name,
+        'campaign_id': campaign.id
+    }, room=f'tenant_{current_user.tenant_id}')
+    
+    response = redirect(url_for('agent_panel'))
+    response.set_cookie('active_campaign_id', str(campaign_id), max_age=86400)  # 24 saat
+    
+    flash(f'{campaign.name} kampanyasına başarıyla giriş yaptınız.', 'success')
+    return response
+
+
+@app.route('/agent/leave-campaign', methods=['POST'])
+@login_required
+def agent_leave_campaign():
+    """Agent kampanyadan çıkış"""
+    campaign_id = request.cookies.get('active_campaign_id')
+    
+    # Agent durumunu güncelle
+    current_user.status = 'offline'
+    current_user.current_campaign_id = None
+    db.session.commit()
+    
+    # Audit log
+    if campaign_id:
+        log_audit('agent_logout', 'campaign', campaign_id, 'Agent kampanyadan çıkış yaptı')
+    
+    # WebSocket ile bildir
+    socketio.emit('agent_logged_out', {
+        'agent_id': current_user.id,
+    }, room=f'tenant_{current_user.tenant_id}')
+    
+    response = redirect(url_for('agent_campaign_select'))
+    response.delete_cookie('active_campaign_id')
+    
+    flash('Kampanyadan başarıyla çıkış yaptınız.', 'success')
+    return response
+
+
+@app.route('/agent/test-headset')
+@login_required
+def agent_test_headset():
+    """Kulaklık ve mikrofon test sayfası"""
+    return render_template('agent/test_headset.html')
 
 
 @app.route('/agent/status', methods=['POST'])
 @login_required
 def agent_status_update():
     """Agent durum güncelleme"""
-    status = request.form.get('status')
+    data = request.get_json() if request.is_json else request.form
+    status = data.get('status')
+    pause_type = data.get('pause_type')
+    
+    # Mola başlangıcı
+    if status == 'pause' and current_user.status != 'pause':
+        current_user.pause_started_at = datetime.utcnow()
+        current_user.pause_type = pause_type
+    # Mola bitişi
+    elif status != 'pause' and current_user.status == 'pause':
+        if current_user.pause_started_at:
+            pause_duration = (datetime.utcnow() - current_user.pause_started_at).total_seconds()
+            current_user.total_pause_time = (current_user.total_pause_time or 0) + pause_duration
+        current_user.pause_started_at = None
+        current_user.pause_type = None
+    
     current_user.status = status
     db.session.commit()
     
     # WebSocket ile broadcast
     socketio.emit('agent_status_changed', {
         'agent_id': current_user.id,
-        'status': status
+        'agent_name': current_user.full_name,
+        'status': status,
+        'pause_type': pause_type
     }, room=f'tenant_{current_user.tenant_id}')
     
     return jsonify({'success': True, 'status': status})
+
+
+@app.route('/agent/disposition', methods=['POST'])
+@login_required
+def agent_save_disposition():
+    """Çağrı sonucu (disposition) kaydet"""
+    data = request.get_json() if request.is_json else request.form
+    call_id = data.get('call_id')
+    disposition_code = data.get('disposition')
+    note = data.get('note', '')
+    
+    call = Call.query.get(call_id)
+    if not call or call.agent_id != current_user.id:
+        return jsonify({'success': False, 'error': 'Geçersiz çağrı'}), 400
+    
+    call.disposition = disposition_code
+    call.agent_note = note
+    call.disposed_at = datetime.utcnow()
+    db.session.commit()
+    
+    # Belirli disposition'lara göre lead güncelle
+    if call.lead_id:
+        lead = Lead.query.get(call.lead_id)
+        if lead:
+            if disposition_code == 'sale_ok':
+                lead.status = 'converted'
+            elif disposition_code == 'callback':
+                lead.status = 'callback'
+            elif disposition_code in ['no_interest', 'blacklist', 'wrong_number']:
+                lead.status = 'closed'
+            db.session.commit()
+    
+    return jsonify({'success': True})
+
+
+@app.route('/agent/callback', methods=['POST'])
+@login_required
+def agent_save_callback():
+    """Geri arama kaydet"""
+    data = request.get_json() if request.is_json else request.form
+    call_id = data.get('call_id')
+    callback_date = data.get('callback_date')
+    callback_time = data.get('callback_time')
+    note = data.get('note', '')
+    priority = data.get('priority', 'normal')
+    
+    call = Call.query.get(call_id)
+    if not call:
+        return jsonify({'success': False, 'error': 'Geçersiz çağrı'}), 400
+    
+    # Lead'i güncelle veya oluştur
+    if call.lead_id:
+        lead = Lead.query.get(call.lead_id)
+        lead.status = 'callback'
+        lead.callback_at = datetime.strptime(f'{callback_date} {callback_time}', '%Y-%m-%d %H:%M')
+        lead.callback_note = note
+        lead.priority = priority
+        db.session.commit()
+    
+    return jsonify({'success': True})
+
+
+@app.route('/api/agent/stats')
+@login_required
+def agent_get_stats():
+    """Agent istatistiklerini getir (AJAX)"""
+    today = datetime.now().replace(hour=0, minute=0, second=0)
+    
+    today_calls = Call.query.filter(
+        Call.agent_id == current_user.id,
+        Call.started_at >= today
+    ).all()
+    
+    stats = {
+        'total_calls': len(today_calls),
+        'qc_ok': sum(1 for c in today_calls if c.qa_status == 'passed'),
+        'cancelled_sales': sum(1 for c in today_calls if c.disposition == 'sale_cancelled'),
+        'total_sales': sum(1 for c in today_calls if c.disposition == 'sale_ok'),
+        'callbacks': Lead.query.filter_by(assigned_agent_id=current_user.id, status='callback').count(),
+        'total_pause_time': current_user.total_pause_time or 0,
+        'avg_call_duration': sum(c.talk_duration or 0 for c in today_calls) / max(len(today_calls), 1)
+    }
+    
+    return jsonify(stats)
 
 
 # ==================== SUPERVISOR PANEL ROUTES ====================
@@ -1324,6 +1592,7 @@ def create_initial_data():
         )
         super_admin.set_password('1234')
         db.session.add(super_admin)
+        db.session.commit()
     
     # Demo tenant
     demo_tenant = Tenant.query.filter_by(code='DEMO').first()
@@ -1344,6 +1613,47 @@ def create_initial_data():
         settings = TenantSettings(tenant_id=demo_tenant.id)
         db.session.add(settings)
         
+        # Demo proje
+        project = Project(
+            tenant_id=demo_tenant.id,
+            code='SALES',
+            name='Satış Projesi',
+            description='Demo satış kampanyası',
+            status='active'
+        )
+        db.session.add(project)
+        db.session.commit()
+        
+        # Demo kampanyalar
+        campaigns = [
+            Campaign(
+                tenant_id=demo_tenant.id,
+                project_id=project.id,
+                name='Satış Kampanyası',
+                description='Outbound satış kampanyası',
+                dialer_type='preview',
+                status='active'
+            ),
+            Campaign(
+                tenant_id=demo_tenant.id,
+                project_id=project.id,
+                name='Müşteri Memnuniyeti',
+                description='Progressive dialer ile anket',
+                dialer_type='progressive',
+                status='active'
+            ),
+            Campaign(
+                tenant_id=demo_tenant.id,
+                project_id=project.id,
+                name='Destek Hattı',
+                description='Inbound destek hattı',
+                dialer_type='preview',
+                status='active'
+            )
+        ]
+        for c in campaigns:
+            db.session.add(c)
+        
         # Demo admin
         admin = User(
             tenant_id=demo_tenant.id,
@@ -1356,9 +1666,92 @@ def create_initial_data():
         )
         admin.set_password('1234')
         db.session.add(admin)
+        
+        # Demo supervisor
+        supervisor = User(
+            tenant_id=demo_tenant.id,
+            username='supervisor',
+            email='supervisor@callcenter.local',
+            full_name='Demo Supervisor',
+            role='supervisor',
+            extension='101',
+            is_active=True
+        )
+        supervisor.set_password('1234')
+        db.session.add(supervisor)
+        
+        # Demo agent
+        agent = User(
+            tenant_id=demo_tenant.id,
+            username='agent',
+            email='agent@callcenter.local',
+            full_name='Demo Agent',
+            role='agent',
+            extension='200',
+            is_active=True
+        )
+        agent.set_password('1234')
+        db.session.add(agent)
+        
+        # Disposition set
+        dispo_set = DispositionSet(
+            tenant_id=demo_tenant.id,
+            name='Standart Sonuçlar',
+            is_active=True
+        )
+        db.session.add(dispo_set)
         db.session.commit()
         
+        # Dispositions
+        dispositions = [
+            ('sale_ok', 'Satış Başarılı', 'positive'),
+            ('callback', 'Geri Arama', 'neutral'),
+            ('no_interest', 'İlgilenmiyor', 'negative'),
+            ('wrong_number', 'Yanlış Numara', 'negative'),
+            ('no_answer', 'Ulaşılamadı', 'neutral'),
+            ('voicemail', 'Telesekreter', 'neutral'),
+            ('blacklist', 'Kara Liste', 'negative'),
+        ]
+        for code, name, category in dispositions:
+            d = Disposition(
+                tenant_id=demo_tenant.id,
+                disposition_set_id=dispo_set.id,
+                code=code,
+                name=name,
+                category=category,
+                is_active=True
+            )
+            db.session.add(d)
+        
+        db.session.commit()
         print('Demo veriler oluşturuldu.')
+    
+    # Mevcut tenant için kampanya kontrolü
+    else:
+        # Kampanya yoksa ekle
+        if Campaign.query.filter_by(tenant_id=demo_tenant.id).count() == 0:
+            project = Project.query.filter_by(tenant_id=demo_tenant.id).first()
+            if not project:
+                project = Project(
+                    tenant_id=demo_tenant.id,
+                    code='SALES',
+                    name='Satış Projesi',
+                    status='active'
+                )
+                db.session.add(project)
+                db.session.commit()
+            
+            campaign = Campaign(
+                tenant_id=demo_tenant.id,
+                project_id=project.id,
+                name='Demo Kampanya',
+                description='Demo kampanya',
+                dialer_type='preview',
+                status='active'
+            )
+            db.session.add(campaign)
+            db.session.commit()
+            print('Demo kampanya eklendi.')
 
 
 # ==================== STARTUP ====================

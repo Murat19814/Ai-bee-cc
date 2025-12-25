@@ -27,33 +27,33 @@
     --danger: #F87171;
     --info: #60A5FA;
     
-    /* Dark Background Palette */
-    --bg-darkest: #0A0A0C;
-    --bg-darker: #0D0D10;
-    --bg-dark: #111116;
-    --bg-card: #18181F;
-    --bg-elevated: #1E1E28;
-    --bg-hover: #252532;
-    --bg-input: #14141A;
+    /* Light Background Palette - Mat Beyaz */
+    --bg-darkest: #F5F5F5;
+    --bg-darker: #ECECEC;
+    --bg-dark: #E8E8E8;
+    --bg-card: #FFFFFF;
+    --bg-elevated: #FAFAFA;
+    --bg-hover: #F0F0F0;
+    --bg-input: #FFFFFF;
     
-    /* Text Colors */
-    --text-primary: #F8F8F8;
-    --text-secondary: #A0A0A8;
-    --text-muted: #606068;
+    /* Text Colors - Koyu Tonlar */
+    --text-primary: #1A1A1A;
+    --text-secondary: #5A5A5A;
+    --text-muted: #8A8A8A;
     --text-dark: #0A0A0C;
-    --text-gold: #F5A623;
+    --text-gold: #C4850A;
     
-    /* Borders */
-    --border-color: rgba(245, 166, 35, 0.1);
-    --border-light: rgba(245, 166, 35, 0.2);
-    --border-gold: rgba(245, 166, 35, 0.4);
+    /* Borders - Yumuşak Gri */
+    --border-color: rgba(0, 0, 0, 0.08);
+    --border-light: rgba(0, 0, 0, 0.05);
+    --border-gold: rgba(196, 133, 10, 0.3);
     
-    /* Shadows */
-    --shadow-sm: 0 2px 4px rgba(0, 0, 0, 0.5);
-    --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.6);
-    --shadow-lg: 0 10px 40px rgba(0, 0, 0, 0.7);
-    --shadow-glow: 0 0 30px var(--primary-glow);
-    --shadow-gold: 0 4px 20px rgba(245, 166, 35, 0.3);
+    /* Shadows - Hafif Gölgeler */
+    --shadow-sm: 0 2px 4px rgba(0, 0, 0, 0.05);
+    --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.08);
+    --shadow-lg: 0 10px 40px rgba(0, 0, 0, 0.1);
+    --shadow-glow: 0 0 30px rgba(196, 133, 10, 0.15);
+    --shadow-gold: 0 4px 20px rgba(196, 133, 10, 0.15);
     
     /* Typography */
     --font-primary: 'Rajdhani', -apple-system, BlinkMacSystemFont, sans-serif;

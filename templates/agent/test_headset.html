@@ -1,0 +1,502 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Kulaklık & Mikrofon Testi - AI BEE CC</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@2.44.0/tabler-icons.min.css">
+    <style>
+        :root {
+            --primary: #FFD700;
+            --primary-dark: #D4920A;
+            --bg-darkest: #0A0A0C;
+            --bg-darker: #111113;
+            --bg-card: #18181B;
+            --text-primary: #FAFAFA;
+            --text-secondary: #A1A1AA;
+            --success: #10B981;
+            --danger: #EF4444;
+            --warning: #F59E0B;
+            --border-color: rgba(255, 215, 0, 0.15);
+        }
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Rajdhani', sans-serif;
+            background: var(--bg-darkest);
+            color: var(--text-primary);
+            min-height: 100vh;
+            padding: 2rem;
+        }
+        
+        .container {
+            max-width: 500px;
+            margin: 0 auto;
+        }
+        
+        h1 {
+            color: var(--primary);
+            margin-bottom: 0.5rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        
+        .subtitle {
+            color: var(--text-secondary);
+            margin-bottom: 2rem;
+        }
+        
+        .test-section {
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            padding: 1.5rem;
+            margin-bottom: 1.5rem;
+        }
+        
+        .test-header {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            margin-bottom: 1rem;
+        }
+        
+        .test-header i {
+            font-size: 1.5rem;
+            color: var(--primary);
+        }
+        
+        .test-header h2 {
+            font-size: 1.1rem;
+            font-weight: 600;
+        }
+        
+        .device-select {
+            width: 100%;
+            padding: 0.75rem;
+            background: var(--bg-darker);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            color: var(--text-primary);
+            font-family: inherit;
+            margin-bottom: 1rem;
+        }
+        
+        .volume-meter {
+            height: 20px;
+            background: var(--bg-darker);
+            border-radius: 10px;
+            overflow: hidden;
+            margin-bottom: 1rem;
+        }
+        
+        .volume-bar {
+            height: 100%;
+            background: linear-gradient(90deg, var(--success) 0%, var(--warning) 70%, var(--danger) 100%);
+            width: 0%;
+            transition: width 0.1s;
+            border-radius: 10px;
+        }
+        
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+            padding: 0.875rem 1.5rem;
+            border-radius: 8px;
+            font-family: inherit;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+            border: none;
+            width: 100%;
+        }
+        
+        .btn-primary {
+            background: var(--primary);
+            color: var(--bg-darkest);
+        }
+        
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(255, 215, 0, 0.3);
+        }
+        
+        .btn-secondary {
+            background: var(--bg-darker);
+            border: 1px solid var(--border-color);
+            color: var(--text-primary);
+        }
+        
+        .btn-success {
+            background: var(--success);
+            color: white;
+        }
+        
+        .btn-danger {
+            background: var(--danger);
+            color: white;
+        }
+        
+        .status-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.5rem 1rem;
+            border-radius: 999px;
+            font-size: 0.875rem;
+            margin-top: 1rem;
+        }
+        
+        .status-badge.success {
+            background: rgba(16, 185, 129, 0.2);
+            color: var(--success);
+        }
+        
+        .status-badge.error {
+            background: rgba(239, 68, 68, 0.2);
+            color: var(--danger);
+        }
+        
+        .status-badge.warning {
+            background: rgba(245, 158, 11, 0.2);
+            color: var(--warning);
+        }
+        
+        .audio-test-buttons {
+            display: flex;
+            gap: 0.5rem;
+        }
+        
+        .audio-test-buttons .btn {
+            flex: 1;
+        }
+        
+        .recording-indicator {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            color: var(--danger);
+            margin-top: 0.5rem;
+        }
+        
+        .recording-dot {
+            width: 10px;
+            height: 10px;
+            background: var(--danger);
+            border-radius: 50%;
+            animation: pulse 1s infinite;
+        }
+        
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+        
+        audio {
+            width: 100%;
+            margin-top: 1rem;
+        }
+        
+        .close-btn {
+            margin-top: 1rem;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1><i class="ti ti-headset"></i> Cihaz Testi</h1>
+        <p class="subtitle">Kulaklık ve mikrofon ayarlarınızı test edin</p>
+        
+        <!-- Mikrofon Testi -->
+        <div class="test-section">
+            <div class="test-header">
+                <i class="ti ti-microphone"></i>
+                <h2>Mikrofon</h2>
+            </div>
+            
+            <select class="device-select" id="microphoneSelect">
+                <option value="">Mikrofon seçin...</option>
+            </select>
+            
+            <div class="volume-meter">
+                <div class="volume-bar" id="microphoneLevel"></div>
+            </div>
+            
+            <div class="audio-test-buttons">
+                <button class="btn btn-primary" id="btnTestMic">
+                    <i class="ti ti-microphone"></i> Testi Başlat
+                </button>
+                <button class="btn btn-secondary" id="btnRecordTest" disabled>
+                    <i class="ti ti-circle-filled"></i> Kaydet
+                </button>
+            </div>
+            
+            <div class="recording-indicator" id="recordingIndicator" style="display: none;">
+                <span class="recording-dot"></span>
+                <span>Kayıt yapılıyor...</span>
+            </div>
+            
+            <audio id="recordedAudio" controls style="display: none;"></audio>
+            
+            <div class="status-badge" id="micStatus" style="display: none;">
+                <i class="ti ti-check"></i>
+                <span>Mikrofon çalışıyor</span>
+            </div>
+        </div>
+        
+        <!-- Hoparlör Testi -->
+        <div class="test-section">
+            <div class="test-header">
+                <i class="ti ti-volume"></i>
+                <h2>Hoparlör / Kulaklık</h2>
+            </div>
+            
+            <select class="device-select" id="speakerSelect">
+                <option value="">Ses çıkışı seçin...</option>
+            </select>
+            
+            <button class="btn btn-primary" id="btnTestSpeaker">
+                <i class="ti ti-player-play"></i> Test Sesini Çal
+            </button>
+            
+            <div class="status-badge" id="speakerStatus" style="display: none;">
+                <i class="ti ti-check"></i>
+                <span>Sesi duyuyorsanız test başarılı</span>
+            </div>
+        </div>
+        
+        <!-- Genel Durum -->
+        <div class="test-section">
+            <div class="test-header">
+                <i class="ti ti-circle-check"></i>
+                <h2>Test Sonucu</h2>
+            </div>
+            
+            <div id="overallStatus">
+                <p style="color: var(--text-secondary);">Testleri tamamlayın...</p>
+            </div>
+        </div>
+        
+        <button class="btn btn-secondary close-btn" onclick="window.close()">
+            <i class="ti ti-x"></i> Kapat
+        </button>
+    </div>
+    
+    <script>
+        let audioContext;
+        let analyser;
+        let microphone;
+        let mediaRecorder;
+        let recordedChunks = [];
+        let isRecording = false;
+        let stream;
+        
+        // Initialize
+        document.addEventListener('DOMContentLoaded', async function() {
+            await loadDevices();
+        });
+        
+        // Load available devices
+        async function loadDevices() {
+            try {
+                // Request permission first
+                await navigator.mediaDevices.getUserMedia({ audio: true });
+                
+                const devices = await navigator.mediaDevices.enumerateDevices();
+                
+                const micSelect = document.getElementById('microphoneSelect');
+                const speakerSelect = document.getElementById('speakerSelect');
+                
+                devices.forEach(device => {
+                    const option = document.createElement('option');
+                    option.value = device.deviceId;
+                    option.textContent = device.label || `Device ${device.deviceId.substr(0, 8)}`;
+                    
+                    if (device.kind === 'audioinput') {
+                        micSelect.appendChild(option);
+                    } else if (device.kind === 'audiooutput') {
+                        speakerSelect.appendChild(option);
+                    }
+                });
+                
+                // Select first device by default
+                if (micSelect.options.length > 1) {
+                    micSelect.selectedIndex = 1;
+                }
+                if (speakerSelect.options.length > 1) {
+                    speakerSelect.selectedIndex = 1;
+                }
+                
+            } catch (err) {
+                console.error('Error loading devices:', err);
+                showStatus('micStatus', 'error', 'Mikrofon izni reddedildi');
+            }
+        }
+        
+        // Test microphone
+        document.getElementById('btnTestMic').addEventListener('click', async function() {
+            const deviceId = document.getElementById('microphoneSelect').value;
+            
+            try {
+                stream = await navigator.mediaDevices.getUserMedia({
+                    audio: deviceId ? { deviceId: { exact: deviceId } } : true
+                });
+                
+                audioContext = new AudioContext();
+                analyser = audioContext.createAnalyser();
+                microphone = audioContext.createMediaStreamSource(stream);
+                microphone.connect(analyser);
+                
+                analyser.fftSize = 256;
+                const bufferLength = analyser.frequencyBinCount;
+                const dataArray = new Uint8Array(bufferLength);
+                
+                // Enable record button
+                document.getElementById('btnRecordTest').disabled = false;
+                
+                // Animate level meter
+                function updateLevel() {
+                    analyser.getByteFrequencyData(dataArray);
+                    const average = dataArray.reduce((a, b) => a + b) / bufferLength;
+                    const level = (average / 255) * 100;
+                    document.getElementById('microphoneLevel').style.width = level + '%';
+                    
+                    if (stream.active) {
+                        requestAnimationFrame(updateLevel);
+                    }
+                }
+                
+                updateLevel();
+                showStatus('micStatus', 'success', 'Mikrofon çalışıyor');
+                this.innerHTML = '<i class="ti ti-microphone-off"></i> Durdur';
+                
+            } catch (err) {
+                console.error('Microphone test error:', err);
+                showStatus('micStatus', 'error', 'Mikrofon hatası: ' + err.message);
+            }
+        });
+        
+        // Record test
+        document.getElementById('btnRecordTest').addEventListener('click', function() {
+            if (!isRecording) {
+                // Start recording
+                recordedChunks = [];
+                mediaRecorder = new MediaRecorder(stream);
+                
+                mediaRecorder.ondataavailable = function(e) {
+                    if (e.data.size > 0) {
+                        recordedChunks.push(e.data);
+                    }
+                };
+                
+                mediaRecorder.onstop = function() {
+                    const blob = new Blob(recordedChunks, { type: 'audio/webm' });
+                    const audioUrl = URL.createObjectURL(blob);
+                    const audioElement = document.getElementById('recordedAudio');
+                    audioElement.src = audioUrl;
+                    audioElement.style.display = 'block';
+                };
+                
+                mediaRecorder.start();
+                isRecording = true;
+                
+                document.getElementById('recordingIndicator').style.display = 'flex';
+                this.innerHTML = '<i class="ti ti-player-stop"></i> Durdur';
+                this.classList.remove('btn-secondary');
+                this.classList.add('btn-danger');
+                
+            } else {
+                // Stop recording
+                mediaRecorder.stop();
+                isRecording = false;
+                
+                document.getElementById('recordingIndicator').style.display = 'none';
+                this.innerHTML = '<i class="ti ti-circle-filled"></i> Kaydet';
+                this.classList.remove('btn-danger');
+                this.classList.add('btn-secondary');
+            }
+        });
+        
+        // Test speaker
+        document.getElementById('btnTestSpeaker').addEventListener('click', async function() {
+            // Create a test tone
+            const ctx = new AudioContext();
+            const oscillator = ctx.createOscillator();
+            const gainNode = ctx.createGain();
+            
+            oscillator.connect(gainNode);
+            gainNode.connect(ctx.destination);
+            
+            // Play a pleasant beep sequence
+            oscillator.frequency.value = 440; // A4
+            gainNode.gain.value = 0.3;
+            
+            oscillator.start();
+            
+            // Beep pattern
+            setTimeout(() => { oscillator.frequency.value = 523; }, 200); // C5
+            setTimeout(() => { oscillator.frequency.value = 659; }, 400); // E5
+            setTimeout(() => { oscillator.frequency.value = 784; }, 600); // G5
+            setTimeout(() => { 
+                oscillator.stop();
+                ctx.close();
+            }, 800);
+            
+            showStatus('speakerStatus', 'success', 'Sesi duyuyorsanız test başarılı');
+            updateOverallStatus();
+        });
+        
+        function showStatus(elementId, type, message) {
+            const element = document.getElementById(elementId);
+            element.style.display = 'inline-flex';
+            element.className = 'status-badge ' + type;
+            
+            const iconMap = {
+                'success': 'ti-check',
+                'error': 'ti-x',
+                'warning': 'ti-alert-triangle'
+            };
+            
+            element.innerHTML = `
+                <i class="ti ${iconMap[type]}"></i>
+                <span>${message}</span>
+            `;
+        }
+        
+        function updateOverallStatus() {
+            const micOk = document.getElementById('micStatus').classList.contains('success');
+            const speakerOk = document.getElementById('speakerStatus').classList.contains('success');
+            
+            const statusDiv = document.getElementById('overallStatus');
+            
+            if (micOk && speakerOk) {
+                statusDiv.innerHTML = `
+                    <div class="status-badge success">
+                        <i class="ti ti-check"></i>
+                        <span>Tüm testler başarılı! Çağrı yapmaya hazırsınız.</span>
+                    </div>
+                `;
+            } else if (micOk || speakerOk) {
+                statusDiv.innerHTML = `
+                    <div class="status-badge warning">
+                        <i class="ti ti-alert-triangle"></i>
+                        <span>Bazı testler tamamlanmadı</span>
+                    </div>
+                `;
+            }
+        }
+    </script>
+</body>
+</html>
+

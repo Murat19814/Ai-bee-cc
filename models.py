@@ -230,6 +230,12 @@ class User(UserMixin, db.Model):
     last_activity = db.Column(db.DateTime)
     current_ip = db.Column(db.String(50))
     
+    # Agent - Kampanya ve Mola
+    current_campaign_id = db.Column(db.Integer, db.ForeignKey('campaigns.id'))
+    pause_started_at = db.Column(db.DateTime)
+    pause_type = db.Column(db.String(50))  # pause, system_error, meeting, meal, tea, wc
+    total_pause_time = db.Column(db.Integer, default=0)  # Saniye cinsinden toplam mola
+    
     # Zaman damgaları
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
     updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
@@ -686,6 +692,10 @@ class Lead(db.Model):
     # Son disposition
     last_disposition_id = db.Column(db.Integer, db.ForeignKey('dispositions.id'))
     
+    # Callback (geri arama) bilgileri
+    callback_at = db.Column(db.DateTime)
+    callback_note = db.Column(db.Text)
+    
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
     updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
 
@@ -990,6 +1000,12 @@ class Call(db.Model):
     
     # Disposition
     disposition_id = db.Column(db.Integer, db.ForeignKey('dispositions.id'))
+    disposition = db.Column(db.String(50))  # Basit disposition kodu
+    disposed_at = db.Column(db.DateTime)
+    agent_note = db.Column(db.Text)  # Agent'ın çağrı sonucu notu
+    
+    # QA Durumu
+    qa_status = db.Column(db.String(20))  # pending, passed, failed
     
     # Transfer bilgileri
     transferred_from_id = db.Column(db.Integer, db.ForeignKey('users.id'))
@@ -1145,6 +1161,7 @@ class Script(db.Model):
     # Tip
     script_type = db.Column(db.String(20), default='sales')  # sales, support, survey
     
+    is_global = db.Column(db.Boolean, default=False)  # Tüm tenant'lar için geçerli mi
     is_active = db.Column(db.Boolean, default=True)
     version = db.Column(db.Integer, default=1)
     

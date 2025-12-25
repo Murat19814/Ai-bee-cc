@@ -1,0 +1,528 @@
+{% extends "base.html" %}
+
+{% block title %}Kampanya Seçimi - {{ app_name }}{% endblock %}
+
+{% block extra_css %}
+<style>
+.agent-login-container {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: calc(100vh - 120px);
+}
+
+.agent-login-card {
+    background: var(--bg-card);
+    border: 1px solid var(--border-color);
+    border-radius: var(--border-radius-lg);
+    padding: 2.5rem;
+    width: 100%;
+    max-width: 450px;
+    text-align: center;
+}
+
+.welcome-text {
+    color: var(--primary);
+    font-family: var(--font-display);
+    font-size: 1.25rem;
+    font-weight: 600;
+    margin-bottom: 1.5rem;
+}
+
+.agent-avatar {
+    width: 120px;
+    height: 120px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto 1rem;
+    font-size: 3rem;
+    color: var(--bg-darkest);
+    border: 4px solid var(--bg-darker);
+    box-shadow: 0 8px 32px rgba(var(--primary-rgb), 0.3);
+}
+
+.agent-avatar img {
+    width: 100%;
+    height: 100%;
+    border-radius: 50%;
+    object-fit: cover;
+}
+
+.agent-name {
+    font-size: 1.5rem;
+    font-weight: 700;
+    margin-bottom: 0.25rem;
+}
+
+.agent-role {
+    color: var(--primary);
+    font-size: 0.875rem;
+    margin-bottom: 2rem;
+}
+
+.campaign-select-wrapper {
+    position: relative;
+    margin-bottom: 1.5rem;
+}
+
+.campaign-select-wrapper select {
+    width: 100%;
+    padding: 1rem 1.25rem;
+    padding-right: 3rem;
+    background: var(--bg-darker);
+    border: 2px solid var(--border-color);
+    border-radius: var(--border-radius);
+    color: var(--text-primary);
+    font-size: 1rem;
+    appearance: none;
+    cursor: pointer;
+    transition: all var(--transition-fast);
+}
+
+.campaign-select-wrapper select:focus {
+    outline: none;
+    border-color: var(--primary);
+    box-shadow: 0 0 0 4px rgba(var(--primary-rgb), 0.1);
+}
+
+.campaign-select-wrapper::after {
+    content: '';
+    position: absolute;
+    right: 1rem;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 0;
+    height: 0;
+    border-left: 6px solid transparent;
+    border-right: 6px solid transparent;
+    border-top: 6px solid var(--text-secondary);
+    pointer-events: none;
+}
+
+.campaign-select-wrapper .refresh-btn {
+    position: absolute;
+    right: 3rem;
+    top: 50%;
+    transform: translateY(-50%);
+    background: none;
+    border: none;
+    color: var(--primary);
+    cursor: pointer;
+    padding: 0.5rem;
+    transition: all var(--transition-fast);
+}
+
+.campaign-select-wrapper .refresh-btn:hover {
+    transform: translateY(-50%) rotate(180deg);
+}
+
+.campaign-option {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+}
+
+.campaign-icon {
+    width: 32px;
+    height: 32px;
+    background: var(--primary);
+    border-radius: var(--border-radius-sm);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--bg-darkest);
+}
+
+.btn-enter {
+    width: 100%;
+    padding: 1rem 2rem;
+    background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
+    border: none;
+    border-radius: var(--border-radius);
+    color: var(--bg-darkest);
+    font-size: 1rem;
+    font-weight: 700;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.75rem;
+    transition: all var(--transition-fast);
+}
+
+.btn-enter:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 24px rgba(var(--primary-rgb), 0.4);
+}
+
+.btn-enter:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+    transform: none;
+}
+
+.headset-test {
+    margin-top: 1.5rem;
+    padding-top: 1.5rem;
+    border-top: 1px solid var(--border-color);
+}
+
+.headset-test a {
+    color: var(--text-secondary);
+    text-decoration: none;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    font-size: 0.875rem;
+    transition: all var(--transition-fast);
+}
+
+.headset-test a:hover {
+    color: var(--primary);
+}
+
+/* System Requirements */
+.system-requirements {
+    margin-top: 2rem;
+    padding: 1rem;
+    background: var(--bg-darker);
+    border-radius: var(--border-radius);
+    text-align: left;
+}
+
+.system-requirements h4 {
+    font-size: 0.75rem;
+    text-transform: uppercase;
+    color: var(--text-secondary);
+    margin-bottom: 0.75rem;
+}
+
+.requirement-item {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.5rem 0;
+    font-size: 0.875rem;
+}
+
+.requirement-item i {
+    font-size: 1rem;
+}
+
+.requirement-item.success i { color: var(--success); }
+.requirement-item.error i { color: var(--danger); }
+.requirement-item.pending i { color: var(--warning); animation: spin 1s linear infinite; }
+
+@keyframes spin {
+    from { transform: rotate(0deg); }
+    to { transform: rotate(360deg); }
+}
+
+/* Permission Request Modal */
+.permission-modal {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.8);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 1000;
+    backdrop-filter: blur(4px);
+}
+
+.permission-content {
+    background: var(--bg-card);
+    border-radius: var(--border-radius-lg);
+    padding: 2rem;
+    text-align: center;
+    max-width: 400px;
+}
+
+.permission-icon {
+    width: 80px;
+    height: 80px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto 1.5rem;
+    font-size: 2.5rem;
+    color: var(--bg-darkest);
+}
+
+.permission-title {
+    font-size: 1.25rem;
+    font-weight: 700;
+    margin-bottom: 0.5rem;
+}
+
+.permission-text {
+    color: var(--text-secondary);
+    margin-bottom: 1.5rem;
+    line-height: 1.6;
+}
+
+.permission-buttons {
+    display: flex;
+    gap: 0.75rem;
+}
+
+.permission-buttons button {
+    flex: 1;
+    padding: 0.875rem;
+    border-radius: var(--border-radius);
+    font-weight: 600;
+    cursor: pointer;
+    transition: all var(--transition-fast);
+}
+
+.btn-allow {
+    background: var(--primary);
+    border: none;
+    color: var(--bg-darkest);
+}
+
+.btn-allow:hover {
+    transform: translateY(-2px);
+}
+
+.btn-deny {
+    background: transparent;
+    border: 1px solid var(--border-color);
+    color: var(--text-primary);
+}
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="agent-login-container">
+    <div class="agent-login-card">
+        <div class="welcome-text">Hoş Geldiniz</div>
+        
+        <div class="agent-avatar">
+            {% if current_user.avatar %}
+            <img src="{{ current_user.avatar }}" alt="Avatar">
+            {% else %}
+            <i class="ti ti-headset"></i>
+            {% endif %}
+        </div>
+        
+        <div class="agent-name">{{ current_user.full_name or current_user.username }}</div>
+        <div class="agent-role">Agent</div>
+        
+        <form method="POST" action="{{ url_for('agent_enter_campaign') }}" id="campaignForm">
+            <div class="campaign-select-wrapper">
+                <select name="campaign_id" id="campaignSelect" required>
+                    <option value="">Kampanya Seçin</option>
+                    {% for campaign in campaigns %}
+                    <option value="{{ campaign.id }}">
+                        {{ campaign.id }} - {{ campaign.name }} ({{ campaign.project.name if campaign.project else 'Genel' }})
+                    </option>
+                    {% endfor %}
+                </select>
+                <button type="button" class="refresh-btn" id="refreshCampaigns" title="Kampanyaları Yenile">
+                    <i class="ti ti-refresh"></i>
+                </button>
+            </div>
+            
+            <button type="submit" class="btn-enter" id="btnEnter" disabled>
+                <span>Giriş</span>
+                <i class="ti ti-arrow-right"></i>
+            </button>
+        </form>
+        
+        <div class="headset-test">
+            <a href="#" id="headsetTestLink">
+                <i class="ti ti-headset"></i>
+                Kulaklık ve Mikrofon Testi
+            </a>
+        </div>
+        
+        <div class="system-requirements" id="systemRequirements">
+            <h4>Sistem Gereksinimleri</h4>
+            <div class="requirement-item pending" id="reqMicrophone">
+                <i class="ti ti-loader"></i>
+                <span>Mikrofon izni kontrol ediliyor...</span>
+            </div>
+            <div class="requirement-item pending" id="reqSpeaker">
+                <i class="ti ti-loader"></i>
+                <span>Hoparlör/Kulaklık kontrol ediliyor...</span>
+            </div>
+            <div class="requirement-item pending" id="reqWebRTC">
+                <i class="ti ti-loader"></i>
+                <span>WebRTC desteği kontrol ediliyor...</span>
+            </div>
+            <div class="requirement-item pending" id="reqConnection">
+                <i class="ti ti-loader"></i>
+                <span>Sunucu bağlantısı kontrol ediliyor...</span>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Microphone Permission Modal -->
+<div class="permission-modal" id="permissionModal" style="display: none;">
+    <div class="permission-content">
+        <div class="permission-icon">
+            <i class="ti ti-microphone"></i>
+        </div>
+        <div class="permission-title">Mikrofon İzni Gerekli</div>
+        <div class="permission-text">
+            Çağrı yapabilmek için mikrofonunuza erişim izni vermeniz gerekmektedir. 
+            Tarayıcınız izin isteyecektir.
+        </div>
+        <div class="permission-buttons">
+            <button class="btn-deny" id="btnDenyPermission">Daha Sonra</button>
+            <button class="btn-allow" id="btnAllowPermission">İzin Ver</button>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const campaignSelect = document.getElementById('campaignSelect');
+    const btnEnter = document.getElementById('btnEnter');
+    const permissionModal = document.getElementById('permissionModal');
+    
+    let systemChecksComplete = false;
+    let microphoneAllowed = false;
+    
+    // Campaign selection change
+    campaignSelect.addEventListener('change', function() {
+        checkEnterButton();
+    });
+    
+    function checkEnterButton() {
+        btnEnter.disabled = !(campaignSelect.value && systemChecksComplete);
+    }
+    
+    // System checks
+    async function runSystemChecks() {
+        // Check WebRTC
+        if (window.RTCPeerConnection) {
+            updateRequirement('reqWebRTC', true, 'WebRTC destekleniyor');
+        } else {
+            updateRequirement('reqWebRTC', false, 'WebRTC desteklenmiyor');
+            return;
+        }
+        
+        // Check WebSocket connection
+        if (typeof socket !== 'undefined') {
+            socket.on('connect', function() {
+                updateRequirement('reqConnection', true, 'Sunucu bağlantısı OK');
+                systemChecksComplete = true;
+                checkEnterButton();
+            });
+            
+            socket.on('connect_error', function() {
+                updateRequirement('reqConnection', false, 'Sunucu bağlantısı başarısız');
+            });
+        } else {
+            updateRequirement('reqConnection', true, 'Bağlantı hazır');
+        }
+        
+        // Check audio devices
+        try {
+            const devices = await navigator.mediaDevices.enumerateDevices();
+            const audioInputs = devices.filter(d => d.kind === 'audioinput');
+            const audioOutputs = devices.filter(d => d.kind === 'audiooutput');
+            
+            if (audioInputs.length > 0) {
+                updateRequirement('reqMicrophone', true, audioInputs.length + ' mikrofon bulundu');
+            } else {
+                updateRequirement('reqMicrophone', false, 'Mikrofon bulunamadı');
+            }
+            
+            if (audioOutputs.length > 0) {
+                updateRequirement('reqSpeaker', true, audioOutputs.length + ' ses çıkışı bulundu');
+            } else {
+                updateRequirement('reqSpeaker', true, 'Varsayılan ses çıkışı kullanılacak');
+            }
+            
+            systemChecksComplete = true;
+            checkEnterButton();
+            
+        } catch (err) {
+            console.error('Device enumeration error:', err);
+            updateRequirement('reqMicrophone', false, 'Cihaz kontrolü başarısız');
+        }
+    }
+    
+    function updateRequirement(id, success, text) {
+        const element = document.getElementById(id);
+        element.className = 'requirement-item ' + (success ? 'success' : 'error');
+        element.querySelector('i').className = 'ti ti-' + (success ? 'check' : 'x');
+        element.querySelector('span').textContent = text;
+    }
+    
+    // Request microphone permission
+    async function requestMicrophonePermission() {
+        try {
+            const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+            microphoneAllowed = true;
+            stream.getTracks().forEach(track => track.stop());
+            permissionModal.style.display = 'none';
+            updateRequirement('reqMicrophone', true, 'Mikrofon izni verildi');
+        } catch (err) {
+            console.error('Microphone permission denied:', err);
+            updateRequirement('reqMicrophone', false, 'Mikrofon izni reddedildi');
+        }
+    }
+    
+    // Permission modal buttons
+    document.getElementById('btnAllowPermission').addEventListener('click', function() {
+        requestMicrophonePermission();
+    });
+    
+    document.getElementById('btnDenyPermission').addEventListener('click', function() {
+        permissionModal.style.display = 'none';
+    });
+    
+    // Show permission modal on first visit
+    navigator.permissions.query({ name: 'microphone' }).then(function(result) {
+        if (result.state === 'prompt') {
+            permissionModal.style.display = 'flex';
+        } else if (result.state === 'granted') {
+            microphoneAllowed = true;
+            updateRequirement('reqMicrophone', true, 'Mikrofon izni verildi');
+        } else {
+            updateRequirement('reqMicrophone', false, 'Mikrofon izni gerekli');
+        }
+    }).catch(function() {
+        // Permissions API not supported, show modal anyway
+        permissionModal.style.display = 'flex';
+    });
+    
+    // Headset test link
+    document.getElementById('headsetTestLink').addEventListener('click', function(e) {
+        e.preventDefault();
+        // Open headset test in modal or new window
+        window.open('/agent/test-headset', 'headset-test', 'width=500,height=400');
+    });
+    
+    // Refresh campaigns
+    document.getElementById('refreshCampaigns').addEventListener('click', function() {
+        this.querySelector('i').style.animation = 'spin 1s linear';
+        setTimeout(() => {
+            this.querySelector('i').style.animation = '';
+            // Reload campaigns via AJAX
+            location.reload();
+        }, 1000);
+    });
+    
+    // Run system checks on page load
+    runSystemChecks();
+});
+</script>
+{% endblock %}
+

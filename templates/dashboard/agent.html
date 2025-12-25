@@ -1,67 +1,235 @@
 {% extends "base.html" %}
 
-{% block title %}Agent Panel - {{ app_name }}{% endblock %}
+{% block title %}Agent Dashboard - {{ app_name }}{% endblock %}
+
+{% block extra_css %}
+<style>
+.agent-welcome {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    min-height: 60vh;
+    text-align: center;
+}
+
+.welcome-icon {
+    width: 120px;
+    height: 120px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 1.5rem;
+    font-size: 3rem;
+    color: var(--bg-darkest);
+    box-shadow: 0 16px 48px rgba(var(--primary-rgb), 0.3);
+}
+
+.welcome-title {
+    font-family: var(--font-display);
+    font-size: 2rem;
+    font-weight: 700;
+    margin-bottom: 0.5rem;
+}
+
+.welcome-subtitle {
+    color: var(--text-secondary);
+    font-size: 1.1rem;
+    margin-bottom: 2rem;
+}
+
+.quick-actions {
+    display: flex;
+    gap: 1rem;
+    flex-wrap: wrap;
+    justify-content: center;
+}
+
+.quick-action-btn {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 1.5rem 2rem;
+    background: var(--bg-card);
+    border: 1px solid var(--border-color);
+    border-radius: var(--border-radius);
+    color: var(--text-primary);
+    text-decoration: none;
+    transition: all var(--transition-fast);
+    min-width: 150px;
+}
+
+.quick-action-btn:hover {
+    transform: translateY(-4px);
+    border-color: var(--primary);
+    box-shadow: 0 8px 24px rgba(var(--primary-rgb), 0.2);
+}
+
+.quick-action-btn i {
+    font-size: 2rem;
+    color: var(--primary);
+    margin-bottom: 0.5rem;
+}
+
+.quick-action-btn span {
+    font-weight: 600;
+}
+
+.agent-stats {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 1rem;
+    margin-bottom: 2rem;
+}
+
+.mini-stat {
+    background: var(--bg-card);
+    border: 1px solid var(--border-color);
+    border-radius: var(--border-radius);
+    padding: 1.25rem;
+    text-align: center;
+}
+
+.mini-stat-value {
+    font-family: var(--font-display);
+    font-size: 1.75rem;
+    font-weight: 700;
+    color: var(--primary);
+}
+
+.mini-stat-label {
+    font-size: 0.75rem;
+    color: var(--text-secondary);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin-top: 0.25rem;
+}
+
+.todays-schedule {
+    background: var(--bg-card);
+    border: 1px solid var(--border-color);
+    border-radius: var(--border-radius);
+    padding: 1.5rem;
+    margin-top: 2rem;
+    max-width: 600px;
+    margin-left: auto;
+    margin-right: auto;
+}
+
+.schedule-header {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    margin-bottom: 1rem;
+    color: var(--primary);
+    font-weight: 600;
+}
+
+.schedule-item {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    padding: 0.75rem 0;
+    border-bottom: 1px solid var(--border-color);
+}
+
+.schedule-item:last-child {
+    border-bottom: none;
+}
+
+.schedule-time {
+    font-family: var(--font-mono);
+    font-size: 0.875rem;
+    color: var(--text-secondary);
+    min-width: 60px;
+}
+
+.schedule-info {
+    flex: 1;
+}
+
+.schedule-title {
+    font-weight: 500;
+}
+
+.schedule-detail {
+    font-size: 0.75rem;
+    color: var(--text-secondary);
+}
+</style>
+{% endblock %}
 
 {% block content %}
-<div class="page-header">
-    <div>
-        <h1 class="page-title">Agent Panel</h1>
-        <p class="page-subtitle">Hoş geldiniz, {{ current_user.full_name }}</p>
-    </div>
-</div>
-
-<div class="grid grid-cols-4">
-    <div class="stat-card">
-        <div class="stat-card-header">
-            <div class="stat-card-icon">
-                <i class="ti ti-phone-incoming"></i>
-            </div>
-        </div>
-        <div class="stat-card-value">45</div>
-        <div class="stat-card-label">Gelen Çağrılar</div>
+<div class="agent-welcome">
+    <div class="welcome-icon">
+        <i class="ti ti-headset"></i>
     </div>
     
-    <div class="stat-card purple">
-        <div class="stat-card-header">
-            <div class="stat-card-icon">
-                <i class="ti ti-phone-outgoing"></i>
-            </div>
+    <h1 class="welcome-title">Hoş Geldiniz, {{ current_user.full_name or current_user.username }}!</h1>
+    <p class="welcome-subtitle">Çalışmaya başlamak için bir kampanya seçin</p>
+    
+    <div class="agent-stats">
+        <div class="mini-stat">
+            <div class="mini-stat-value">{{ today_stats.calls if today_stats else 0 }}</div>
+            <div class="mini-stat-label">Bugünkü Çağrı</div>
         </div>
-        <div class="stat-card-value">32</div>
-        <div class="stat-card-label">Giden Çağrılar</div>
+        <div class="mini-stat">
+            <div class="mini-stat-value">{{ today_stats.sales if today_stats else 0 }}</div>
+            <div class="mini-stat-label">Bugünkü Satış</div>
+        </div>
+        <div class="mini-stat">
+            <div class="mini-stat-value">{{ today_stats.callbacks if today_stats else 0 }}</div>
+            <div class="mini-stat-label">Geri Arama</div>
+        </div>
+        <div class="mini-stat">
+            <div class="mini-stat-value">{{ today_stats.avg_duration if today_stats else '0:00' }}</div>
+            <div class="mini-stat-label">Ort. Süre</div>
+        </div>
     </div>
     
-    <div class="stat-card orange">
-        <div class="stat-card-header">
-            <div class="stat-card-icon">
-                <i class="ti ti-clock"></i>
-            </div>
-        </div>
-        <div class="stat-card-value">3:45</div>
-        <div class="stat-card-label">Ort. Görüşme Süresi</div>
-    </div>
-    
-    <div class="stat-card success">
-        <div class="stat-card-header">
-            <div class="stat-card-icon">
-                <i class="ti ti-star"></i>
-            </div>
-        </div>
-        <div class="stat-card-value">92%</div>
-        <div class="stat-card-label">Kalite Puanı</div>
-    </div>
-</div>
-
-<div class="card mt-4">
-    <div class="card-header">
-        <h3 class="card-title">
+    <div class="quick-actions">
+        <a href="{{ url_for('agent_campaign_select') }}" class="quick-action-btn">
+            <i class="ti ti-player-play"></i>
+            <span>Kampanya Seç</span>
+        </a>
+        <a href="{{ url_for('agent_test_headset') }}" class="quick-action-btn" target="_blank">
+            <i class="ti ti-headset"></i>
+            <span>Cihaz Testi</span>
+        </a>
+        <a href="{{ url_for('calls') }}" class="quick-action-btn">
             <i class="ti ti-history"></i>
-            Son Çağrılar
-        </h3>
+            <span>Çağrı Geçmişi</span>
+        </a>
     </div>
-    <div class="card-body">
-        <p class="text-muted">Çağrı geçmişi buraya gelecek...</p>
+    
+    <div class="todays-schedule">
+        <div class="schedule-header">
+            <i class="ti ti-calendar-event"></i>
+            <span>Bugünkü Programınız</span>
+        </div>
+        
+        {% if callbacks and callbacks|length > 0 %}
+            {% for callback in callbacks %}
+            <div class="schedule-item">
+                <div class="schedule-time">{{ callback.callback_at|datetime('%H:%M') }}</div>
+                <div class="schedule-info">
+                    <div class="schedule-title">{{ callback.first_name }} {{ callback.last_name }}</div>
+                    <div class="schedule-detail">{{ callback.phone }} - {{ callback.callback_note or 'Geri arama' }}</div>
+                </div>
+            </div>
+            {% endfor %}
+        {% else %}
+            <div class="schedule-item">
+                <div class="schedule-info">
+                    <div class="schedule-title" style="color: var(--text-secondary);">
+                        <i class="ti ti-calendar-off"></i>
+                        Planlanmış geri arama yok
+                    </div>
+                </div>
+            </div>
+        {% endif %}
     </div>
 </div>
 {% endblock %}
-
