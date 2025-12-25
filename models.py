@@ -936,7 +936,6 @@ class Ticket(db.Model):
     updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
 
     # Relationships (no DB migration needed)
-    customer = db.relationship('Customer', foreign_keys=[customer_id])
     category = db.relationship('TicketCategory', foreign_keys=[category_id])
     assigned_to = db.relationship('User', foreign_keys=[assigned_to_id])
     assigned_team = db.relationship('Team', foreign_keys=[assigned_team_id])
