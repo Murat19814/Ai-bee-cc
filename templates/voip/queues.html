@@ -1,6 +1,6 @@
 {% extends "base.html" %}
 
-{% block title %}Queue / ACD Yönetimi - {{ app_name }}{% endblock %}
+{% block title %}Queue / ACD - AI BEE CC{% endblock %}
 
 {% block extra_css %}
 <style>
@@ -151,6 +151,64 @@
 .config-row span:first-child { color: #888; }
 .config-row span:last-child { font-weight: 600; }
 
+/* QC Section */
+.qc-section {
+    margin-top: 1rem;
+    padding: 0.75rem;
+    background: linear-gradient(135deg, #E8F5E9, #C8E6C9);
+    border-radius: 10px;
+    border-left: 3px solid #4CAF50;
+}
+
+.qc-title {
+    font-size: 0.75rem;
+    color: #2E7D32;
+    font-weight: 700;
+    margin-bottom: 0.5rem;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.qc-stats {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 0.5rem;
+    margin-bottom: 0.5rem;
+}
+
+.qc-stat {
+    text-align: center;
+    padding: 0.5rem;
+    background: white;
+    border-radius: 8px;
+}
+
+.qc-stat-value {
+    font-size: 1rem;
+    font-weight: 700;
+}
+
+.qc-stat-value.ok { color: #4CAF50; }
+.qc-stat-value.storno { color: #f44336; }
+.qc-stat-value.termin { color: #2196F3; }
+.qc-stat-value.pending { color: #FF9800; }
+
+.qc-stat-label {
+    font-size: 0.65rem;
+    color: #666;
+}
+
+.qc-reviewer {
+    font-size: 0.75rem;
+    color: #555;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.qc-reviewer i { color: #4CAF50; }
+
 .queue-actions {
     display: flex;
     gap: 0.5rem;
@@ -161,9 +219,7 @@
 .queue-actions .btn { flex: 1; }
 
 /* SLA Bar */
-.sla-bar {
-    margin-top: 1rem;
-}
+.sla-bar { margin-top: 1rem; }
 
 .sla-bar-header {
     display: flex;
@@ -252,7 +308,6 @@
 .form-control { width: 100%; padding: 0.75rem 1rem; border: 2px solid #e0e0e0; border-radius: 10px; font-size: 0.9rem; }
 .form-control:focus { outline: none; border-color: #9C27B0; box-shadow: 0 0 0 4px rgba(156, 39, 176, 0.1); }
 
-/* Ring Strategy Visual */
 .strategy-options {
     display: grid;
     grid-template-columns: repeat(2, 1fr);
@@ -270,13 +325,7 @@
 
 .strategy-option:hover { border-color: #9C27B0; }
 .strategy-option.selected { border-color: #9C27B0; background: rgba(156, 39, 176, 0.05); }
-
-.strategy-option i {
-    font-size: 1.5rem;
-    color: #9C27B0;
-    margin-bottom: 0.5rem;
-}
-
+.strategy-option i { font-size: 1.5rem; color: #9C27B0; margin-bottom: 0.5rem; }
 .strategy-option h5 { margin-bottom: 0.25rem; }
 .strategy-option span { font-size: 0.75rem; color: #888; }
 </style>
@@ -288,13 +337,13 @@
         <div>
             <h1 class="page-title">
                 <i class="ti ti-users-group" style="color: #9C27B0;"></i>
-                Queue / ACD Yönetimi
+                <span data-tr="Queue / ACD Yönetimi" data-de="Queue / ACD Verwaltung">Queue / ACD Yönetimi</span>
             </h1>
-            <p class="page-subtitle">Çağrı kuyruklarını ve dağıtım kurallarını yönetin</p>
+            <p class="page-subtitle" data-tr="Çağrı kuyruklarını ve dağıtım kurallarını yönetin" data-de="Verwalten Sie Anrufwarteschlangen und Verteilungsregeln">Çağrı kuyruklarını ve dağıtım kurallarını yönetin</p>
         </div>
         <div class="page-header-actions">
             <button class="btn btn-primary" onclick="openAddQueueModal()">
-                <i class="ti ti-plus"></i> Yeni Kuyruk
+                <i class="ti ti-plus"></i> <span data-tr="Yeni Kuyruk" data-de="Neue Warteschlange">Yeni Kuyruk</span>
             </button>
         </div>
     </div>
@@ -306,7 +355,7 @@
                 <div class="icon-3d purple"><i class="ti ti-users-group"></i></div>
                 <div class="stat-content">
                     <div class="stat-value">{{ queues|length if queues else 5 }}</div>
-                    <div class="stat-label">Toplam Kuyruk</div>
+                    <div class="stat-label" data-tr="Toplam Kuyruk" data-de="Gesamt Warteschlangen">Toplam Kuyruk</div>
                 </div>
             </div>
         </div>
@@ -315,7 +364,7 @@
                 <div class="icon-3d orange"><i class="ti ti-clock"></i></div>
                 <div class="stat-content">
                     <div class="stat-value" id="totalWaiting">12</div>
-                    <div class="stat-label">Bekleyen Çağrı</div>
+                    <div class="stat-label" data-tr="Bekleyen Çağrı" data-de="Wartende Anrufe">Bekleyen Çağrı</div>
                 </div>
             </div>
         </div>
@@ -324,7 +373,7 @@
                 <div class="icon-3d green"><i class="ti ti-user-check"></i></div>
                 <div class="stat-content">
                     <div class="stat-value" id="availableAgents">18</div>
-                    <div class="stat-label">Müsait Agent</div>
+                    <div class="stat-label" data-tr="Müsait Agent" data-de="Verfügbare Agenten">Müsait Agent</div>
                 </div>
             </div>
         </div>
@@ -333,7 +382,7 @@
                 <div class="icon-3d blue"><i class="ti ti-percentage"></i></div>
                 <div class="stat-content">
                     <div class="stat-value">94%</div>
-                    <div class="stat-label">SLA Uyumu</div>
+                    <div class="stat-label" data-tr="SLA Uyumu" data-de="SLA Einhaltung">SLA Uyumu</div>
                 </div>
             </div>
         </div>
@@ -341,25 +390,25 @@
 
     <!-- Queue Grid -->
     <div class="queue-grid">
-        <!-- Queue 1 -->
-        <div class="queue-card">
+        <!-- Queue 1 - Satis -->
+        <div class="queue-card" data-queue-id="1">
             <div class="queue-header">
-                <div class="queue-name"><i class="ti ti-shopping-cart"></i> Satış Ekibi</div>
-                <div class="queue-live"><span class="pulse"></span> Canlı</div>
+                <div class="queue-name"><i class="ti ti-shopping-cart"></i> <span data-tr="Satış Ekibi" data-de="Verkaufsteam">Satış Ekibi</span></div>
+                <div class="queue-live"><span class="pulse"></span> <span data-tr="Canlı" data-de="Live">Canlı</span></div>
             </div>
             <div class="queue-body">
                 <div class="queue-stats-grid">
                     <div class="queue-stat">
                         <div class="queue-stat-value waiting">3</div>
-                        <div class="queue-stat-label">Bekleyen</div>
+                        <div class="queue-stat-label" data-tr="Bekleyen" data-de="Wartend">Bekleyen</div>
                     </div>
                     <div class="queue-stat">
                         <div class="queue-stat-value available">5</div>
-                        <div class="queue-stat-label">Müsait</div>
+                        <div class="queue-stat-label" data-tr="Müsait" data-de="Verfügbar">Müsait</div>
                     </div>
                     <div class="queue-stat">
                         <div class="queue-stat-value busy">2</div>
-                        <div class="queue-stat-label">Meşgul</div>
+                        <div class="queue-stat-label" data-tr="Meşgul" data-de="Beschäftigt">Meşgul</div>
                     </div>
                 </div>
 
@@ -374,7 +423,7 @@
                 </div>
 
                 <div class="queue-agents">
-                    <div class="queue-agents-title">Atanmış Agentlar (7)</div>
+                    <div class="queue-agents-title" data-tr="Atanmış Agentlar (7)" data-de="Zugewiesene Agenten (7)">Atanmış Agentlar (7)</div>
                     <div class="agent-avatars">
                         <div class="agent-avatar available">AK</div>
                         <div class="agent-avatar available">BY</div>
@@ -386,13 +435,41 @@
                     </div>
                 </div>
 
+                <!-- QC Section -->
+                <div class="qc-section">
+                    <div class="qc-title"><i class="ti ti-clipboard-check"></i> <span data-tr="Kalite Kontrol (QC)" data-de="Qualitätskontrolle (QC)">Kalite Kontrol (QC)</span></div>
+                    <div class="qc-stats">
+                        <div class="qc-stat">
+                            <div class="qc-stat-value ok">12</div>
+                            <div class="qc-stat-label">QC OK</div>
+                        </div>
+                        <div class="qc-stat">
+                            <div class="qc-stat-value storno">3</div>
+                            <div class="qc-stat-label">Storno</div>
+                        </div>
+                        <div class="qc-stat">
+                            <div class="qc-stat-value termin">8</div>
+                            <div class="qc-stat-label">Termin</div>
+                        </div>
+                        <div class="qc-stat">
+                            <div class="qc-stat-value pending">5</div>
+                            <div class="qc-stat-label" data-tr="Bekliyor" data-de="Ausstehend">Bekliyor</div>
+                        </div>
+                    </div>
+                    <div class="qc-reviewer">
+                        <i class="ti ti-user-check"></i>
+                        <span data-tr="Son dinleyen:" data-de="Zuletzt gehört:">Son dinleyen:</span>
+                        <strong>Mehmet K.</strong> (14:32)
+                    </div>
+                </div>
+
                 <div class="queue-config">
                     <div class="config-row">
-                        <span>Ring Stratejisi:</span>
+                        <span data-tr="Ring Stratejisi:" data-de="Ring-Strategie:">Ring Stratejisi:</span>
                         <span>Round Robin</span>
                     </div>
                     <div class="config-row">
-                        <span>Max Bekleme:</span>
+                        <span data-tr="Max Bekleme:" data-de="Max. Wartezeit:">Max Bekleme:</span>
                         <span>300 sn</span>
                     </div>
                     <div class="config-row">
@@ -402,31 +479,31 @@
                 </div>
             </div>
             <div class="queue-actions">
-                <button class="btn btn-sm btn-info"><i class="ti ti-eye"></i> İzle</button>
-                <button class="btn btn-sm btn-secondary"><i class="ti ti-edit"></i> Düzenle</button>
-                <button class="btn btn-sm btn-danger"><i class="ti ti-trash"></i></button>
+                <button class="btn btn-sm btn-info" onclick="watchQueue(1)"><i class="ti ti-eye"></i> <span data-tr="İzle" data-de="Beobachten">İzle</span></button>
+                <button class="btn btn-sm btn-secondary" onclick="editQueue(1)"><i class="ti ti-edit"></i> <span data-tr="Düzenle" data-de="Bearbeiten">Düzenle</span></button>
+                <button class="btn btn-sm btn-danger" onclick="deleteQueue(1)"><i class="ti ti-trash"></i></button>
             </div>
         </div>
 
-        <!-- Queue 2 -->
-        <div class="queue-card">
+        <!-- Queue 2 - Destek -->
+        <div class="queue-card" data-queue-id="2">
             <div class="queue-header" style="background: linear-gradient(135deg, #2196F3, #1976D2);">
-                <div class="queue-name"><i class="ti ti-headset"></i> Destek Ekibi</div>
-                <div class="queue-live"><span class="pulse"></span> Canlı</div>
+                <div class="queue-name"><i class="ti ti-headset"></i> <span data-tr="Destek Ekibi" data-de="Support-Team">Destek Ekibi</span></div>
+                <div class="queue-live"><span class="pulse"></span> <span data-tr="Canlı" data-de="Live">Canlı</span></div>
             </div>
             <div class="queue-body">
                 <div class="queue-stats-grid">
                     <div class="queue-stat">
                         <div class="queue-stat-value waiting">5</div>
-                        <div class="queue-stat-label">Bekleyen</div>
+                        <div class="queue-stat-label" data-tr="Bekleyen" data-de="Wartend">Bekleyen</div>
                     </div>
                     <div class="queue-stat">
                         <div class="queue-stat-value available">3</div>
-                        <div class="queue-stat-label">Müsait</div>
+                        <div class="queue-stat-label" data-tr="Müsait" data-de="Verfügbar">Müsait</div>
                     </div>
                     <div class="queue-stat">
                         <div class="queue-stat-value busy">4</div>
-                        <div class="queue-stat-label">Meşgul</div>
+                        <div class="queue-stat-label" data-tr="Meşgul" data-de="Beschäftigt">Meşgul</div>
                     </div>
                 </div>
 
@@ -441,7 +518,7 @@
                 </div>
 
                 <div class="queue-agents">
-                    <div class="queue-agents-title">Atanmış Agentlar (7)</div>
+                    <div class="queue-agents-title" data-tr="Atanmış Agentlar (7)" data-de="Zugewiesene Agenten (7)">Atanmış Agentlar (7)</div>
                     <div class="agent-avatars">
                         <div class="agent-avatar available">MN</div>
                         <div class="agent-avatar busy">OP</div>
@@ -453,13 +530,41 @@
                     </div>
                 </div>
 
+                <!-- QC Section -->
+                <div class="qc-section">
+                    <div class="qc-title"><i class="ti ti-clipboard-check"></i> <span data-tr="Kalite Kontrol (QC)" data-de="Qualitätskontrolle (QC)">Kalite Kontrol (QC)</span></div>
+                    <div class="qc-stats">
+                        <div class="qc-stat">
+                            <div class="qc-stat-value ok">18</div>
+                            <div class="qc-stat-label">QC OK</div>
+                        </div>
+                        <div class="qc-stat">
+                            <div class="qc-stat-value storno">2</div>
+                            <div class="qc-stat-label">Storno</div>
+                        </div>
+                        <div class="qc-stat">
+                            <div class="qc-stat-value termin">15</div>
+                            <div class="qc-stat-label">Termin</div>
+                        </div>
+                        <div class="qc-stat">
+                            <div class="qc-stat-value pending">7</div>
+                            <div class="qc-stat-label" data-tr="Bekliyor" data-de="Ausstehend">Bekliyor</div>
+                        </div>
+                    </div>
+                    <div class="qc-reviewer">
+                        <i class="ti ti-user-check"></i>
+                        <span data-tr="Son dinleyen:" data-de="Zuletzt gehört:">Son dinleyen:</span>
+                        <strong>Ayse B.</strong> (15:10)
+                    </div>
+                </div>
+
                 <div class="queue-config">
                     <div class="config-row">
-                        <span>Ring Stratejisi:</span>
+                        <span data-tr="Ring Stratejisi:" data-de="Ring-Strategie:">Ring Stratejisi:</span>
                         <span>Skill-Based</span>
                     </div>
                     <div class="config-row">
-                        <span>Max Bekleme:</span>
+                        <span data-tr="Max Bekleme:" data-de="Max. Wartezeit:">Max Bekleme:</span>
                         <span>180 sn</span>
                     </div>
                     <div class="config-row">
@@ -469,31 +574,31 @@
                 </div>
             </div>
             <div class="queue-actions">
-                <button class="btn btn-sm btn-info"><i class="ti ti-eye"></i> İzle</button>
-                <button class="btn btn-sm btn-secondary"><i class="ti ti-edit"></i> Düzenle</button>
-                <button class="btn btn-sm btn-danger"><i class="ti ti-trash"></i></button>
+                <button class="btn btn-sm btn-info" onclick="watchQueue(2)"><i class="ti ti-eye"></i> <span data-tr="İzle" data-de="Beobachten">İzle</span></button>
+                <button class="btn btn-sm btn-secondary" onclick="editQueue(2)"><i class="ti ti-edit"></i> <span data-tr="Düzenle" data-de="Bearbeiten">Düzenle</span></button>
+                <button class="btn btn-sm btn-danger" onclick="deleteQueue(2)"><i class="ti ti-trash"></i></button>
             </div>
         </div>
 
         <!-- Queue 3 - VIP -->
-        <div class="queue-card">
+        <div class="queue-card" data-queue-id="3">
             <div class="queue-header" style="background: linear-gradient(135deg, #F5A623, #D4920A);">
-                <div class="queue-name"><i class="ti ti-crown"></i> VIP Müşteriler</div>
-                <div class="queue-live"><span class="pulse"></span> Canlı</div>
+                <div class="queue-name"><i class="ti ti-crown"></i> <span data-tr="VIP Müşteriler" data-de="VIP Kunden">VIP Müşteriler</span></div>
+                <div class="queue-live"><span class="pulse"></span> <span data-tr="Canlı" data-de="Live">Canlı</span></div>
             </div>
             <div class="queue-body">
                 <div class="queue-stats-grid">
                     <div class="queue-stat">
                         <div class="queue-stat-value waiting">1</div>
-                        <div class="queue-stat-label">Bekleyen</div>
+                        <div class="queue-stat-label" data-tr="Bekleyen" data-de="Wartend">Bekleyen</div>
                     </div>
                     <div class="queue-stat">
                         <div class="queue-stat-value available">4</div>
-                        <div class="queue-stat-label">Müsait</div>
+                        <div class="queue-stat-label" data-tr="Müsait" data-de="Verfügbar">Müsait</div>
                     </div>
                     <div class="queue-stat">
                         <div class="queue-stat-value busy">1</div>
-                        <div class="queue-stat-label">Meşgul</div>
+                        <div class="queue-stat-label" data-tr="Meşgul" data-de="Beschäftigt">Meşgul</div>
                     </div>
                 </div>
 
@@ -508,7 +613,7 @@
                 </div>
 
                 <div class="queue-agents">
-                    <div class="queue-agents-title">Atanmış Agentlar (5)</div>
+                    <div class="queue-agents-title" data-tr="Atanmış Agentlar (5)" data-de="Zugewiesene Agenten (5)">Atanmış Agentlar (5)</div>
                     <div class="agent-avatars">
                         <div class="agent-avatar available">AA</div>
                         <div class="agent-avatar available">BB</div>
@@ -518,131 +623,228 @@
                     </div>
                 </div>
 
+                <!-- QC Section -->
+                <div class="qc-section">
+                    <div class="qc-title"><i class="ti ti-clipboard-check"></i> <span data-tr="Kalite Kontrol (QC)" data-de="Qualitätskontrolle (QC)">Kalite Kontrol (QC)</span></div>
+                    <div class="qc-stats">
+                        <div class="qc-stat">
+                            <div class="qc-stat-value ok">25</div>
+                            <div class="qc-stat-label">QC OK</div>
+                        </div>
+                        <div class="qc-stat">
+                            <div class="qc-stat-value storno">1</div>
+                            <div class="qc-stat-label">Storno</div>
+                        </div>
+                        <div class="qc-stat">
+                            <div class="qc-stat-value termin">20</div>
+                            <div class="qc-stat-label">Termin</div>
+                        </div>
+                        <div class="qc-stat">
+                            <div class="qc-stat-value pending">2</div>
+                            <div class="qc-stat-label" data-tr="Bekliyor" data-de="Ausstehend">Bekliyor</div>
+                        </div>
+                    </div>
+                    <div class="qc-reviewer">
+                        <i class="ti ti-user-check"></i>
+                        <span data-tr="Son dinleyen:" data-de="Zuletzt gehört:">Son dinleyen:</span>
+                        <strong>Ali V.</strong> (15:45)
+                    </div>
+                </div>
+
                 <div class="queue-config">
                     <div class="config-row">
-                        <span>Ring Stratejisi:</span>
+                        <span data-tr="Ring Stratejisi:" data-de="Ring-Strategie:">Ring Stratejisi:</span>
                         <span>Priority</span>
                     </div>
                     <div class="config-row">
-                        <span>Max Bekleme:</span>
+                        <span data-tr="Max Bekleme:" data-de="Max. Wartezeit:">Max Bekleme:</span>
                         <span>60 sn</span>
                     </div>
                     <div class="config-row">
-                        <span>Öncelik:</span>
-                        <span style="color: #F5A623;">★ Yüksek</span>
+                        <span data-tr="Öncelik:" data-de="Priorität:">Öncelik:</span>
+                        <span style="color: #F5A623;" data-tr="★ Yüksek" data-de="★ Hoch">★ Yüksek</span>
                     </div>
                 </div>
             </div>
             <div class="queue-actions">
-                <button class="btn btn-sm btn-info"><i class="ti ti-eye"></i> İzle</button>
-                <button class="btn btn-sm btn-secondary"><i class="ti ti-edit"></i> Düzenle</button>
-                <button class="btn btn-sm btn-danger"><i class="ti ti-trash"></i></button>
+                <button class="btn btn-sm btn-info" onclick="watchQueue(3)"><i class="ti ti-eye"></i> <span data-tr="İzle" data-de="Beobachten">İzle</span></button>
+                <button class="btn btn-sm btn-secondary" onclick="editQueue(3)"><i class="ti ti-edit"></i> <span data-tr="Düzenle" data-de="Bearbeiten">Düzenle</span></button>
+                <button class="btn btn-sm btn-danger" onclick="deleteQueue(3)"><i class="ti ti-trash"></i></button>
             </div>
         </div>
     </div>
 </div>
 
-<!-- Add Queue Modal -->
+<!-- Add/Edit Queue Modal -->
 <div class="modal-overlay" id="queueModal">
     <div class="modal-content">
         <div class="modal-header">
-            <h3><i class="ti ti-users-group"></i> Yeni Kuyruk Oluştur</h3>
+            <h3><i class="ti ti-users-group"></i> <span id="modalTitle" data-tr="Yeni Kuyruk Oluştur" data-de="Neue Warteschlange erstellen">Yeni Kuyruk Oluştur</span></h3>
             <button class="modal-close" onclick="closeModal()"><i class="ti ti-x"></i></button>
         </div>
         <form id="queueForm">
+            <input type="hidden" name="queue_id" id="queueId">
             <div class="modal-body">
                 <div class="form-grid">
                     <div class="form-group">
-                        <label>Kuyruk Adı</label>
-                        <input type="text" class="form-control" name="name" required placeholder="Örn: Satış Ekibi">
+                        <label data-tr="Kuyruk Adı" data-de="Warteschlangenname">Kuyruk Adı</label>
+                        <input type="text" class="form-control" name="name" id="queueName" required
+                               placeholder="Örn: Satış Ekibi"
+                               data-tr-placeholder="Örn: Satış Ekibi"
+                               data-de-placeholder="z.B.: Verkaufsteam">
                     </div>
                     <div class="form-group">
                         <label>Extension</label>
-                        <input type="text" class="form-control" name="extension" placeholder="Örn: 8001">
+                        <input type="text" class="form-control" name="extension" id="queueExtension"
+                               placeholder="Örn: 8001"
+                               data-tr-placeholder="Örn: 8001"
+                               data-de-placeholder="z.B.: 8001">
                     </div>
                 </div>
 
                 <div class="form-group">
-                    <label>Ring Stratejisi</label>
+                    <label data-tr="Ring Stratejisi" data-de="Ring-Strategie">Ring Stratejisi</label>
                     <div class="strategy-options">
                         <div class="strategy-option selected" data-value="ringall">
                             <i class="ti ti-users"></i>
                             <h5>Ring All</h5>
-                            <span>Tüm agentları çaldır</span>
+                            <span data-tr="Tüm agentları çaldır" data-de="Alle Agenten anrufen">Tüm agentları çaldır</span>
                         </div>
                         <div class="strategy-option" data-value="roundrobin">
                             <i class="ti ti-rotate-clockwise"></i>
                             <h5>Round Robin</h5>
-                            <span>Sırayla dağıt</span>
+                            <span data-tr="Sırayla dağıt" data-de="Abwechselnd verteilen">Sırayla dağıt</span>
                         </div>
                         <div class="strategy-option" data-value="leastrecent">
                             <i class="ti ti-clock"></i>
                             <h5>Least Recent</h5>
-                            <span>En az çağrı alana</span>
+                            <span data-tr="En az çağrı alana" data-de="Wenigste Anrufe">En az çağrı alana</span>
                         </div>
                         <div class="strategy-option" data-value="skillbased">
                             <i class="ti ti-star"></i>
                             <h5>Skill-Based</h5>
-                            <span>Yeteneğe göre</span>
+                            <span data-tr="Yeteneğe göre" data-de="Nach Fähigkeiten">Yeteneğe göre</span>
                         </div>
                     </div>
                 </div>
 
                 <div class="form-grid">
                     <div class="form-group">
-                        <label>Max Bekleme Süresi (sn)</label>
-                        <input type="number" class="form-control" name="max_wait" value="300">
+                        <label data-tr="Max Bekleme Süresi (sn)" data-de="Max. Wartezeit (Sek.)">Max Bekleme Süresi (sn)</label>
+                        <input type="number" class="form-control" name="max_wait" id="maxWait" value="300">
                     </div>
                     <div class="form-group">
-                        <label>Ring Timeout (sn)</label>
-                        <input type="number" class="form-control" name="ring_timeout" value="20">
+                        <label data-tr="Ring Timeout (sn)" data-de="Ring Timeout (Sek.)">Ring Timeout (sn)</label>
+                        <input type="number" class="form-control" name="ring_timeout" id="ringTimeout" value="20">
                     </div>
                     <div class="form-group">
-                        <label>Wrap-up Süresi (sn)</label>
-                        <input type="number" class="form-control" name="wrapup" value="30">
+                        <label data-tr="Wrap-up Süresi (sn)" data-de="Wrap-up Zeit (Sek.)">Wrap-up Süresi (sn)</label>
+                        <input type="number" class="form-control" name="wrapup" id="wrapup" value="30">
                     </div>
                     <div class="form-group">
-                        <label>SLA Hedefi (sn)</label>
-                        <input type="number" class="form-control" name="sla_target" value="20">
+                        <label data-tr="SLA Hedefi (sn)" data-de="SLA Ziel (Sek.)">SLA Hedefi (sn)</label>
+                        <input type="number" class="form-control" name="sla_target" id="slaTarget" value="20">
                     </div>
-                </div>
-
-                <div class="form-group">
-                    <label>Kuyruk Müziği</label>
-                    <select class="form-control" name="music_on_hold">
-                        <option value="default">Varsayılan Müzik</option>
-                        <option value="jazz">Jazz</option>
-                        <option value="classical">Klasik</option>
-                        <option value="corporate">Kurumsal</option>
-                    </select>
-                </div>
-
-                <div class="form-group">
-                    <label>Overflow Kuyruğu</label>
-                    <select class="form-control" name="overflow_queue">
-                        <option value="">Yok</option>
-                        <option value="1">Destek Ekibi</option>
-                        <option value="2">Genel Kuyruk</option>
-                    </select>
                 </div>
             </div>
             <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" onclick="closeModal()">İptal</button>
-                <button type="submit" class="btn btn-primary"><i class="ti ti-device-floppy"></i> Kaydet</button>
+                <button type="button" class="btn btn-secondary" onclick="closeModal()">
+                    <span data-tr="İptal" data-de="Abbrechen">İptal</span>
+                </button>
+                <button type="submit" class="btn btn-primary">
+                    <i class="ti ti-device-floppy"></i> <span data-tr="Kaydet" data-de="Speichern">Kaydet</span>
+                </button>
             </div>
         </form>
+    </div>
+</div>
+
+<!-- Watch Queue Modal -->
+<div class="modal-overlay" id="watchModal">
+    <div class="modal-content" style="max-width: 900px;">
+        <div class="modal-header" style="background: linear-gradient(135deg, #2196F3, #1976D2);">
+            <h3><i class="ti ti-eye"></i> <span id="watchQueueName">Kuyruk</span> - <span data-tr="Canlı İzleme" data-de="Live-Überwachung">Canlı İzleme</span></h3>
+            <button class="modal-close" onclick="closeWatchModal()"><i class="ti ti-x"></i></button>
+        </div>
+        <div class="modal-body">
+            <div class="grid grid-cols-3 gap-4" style="margin-bottom: 1.5rem;">
+                <div class="stat-card" style="background: #FFF3E0;">
+                    <div class="stat-content text-center">
+                        <div class="stat-value" style="color: #FF9800; font-size: 2rem;" id="watchWaiting">0</div>
+                        <div class="stat-label" data-tr="Bekleyen" data-de="Wartend">Bekleyen</div>
+                    </div>
+                </div>
+                <div class="stat-card" style="background: #E8F5E9;">
+                    <div class="stat-content text-center">
+                        <div class="stat-value" style="color: #4CAF50; font-size: 2rem;" id="watchAvailable">0</div>
+                        <div class="stat-label" data-tr="Müsait" data-de="Verfügbar">Müsait</div>
+                    </div>
+                </div>
+                <div class="stat-card" style="background: #FFEBEE;">
+                    <div class="stat-content text-center">
+                        <div class="stat-value" style="color: #f44336; font-size: 2rem;" id="watchBusy">0</div>
+                        <div class="stat-label" data-tr="Meşgul" data-de="Beschäftigt">Meşgul</div>
+                    </div>
+                </div>
+            </div>
+            <p class="text-center text-muted" data-tr="Canlı agent durumları ve çağrı akışı burada görüntülenecek..." data-de="Live-Agent-Status und Anruffluss werden hier angezeigt...">Canlı agent durumları ve çağrı akışı burada görüntülenecek...</p>
+        </div>
     </div>
 </div>
 {% endblock %}
 
 {% block extra_js %}
 <script>
+// Queue Modal
 function openAddQueueModal() {
+    document.getElementById('modalTitle').textContent = document.documentElement.lang === 'de' ? 'Neue Warteschlange erstellen' : 'Yeni Kuyruk Oluştur';
+    document.getElementById('queueId').value = '';
+    document.getElementById('queueName').value = '';
+    document.getElementById('queueExtension').value = '';
+    document.getElementById('queueModal').classList.add('show');
+}
+
+function editQueue(id) {
+    document.getElementById('modalTitle').textContent = document.documentElement.lang === 'de' ? 'Warteschlange bearbeiten' : 'Kuyruk Düzenle';
+    document.getElementById('queueId').value = id;
+    // Load queue data here via API
     document.getElementById('queueModal').classList.add('show');
 }
 
 function closeModal() {
     document.getElementById('queueModal').classList.remove('show');
+}
+
+// Watch Queue
+function watchQueue(id) {
+    const queueNames = {1: 'Satış Ekibi', 2: 'Destek Ekibi', 3: 'VIP Müşteriler'};
+    document.getElementById('watchQueueName').textContent = queueNames[id] || 'Kuyruk';
+    document.getElementById('watchModal').classList.add('show');
+    
+    // Simulate live data
+    updateWatchStats();
+}
+
+function closeWatchModal() {
+    document.getElementById('watchModal').classList.remove('show');
+}
+
+function updateWatchStats() {
+    document.getElementById('watchWaiting').textContent = Math.floor(Math.random() * 10);
+    document.getElementById('watchAvailable').textContent = Math.floor(Math.random() * 8) + 2;
+    document.getElementById('watchBusy').textContent = Math.floor(Math.random() * 5);
+}
+
+// Delete Queue
+function deleteQueue(id) {
+    const msg = document.documentElement.lang === 'de' 
+        ? 'Diese Warteschlange wirklich löschen?' 
+        : 'Bu kuyruğu silmek istediğinize emin misiniz?';
+    
+    if (confirm(msg)) {
+        // API call to delete
+        alert(document.documentElement.lang === 'de' ? 'Warteschlange gelöscht' : 'Kuyruk silindi');
+    }
 }
 
 // Strategy selection
@@ -653,13 +855,21 @@ document.querySelectorAll('.strategy-option').forEach(option => {
     });
 });
 
-// Real-time updates simulation
+// Form submit
+document.getElementById('queueForm').addEventListener('submit', function(e) {
+    e.preventDefault();
+    // API call to save
+    alert(document.documentElement.lang === 'de' ? 'Warteschlange gespeichert' : 'Kuyruk kaydedildi');
+    closeModal();
+});
+
+// Real-time updates
 setInterval(() => {
     document.getElementById('totalWaiting').textContent = Math.floor(Math.random() * 15) + 5;
     document.getElementById('availableAgents').textContent = Math.floor(Math.random() * 10) + 15;
+    if (document.getElementById('watchModal').classList.contains('show')) {
+        updateWatchStats();
+    }
 }, 5000);
 </script>
 {% endblock %}
-
-
-
