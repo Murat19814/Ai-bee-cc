@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html lang="tr" id="htmlRoot">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Basın | Presse - AI BEE CC</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@latest/tabler-icons.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        :root { --primary: #F5A623; --primary-dark: #D4880C; --secondary: #1a1a2e; --text-dark: #1a1a2e; --text-light: #6B7280; }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Plus Jakarta Sans', sans-serif; color: var(--text-dark); line-height: 1.8; background-color: #FFFDF7; background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='42' viewBox='0 0 28 49'%3E%3Cg fill-rule='evenodd'%3E%3Cg fill='%23f5a623' fill-opacity='0.04'%3E%3Cpath d='M13.99 9.25l13 7.5v15l-13 7.5L1 31.75v-15l12.99-7.5zM3 17.9v12.7l10.99 6.34 11-6.35V17.9l-11-6.34L3 17.9z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E"); }
+        .navbar { position: fixed; top: 0; left: 0; right: 0; z-index: 1000; padding: 1rem 2rem; display: flex; justify-content: space-between; align-items: center; background: rgba(255,255,255,0.95); backdrop-filter: blur(10px); }
+        .logo { display: flex; align-items: center; gap: 0.75rem; text-decoration: none; }
+        .logo-icon { width: 42px; height: 42px; background: linear-gradient(135deg, var(--primary), #FFD700); border-radius: 10px; display: flex; align-items: center; justify-content: center; color: white; font-size: 1.25rem; }
+        .logo-text { font-size: 1.35rem; font-weight: 800; color: var(--primary); }
+        .logo-text span { color: var(--text-dark); }
+        .nav-right { display: flex; align-items: center; gap: 1.5rem; }
+        .lang-switcher { display: flex; gap: 0.25rem; background: rgba(0,0,0,0.05); padding: 0.25rem; border-radius: 8px; }
+        .lang-btn { padding: 0.5rem 0.75rem; border: none; background: transparent; border-radius: 6px; cursor: pointer; font-weight: 600; font-size: 0.85rem; }
+        .lang-btn.active { background: white; color: var(--primary); }
+        .btn { display: inline-flex; align-items: center; gap: 0.5rem; padding: 0.6rem 1.25rem; border-radius: 8px; font-weight: 600; text-decoration: none; background: linear-gradient(135deg, var(--primary), var(--primary-dark)); color: white; }
+        .content { max-width: 1000px; margin: 0 auto; padding: 8rem 2rem 4rem; }
+        .page-header { text-align: center; margin-bottom: 4rem; }
+        .page-icon { width: 100px; height: 100px; background: linear-gradient(135deg, var(--primary), #FFD700); border-radius: 25px; display: flex; align-items: center; justify-content: center; font-size: 3rem; color: white; margin: 0 auto 1.5rem; }
+        .page-title { font-size: 3rem; font-weight: 800; margin-bottom: 1rem; }
+        .page-subtitle { color: var(--text-light); font-size: 1.25rem; }
+        .press-section { background: white; border-radius: 20px; padding: 2.5rem; margin-bottom: 2rem; box-shadow: 0 4px 20px rgba(0,0,0,0.05); }
+        .press-section h2 { font-size: 1.5rem; font-weight: 700; margin-bottom: 1.5rem; display: flex; align-items: center; gap: 0.75rem; }
+        .press-section h2 i { color: var(--primary); }
+        .press-kit { display: grid; grid-template-columns: repeat(2, 1fr); gap: 1.5rem; }
+        .kit-item { display: flex; align-items: center; gap: 1rem; padding: 1.25rem; background: rgba(245, 166, 35, 0.05); border-radius: 12px; text-decoration: none; color: var(--text-dark); transition: all 0.3s; }
+        .kit-item:hover { background: rgba(245, 166, 35, 0.1); transform: translateX(5px); }
+        .kit-icon { width: 50px; height: 50px; background: var(--primary); border-radius: 12px; display: flex; align-items: center; justify-content: center; color: white; font-size: 1.5rem; }
+        .kit-info h4 { font-weight: 700; margin-bottom: 0.25rem; }
+        .kit-info p { color: var(--text-light); font-size: 0.85rem; margin: 0; }
+        .contact-box { background: var(--secondary); color: white; border-radius: 16px; padding: 2rem; text-align: center; margin-top: 2rem; }
+        .contact-box h3 { margin-bottom: 1rem; }
+        .contact-box p { opacity: 0.8; margin-bottom: 0.5rem; }
+        .contact-box a { color: var(--primary); }
+        .news-item { border-bottom: 1px solid rgba(0,0,0,0.05); padding: 1.5rem 0; }
+        .news-item:last-child { border: none; }
+        .news-date { font-size: 0.85rem; color: var(--primary); font-weight: 600; margin-bottom: 0.5rem; }
+        .news-title { font-size: 1.1rem; font-weight: 700; margin-bottom: 0.5rem; }
+        .news-excerpt { color: var(--text-light); font-size: 0.95rem; }
+        .footer { background: var(--secondary); color: white; padding: 2rem; text-align: center; margin-top: 4rem; }
+        .footer a { color: var(--primary); text-decoration: none; }
+        @media (max-width: 768px) { .press-kit { grid-template-columns: 1fr; } }
+    </style>
+</head>
+<body>
+    <nav class="navbar">
+        <a href="/" class="logo"><div class="logo-icon"><i class="ti ti-bee"></i></div><div class="logo-text">AI BEE <span>CC</span></div></a>
+        <div class="nav-right">
+            <div class="lang-switcher">
+                <button class="lang-btn active" onclick="setLang('tr')" id="lang-tr">🇹🇷 TR</button>
+                <button class="lang-btn" onclick="setLang('de')" id="lang-de">🇩🇪 DE</button>
+            </div>
+            <a href="/" class="btn"><i class="ti ti-arrow-left"></i> <span data-tr="Ana Sayfa" data-de="Startseite">Ana Sayfa</span></a>
+        </div>
+    </nav>
+
+    <div class="content">
+        <div class="page-header">
+            <div class="page-icon"><i class="ti ti-speakerphone"></i></div>
+            <h1 class="page-title" data-tr="Basın" data-de="Presse">Basın</h1>
+            <p class="page-subtitle" data-tr="Medya kaynakları ve basın bültenleri" data-de="Medienressourcen und Pressemitteilungen">Medya kaynakları ve basın bültenleri</p>
+        </div>
+
+        <div class="press-section">
+            <h2><i class="ti ti-download"></i> <span data-tr="Basın Kiti" data-de="Pressekit">Basın Kiti</span></h2>
+            <div class="press-kit">
+                <a href="#" class="kit-item">
+                    <div class="kit-icon"><i class="ti ti-photo"></i></div>
+                    <div class="kit-info">
+                        <h4 data-tr="Logo Paketi" data-de="Logo-Paket">Logo Paketi</h4>
+                        <p data-tr="PNG, SVG, AI formatları" data-de="PNG-, SVG-, AI-Formate">PNG, SVG, AI formatları</p>
+                    </div>
+                </a>
+                <a href="#" class="kit-item">
+                    <div class="kit-icon"><i class="ti ti-file-text"></i></div>
+                    <div class="kit-info">
+                        <h4 data-tr="Şirket Bilgileri" data-de="Unternehmensinformationen">Şirket Bilgileri</h4>
+                        <p data-tr="Hakkımızda, misyon, vizyon" data-de="Über uns, Mission, Vision">Hakkımızda, misyon, vizyon</p>
+                    </div>
+                </a>
+                <a href="#" class="kit-item">
+                    <div class="kit-icon"><i class="ti ti-camera"></i></div>
+                    <div class="kit-info">
+                        <h4 data-tr="Ürün Görselleri" data-de="Produktbilder">Ürün Görselleri</h4>
+                        <p data-tr="Yüksek çözünürlüklü ekran görüntüleri" data-de="Hochauflösende Screenshots">Yüksek çözünürlüklü ekran görüntüleri</p>
+                    </div>
+                </a>
+                <a href="#" class="kit-item">
+                    <div class="kit-icon"><i class="ti ti-palette"></i></div>
+                    <div class="kit-info">
+                        <h4 data-tr="Marka Kılavuzu" data-de="Markenrichtlinien">Marka Kılavuzu</h4>
+                        <p data-tr="Renkler, fontlar, kullanım kuralları" data-de="Farben, Schriften, Nutzungsregeln">Renkler, fontlar, kullanım kuralları</p>
+                    </div>
+                </a>
+            </div>
+        </div>
+
+        <div class="press-section">
+            <h2><i class="ti ti-news"></i> <span data-tr="Basın Bültenleri" data-de="Pressemitteilungen">Basın Bültenleri</span></h2>
+            
+            <div class="news-item">
+                <div class="news-date">20 Aralık 2024</div>
+                <h3 class="news-title" data-tr="AI BEE CC, Avrupa Pazarına Açıldı" data-de="AI BEE CC expandiert nach Europa">AI BEE CC, Avrupa Pazarına Açıldı</h3>
+                <p class="news-excerpt" data-tr="Berlin ofisimizin açılışıyla Almanca konuşan pazarlara hizmet vermeye başlıyoruz." data-de="Mit der Eröffnung unseres Berliner Büros beginnen wir, deutschsprachige Märkte zu bedienen.">Berlin ofisimizin açılışıyla Almanca konuşan pazarlara hizmet vermeye başlıyoruz.</p>
+            </div>
+            
+            <div class="news-item">
+                <div class="news-date">15 Kasım 2024</div>
+                <h3 class="news-title" data-tr="Yeni AI Voice Bot Özelliği Duyuruldu" data-de="Neue KI-Voice-Bot-Funktion angekündigt">Yeni AI Voice Bot Özelliği Duyuruldu</h3>
+                <p class="news-excerpt" data-tr="Müşteri çağrılarının %30'unu otomatik olarak karşılayabilen yeni AI Voice Bot özelliğimiz." data-de="Unsere neue KI-Voice-Bot-Funktion kann 30% der Kundenanrufe automatisch bearbeiten.">Müşteri çağrılarının %30'unu otomatik olarak karşılayabilen yeni AI Voice Bot özelliğimiz.</p>
+            </div>
+            
+            <div class="news-item">
+                <div class="news-date">1 Ekim 2024</div>
+                <h3 class="news-title" data-tr="500. Müşterimize Ulaştık" data-de="Wir haben unseren 500. Kunden erreicht">500. Müşterimize Ulaştık</h3>
+                <p class="news-excerpt" data-tr="AI BEE CC ailesi büyümeye devam ediyor. 500 aktif müşteri ile yolculuğumuzu sürdürüyoruz." data-de="Die AI BEE CC-Familie wächst weiter. Mit 500 aktiven Kunden setzen wir unsere Reise fort.">AI BEE CC ailesi büyümeye devam ediyor. 500 aktif müşteri ile yolculuğumuzu sürdürüyoruz.</p>
+            </div>
+        </div>
+
+        <div class="press-section">
+            <div class="contact-box">
+                <h3 data-tr="Basın İletişim" data-de="Pressekontakt">Basın İletişim</h3>
+                <p data-tr="Medya sorularınız için:" data-de="Für Medienanfragen:">Medya sorularınız için:</p>
+                <p><i class="ti ti-mail"></i> <a href="mailto:press@ai-bee-cc.com">press@ai-bee-cc.com</a></p>
+                <p><i class="ti ti-phone"></i> +90 850 XXX XX XX</p>
+            </div>
+        </div>
+    </div>
+
+    <footer class="footer">
+        <p>© 2025 AI BEE CC. <span data-tr="Tüm hakları saklıdır." data-de="Alle Rechte vorbehalten.">Tüm hakları saklıdır.</span></p>
+    </footer>
+
+    <script>
+        let currentLang = localStorage.getItem('lang') || 'tr';
+        function setLang(lang) {
+            currentLang = lang; localStorage.setItem('lang', lang);
+            document.getElementById('lang-tr').classList.toggle('active', lang === 'tr');
+            document.getElementById('lang-de').classList.toggle('active', lang === 'de');
+            document.querySelectorAll('[data-tr]').forEach(el => { const text = el.getAttribute(`data-${lang}`); if (text) el.textContent = text; });
+        }
+        document.addEventListener('DOMContentLoaded', () => setLang(currentLang));
+    </script>
+</body>
+</html>
+

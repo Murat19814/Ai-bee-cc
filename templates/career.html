@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html lang="tr" id="htmlRoot">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Kariyer | Karriere - AI BEE CC</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@latest/tabler-icons.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        :root { --primary: #F5A623; --primary-dark: #D4880C; --secondary: #1a1a2e; --text-dark: #1a1a2e; --text-light: #6B7280; }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Plus Jakarta Sans', sans-serif; color: var(--text-dark); line-height: 1.8; background-color: #FFFDF7; background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='42' viewBox='0 0 28 49'%3E%3Cg fill-rule='evenodd'%3E%3Cg fill='%23f5a623' fill-opacity='0.04'%3E%3Cpath d='M13.99 9.25l13 7.5v15l-13 7.5L1 31.75v-15l12.99-7.5zM3 17.9v12.7l10.99 6.34 11-6.35V17.9l-11-6.34L3 17.9z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E"); }
+        .navbar { position: fixed; top: 0; left: 0; right: 0; z-index: 1000; padding: 1rem 2rem; display: flex; justify-content: space-between; align-items: center; background: rgba(255,255,255,0.95); backdrop-filter: blur(10px); }
+        .logo { display: flex; align-items: center; gap: 0.75rem; text-decoration: none; }
+        .logo-icon { width: 42px; height: 42px; background: linear-gradient(135deg, var(--primary), #FFD700); border-radius: 10px; display: flex; align-items: center; justify-content: center; color: white; font-size: 1.25rem; }
+        .logo-text { font-size: 1.35rem; font-weight: 800; color: var(--primary); }
+        .logo-text span { color: var(--text-dark); }
+        .nav-right { display: flex; align-items: center; gap: 1.5rem; }
+        .lang-switcher { display: flex; gap: 0.25rem; background: rgba(0,0,0,0.05); padding: 0.25rem; border-radius: 8px; }
+        .lang-btn { padding: 0.5rem 0.75rem; border: none; background: transparent; border-radius: 6px; cursor: pointer; font-weight: 600; font-size: 0.85rem; }
+        .lang-btn.active { background: white; color: var(--primary); }
+        .btn { display: inline-flex; align-items: center; gap: 0.5rem; padding: 0.6rem 1.25rem; border-radius: 8px; font-weight: 600; text-decoration: none; background: linear-gradient(135deg, var(--primary), var(--primary-dark)); color: white; }
+        .content { max-width: 1000px; margin: 0 auto; padding: 8rem 2rem 4rem; }
+        .page-header { text-align: center; margin-bottom: 4rem; }
+        .page-icon { width: 100px; height: 100px; background: linear-gradient(135deg, var(--primary), #FFD700); border-radius: 25px; display: flex; align-items: center; justify-content: center; font-size: 3rem; color: white; margin: 0 auto 1.5rem; }
+        .page-title { font-size: 3rem; font-weight: 800; margin-bottom: 1rem; }
+        .page-subtitle { color: var(--text-light); font-size: 1.25rem; }
+        .benefits-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1.5rem; margin: 3rem 0; }
+        .benefit-card { background: white; border-radius: 16px; padding: 1.5rem; text-align: center; box-shadow: 0 4px 20px rgba(0,0,0,0.05); }
+        .benefit-icon { font-size: 2.5rem; color: var(--primary); margin-bottom: 1rem; }
+        .benefit-title { font-weight: 700; margin-bottom: 0.5rem; }
+        .benefit-desc { color: var(--text-light); font-size: 0.9rem; }
+        .job-card { background: white; border-radius: 20px; padding: 2rem; margin-bottom: 1.5rem; box-shadow: 0 4px 20px rgba(0,0,0,0.05); display: flex; justify-content: space-between; align-items: center; border-left: 4px solid var(--primary); }
+        .job-info h3 { font-size: 1.25rem; font-weight: 700; margin-bottom: 0.5rem; }
+        .job-meta { display: flex; gap: 1.5rem; color: var(--text-light); font-size: 0.9rem; }
+        .job-meta span { display: flex; align-items: center; gap: 0.35rem; }
+        .btn-apply { background: var(--primary); color: white; padding: 0.75rem 1.5rem; border-radius: 10px; text-decoration: none; font-weight: 600; }
+        .no-jobs { text-align: center; padding: 3rem; background: white; border-radius: 20px; }
+        .no-jobs i { font-size: 4rem; color: var(--primary); opacity: 0.5; }
+        .footer { background: var(--secondary); color: white; padding: 2rem; text-align: center; margin-top: 4rem; }
+        .footer a { color: var(--primary); text-decoration: none; }
+        @media (max-width: 768px) { .benefits-grid { grid-template-columns: 1fr; } .job-card { flex-direction: column; gap: 1rem; text-align: center; } .job-meta { justify-content: center; } }
+    </style>
+</head>
+<body>
+    <nav class="navbar">
+        <a href="/" class="logo"><div class="logo-icon"><i class="ti ti-bee"></i></div><div class="logo-text">AI BEE <span>CC</span></div></a>
+        <div class="nav-right">
+            <div class="lang-switcher">
+                <button class="lang-btn active" onclick="setLang('tr')" id="lang-tr">🇹🇷 TR</button>
+                <button class="lang-btn" onclick="setLang('de')" id="lang-de">🇩🇪 DE</button>
+            </div>
+            <a href="/" class="btn"><i class="ti ti-arrow-left"></i> <span data-tr="Ana Sayfa" data-de="Startseite">Ana Sayfa</span></a>
+        </div>
+    </nav>
+
+    <div class="content">
+        <div class="page-header">
+            <div class="page-icon"><i class="ti ti-briefcase"></i></div>
+            <h1 class="page-title" data-tr="Kariyer" data-de="Karriere">Kariyer</h1>
+            <p class="page-subtitle" data-tr="Geleceği birlikte inşa edelim" data-de="Lassen Sie uns gemeinsam die Zukunft gestalten">Geleceği birlikte inşa edelim</p>
+        </div>
+
+        <div class="benefits-grid">
+            <div class="benefit-card">
+                <div class="benefit-icon"><i class="ti ti-home"></i></div>
+                <h4 class="benefit-title" data-tr="Uzaktan Çalışma" data-de="Remote-Arbeit">Uzaktan Çalışma</h4>
+                <p class="benefit-desc" data-tr="Hibrit veya tam uzaktan çalışma imkanı" data-de="Hybrid- oder vollständige Remote-Arbeitsmöglichkeit">Hibrit veya tam uzaktan çalışma imkanı</p>
+            </div>
+            <div class="benefit-card">
+                <div class="benefit-icon"><i class="ti ti-heart"></i></div>
+                <h4 class="benefit-title" data-tr="Sağlık Sigortası" data-de="Krankenversicherung">Sağlık Sigortası</h4>
+                <p class="benefit-desc" data-tr="Özel sağlık sigortası + aile paketi" data-de="Private Krankenversicherung + Familienpaket">Özel sağlık sigortası + aile paketi</p>
+            </div>
+            <div class="benefit-card">
+                <div class="benefit-icon"><i class="ti ti-school"></i></div>
+                <h4 class="benefit-title" data-tr="Eğitim Desteği" data-de="Bildungsunterstützung">Eğitim Desteği</h4>
+                <p class="benefit-desc" data-tr="Konferans ve sertifika desteği" data-de="Konferenz- und Zertifizierungsunterstützung">Konferans ve sertifika desteği</p>
+            </div>
+        </div>
+
+        <h2 style="margin: 2rem 0 1rem; font-size: 1.75rem;" data-tr="Açık Pozisyonlar" data-de="Offene Stellen">Açık Pozisyonlar</h2>
+
+        <div class="job-card">
+            <div class="job-info">
+                <h3>Senior Backend Developer (Python)</h3>
+                <div class="job-meta">
+                    <span><i class="ti ti-map-pin"></i> İstanbul / Remote</span>
+                    <span><i class="ti ti-clock"></i> <span data-tr="Tam Zamanlı" data-de="Vollzeit">Tam Zamanlı</span></span>
+                </div>
+            </div>
+            <a href="mailto:hr@ai-bee-cc.com?subject=Senior Backend Developer Başvurusu" class="btn-apply" data-tr="Başvur" data-de="Bewerben">Başvur</a>
+        </div>
+
+        <div class="job-card">
+            <div class="job-info">
+                <h3>AI/ML Engineer</h3>
+                <div class="job-meta">
+                    <span><i class="ti ti-map-pin"></i> Berlin / Remote</span>
+                    <span><i class="ti ti-clock"></i> <span data-tr="Tam Zamanlı" data-de="Vollzeit">Tam Zamanlı</span></span>
+                </div>
+            </div>
+            <a href="mailto:hr@ai-bee-cc.com?subject=AI/ML Engineer Başvurusu" class="btn-apply" data-tr="Başvur" data-de="Bewerben">Başvur</a>
+        </div>
+
+        <div class="job-card">
+            <div class="job-info">
+                <h3>Frontend Developer (React)</h3>
+                <div class="job-meta">
+                    <span><i class="ti ti-map-pin"></i> Remote</span>
+                    <span><i class="ti ti-clock"></i> <span data-tr="Tam Zamanlı" data-de="Vollzeit">Tam Zamanlı</span></span>
+                </div>
+            </div>
+            <a href="mailto:hr@ai-bee-cc.com?subject=Frontend Developer Başvurusu" class="btn-apply" data-tr="Başvur" data-de="Bewerben">Başvur</a>
+        </div>
+
+        <div class="job-card">
+            <div class="job-info">
+                <h3>DevOps Engineer</h3>
+                <div class="job-meta">
+                    <span><i class="ti ti-map-pin"></i> İstanbul / Remote</span>
+                    <span><i class="ti ti-clock"></i> <span data-tr="Tam Zamanlı" data-de="Vollzeit">Tam Zamanlı</span></span>
+                </div>
+            </div>
+            <a href="mailto:hr@ai-bee-cc.com?subject=DevOps Engineer Başvurusu" class="btn-apply" data-tr="Başvur" data-de="Bewerben">Başvur</a>
+        </div>
+    </div>
+
+    <footer class="footer">
+        <p>© 2025 AI BEE CC. <span data-tr="Tüm hakları saklıdır." data-de="Alle Rechte vorbehalten.">Tüm hakları saklıdır.</span></p>
+        <p style="margin-top: 0.5rem;"><i class="ti ti-mail"></i> hr@ai-bee-cc.com</p>
+    </footer>
+
+    <script>
+        let currentLang = localStorage.getItem('lang') || 'tr';
+        function setLang(lang) {
+            currentLang = lang; localStorage.setItem('lang', lang);
+            document.getElementById('lang-tr').classList.toggle('active', lang === 'tr');
+            document.getElementById('lang-de').classList.toggle('active', lang === 'de');
+            document.querySelectorAll('[data-tr]').forEach(el => { const text = el.getAttribute(`data-${lang}`); if (text) el.textContent = text; });
+        }
+        document.addEventListener('DOMContentLoaded', () => setLang(currentLang));
+    </script>
+</body>
+</html>
+

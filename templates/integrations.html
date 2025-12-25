@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html lang="tr" id="htmlRoot">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Entegrasyonlar | Integrationen - AI BEE CC</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@latest/tabler-icons.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        :root { --primary: #F5A623; --primary-dark: #D4880C; --secondary: #1a1a2e; --text-dark: #1a1a2e; --text-light: #6B7280; }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Plus Jakarta Sans', sans-serif; color: var(--text-dark); line-height: 1.8; background-color: #FFFDF7; background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='42' viewBox='0 0 28 49'%3E%3Cg fill-rule='evenodd'%3E%3Cg fill='%23f5a623' fill-opacity='0.04'%3E%3Cpath d='M13.99 9.25l13 7.5v15l-13 7.5L1 31.75v-15l12.99-7.5zM3 17.9v12.7l10.99 6.34 11-6.35V17.9l-11-6.34L3 17.9zM0 15l12.98-7.5V0h-2v6.35L0 12.69v2.3zm0 18.5L12.98 41v8h-2v-6.85L0 35.81v-2.3zM15 0v7.5L27.99 15H28v-2.31h-.01L17 6.35V0h-2zm0 49v-8l12.99-7.5H28v2.31h-.01L17 42.15V49h-2z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E"); }
+        .navbar { position: fixed; top: 0; left: 0; right: 0; z-index: 1000; padding: 1rem 2rem; display: flex; justify-content: space-between; align-items: center; background: rgba(255,255,255,0.95); backdrop-filter: blur(10px); box-shadow: 0 2px 20px rgba(0,0,0,0.05); }
+        .logo { display: flex; align-items: center; gap: 0.75rem; text-decoration: none; }
+        .logo-icon { width: 42px; height: 42px; background: linear-gradient(135deg, var(--primary), #FFD700); border-radius: 10px; display: flex; align-items: center; justify-content: center; color: white; font-size: 1.25rem; }
+        .logo-text { font-size: 1.35rem; font-weight: 800; color: var(--primary); }
+        .logo-text span { color: var(--text-dark); }
+        .nav-right { display: flex; align-items: center; gap: 1.5rem; }
+        .lang-switcher { display: flex; gap: 0.25rem; background: rgba(0,0,0,0.05); padding: 0.25rem; border-radius: 8px; }
+        .lang-btn { padding: 0.5rem 0.75rem; border: none; background: transparent; border-radius: 6px; cursor: pointer; font-weight: 600; font-size: 0.85rem; transition: all 0.3s; }
+        .lang-btn.active { background: white; box-shadow: 0 2px 8px rgba(0,0,0,0.1); color: var(--primary); }
+        .btn { display: inline-flex; align-items: center; gap: 0.5rem; padding: 0.6rem 1.25rem; border-radius: 8px; font-weight: 600; text-decoration: none; background: linear-gradient(135deg, var(--primary), var(--primary-dark)); color: white; transition: all 0.3s; }
+        .btn:hover { transform: translateY(-2px); box-shadow: 0 4px 15px rgba(245, 166, 35, 0.3); }
+        .content { max-width: 1200px; margin: 0 auto; padding: 8rem 2rem 4rem; }
+        .page-header { text-align: center; margin-bottom: 4rem; }
+        .page-icon { width: 100px; height: 100px; background: linear-gradient(135deg, var(--primary), #FFD700); border-radius: 25px; display: flex; align-items: center; justify-content: center; font-size: 3rem; color: white; margin: 0 auto 1.5rem; }
+        .page-title { font-size: 3rem; font-weight: 800; margin-bottom: 1rem; }
+        .page-subtitle { color: var(--text-light); font-size: 1.25rem; max-width: 600px; margin: 0 auto; }
+        .integrations-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 2rem; }
+        .integration-card { background: white; border-radius: 20px; padding: 2rem; text-align: center; box-shadow: 0 4px 20px rgba(0,0,0,0.05); transition: all 0.3s; border: 2px solid transparent; }
+        .integration-card:hover { transform: translateY(-5px); border-color: var(--primary); box-shadow: 0 10px 40px rgba(0,0,0,0.1); }
+        .integration-icon { width: 80px; height: 80px; border-radius: 20px; display: flex; align-items: center; justify-content: center; font-size: 2.5rem; margin: 0 auto 1.5rem; }
+        .integration-icon.crm { background: rgba(59, 130, 246, 0.1); color: #3B82F6; }
+        .integration-icon.voip { background: rgba(16, 185, 129, 0.1); color: #10B981; }
+        .integration-icon.ai { background: rgba(139, 92, 246, 0.1); color: #8B5CF6; }
+        .integration-icon.chat { background: rgba(236, 72, 153, 0.1); color: #EC4899; }
+        .integration-icon.erp { background: rgba(245, 166, 35, 0.1); color: var(--primary); }
+        .integration-icon.cloud { background: rgba(6, 182, 212, 0.1); color: #06B6D4; }
+        .integration-name { font-size: 1.25rem; font-weight: 700; margin-bottom: 0.5rem; }
+        .integration-desc { color: var(--text-light); font-size: 0.95rem; }
+        .integration-badge { display: inline-block; padding: 0.25rem 0.75rem; background: rgba(16, 185, 129, 0.1); color: #10B981; border-radius: 20px; font-size: 0.75rem; font-weight: 600; margin-top: 1rem; }
+        .section-title { text-align: center; font-size: 2rem; font-weight: 700; margin: 4rem 0 2rem; }
+        .cta-box { background: var(--secondary); color: white; border-radius: 24px; padding: 3rem; text-align: center; margin-top: 4rem; }
+        .cta-box h3 { font-size: 1.75rem; margin-bottom: 1rem; }
+        .cta-box p { opacity: 0.8; margin-bottom: 1.5rem; }
+        .btn-white { background: white; color: var(--primary); }
+        .footer { background: var(--secondary); color: white; padding: 2rem; text-align: center; margin-top: 4rem; }
+        .footer a { color: var(--primary); text-decoration: none; }
+        @media (max-width: 768px) { .integrations-grid { grid-template-columns: 1fr; } .page-title { font-size: 2rem; } }
+    </style>
+</head>
+<body>
+    <nav class="navbar">
+        <a href="/" class="logo"><div class="logo-icon"><i class="ti ti-bee"></i></div><div class="logo-text">AI BEE <span>CC</span></div></a>
+        <div class="nav-right">
+            <div class="lang-switcher">
+                <button class="lang-btn active" onclick="setLang('tr')" id="lang-tr">🇹🇷 TR</button>
+                <button class="lang-btn" onclick="setLang('de')" id="lang-de">🇩🇪 DE</button>
+            </div>
+            <a href="/" class="btn"><i class="ti ti-arrow-left"></i> <span data-tr="Ana Sayfa" data-de="Startseite">Ana Sayfa</span></a>
+        </div>
+    </nav>
+
+    <div class="content">
+        <div class="page-header">
+            <div class="page-icon"><i class="ti ti-plug-connected"></i></div>
+            <h1 class="page-title" data-tr="Entegrasyonlar" data-de="Integrationen">Entegrasyonlar</h1>
+            <p class="page-subtitle" data-tr="Mevcut sistemlerinizle sorunsuz entegrasyon" data-de="Nahtlose Integration mit Ihren bestehenden Systemen">Mevcut sistemlerinizle sorunsuz entegrasyon</p>
+        </div>
+
+        <div class="integrations-grid">
+            <div class="integration-card">
+                <div class="integration-icon crm"><i class="ti ti-users"></i></div>
+                <h3 class="integration-name">Salesforce</h3>
+                <p class="integration-desc" data-tr="CRM entegrasyonu ile müşteri verilerinizi senkronize edin" data-de="Synchronisieren Sie Ihre Kundendaten mit CRM-Integration">CRM entegrasyonu ile müşteri verilerinizi senkronize edin</p>
+                <span class="integration-badge" data-tr="Hazır" data-de="Verfügbar">Hazır</span>
+            </div>
+            <div class="integration-card">
+                <div class="integration-icon crm"><i class="ti ti-brand-google"></i></div>
+                <h3 class="integration-name">HubSpot</h3>
+                <p class="integration-desc" data-tr="Marketing ve satış süreçlerinizi otomatize edin" data-de="Automatisieren Sie Ihre Marketing- und Vertriebsprozesse">Marketing ve satış süreçlerinizi otomatize edin</p>
+                <span class="integration-badge" data-tr="Hazır" data-de="Verfügbar">Hazır</span>
+            </div>
+            <div class="integration-card">
+                <div class="integration-icon voip"><i class="ti ti-phone"></i></div>
+                <h3 class="integration-name">Asterisk PBX</h3>
+                <p class="integration-desc" data-tr="Mevcut VoIP altyapınızla entegre olun" data-de="Integration mit Ihrer bestehenden VoIP-Infrastruktur">Mevcut VoIP altyapınızla entegre olun</p>
+                <span class="integration-badge" data-tr="Hazır" data-de="Verfügbar">Hazır</span>
+            </div>
+            <div class="integration-card">
+                <div class="integration-icon chat"><i class="ti ti-brand-whatsapp"></i></div>
+                <h3 class="integration-name">WhatsApp Business</h3>
+                <p class="integration-desc" data-tr="WhatsApp üzerinden müşterilerinize ulaşın" data-de="Erreichen Sie Ihre Kunden über WhatsApp">WhatsApp üzerinden müşterilerinize ulaşın</p>
+                <span class="integration-badge" data-tr="Hazır" data-de="Verfügbar">Hazır</span>
+            </div>
+            <div class="integration-card">
+                <div class="integration-icon ai"><i class="ti ti-brand-openai"></i></div>
+                <h3 class="integration-name">OpenAI GPT</h3>
+                <p class="integration-desc" data-tr="AI destekli özellikleri aktifleştirin" data-de="Aktivieren Sie KI-gestützte Funktionen">AI destekli özellikleri aktifleştirin</p>
+                <span class="integration-badge" data-tr="Hazır" data-de="Verfügbar">Hazır</span>
+            </div>
+            <div class="integration-card">
+                <div class="integration-icon erp"><i class="ti ti-database"></i></div>
+                <h3 class="integration-name">SAP</h3>
+                <p class="integration-desc" data-tr="ERP sisteminizle veri senkronizasyonu" data-de="Datensynchronisierung mit Ihrem ERP-System">ERP sisteminizle veri senkronizasyonu</p>
+                <span class="integration-badge" data-tr="Hazır" data-de="Verfügbar">Hazır</span>
+            </div>
+            <div class="integration-card">
+                <div class="integration-icon cloud"><i class="ti ti-brand-azure"></i></div>
+                <h3 class="integration-name">Microsoft Teams</h3>
+                <p class="integration-desc" data-tr="Teams içinden çağrı merkezi yönetimi" data-de="Call-Center-Verwaltung innerhalb von Teams">Teams içinden çağrı merkezi yönetimi</p>
+                <span class="integration-badge" data-tr="Hazır" data-de="Verfügbar">Hazır</span>
+            </div>
+            <div class="integration-card">
+                <div class="integration-icon chat"><i class="ti ti-brand-slack"></i></div>
+                <h3 class="integration-name">Slack</h3>
+                <p class="integration-desc" data-tr="Ekip içi bildirimler ve uyarılar" data-de="Team-Benachrichtigungen und Warnungen">Ekip içi bildirimler ve uyarılar</p>
+                <span class="integration-badge" data-tr="Hazır" data-de="Verfügbar">Hazır</span>
+            </div>
+            <div class="integration-card">
+                <div class="integration-icon erp"><i class="ti ti-api"></i></div>
+                <h3 class="integration-name" data-tr="Özel API" data-de="Benutzerdefinierte API">Özel API</h3>
+                <p class="integration-desc" data-tr="REST API ile kendi entegrasyonunuzu oluşturun" data-de="Erstellen Sie Ihre eigene Integration mit REST API">REST API ile kendi entegrasyonunuzu oluşturun</p>
+                <span class="integration-badge" data-tr="Hazır" data-de="Verfügbar">Hazır</span>
+            </div>
+        </div>
+
+        <div class="cta-box">
+            <h3 data-tr="İhtiyacınız olan entegrasyon yok mu?" data-de="Fehlt Ihnen die benötigte Integration?">İhtiyacınız olan entegrasyon yok mu?</h3>
+            <p data-tr="Özel entegrasyon geliştirme hizmeti sunuyoruz. Bizimle iletişime geçin." data-de="Wir bieten kundenspezifische Integrationsentwicklung an. Kontaktieren Sie uns.">Özel entegrasyon geliştirme hizmeti sunuyoruz. Bizimle iletişime geçin.</p>
+            <a href="/#contact" class="btn btn-white"><i class="ti ti-mail"></i> <span data-tr="İletişime Geç" data-de="Kontaktieren">İletişime Geç</span></a>
+        </div>
+    </div>
+
+    <footer class="footer">
+        <p>© 2025 AI BEE CC. <span data-tr="Tüm hakları saklıdır." data-de="Alle Rechte vorbehalten.">Tüm hakları saklıdır.</span></p>
+    </footer>
+
+    <script>
+        let currentLang = localStorage.getItem('lang') || 'tr';
+        function setLang(lang) {
+            currentLang = lang; localStorage.setItem('lang', lang);
+            document.getElementById('lang-tr').classList.toggle('active', lang === 'tr');
+            document.getElementById('lang-de').classList.toggle('active', lang === 'de');
+            document.getElementById('htmlRoot').setAttribute('lang', lang);
+            document.querySelectorAll('[data-tr]').forEach(el => { const text = el.getAttribute(`data-${lang}`); if (text) el.textContent = text; });
+        }
+        document.addEventListener('DOMContentLoaded', () => setLang(currentLang));
+    </script>
+</body>
+</html>
+

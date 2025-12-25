@@ -340,6 +340,36 @@ def terms():
     """Kullanım Şartları / Nutzungsbedingungen"""
     return render_template('terms.html')
 
+@app.route('/about')
+def about():
+    """Hakkımızda / Über Uns"""
+    return render_template('about.html')
+
+@app.route('/integrations')
+def integrations():
+    """Entegrasyonlar / Integrationen"""
+    return render_template('integrations.html')
+
+@app.route('/api-docs')
+def api_docs():
+    """API Dokümantasyon"""
+    return render_template('api_docs.html')
+
+@app.route('/career')
+def career():
+    """Kariyer / Karriere"""
+    return render_template('career.html')
+
+@app.route('/blog')
+def blog():
+    """Blog"""
+    return render_template('blog.html')
+
+@app.route('/press')
+def press():
+    """Basın / Presse"""
+    return render_template('press.html')
+
 @app.route('/dashboard')
 @login_required
 def dashboard():

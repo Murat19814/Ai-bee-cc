@@ -1,0 +1,177 @@
+<!DOCTYPE html>
+<html lang="tr" id="htmlRoot">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hakkımızda | Über Uns - AI BEE CC</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@latest/tabler-icons.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        :root { --primary: #F5A623; --primary-dark: #D4880C; --secondary: #1a1a2e; --text-dark: #1a1a2e; --text-light: #6B7280; }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Plus Jakarta Sans', sans-serif; color: var(--text-dark); line-height: 1.8; background-color: #FFFDF7; background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='42' viewBox='0 0 28 49'%3E%3Cg fill-rule='evenodd'%3E%3Cg fill='%23f5a623' fill-opacity='0.04'%3E%3Cpath d='M13.99 9.25l13 7.5v15l-13 7.5L1 31.75v-15l12.99-7.5zM3 17.9v12.7l10.99 6.34 11-6.35V17.9l-11-6.34L3 17.9zM0 15l12.98-7.5V0h-2v6.35L0 12.69v2.3zm0 18.5L12.98 41v8h-2v-6.85L0 35.81v-2.3zM15 0v7.5L27.99 15H28v-2.31h-.01L17 6.35V0h-2zm0 49v-8l12.99-7.5H28v2.31h-.01L17 42.15V49h-2z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E"); }
+        .navbar { position: fixed; top: 0; left: 0; right: 0; z-index: 1000; padding: 1rem 2rem; display: flex; justify-content: space-between; align-items: center; background: rgba(255,255,255,0.95); backdrop-filter: blur(10px); box-shadow: 0 2px 20px rgba(0,0,0,0.05); }
+        .logo { display: flex; align-items: center; gap: 0.75rem; text-decoration: none; }
+        .logo-icon { width: 42px; height: 42px; background: linear-gradient(135deg, var(--primary), #FFD700); border-radius: 10px; display: flex; align-items: center; justify-content: center; color: white; font-size: 1.25rem; }
+        .logo-text { font-size: 1.35rem; font-weight: 800; color: var(--primary); }
+        .logo-text span { color: var(--text-dark); }
+        .nav-right { display: flex; align-items: center; gap: 1.5rem; }
+        .lang-switcher { display: flex; gap: 0.25rem; background: rgba(0,0,0,0.05); padding: 0.25rem; border-radius: 8px; }
+        .lang-btn { padding: 0.5rem 0.75rem; border: none; background: transparent; border-radius: 6px; cursor: pointer; font-weight: 600; font-size: 0.85rem; transition: all 0.3s; }
+        .lang-btn.active { background: white; box-shadow: 0 2px 8px rgba(0,0,0,0.1); color: var(--primary); }
+        .btn { display: inline-flex; align-items: center; gap: 0.5rem; padding: 0.6rem 1.25rem; border-radius: 8px; font-weight: 600; text-decoration: none; background: linear-gradient(135deg, var(--primary), var(--primary-dark)); color: white; transition: all 0.3s; }
+        .btn:hover { transform: translateY(-2px); box-shadow: 0 4px 15px rgba(245, 166, 35, 0.3); }
+        .content { max-width: 1000px; margin: 0 auto; padding: 8rem 2rem 4rem; }
+        .page-header { text-align: center; margin-bottom: 4rem; }
+        .page-icon { width: 100px; height: 100px; background: linear-gradient(135deg, var(--primary), #FFD700); border-radius: 25px; display: flex; align-items: center; justify-content: center; font-size: 3rem; color: white; margin: 0 auto 1.5rem; }
+        .page-title { font-size: 3rem; font-weight: 800; margin-bottom: 1rem; }
+        .page-subtitle { color: var(--text-light); font-size: 1.25rem; max-width: 600px; margin: 0 auto; }
+        .about-section { background: white; border-radius: 24px; padding: 3rem; box-shadow: 0 10px 40px rgba(0,0,0,0.05); margin-bottom: 2rem; }
+        .about-section h2 { font-size: 1.75rem; font-weight: 700; margin-bottom: 1.5rem; display: flex; align-items: center; gap: 0.75rem; }
+        .about-section h2 i { color: var(--primary); }
+        .about-section p { color: var(--text-light); margin-bottom: 1rem; font-size: 1.1rem; }
+        .stats-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 2rem; margin: 3rem 0; }
+        .stat-card { text-align: center; padding: 2rem; background: rgba(245, 166, 35, 0.05); border-radius: 16px; }
+        .stat-value { font-size: 3rem; font-weight: 800; color: var(--primary); }
+        .stat-label { color: var(--text-light); margin-top: 0.5rem; }
+        .team-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 2rem; margin-top: 2rem; }
+        .team-card { text-align: center; padding: 2rem; background: white; border-radius: 16px; box-shadow: 0 4px 20px rgba(0,0,0,0.05); }
+        .team-avatar { width: 100px; height: 100px; border-radius: 50%; background: linear-gradient(135deg, var(--primary), #FFD700); display: flex; align-items: center; justify-content: center; font-size: 2.5rem; color: white; margin: 0 auto 1rem; }
+        .team-name { font-weight: 700; font-size: 1.1rem; }
+        .team-role { color: var(--text-light); font-size: 0.9rem; }
+        .values-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 1.5rem; margin-top: 1.5rem; }
+        .value-item { display: flex; align-items: flex-start; gap: 1rem; padding: 1.5rem; background: rgba(245, 166, 35, 0.05); border-radius: 12px; }
+        .value-icon { width: 50px; height: 50px; background: var(--primary); border-radius: 12px; display: flex; align-items: center; justify-content: center; color: white; font-size: 1.5rem; flex-shrink: 0; }
+        .value-content h4 { font-weight: 700; margin-bottom: 0.25rem; }
+        .value-content p { color: var(--text-light); font-size: 0.95rem; margin: 0; }
+        .footer { background: var(--secondary); color: white; padding: 2rem; text-align: center; margin-top: 4rem; }
+        .footer a { color: var(--primary); text-decoration: none; }
+        @media (max-width: 768px) { .stats-grid { grid-template-columns: repeat(2, 1fr); } .team-grid { grid-template-columns: 1fr; } .values-grid { grid-template-columns: 1fr; } .page-title { font-size: 2rem; } }
+    </style>
+</head>
+<body>
+    <nav class="navbar">
+        <a href="/" class="logo"><div class="logo-icon"><i class="ti ti-bee"></i></div><div class="logo-text">AI BEE <span>CC</span></div></a>
+        <div class="nav-right">
+            <div class="lang-switcher">
+                <button class="lang-btn active" onclick="setLang('tr')" id="lang-tr">🇹🇷 TR</button>
+                <button class="lang-btn" onclick="setLang('de')" id="lang-de">🇩🇪 DE</button>
+            </div>
+            <a href="/" class="btn"><i class="ti ti-arrow-left"></i> <span data-tr="Ana Sayfa" data-de="Startseite">Ana Sayfa</span></a>
+        </div>
+    </nav>
+
+    <div class="content">
+        <div class="page-header">
+            <div class="page-icon"><i class="ti ti-building-community"></i></div>
+            <h1 class="page-title" data-tr="Hakkımızda" data-de="Über Uns">Hakkımızda</h1>
+            <p class="page-subtitle" data-tr="Çağrı merkezi teknolojisinde yenilikçi çözümler sunuyoruz" data-de="Wir bieten innovative Lösungen in der Call-Center-Technologie">Çağrı merkezi teknolojisinde yenilikçi çözümler sunuyoruz</p>
+        </div>
+
+        <div class="stats-grid">
+            <div class="stat-card">
+                <div class="stat-value">2020</div>
+                <div class="stat-label" data-tr="Kuruluş Yılı" data-de="Gründungsjahr">Kuruluş Yılı</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-value">500+</div>
+                <div class="stat-label" data-tr="Aktif Müşteri" data-de="Aktive Kunden">Aktif Müşteri</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-value">50M+</div>
+                <div class="stat-label" data-tr="İşlenen Çağrı" data-de="Verarbeitete Anrufe">İşlenen Çağrı</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-value">2</div>
+                <div class="stat-label" data-tr="Ülke" data-de="Länder">Ülke</div>
+            </div>
+        </div>
+
+        <div class="about-section">
+            <h2><i class="ti ti-target"></i> <span data-tr="Misyonumuz" data-de="Unsere Mission">Misyonumuz</span></h2>
+            <p data-tr="AI BEE CC olarak, yapay zeka teknolojilerini çağrı merkezi operasyonlarına entegre ederek işletmelerin müşteri deneyimini dönüştürmesine yardımcı oluyoruz. Amacımız, her ölçekteki şirkete enterprise düzeyinde çağrı merkezi çözümleri sunmaktır." data-de="Als AI BEE CC helfen wir Unternehmen, ihre Kundenerfahrung zu transformieren, indem wir KI-Technologien in Call-Center-Operationen integrieren. Unser Ziel ist es, Unternehmen jeder Größe Call-Center-Lösungen auf Enterprise-Niveau anzubieten.">
+                AI BEE CC olarak, yapay zeka teknolojilerini çağrı merkezi operasyonlarına entegre ederek işletmelerin müşteri deneyimini dönüştürmesine yardımcı oluyoruz. Amacımız, her ölçekteki şirkete enterprise düzeyinde çağrı merkezi çözümleri sunmaktır.
+            </p>
+        </div>
+
+        <div class="about-section">
+            <h2><i class="ti ti-eye"></i> <span data-tr="Vizyonumuz" data-de="Unsere Vision">Vizyonumuz</span></h2>
+            <p data-tr="Türkiye ve Avrupa'nın lider yapay zeka destekli çağrı merkezi platformu olmak. Müşteri iletişiminde geleceği bugünden şekillendirmek ve sektörde standartları belirlemek." data-de="Die führende KI-gestützte Call-Center-Plattform in der Türkei und Europa zu werden. Die Zukunft der Kundenkommunikation heute gestalten und Branchenstandards setzen.">
+                Türkiye ve Avrupa'nın lider yapay zeka destekli çağrı merkezi platformu olmak. Müşteri iletişiminde geleceği bugünden şekillendirmek ve sektörde standartları belirlemek.
+            </p>
+        </div>
+
+        <div class="about-section">
+            <h2><i class="ti ti-heart"></i> <span data-tr="Değerlerimiz" data-de="Unsere Werte">Değerlerimiz</span></h2>
+            <div class="values-grid">
+                <div class="value-item">
+                    <div class="value-icon"><i class="ti ti-bulb"></i></div>
+                    <div class="value-content">
+                        <h4 data-tr="İnovasyon" data-de="Innovation">İnovasyon</h4>
+                        <p data-tr="Sürekli gelişim ve yenilikçi çözümler" data-de="Kontinuierliche Entwicklung und innovative Lösungen">Sürekli gelişim ve yenilikçi çözümler</p>
+                    </div>
+                </div>
+                <div class="value-item">
+                    <div class="value-icon"><i class="ti ti-users"></i></div>
+                    <div class="value-content">
+                        <h4 data-tr="Müşteri Odaklılık" data-de="Kundenorientierung">Müşteri Odaklılık</h4>
+                        <p data-tr="Müşteri başarısı bizim başarımızdır" data-de="Der Erfolg unserer Kunden ist unser Erfolg">Müşteri başarısı bizim başarımızdır</p>
+                    </div>
+                </div>
+                <div class="value-item">
+                    <div class="value-icon"><i class="ti ti-shield-check"></i></div>
+                    <div class="value-content">
+                        <h4 data-tr="Güvenilirlik" data-de="Zuverlässigkeit">Güvenilirlik</h4>
+                        <p data-tr="%99.9 uptime garantisi" data-de="99,9% Uptime-Garantie">%99.9 uptime garantisi</p>
+                    </div>
+                </div>
+                <div class="value-item">
+                    <div class="value-icon"><i class="ti ti-world"></i></div>
+                    <div class="value-content">
+                        <h4 data-tr="Global Düşünce" data-de="Globales Denken">Global Düşünce</h4>
+                        <p data-tr="Yerel uzmanlık, global standartlar" data-de="Lokale Expertise, globale Standards">Yerel uzmanlık, global standartlar</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="about-section">
+            <h2><i class="ti ti-map-pin"></i> <span data-tr="Ofislerimiz" data-de="Unsere Büros">Ofislerimiz</span></h2>
+            <div class="values-grid">
+                <div class="value-item">
+                    <div class="value-icon"><i class="ti ti-building"></i></div>
+                    <div class="value-content">
+                        <h4>İstanbul, Türkiye</h4>
+                        <p data-tr="Merkez Ofis - Maslak" data-de="Hauptsitz - Maslak">Merkez Ofis - Maslak</p>
+                    </div>
+                </div>
+                <div class="value-item">
+                    <div class="value-icon"><i class="ti ti-building"></i></div>
+                    <div class="value-content">
+                        <h4>Berlin, Deutschland</h4>
+                        <p data-tr="Avrupa Ofisi" data-de="Europabüro">Avrupa Ofisi</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <footer class="footer">
+        <p>© 2025 AI BEE CC. <span data-tr="Tüm hakları saklıdır." data-de="Alle Rechte vorbehalten.">Tüm hakları saklıdır.</span></p>
+        <p style="margin-top: 0.5rem;"><a href="/privacy" data-tr="Gizlilik Politikası" data-de="Datenschutzrichtlinie">Gizlilik Politikası</a> | <a href="/terms" data-tr="Kullanım Şartları" data-de="Nutzungsbedingungen">Kullanım Şartları</a></p>
+    </footer>
+
+    <script>
+        let currentLang = localStorage.getItem('lang') || 'tr';
+        function setLang(lang) {
+            currentLang = lang; localStorage.setItem('lang', lang);
+            document.getElementById('lang-tr').classList.toggle('active', lang === 'tr');
+            document.getElementById('lang-de').classList.toggle('active', lang === 'de');
+            document.getElementById('htmlRoot').setAttribute('lang', lang);
+            document.querySelectorAll('[data-tr]').forEach(el => { const text = el.getAttribute(`data-${lang}`); if (text) el.textContent = text; });
+        }
+        document.addEventListener('DOMContentLoaded', () => setLang(currentLang));
+    </script>
+</body>
+</html>
+

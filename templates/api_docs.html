@@ -1,0 +1,195 @@
+<!DOCTYPE html>
+<html lang="tr" id="htmlRoot">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>API Dokümantasyon - AI BEE CC</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@latest/tabler-icons.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=Fira+Code:wght@400;500&display=swap" rel="stylesheet">
+    <style>
+        :root { --primary: #F5A623; --primary-dark: #D4880C; --secondary: #1a1a2e; --text-dark: #1a1a2e; --text-light: #6B7280; }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Plus Jakarta Sans', sans-serif; color: var(--text-dark); line-height: 1.8; background-color: #FFFDF7; background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='42' viewBox='0 0 28 49'%3E%3Cg fill-rule='evenodd'%3E%3Cg fill='%23f5a623' fill-opacity='0.04'%3E%3Cpath d='M13.99 9.25l13 7.5v15l-13 7.5L1 31.75v-15l12.99-7.5zM3 17.9v12.7l10.99 6.34 11-6.35V17.9l-11-6.34L3 17.9zM0 15l12.98-7.5V0h-2v6.35L0 12.69v2.3zm0 18.5L12.98 41v8h-2v-6.85L0 35.81v-2.3zM15 0v7.5L27.99 15H28v-2.31h-.01L17 6.35V0h-2zm0 49v-8l12.99-7.5H28v2.31h-.01L17 42.15V49h-2z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E"); }
+        .navbar { position: fixed; top: 0; left: 0; right: 0; z-index: 1000; padding: 1rem 2rem; display: flex; justify-content: space-between; align-items: center; background: rgba(255,255,255,0.95); backdrop-filter: blur(10px); box-shadow: 0 2px 20px rgba(0,0,0,0.05); }
+        .logo { display: flex; align-items: center; gap: 0.75rem; text-decoration: none; }
+        .logo-icon { width: 42px; height: 42px; background: linear-gradient(135deg, var(--primary), #FFD700); border-radius: 10px; display: flex; align-items: center; justify-content: center; color: white; font-size: 1.25rem; }
+        .logo-text { font-size: 1.35rem; font-weight: 800; color: var(--primary); }
+        .logo-text span { color: var(--text-dark); }
+        .nav-right { display: flex; align-items: center; gap: 1.5rem; }
+        .lang-switcher { display: flex; gap: 0.25rem; background: rgba(0,0,0,0.05); padding: 0.25rem; border-radius: 8px; }
+        .lang-btn { padding: 0.5rem 0.75rem; border: none; background: transparent; border-radius: 6px; cursor: pointer; font-weight: 600; font-size: 0.85rem; transition: all 0.3s; }
+        .lang-btn.active { background: white; box-shadow: 0 2px 8px rgba(0,0,0,0.1); color: var(--primary); }
+        .btn { display: inline-flex; align-items: center; gap: 0.5rem; padding: 0.6rem 1.25rem; border-radius: 8px; font-weight: 600; text-decoration: none; background: linear-gradient(135deg, var(--primary), var(--primary-dark)); color: white; transition: all 0.3s; }
+        .content { max-width: 1000px; margin: 0 auto; padding: 8rem 2rem 4rem; }
+        .page-header { text-align: center; margin-bottom: 4rem; }
+        .page-icon { width: 100px; height: 100px; background: linear-gradient(135deg, var(--primary), #FFD700); border-radius: 25px; display: flex; align-items: center; justify-content: center; font-size: 3rem; color: white; margin: 0 auto 1.5rem; }
+        .page-title { font-size: 3rem; font-weight: 800; margin-bottom: 1rem; }
+        .page-subtitle { color: var(--text-light); font-size: 1.25rem; }
+        .api-section { background: white; border-radius: 20px; padding: 2rem; margin-bottom: 2rem; box-shadow: 0 4px 20px rgba(0,0,0,0.05); }
+        .api-section h2 { font-size: 1.5rem; font-weight: 700; margin-bottom: 1rem; display: flex; align-items: center; gap: 0.5rem; }
+        .api-section h2 i { color: var(--primary); }
+        .api-section p { color: var(--text-light); margin-bottom: 1rem; }
+        .endpoint { background: var(--secondary); border-radius: 12px; padding: 1.5rem; margin: 1rem 0; }
+        .endpoint-method { display: inline-block; padding: 0.25rem 0.75rem; border-radius: 6px; font-weight: 700; font-size: 0.8rem; margin-right: 1rem; }
+        .endpoint-method.get { background: #10B981; color: white; }
+        .endpoint-method.post { background: #3B82F6; color: white; }
+        .endpoint-method.put { background: #F59E0B; color: white; }
+        .endpoint-method.delete { background: #EF4444; color: white; }
+        .endpoint-url { font-family: 'Fira Code', monospace; color: #fff; font-size: 0.95rem; }
+        .code-block { background: #1e1e2e; border-radius: 12px; padding: 1.5rem; margin: 1rem 0; overflow-x: auto; }
+        .code-block pre { font-family: 'Fira Code', monospace; font-size: 0.85rem; color: #a6e3a1; margin: 0; white-space: pre-wrap; }
+        .code-block .comment { color: #6c7086; }
+        .code-block .key { color: #89b4fa; }
+        .code-block .string { color: #a6e3a1; }
+        .code-block .number { color: #fab387; }
+        .api-card { display: flex; gap: 1rem; padding: 1rem; background: rgba(245, 166, 35, 0.05); border-radius: 12px; margin: 1rem 0; }
+        .api-card-icon { width: 50px; height: 50px; background: var(--primary); border-radius: 12px; display: flex; align-items: center; justify-content: center; color: white; font-size: 1.5rem; flex-shrink: 0; }
+        .api-card h4 { font-weight: 700; margin-bottom: 0.25rem; }
+        .api-card p { color: var(--text-light); font-size: 0.9rem; margin: 0; }
+        .footer { background: var(--secondary); color: white; padding: 2rem; text-align: center; margin-top: 4rem; }
+        .footer a { color: var(--primary); text-decoration: none; }
+        @media (max-width: 768px) { .page-title { font-size: 2rem; } }
+    </style>
+</head>
+<body>
+    <nav class="navbar">
+        <a href="/" class="logo"><div class="logo-icon"><i class="ti ti-bee"></i></div><div class="logo-text">AI BEE <span>CC</span></div></a>
+        <div class="nav-right">
+            <div class="lang-switcher">
+                <button class="lang-btn active" onclick="setLang('tr')" id="lang-tr">🇹🇷 TR</button>
+                <button class="lang-btn" onclick="setLang('de')" id="lang-de">🇩🇪 DE</button>
+            </div>
+            <a href="/" class="btn"><i class="ti ti-arrow-left"></i> <span data-tr="Ana Sayfa" data-de="Startseite">Ana Sayfa</span></a>
+        </div>
+    </nav>
+
+    <div class="content">
+        <div class="page-header">
+            <div class="page-icon"><i class="ti ti-code"></i></div>
+            <h1 class="page-title">API Dokümantasyon</h1>
+            <p class="page-subtitle" data-tr="AI BEE CC REST API ile entegrasyonlarınızı oluşturun" data-de="Erstellen Sie Ihre Integrationen mit der AI BEE CC REST API">AI BEE CC REST API ile entegrasyonlarınızı oluşturun</p>
+        </div>
+
+        <div class="api-section">
+            <h2><i class="ti ti-key"></i> <span data-tr="Kimlik Doğrulama" data-de="Authentifizierung">Kimlik Doğrulama</span></h2>
+            <p data-tr="Tüm API istekleri Bearer token ile kimlik doğrulaması gerektirir." data-de="Alle API-Anfragen erfordern eine Bearer-Token-Authentifizierung.">Tüm API istekleri Bearer token ile kimlik doğrulaması gerektirir.</p>
+            <div class="code-block">
+                <pre><span class="comment">// Header'a ekleyin</span>
+Authorization: Bearer <span class="string">YOUR_API_KEY</span></pre>
+            </div>
+        </div>
+
+        <div class="api-section">
+            <h2><i class="ti ti-link"></i> Base URL</h2>
+            <div class="code-block">
+                <pre><span class="string">https://api.ai-bee-cc.com/v1</span></pre>
+            </div>
+        </div>
+
+        <div class="api-section">
+            <h2><i class="ti ti-phone-call"></i> <span data-tr="Çağrı Yönetimi" data-de="Anrufverwaltung">Çağrı Yönetimi</span></h2>
+            
+            <div class="endpoint">
+                <span class="endpoint-method get">GET</span>
+                <span class="endpoint-url">/calls</span>
+            </div>
+            <p data-tr="Tüm çağrıları listeler" data-de="Listet alle Anrufe auf">Tüm çağrıları listeler</p>
+            
+            <div class="endpoint">
+                <span class="endpoint-method post">POST</span>
+                <span class="endpoint-url">/calls/initiate</span>
+            </div>
+            <p data-tr="Yeni bir çağrı başlatır" data-de="Startet einen neuen Anruf">Yeni bir çağrı başlatır</p>
+            
+            <div class="code-block">
+                <pre>{
+  <span class="key">"phone_number"</span>: <span class="string">"+905551234567"</span>,
+  <span class="key">"agent_id"</span>: <span class="number">123</span>,
+  <span class="key">"campaign_id"</span>: <span class="number">456</span>
+}</pre>
+            </div>
+        </div>
+
+        <div class="api-section">
+            <h2><i class="ti ti-users"></i> <span data-tr="Müşteri API" data-de="Kunden-API">Müşteri API</span></h2>
+            
+            <div class="endpoint">
+                <span class="endpoint-method get">GET</span>
+                <span class="endpoint-url">/customers</span>
+            </div>
+            
+            <div class="endpoint">
+                <span class="endpoint-method post">POST</span>
+                <span class="endpoint-url">/customers</span>
+            </div>
+            
+            <div class="endpoint">
+                <span class="endpoint-method put">PUT</span>
+                <span class="endpoint-url">/customers/{id}</span>
+            </div>
+            
+            <div class="endpoint">
+                <span class="endpoint-method delete">DELETE</span>
+                <span class="endpoint-url">/customers/{id}</span>
+            </div>
+        </div>
+
+        <div class="api-section">
+            <h2><i class="ti ti-brain"></i> AI API</h2>
+            
+            <div class="endpoint">
+                <span class="endpoint-method post">POST</span>
+                <span class="endpoint-url">/ai/transcribe</span>
+            </div>
+            <p data-tr="Ses dosyasını metne çevirir" data-de="Konvertiert Audiodatei in Text">Ses dosyasını metne çevirir</p>
+            
+            <div class="endpoint">
+                <span class="endpoint-method post">POST</span>
+                <span class="endpoint-url">/ai/summarize</span>
+            </div>
+            <p data-tr="Görüşme özeti oluşturur" data-de="Erstellt Gesprächszusammenfassung">Görüşme özeti oluşturur</p>
+            
+            <div class="endpoint">
+                <span class="endpoint-method post">POST</span>
+                <span class="endpoint-url">/ai/sentiment</span>
+            </div>
+            <p data-tr="Duygu analizi yapar" data-de="Führt Sentiment-Analyse durch">Duygu analizi yapar</p>
+        </div>
+
+        <div class="api-section">
+            <h2><i class="ti ti-help"></i> <span data-tr="Destek" data-de="Unterstützung">Destek</span></h2>
+            <div class="api-card">
+                <div class="api-card-icon"><i class="ti ti-mail"></i></div>
+                <div>
+                    <h4 data-tr="API Desteği" data-de="API-Support">API Desteği</h4>
+                    <p>api-support@ai-bee-cc.com</p>
+                </div>
+            </div>
+            <div class="api-card">
+                <div class="api-card-icon"><i class="ti ti-brand-github"></i></div>
+                <div>
+                    <h4>SDK & Örnekler</h4>
+                    <p>github.com/ai-bee-cc</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <footer class="footer">
+        <p>© 2025 AI BEE CC. <span data-tr="Tüm hakları saklıdır." data-de="Alle Rechte vorbehalten.">Tüm hakları saklıdır.</span></p>
+    </footer>
+
+    <script>
+        let currentLang = localStorage.getItem('lang') || 'tr';
+        function setLang(lang) {
+            currentLang = lang; localStorage.setItem('lang', lang);
+            document.getElementById('lang-tr').classList.toggle('active', lang === 'tr');
+            document.getElementById('lang-de').classList.toggle('active', lang === 'de');
+            document.getElementById('htmlRoot').setAttribute('lang', lang);
+            document.querySelectorAll('[data-tr]').forEach(el => { const text = el.getAttribute(`data-${lang}`); if (text) el.textContent = text; });
+        }
+        document.addEventListener('DOMContentLoaded', () => setLang(currentLang));
+    </script>
+</body>
+</html>
+
