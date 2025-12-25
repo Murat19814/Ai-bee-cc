@@ -16,16 +16,16 @@
             <div class="form-group">
                 <label class="form-label" data-tr="Konu" data-de="Betreff">Konu</label>
                 <input type="text" name="subject" class="form-control" required
-                       placeholder="Ã–rn: GiriÅŸ sorunu"
-                       data-tr-placeholder="Ã–rn: GiriÅŸ sorunu"
+                       placeholder="Örn: Giriş sorunu"
+                       data-tr-placeholder="Örn: Giriş sorunu"
                        data-de-placeholder="Z.B.: Login-Problem">
             </div>
 
             <div class="grid grid-cols-2">
                 <div class="form-group">
-                    <label class="form-label" data-tr="MÃ¼ÅŸteri (opsiyonel)" data-de="Kunde (optional)">MÃ¼ÅŸteri (opsiyonel)</label>
+                    <label class="form-label" data-tr="Müşteri (opsiyonel)" data-de="Kunde (optional)">Müşteri (opsiyonel)</label>
                     <select name="customer_id" class="form-control">
-                        <option value="" data-tr="- SeÃ§iniz -" data-de="- WÃ¤hlen -">- SeÃ§iniz -</option>
+                        <option value="" data-tr="- Seçiniz -" data-de="- Wählen -">- Seçiniz -</option>
                         {% for c in customers %}
                         <option value="{{ c.id }}">{{ c.full_name }}{% if c.phone %} ({{ c.phone }}){% endif %}</option>
                         {% endfor %}
@@ -35,7 +35,7 @@
                 <div class="form-group">
                     <label class="form-label" data-tr="Kategori (opsiyonel)" data-de="Kategorie (optional)">Kategori (opsiyonel)</label>
                     <select name="category_id" class="form-control">
-                        <option value="" data-tr="- SeÃ§iniz -" data-de="- WÃ¤hlen -">- SeÃ§iniz -</option>
+                        <option value="" data-tr="- Seçiniz -" data-de="- Wählen -">- Seçiniz -</option>
                         {% for cat in categories %}
                         <option value="{{ cat.id }}">{{ cat.name }}</option>
                         {% endfor %}
@@ -45,11 +45,11 @@
 
             <div class="grid grid-cols-2">
                 <div class="form-group">
-                    <label class="form-label" data-tr="Ã–ncelik" data-de="PrioritÃ¤t">Ã–ncelik</label>
+                    <label class="form-label" data-tr="Öncelik" data-de="Priorität">Öncelik</label>
                     <select name="priority" class="form-control">
-                        <option value="low" data-tr="DÃ¼ÅŸÃ¼k" data-de="Niedrig">DÃ¼ÅŸÃ¼k</option>
+                        <option value="low" data-tr="Düşük" data-de="Niedrig">Düşük</option>
                         <option value="normal" selected data-tr="Normal" data-de="Normal">Normal</option>
-                        <option value="high" data-tr="YÃ¼ksek" data-de="Hoch">YÃ¼ksek</option>
+                        <option value="high" data-tr="Yüksek" data-de="Hoch">Yüksek</option>
                         <option value="urgent" data-tr="Acil" data-de="Dringend">Acil</option>
                     </select>
                 </div>
@@ -61,10 +61,10 @@
             </div>
 
             <div class="form-group">
-                <label class="form-label" data-tr="AÃ§Ä±klama" data-de="Beschreibung">AÃ§Ä±klama</label>
+                <label class="form-label" data-tr="Açıklama" data-de="Beschreibung">Açıklama</label>
                 <textarea name="description" class="form-control" rows="5"
-                          placeholder="DetaylarÄ± yazÄ±n..."
-                          data-tr-placeholder="DetaylarÄ± yazÄ±n..."
+                          placeholder="Detayları yazın..."
+                          data-tr-placeholder="Detayları yazın..."
                           data-de-placeholder="Beschreiben Sie die Details..."></textarea>
             </div>
 
@@ -74,7 +74,7 @@
                     <span data-tr="Kaydet" data-de="Speichern">Kaydet</span>
                 </button>
                 <a href="{{ url_for('tickets') }}" class="btn btn-secondary">
-                    <span data-tr="Ä°ptal" data-de="Abbrechen">Ä°ptal</span>
+                    <span data-tr="İptal" data-de="Abbrechen">İptal</span>
                 </a>
             </div>
         </form>
