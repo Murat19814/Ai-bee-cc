@@ -596,16 +596,25 @@ function setLang(lang) {
     if (btnTr) btnTr.classList.toggle('active', lang === 'tr');
     if (btnDe) btnDe.classList.toggle('active', lang === 'de');
 
+    // Translate text content
     document.querySelectorAll('[data-tr]').forEach(el => {
         const text = el.getAttribute(`data-${lang}`);
         if (text) el.textContent = text;
     });
 
+    // Translate placeholders
     document.querySelectorAll('[data-tr-placeholder]').forEach(el => {
         const ph = el.getAttribute(`data-${lang}-placeholder`);
         if (ph) el.placeholder = ph;
     });
 
+    // Translate title attributes
+    document.querySelectorAll('[data-tr-title]').forEach(el => {
+        const title = el.getAttribute(`data-${lang}-title`);
+        if (title) el.title = title;
+    });
+
+    // Translate options
     document.querySelectorAll('option[data-tr]').forEach(opt => {
         const t = opt.getAttribute(`data-${lang}`);
         if (t) opt.textContent = t;

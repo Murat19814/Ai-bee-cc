@@ -1300,28 +1300,40 @@ body::after {
 
 
 /* Language switcher (app header) */
+.lang-switcher,
 .lang-switcher-app {
     display: inline-flex;
     gap: 0.25rem;
-    background: rgba(255,255,255,0.06);
-    border: 1px solid rgba(255,255,255,0.10);
+    background: rgba(0, 0, 0, 0.05);
+    border: 1px solid var(--border-color);
     padding: 0.25rem;
     border-radius: 10px;
+    margin-right: 0.75rem;
 }
 
+.lang-btn,
 .lang-btn-app {
     border: none;
     background: transparent;
     color: var(--text-muted);
     font-weight: 700;
     font-size: 0.75rem;
-    padding: 0.35rem 0.6rem;
+    padding: 0.4rem 0.7rem;
     border-radius: 8px;
     cursor: pointer;
     transition: all 0.2s ease;
+    font-family: var(--font-display);
 }
 
+.lang-btn:hover,
+.lang-btn-app:hover {
+    background: rgba(245, 166, 35, 0.1);
+    color: var(--primary-dark);
+}
+
+.lang-btn.active,
 .lang-btn-app.active {
-    background: rgba(245, 166, 35, 0.18);
-    color: var(--primary);
+    background: var(--primary-gradient);
+    color: var(--text-dark);
+    box-shadow: var(--shadow-gold);
 }

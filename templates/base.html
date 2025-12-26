@@ -45,7 +45,7 @@
                 <!-- Dashboard -->
                 <a href="{{ url_for('dashboard') }}" class="nav-item {{ 'active' if request.endpoint == 'dashboard' else '' }}">
                     <i class="ti ti-dashboard"></i>
-                    <span>Dashboard</span>
+                    <span data-tr="Dashboard" data-de="Dashboard">Dashboard</span>
                 </a>
                 
                 {% if current_user.is_super_admin %}
@@ -53,25 +53,25 @@
                 <div class="nav-group">
                     <button class="nav-group-toggle" data-target="platform-menu">
                         <i class="ti ti-building-skyscraper"></i>
-                        <span>Platform</span>
+                        <span data-tr="Platform" data-de="Plattform">Platform</span>
                         <i class="ti ti-chevron-down nav-arrow"></i>
                     </button>
                     <div class="nav-group-menu" id="platform-menu">
                         <a href="{{ url_for('platform_dashboard') }}" class="nav-subitem">
                             <i class="ti ti-layout-dashboard"></i>
-                            <span>Platform Yönetimi</span>
+                            <span data-tr="Platform Yönetimi" data-de="Plattformverwaltung">Platform Yönetimi</span>
                         </a>
                         <a href="{{ url_for('platform_tenants') }}" class="nav-subitem">
                             <i class="ti ti-buildings"></i>
-                            <span>Tenant'lar</span>
+                            <span data-tr="Tenant'lar" data-de="Mandanten">Tenant'lar</span>
                         </a>
                         <a href="{{ url_for('platform_health') }}" class="nav-subitem">
                             <i class="ti ti-heart-rate-monitor"></i>
-                            <span>Sistem Sağlığı</span>
+                            <span data-tr="Sistem Sağlığı" data-de="Systemstatus">Sistem Sağlığı</span>
                         </a>
                         <a href="{{ url_for('platform_audit') }}" class="nav-subitem">
                             <i class="ti ti-file-analytics"></i>
-                            <span>Audit Logları</span>
+                            <span data-tr="Audit Logları" data-de="Audit-Protokolle">Audit Logları</span>
                         </a>
                     </div>
                 </div>
@@ -81,7 +81,7 @@
                 <!-- Agent -->
                 <a href="{{ url_for('agent_panel') }}" class="nav-item {{ 'active' if request.endpoint == 'agent_panel' else '' }}">
                     <i class="ti ti-headset"></i>
-                    <span>Agent Paneli</span>
+                    <span data-tr="Agent Paneli" data-de="Agent-Panel">Agent Paneli</span>
                 </a>
                 {% endif %}
                 
@@ -89,7 +89,7 @@
                 <!-- Supervisor -->
                 <a href="{{ url_for('supervisor_panel') }}" class="nav-item {{ 'active' if 'supervisor' in request.endpoint else '' }}">
                     <i class="ti ti-eye"></i>
-                    <span>Canlı İzleme</span>
+                    <span data-tr="Canlı İzleme" data-de="Live-Überwachung">Canlı İzleme</span>
                 </a>
                 {% endif %}
                 
@@ -98,21 +98,21 @@
                 <div class="nav-group">
                     <button class="nav-group-toggle" data-target="crm-menu">
                         <i class="ti ti-address-book"></i>
-                        <span>CRM</span>
+                        <span data-tr="CRM" data-de="CRM">CRM</span>
                         <i class="ti ti-chevron-down nav-arrow"></i>
                     </button>
                     <div class="nav-group-menu" id="crm-menu">
                         <a href="{{ url_for('customers') }}" class="nav-subitem">
                             <i class="ti ti-users"></i>
-                            <span>Müşteriler</span>
+                            <span data-tr="Müşteriler" data-de="Kunden">Müşteriler</span>
                         </a>
                         <a href="{{ url_for('tickets') }}" class="nav-subitem">
                             <i class="ti ti-ticket"></i>
-                            <span>Destek Talepleri</span>
+                            <span data-tr="Destek Talepleri" data-de="Support-Tickets">Destek Talepleri</span>
                         </a>
                         <a href="{{ url_for('calls') }}" class="nav-subitem">
                             <i class="ti ti-phone"></i>
-                            <span>Çağrılar</span>
+                            <span data-tr="Çağrılar" data-de="Anrufe">Çağrılar</span>
                         </a>
                     </div>
                 </div>
@@ -123,25 +123,25 @@
                 <div class="nav-group">
                     <button class="nav-group-toggle" data-target="campaign-menu">
                         <i class="ti ti-speakerphone"></i>
-                        <span>Kampanya</span>
+                        <span data-tr="Kampanya" data-de="Kampagne">Kampanya</span>
                         <i class="ti ti-chevron-down nav-arrow"></i>
                     </button>
                     <div class="nav-group-menu" id="campaign-menu">
                         <a href="{{ url_for('campaigns') }}" class="nav-subitem">
                             <i class="ti ti-broadcast"></i>
-                            <span>Kampanyalar</span>
+                            <span data-tr="Kampanyalar" data-de="Kampagnen">Kampanyalar</span>
                         </a>
                         <a href="{{ url_for('voip_queues') }}" class="nav-subitem">
                             <i class="ti ti-chart-bar"></i>
-                            <span>CC Satış & QC</span>
+                            <span data-tr="CC Satış & QC" data-de="CC Vertrieb & QC">CC Satış & QC</span>
                         </a>
                         <a href="{{ url_for('call_queue') }}" class="nav-subitem">
                             <i class="ti ti-phone-call"></i>
-                            <span>Çağrı Kuyruğu</span>
+                            <span data-tr="Çağrı Kuyruğu" data-de="Anrufwarteschlange">Çağrı Kuyruğu</span>
                         </a>
                         <a href="{{ url_for('dialer_lists') }}" class="nav-subitem">
                             <i class="ti ti-phone-outgoing"></i>
-                            <span>Arama Listeleri</span>
+                            <span data-tr="Arama Listeleri" data-de="Anruflisten">Arama Listeleri</span>
                         </a>
                     </div>
                 </div>
@@ -152,17 +152,17 @@
                 <div class="nav-group">
                     <button class="nav-group-toggle" data-target="qa-menu">
                         <i class="ti ti-clipboard-check"></i>
-                        <span>Kalite (QA)</span>
+                        <span data-tr="Kalite (QA)" data-de="Qualität (QA)">Kalite (QA)</span>
                         <i class="ti ti-chevron-down nav-arrow"></i>
                     </button>
                     <div class="nav-group-menu" id="qa-menu">
                         <a href="{{ url_for('qa_dashboard') }}" class="nav-subitem">
                             <i class="ti ti-chart-dots"></i>
-                            <span>QA Dashboard</span>
+                            <span data-tr="QA Dashboard" data-de="QA-Dashboard">QA Dashboard</span>
                         </a>
                         <a href="{{ url_for('qa_forms') }}" class="nav-subitem">
                             <i class="ti ti-forms"></i>
-                            <span>QA Formları</span>
+                            <span data-tr="QA Formları" data-de="QA-Formulare">QA Formları</span>
                         </a>
                     </div>
                 </div>
@@ -173,37 +173,37 @@
                 <div class="nav-group">
                     <button class="nav-group-toggle" data-target="voip-menu">
                         <i class="ti ti-phone-call"></i>
-                        <span>VoIP Yönetimi</span>
+                        <span data-tr="VoIP Yönetimi" data-de="VoIP-Verwaltung">VoIP Yönetimi</span>
                         <i class="ti ti-chevron-down nav-arrow"></i>
                     </button>
                     <div class="nav-group-menu" id="voip-menu">
                         <a href="{{ url_for('voip_dashboard') }}" class="nav-subitem">
                             <i class="ti ti-dashboard"></i>
-                            <span>VoIP Dashboard</span>
+                            <span data-tr="VoIP Dashboard" data-de="VoIP-Dashboard">VoIP Dashboard</span>
                         </a>
                         <a href="{{ url_for('voip_trunks') }}" class="nav-subitem">
                             <i class="ti ti-server-2"></i>
-                            <span>SIP Trunk</span>
+                            <span data-tr="SIP Trunk" data-de="SIP-Trunk">SIP Trunk</span>
                         </a>
                         <a href="{{ url_for('voip_dids') }}" class="nav-subitem">
                             <i class="ti ti-phone-plus"></i>
-                            <span>DID / Numaralar</span>
+                            <span data-tr="DID / Numaralar" data-de="DID / Nummern">DID / Numaralar</span>
                         </a>
                         <a href="{{ url_for('voip_ivr_builder') }}" class="nav-subitem">
                             <i class="ti ti-sitemap"></i>
-                            <span>IVR Builder</span>
+                            <span data-tr="IVR Builder" data-de="IVR-Builder">IVR Builder</span>
                         </a>
                         <a href="{{ url_for('voip_queues') }}" class="nav-subitem">
                             <i class="ti ti-users-group"></i>
-                            <span>Queue / ACD</span>
+                            <span data-tr="Queue / ACD" data-de="Warteschlange / ACD">Queue / ACD</span>
                         </a>
                         <a href="{{ url_for('voip_cdr') }}" class="nav-subitem">
                             <i class="ti ti-file-analytics"></i>
-                            <span>CDR Kayıtları</span>
+                            <span data-tr="CDR Kayıtları" data-de="CDR-Protokolle">CDR Kayıtları</span>
                         </a>
                         <a href="{{ url_for('voip_softphone') }}" class="nav-subitem">
                             <i class="ti ti-headset"></i>
-                            <span>Softphone</span>
+                            <span data-tr="Softphone" data-de="Softphone">Softphone</span>
                         </a>
                     </div>
                 </div>
@@ -215,33 +215,33 @@
                 <div class="nav-group">
                     <button class="nav-group-toggle" data-target="ai-menu">
                         <i class="ti ti-brain"></i>
-                        <span>Yapay Zeka</span>
+                        <span data-tr="Yapay Zeka" data-de="Künstliche Intelligenz">Yapay Zeka</span>
                         <i class="ti ti-chevron-down nav-arrow"></i>
                     </button>
                     <div class="nav-group-menu" id="ai-menu">
                         <a href="{{ url_for('ai_dashboard') }}" class="nav-subitem">
                             <i class="ti ti-chart-dots"></i>
-                            <span>AI Dashboard</span>
+                            <span data-tr="AI Dashboard" data-de="KI-Dashboard">AI Dashboard</span>
                         </a>
                         <a href="{{ url_for('ai_settings_full') }}" class="nav-subitem">
                             <i class="ti ti-settings-automation"></i>
-                            <span>AI Ayarları</span>
+                            <span data-tr="AI Ayarları" data-de="KI-Einstellungen">AI Ayarları</span>
                         </a>
                         <a href="{{ url_for('ai_voice_bot') }}" class="nav-subitem">
                             <i class="ti ti-robot"></i>
-                            <span>Voice Bot</span>
+                            <span data-tr="Voice Bot" data-de="Voice Bot">Voice Bot</span>
                         </a>
                         <a href="{{ url_for('ai_knowledge_base') }}" class="nav-subitem">
                             <i class="ti ti-books"></i>
-                            <span>Bilgi Tabanı (RAG)</span>
+                            <span data-tr="Bilgi Tabanı (RAG)" data-de="Wissensdatenbank (RAG)">Bilgi Tabanı (RAG)</span>
                         </a>
                         <a href="{{ url_for('ai_logs') }}" class="nav-subitem">
                             <i class="ti ti-file-analytics"></i>
-                            <span>AI Logları</span>
+                            <span data-tr="AI Logları" data-de="KI-Protokolle">AI Logları</span>
                         </a>
                         <a href="{{ url_for('ai_packages') }}" class="nav-subitem">
                             <i class="ti ti-package"></i>
-                            <span>AI Paketleri</span>
+                            <span data-tr="AI Paketleri" data-de="KI-Pakete">AI Paketleri</span>
                         </a>
                     </div>
                 </div>
@@ -251,21 +251,21 @@
                 <div class="nav-group">
                     <button class="nav-group-toggle" data-target="reports-menu">
                         <i class="ti ti-chart-bar"></i>
-                        <span>Raporlar</span>
+                        <span data-tr="Raporlar" data-de="Berichte">Raporlar</span>
                         <i class="ti ti-chevron-down nav-arrow"></i>
                     </button>
                     <div class="nav-group-menu" id="reports-menu">
                         <a href="{{ url_for('reports') }}" class="nav-subitem">
                             <i class="ti ti-report-analytics"></i>
-                            <span>Genel Raporlar</span>
+                            <span data-tr="Genel Raporlar" data-de="Allgemeine Berichte">Genel Raporlar</span>
                         </a>
                         <a href="{{ url_for('report_agent_performance') }}" class="nav-subitem">
                             <i class="ti ti-user-check"></i>
-                            <span>Agent Performans</span>
+                            <span data-tr="Agent Performans" data-de="Agent-Leistung">Agent Performans</span>
                         </a>
                         <a href="{{ url_for('report_campaign') }}" class="nav-subitem">
                             <i class="ti ti-chart-pie"></i>
-                            <span>Kampanya Raporu</span>
+                            <span data-tr="Kampanya Raporu" data-de="Kampagnenbericht">Kampanya Raporu</span>
                         </a>
                     </div>
                 </div>
@@ -275,45 +275,45 @@
                 <div class="nav-group">
                     <button class="nav-group-toggle" data-target="admin-menu">
                         <i class="ti ti-settings"></i>
-                        <span>Yönetim</span>
+                        <span data-tr="Yönetim" data-de="Verwaltung">Yönetim</span>
                         <i class="ti ti-chevron-down nav-arrow"></i>
                     </button>
                     <div class="nav-group-menu" id="admin-menu">
                         <a href="{{ url_for('admin_panel') }}" class="nav-subitem">
                             <i class="ti ti-adjustments"></i>
-                            <span>Admin Paneli</span>
+                            <span data-tr="Admin Paneli" data-de="Admin-Panel">Admin Paneli</span>
                         </a>
                         <a href="{{ url_for('admin_users') }}" class="nav-subitem">
                             <i class="ti ti-users-group"></i>
-                            <span>Kullanıcılar</span>
+                            <span data-tr="Kullanıcılar" data-de="Benutzer">Kullanıcılar</span>
                         </a>
                         <a href="{{ url_for('admin_roles') }}" class="nav-subitem">
                             <i class="ti ti-shield"></i>
-                            <span>Roller</span>
+                            <span data-tr="Roller" data-de="Rollen">Roller</span>
                         </a>
                         <a href="{{ url_for('admin_departments') }}" class="nav-subitem">
                             <i class="ti ti-building"></i>
-                            <span>Departmanlar</span>
+                            <span data-tr="Departmanlar" data-de="Abteilungen">Departmanlar</span>
                         </a>
                         <a href="{{ url_for('admin_teams') }}" class="nav-subitem">
                             <i class="ti ti-users"></i>
-                            <span>Takımlar</span>
+                            <span data-tr="Takımlar" data-de="Teams">Takımlar</span>
                         </a>
                         <a href="{{ url_for('projects') }}" class="nav-subitem">
                             <i class="ti ti-folder"></i>
-                            <span>Projeler</span>
+                            <span data-tr="Projeler" data-de="Projekte">Projeler</span>
                         </a>
                         <a href="{{ url_for('integrations') }}" class="nav-subitem">
                             <i class="ti ti-plug"></i>
-                            <span>Entegrasyonlar</span>
+                            <span data-tr="Entegrasyonlar" data-de="Integrationen">Entegrasyonlar</span>
                         </a>
                         <a href="{{ url_for('settings_dispositions') }}" class="nav-subitem">
                             <i class="ti ti-list-check"></i>
-                            <span>Disposition</span>
+                            <span data-tr="Disposition" data-de="Disposition">Disposition</span>
                         </a>
                         <a href="{{ url_for('settings_scripts') }}" class="nav-subitem">
                             <i class="ti ti-file-text"></i>
-                            <span>Scriptler</span>
+                            <span data-tr="Scriptler" data-de="Skripte">Scriptler</span>
                         </a>
                     </div>
                 </div>
@@ -322,29 +322,29 @@
                 <div class="nav-group">
                     <button class="nav-group-toggle" data-target="cc-admin-menu">
                         <i class="ti ti-building-store"></i>
-                        <span>CC Yönetimi</span>
+                        <span data-tr="CC Yönetimi" data-de="CC-Verwaltung">CC Yönetimi</span>
                         <i class="ti ti-chevron-down nav-arrow"></i>
                     </button>
                     <div class="nav-group-menu" id="cc-admin-menu">
                         <a href="{{ url_for('cc_settings') }}" class="nav-subitem">
                             <i class="ti ti-settings"></i>
-                            <span>Kurum Ayarları</span>
+                            <span data-tr="Kurum Ayarları" data-de="Unternehmenseinstellungen">Kurum Ayarları</span>
                         </a>
                         <a href="{{ url_for('cc_billing') }}" class="nav-subitem">
                             <i class="ti ti-credit-card"></i>
-                            <span>Faturalama</span>
+                            <span data-tr="Faturalama" data-de="Abrechnung">Faturalama</span>
                         </a>
                         <a href="{{ url_for('cc_usage') }}" class="nav-subitem">
                             <i class="ti ti-chart-bar"></i>
-                            <span>Kullanım</span>
+                            <span data-tr="Kullanım" data-de="Nutzung">Kullanım</span>
                         </a>
                         <a href="{{ url_for('cc_voip') }}" class="nav-subitem">
                             <i class="ti ti-phone-call"></i>
-                            <span>VoIP Durumu</span>
+                            <span data-tr="VoIP Durumu" data-de="VoIP-Status">VoIP Durumu</span>
                         </a>
                         <a href="{{ url_for('cc_support') }}" class="nav-subitem">
                             <i class="ti ti-help"></i>
-                            <span>Destek</span>
+                            <span data-tr="Destek" data-de="Support">Destek</span>
                         </a>
                     </div>
                 </div>
@@ -355,41 +355,41 @@
                 <div class="nav-group">
                     <button class="nav-group-toggle" data-target="platform-menu">
                         <i class="ti ti-crown"></i>
-                        <span>Platform</span>
+                        <span data-tr="Platform" data-de="Plattform">Platform</span>
                         <i class="ti ti-chevron-down nav-arrow"></i>
                     </button>
                     <div class="nav-group-menu" id="platform-menu">
                         <a href="{{ url_for('admin_tenants') }}" class="nav-subitem">
                             <i class="ti ti-building-community"></i>
-                            <span>Tenant'lar</span>
+                            <span data-tr="Tenant'lar" data-de="Mandanten">Tenant'lar</span>
                         </a>
                         <a href="{{ url_for('billing_plans') }}" class="nav-subitem">
                             <i class="ti ti-package"></i>
-                            <span>Fiyat Planları</span>
+                            <span data-tr="Fiyat Planları" data-de="Preispläne">Fiyat Planları</span>
                         </a>
                         <a href="{{ url_for('billing_tariffs') }}" class="nav-subitem">
                             <i class="ti ti-receipt"></i>
-                            <span>VoIP Tarifeleri</span>
+                            <span data-tr="VoIP Tarifeleri" data-de="VoIP-Tarife">VoIP Tarifeleri</span>
                         </a>
                         <a href="{{ url_for('billing_invoices') }}" class="nav-subitem">
                             <i class="ti ti-file-invoice"></i>
-                            <span>Faturalar</span>
+                            <span data-tr="Faturalar" data-de="Rechnungen">Faturalar</span>
                         </a>
                         <a href="{{ url_for('provisioning_dids') }}" class="nav-subitem">
                             <i class="ti ti-hash"></i>
-                            <span>DID Havuzu</span>
+                            <span data-tr="DID Havuzu" data-de="DID-Pool">DID Havuzu</span>
                         </a>
                         <a href="{{ url_for('provisioning_cli') }}" class="nav-subitem">
                             <i class="ti ti-phone-outgoing"></i>
-                            <span>CLI Havuzu</span>
+                            <span data-tr="CLI Havuzu" data-de="CLI-Pool">CLI Havuzu</span>
                         </a>
                         <a href="{{ url_for('provisioning_trunks') }}" class="nav-subitem">
                             <i class="ti ti-network"></i>
-                            <span>Trunk Tahsis</span>
+                            <span data-tr="Trunk Tahsis" data-de="Trunk-Zuweisung">Trunk Tahsis</span>
                         </a>
                         <a href="{{ url_for('provisioning_quotas') }}" class="nav-subitem">
                             <i class="ti ti-gauge"></i>
-                            <span>Kotalar</span>
+                            <span data-tr="Kotalar" data-de="Kontingente">Kotalar</span>
                         </a>
                     </div>
                 </div>
@@ -399,7 +399,7 @@
                 <!-- Müşteri Portal -->
                 <a href="{{ url_for('client_portal') }}" class="nav-item {{ 'active' if 'portal' in request.endpoint else '' }}">
                     <i class="ti ti-home"></i>
-                    <span>Portal</span>
+                    <span data-tr="Portal" data-de="Portal">Portal</span>
                 </a>
                 {% endif %}
             </nav>
@@ -414,7 +414,7 @@
                         <span class="user-name">{{ current_user.full_name or current_user.username }}</span>
                         <span class="user-role">{{ current_user.role|upper }}</span>
                     </div>
-                    <a href="{{ url_for('logout') }}" class="logout-btn" title="Çıkış">
+                    <a href="{{ url_for('logout') }}" class="logout-btn" title="Çıkış" data-tr-title="Çıkış" data-de-title="Abmelden">
                         <i class="ti ti-logout"></i>
                     </a>
                 </div>
@@ -437,15 +437,21 @@
                 </div>
                 
                 <div class="header-right">
+                    <!-- Language Switcher -->
+                    <div class="lang-switcher">
+                        <button id="lang-tr" class="lang-btn" title="Türkçe">TR</button>
+                        <button id="lang-de" class="lang-btn" title="Deutsch">DE</button>
+                    </div>
+                    
                     {% if current_user.role == 'agent' %}
                     <!-- Agent Status -->
                     <div class="agent-status-select">
                         <select id="agentStatus" class="status-dropdown">
-                            <option value="available" {{ 'selected' if current_user.status == 'available' else '' }}>🟢 Müsait</option>
-                            <option value="busy" {{ 'selected' if current_user.status == 'busy' else '' }}>🔴 Meşgul</option>
-                            <option value="break" {{ 'selected' if current_user.status == 'break' else '' }}>🟡 Mola</option>
-                            <option value="training" {{ 'selected' if current_user.status == 'training' else '' }}>🟣 Eğitim</option>
-                            <option value="after_call_work" {{ 'selected' if current_user.status == 'after_call_work' else '' }}>🟠 ACW</option>
+                            <option value="available" {{ 'selected' if current_user.status == 'available' else '' }} data-tr="🟢 Müsait" data-de="🟢 Verfügbar">🟢 Müsait</option>
+                            <option value="busy" {{ 'selected' if current_user.status == 'busy' else '' }} data-tr="🔴 Meşgul" data-de="🔴 Beschäftigt">🔴 Meşgul</option>
+                            <option value="break" {{ 'selected' if current_user.status == 'break' else '' }} data-tr="🟡 Mola" data-de="🟡 Pause">🟡 Mola</option>
+                            <option value="training" {{ 'selected' if current_user.status == 'training' else '' }} data-tr="🟣 Eğitim" data-de="🟣 Schulung">🟣 Eğitim</option>
+                            <option value="after_call_work" {{ 'selected' if current_user.status == 'after_call_work' else '' }} data-tr="🟠 ACW" data-de="🟠 ACW">🟠 ACW</option>
                         </select>
                     </div>
                     {% endif %}
