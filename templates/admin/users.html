@@ -36,7 +36,13 @@
     background: white;
     border-radius: 16px;
     box-shadow: 0 4px 20px rgba(0,0,0,0.06);
-    overflow: hidden;
+    overflow-x: auto;
+}
+
+.users-table th:last-child,
+.users-table td:last-child {
+    min-width: 180px;
+    width: 180px;
 }
 
 .users-table {
@@ -157,6 +163,8 @@
 .action-buttons {
     display: flex;
     gap: 0.5rem;
+    flex-wrap: nowrap;
+    justify-content: flex-start;
 }
 
 .action-btn {
