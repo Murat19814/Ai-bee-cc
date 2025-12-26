@@ -95,7 +95,7 @@
             </tr>
         </thead>
         <tbody>
-            {% if dids %}
+            {% if dids and dids|length > 0 %}
                 {% for did in dids %}
                 <tr data-status="{{ 'assigned' if did.tenant_id else 'available' }}">
                     <td><input type="checkbox" name="did_ids[]" value="{{ did.id }}"></td>
