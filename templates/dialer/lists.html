@@ -38,69 +38,6 @@
     padding: 1.5rem;
 }
 
-/* Intelligent System Info */
-.system-info {
-    margin-bottom: 1.5rem;
-}
-
-.system-info p {
-    color: rgba(255,255,255,0.7);
-    margin-bottom: 1rem;
-}
-
-.data-categories {
-    display: grid;
-    grid-template-columns: repeat(3, 1fr);
-    gap: 1rem;
-    margin-bottom: 1rem;
-}
-
-.data-category {
-    background: rgba(255,255,255,0.05);
-    border-radius: 12px;
-    padding: 1.25rem;
-    text-align: center;
-    border: 2px solid transparent;
-    transition: all 0.3s;
-}
-
-.data-category:hover {
-    border-color: rgba(255,255,255,0.2);
-}
-
-.data-category.iban { border-top: 3px solid #4CAF50; }
-.data-category.email { border-top: 3px solid #2196F3; }
-.data-category.nobank { border-top: 3px solid #FF9800; }
-
-.data-category-icon {
-    width: 50px;
-    height: 50px;
-    border-radius: 50%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    margin: 0 auto 0.75rem;
-    font-size: 1.25rem;
-}
-
-.data-category.iban .data-category-icon { background: rgba(76, 175, 80, 0.2); color: #4CAF50; }
-.data-category.email .data-category-icon { background: rgba(33, 150, 243, 0.2); color: #2196F3; }
-.data-category.nobank .data-category-icon { background: rgba(255, 152, 0, 0.2); color: #FF9800; }
-
-.data-category h4 {
-    margin: 0 0 0.25rem;
-    font-size: 0.95rem;
-}
-
-.data-category.iban h4 { color: #4CAF50; }
-.data-category.email h4 { color: #2196F3; }
-.data-category.nobank h4 { color: #FF9800; }
-
-.data-category p {
-    font-size: 0.75rem;
-    color: rgba(255,255,255,0.5);
-    margin: 0;
-}
 
 /* Error Warning */
 .error-warning {
@@ -499,6 +436,87 @@
     cursor: pointer;
     font-size: 1.25rem;
 }
+
+/* Upload Settings */
+.upload-settings {
+    margin-bottom: 1.5rem;
+}
+
+.settings-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1rem;
+    margin-bottom: 1rem;
+}
+
+.setting-item {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.setting-item.full-width {
+    grid-column: 1 / -1;
+}
+
+.setting-item label {
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: rgba(255,255,255,0.9);
+}
+
+.setting-item small {
+    font-size: 0.75rem;
+    color: rgba(255,255,255,0.5);
+}
+
+.form-input,
+.form-select {
+    background: rgba(255,255,255,0.08);
+    border: 1px solid rgba(255,255,255,0.15);
+    border-radius: 8px;
+    padding: 0.75rem 1rem;
+    color: white;
+    font-size: 0.9rem;
+    transition: all 0.2s;
+}
+
+.form-input:focus,
+.form-select:focus {
+    outline: none;
+    border-color: #4CAF50;
+    background: rgba(255,255,255,0.12);
+}
+
+.form-input::placeholder {
+    color: rgba(255,255,255,0.4);
+}
+
+.form-select option {
+    background: #1a1a2e;
+    color: white;
+}
+
+.cc-info-badge {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    background: rgba(76, 175, 80, 0.15);
+    border: 1px solid rgba(76, 175, 80, 0.3);
+    border-radius: 10px;
+    padding: 0.85rem 1rem;
+    margin-top: 1rem;
+}
+
+.cc-info-badge i {
+    font-size: 1.25rem;
+    color: #4CAF50;
+}
+
+.cc-info-badge span {
+    font-size: 0.85rem;
+    color: rgba(255,255,255,0.8);
+}
 </style>
 {% endblock %}
 
@@ -605,26 +623,65 @@
             <h3 data-tr="Veri Yükleme Merkezi" data-de="Datenupload-Zentrum">Veri Yükleme Merkezi</h3>
         </div>
         <div class="upload-panel-body">
-            <div class="system-info">
-                <p data-tr="Sistem verilerinizi otomatik analiz eder ve doğru kampanyalara dağıtır:" data-de="Das System analysiert Ihre Daten automatisch und verteilt sie auf die richtigen Kampagnen:">Sistem verilerinizi otomatik analiz eder ve doğru kampanyalara dağıtır:</p>
-                
-                <div class="data-categories" style="grid-template-columns: repeat(2, 1fr);">
-                    <div class="data-category iban">
-                        <div class="data-category-icon"><i class="ti ti-building-bank"></i></div>
-                        <h4>IBAN Data</h4>
-                        <p data-tr="IBAN mevcut veya BLZ+Konto'dan hesaplanmış" data-de="IBAN vorhanden oder aus BLZ+Konto berechnet">IBAN mevcut veya BLZ+Konto'dan hesaplanmış</p>
+            <!-- Data Name & Settings -->
+            <div class="upload-settings">
+                <div class="settings-row">
+                    <div class="setting-item full-width">
+                        <label data-tr="Veri Adı *" data-de="Datenname *">Veri Adı *</label>
+                        <input type="text" id="dataName" class="form-input" placeholder="Örn: Ocak 2025 - Berlin Data" data-tr-placeholder="Örn: Ocak 2025 - Berlin Data" data-de-placeholder="z.B. Januar 2025 - Berlin Daten">
+                        <small data-tr="Bu isim agent ekranında ve raporlarda görünecektir" data-de="Dieser Name wird im Agent-Bildschirm und in Berichten angezeigt">Bu isim agent ekranında ve raporlarda görünecektir</small>
                     </div>
-                    <div class="data-category email">
-                        <div class="data-category-icon"><i class="ti ti-mail"></i></div>
-                        <h4>Email Data</h4>
-                        <p data-tr="E-Mail mevcut, banka verisi yok" data-de="E-Mail vorhanden, keine Bankdaten">E-Mail mevcut, banka verisi yok</p>
+                </div>
+                
+                <div class="settings-row">
+                    <div class="setting-item">
+                        <label data-tr="Kampanya Atama" data-de="Kampagnenzuweisung">Kampanya Atama</label>
+                        <select id="campaignSelect" class="form-select">
+                            <option value="" data-tr="Kampanya Seçin..." data-de="Kampagne auswählen...">Kampanya Seçin...</option>
+                            <option value="1">Outbound Satış</option>
+                            <option value="2">VIP Müşteriler</option>
+                            <option value="3">Geri Arama</option>
+                        </select>
+                    </div>
+                    <div class="setting-item">
+                        <label data-tr="Dublet Eşleştirme" data-de="Duplikat-Abgleich">Dublet Eşleştirme</label>
+                        <select id="duplicateCheck" class="form-select">
+                            <option value="own" data-tr="Sadece Kendi Verim" data-de="Nur eigene Daten">Sadece Kendi Verim</option>
+                            <option value="all" data-tr="Tüm Sistem Verisi" data-de="Alle Systemdaten">Tüm Sistem Verisi</option>
+                            <option value="none" data-tr="Eşleştirme Yapma" data-de="Keine Überprüfung">Eşleştirme Yapma</option>
+                        </select>
                     </div>
                 </div>
 
-                <div class="error-warning" onclick="downloadErrorReport()" id="errorWarning" style="display: none;">
-                    <i class="ti ti-alert-triangle"></i>
-                    <span data-tr="Hatalı Veriler import EDİLMEYECEK - Düzeltmek için İndir" data-de="Fehlerhafte Daten werden NICHT importiert - Download zum Korrigieren">Hatalı Veriler import EDİLMEYECEK - Düzeltmek için İndir</span>
+                <div class="settings-row">
+                    <div class="setting-item">
+                        <label data-tr="Blacklist Kontrolü" data-de="Blacklist-Prüfung">Blacklist Kontrolü</label>
+                        <select id="blacklistCheck" class="form-select">
+                            <option value="own" data-tr="Kendi Blacklist'im" data-de="Eigene Blacklist">Kendi Blacklist'im</option>
+                            <option value="all" data-tr="Tüm Sistem Blacklist" data-de="System-Blacklist">Tüm Sistem Blacklist</option>
+                            <option value="none" data-tr="Kontrol Etme" data-de="Nicht prüfen">Kontrol Etme</option>
+                        </select>
+                    </div>
+                    <div class="setting-item">
+                        <label data-tr="Öncelik" data-de="Priorität">Öncelik</label>
+                        <select id="prioritySelect" class="form-select">
+                            <option value="high" data-tr="Yüksek" data-de="Hoch">Yüksek</option>
+                            <option value="normal" selected data-tr="Normal" data-de="Normal">Normal</option>
+                            <option value="low" data-tr="Düşük" data-de="Niedrig">Düşük</option>
+                        </select>
+                    </div>
                 </div>
+
+                <!-- CC Info Badge -->
+                <div class="cc-info-badge">
+                    <i class="ti ti-building"></i>
+                    <span data-tr="Bu veri sadece kendi Call Center'ınıza ait olacak ve diğer CC'lerle paylaşılmayacaktır." data-de="Diese Daten gehören nur zu Ihrem Call Center und werden nicht mit anderen CCs geteilt.">Bu veri sadece kendi Call Center'ınıza ait olacak ve diğer CC'lerle paylaşılmayacaktır.</span>
+                </div>
+            </div>
+
+            <div class="error-warning" onclick="downloadErrorReport()" id="errorWarning" style="display: none;">
+                <i class="ti ti-alert-triangle"></i>
+                <span data-tr="Hatalı Veriler import EDİLMEYECEK - Düzeltmek için İndir" data-de="Fehlerhafte Daten werden NICHT importiert - Download zum Korrigieren">Hatalı Veriler import EDİLMEYECEK - Düzeltmek için İndir</span>
             </div>
 
             <!-- File Upload Section -->
@@ -655,7 +712,7 @@
                 <div class="file-formats" data-tr="Desteklenen formatlar: .xlsx, .xls, .csv" data-de="Unterstützte Formate: .xlsx, .xls, .csv">Desteklenen formatlar: .xlsx, .xls, .csv</div>
 
                 <button class="analyze-btn" onclick="analyzeAndImport()">
-                    <i class="ti ti-settings"></i>
+                    <i class="ti ti-database-import"></i>
                     <span data-tr="Analiz Et & İçe Aktar" data-de="Analysieren & Importieren">Analiz Et & İçe Aktar</span>
                 </button>
             </div>
@@ -785,6 +842,21 @@ function removeFile() {
 
 // Analyze and Import
 function analyzeAndImport() {
+    const dataName = document.getElementById('dataName').value.trim();
+    const duplicateCheck = document.getElementById('duplicateCheck').value;
+    const blacklistCheck = document.getElementById('blacklistCheck').value;
+    const campaignId = document.getElementById('campaignSelect').value;
+    const priority = document.getElementById('prioritySelect').value;
+
+    // Validation
+    if (!dataName) {
+        alert(document.documentElement.lang === 'de' 
+            ? 'Bitte geben Sie einen Datennamen ein' 
+            : 'Lütfen veri adı girin');
+        document.getElementById('dataName').focus();
+        return;
+    }
+
     if (!selectedFile) {
         alert(document.documentElement.lang === 'de' 
             ? 'Bitte wählen Sie zuerst eine Datei aus' 
@@ -798,33 +870,60 @@ function analyzeAndImport() {
         (document.documentElement.lang === 'de' ? 'Wird analysiert...' : 'Analiz ediliyor...');
     btn.disabled = true;
 
+    // Prepare upload data
+    const uploadData = {
+        name: dataName,
+        file: selectedFile.name,
+        duplicateCheck: duplicateCheck,
+        blacklistCheck: blacklistCheck,
+        campaignId: campaignId,
+        priority: priority
+    };
+
+    console.log('Upload settings:', uploadData);
+
     // Simulate analysis (replace with actual API call)
     setTimeout(() => {
         // Show statistics
         document.getElementById('uploadStats').style.display = 'block';
         document.getElementById('customerStats').style.display = 'block';
-        document.getElementById('errorWarning').style.display = 'flex';
+        
+        // Conditionally show error warning
+        const errorCount = 25;
+        if (errorCount > 0) {
+            document.getElementById('errorWarning').style.display = 'flex';
+        }
+
+        // Set stats based on duplicate check mode
+        let dupCount = 0;
+        if (duplicateCheck === 'own') {
+            dupCount = 85;
+        } else if (duplicateCheck === 'all') {
+            dupCount = 180;
+        }
 
         // Set fake stats (replace with real data)
         document.getElementById('statTotal').textContent = '1,450';
-        document.getElementById('statValid').textContent = '1,180';
-        document.getElementById('statDuplicate').textContent = '120';
-        document.getElementById('statBlacklist').textContent = '45';
+        document.getElementById('statValid').textContent = (1450 - dupCount - 45 - 80 - 25).toLocaleString();
+        document.getElementById('statDuplicate').textContent = dupCount.toString();
+        document.getElementById('statBlacklist').textContent = blacklistCheck === 'none' ? '0' : '45';
         document.getElementById('statNoInterest').textContent = '80';
         document.getElementById('statError').textContent = '25';
         document.getElementById('lastUploadTime').textContent = new Date().toLocaleTimeString('tr-TR');
 
         // Reset button
-        btn.innerHTML = '<i class="ti ti-settings"></i> ' + 
+        btn.innerHTML = '<i class="ti ti-database-import"></i> ' + 
             (document.documentElement.lang === 'de' ? 'Analysieren & Importieren' : 'Analiz Et & İçe Aktar');
         btn.disabled = false;
 
         // Scroll to stats
         document.getElementById('uploadStats').scrollIntoView({ behavior: 'smooth' });
 
-        alert(document.documentElement.lang === 'de' 
-            ? 'Analyse abgeschlossen! 1.180 gültige Datensätze importiert.' 
-            : 'Analiz tamamlandı! 1.180 geçerli kayıt içe aktarıldı.');
+        const validCount = 1450 - dupCount - 45 - 80 - 25;
+        const msg = document.documentElement.lang === 'de' 
+            ? `Analyse abgeschlossen! "${dataName}" - ${validCount} gültige Datensätze importiert.`
+            : `Analiz tamamlandı! "${dataName}" - ${validCount} geçerli kayıt içe aktarıldı.`;
+        alert(msg);
 
     }, 2000);
 }
