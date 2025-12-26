@@ -475,99 +475,79 @@ function copyToClipboard(text) {
     });
 }
 
-// Add CSS animation keyframes
-const style = document.createElement('style');
-style.textContent = `
-    @keyframes slideOut {
-        from {
-            opacity: 1;
-            transform: translateY(0);
+// Add CSS animation keyframes (wrapped in IIFE to avoid global scope conflicts)
+(function() {
+    var mainStyle = document.createElement('style');
+    mainStyle.textContent = `
+        @keyframes slideIn {
+            from { opacity: 0; transform: translateX(100%); }
+            to { opacity: 1; transform: translateX(0); }
         }
-        to {
-            opacity: 0;
-            transform: translateY(10px);
+        @keyframes slideOut {
+            from { opacity: 1; transform: translateY(0); }
+            to { opacity: 0; transform: translateY(10px); }
         }
-    }
-    
-    .customer-popup {
-        position: fixed;
-        bottom: 1.5rem;
-        right: 1.5rem;
-        width: 360px;
-        background: var(--bg-card);
-        border: 1px solid var(--border-gold);
-        border-radius: var(--border-radius-lg);
-        box-shadow: var(--shadow-lg), 0 0 30px rgba(245, 166, 35, 0.2);
-        z-index: 1000;
-        animation: slideIn 0.3s ease;
-    }
-    
-    .popup-header {
-        padding: 1rem;
-        background: var(--primary-gradient);
-        border-radius: var(--border-radius-lg) var(--border-radius-lg) 0 0;
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-    }
-    
-    .popup-title {
-        font-family: var(--font-display);
-        font-weight: 700;
-        color: var(--text-dark);
-        letter-spacing: 0.05em;
-        display: flex;
-        align-items: center;
-        gap: 0.5rem;
-    }
-    
-    .popup-close {
-        background: none;
-        border: none;
-        color: var(--text-dark);
-        font-size: 1.5rem;
-        cursor: pointer;
-        opacity: 0.8;
-    }
-    
-    .popup-close:hover {
-        opacity: 1;
-    }
-    
-    .popup-content {
-        padding: 1.25rem;
-    }
-    
-    .caller-info {
-        text-align: center;
-        margin-bottom: 1rem;
-    }
-    
-    .caller-number {
-        font-family: var(--font-mono);
-        font-size: 1.25rem;
-        font-weight: 600;
-        color: var(--primary);
-    }
-    
-    .caller-name {
-        font-size: 0.875rem;
-        color: var(--text-muted);
-        margin-top: 0.25rem;
-    }
-    
-    .popup-actions {
-        display: flex;
-        gap: 0.75rem;
-        padding: 1rem;
-        border-top: 1px solid var(--border-color);
-    }
-    
-    .popup-actions .btn {
-        flex: 1;
-    }
-`;
-document.head.appendChild(style);
+        .customer-popup {
+            position: fixed;
+            bottom: 1.5rem;
+            right: 1.5rem;
+            width: 360px;
+            background: var(--bg-card);
+            border: 1px solid var(--border-gold);
+            border-radius: var(--border-radius-lg);
+            box-shadow: var(--shadow-lg), 0 0 30px rgba(245, 166, 35, 0.2);
+            z-index: 1000;
+            animation: slideIn 0.3s ease;
+        }
+        .popup-header {
+            padding: 1rem;
+            background: var(--primary-gradient);
+            border-radius: var(--border-radius-lg) var(--border-radius-lg) 0 0;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+        .popup-title {
+            font-family: var(--font-display);
+            font-weight: 700;
+            color: var(--text-dark);
+            letter-spacing: 0.05em;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        .popup-close {
+            background: none;
+            border: none;
+            color: var(--text-dark);
+            font-size: 1.5rem;
+            cursor: pointer;
+            opacity: 0.8;
+        }
+        .popup-close:hover { opacity: 1; }
+        .popup-content { padding: 1.25rem; }
+        .caller-info { text-align: center; margin-bottom: 1rem; }
+        .caller-number {
+            font-family: var(--font-mono);
+            font-size: 1.25rem;
+            font-weight: 600;
+            color: var(--primary);
+        }
+        .caller-name {
+            font-size: 0.875rem;
+            color: var(--text-muted);
+            margin-top: 0.25rem;
+        }
+        .popup-actions {
+            display: flex;
+            gap: 0.75rem;
+            padding: 1rem;
+            border-top: 1px solid var(--border-color);
+        }
+        .popup-actions .btn { flex: 1; }
+    `;
+    document.head.appendChild(mainStyle);
+})();
 
 
 /**
