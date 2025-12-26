@@ -2,65 +2,752 @@
 
 {% block title %}Kullanıcı Yönetimi - {{ app_name }}{% endblock %}
 
-{% block content %}
-<div class="page-header">
-    <div>
-        <h1 class="page-title">Kullanıcı Yönetimi</h1>
-        <p class="page-subtitle">Sistem kullanıcılarını yönetin</p>
-    </div>
-    <button class="btn btn-primary">
-        <i class="ti ti-plus"></i>
-        Yeni Kullanıcı
-    </button>
-</div>
+{% block extra_css %}
+<style>
+.users-page {
+    padding: 1.5rem;
+}
 
-<div class="card">
-    <div class="card-body">
-        <div class="table-wrapper">
-            <table class="table">
-                <thead>
-                    <tr>
-                        <th>Kullanıcı Adı</th>
-                        <th>Ad Soyad</th>
-                        <th>E-posta</th>
-                        <th>Rol</th>
-                        <th>Dahili</th>
-                        <th>Durum</th>
-                        <th>Son Giriş</th>
-                        <th>İşlemler</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {% for user in users %}
-                    <tr>
-                        <td>{{ user.username }}</td>
-                        <td>{{ user.full_name }}</td>
-                        <td>{{ user.email }}</td>
-                        <td>
-                            <span class="badge badge-{% if user.role == 'admin' %}danger{% elif user.role == 'supervisor' %}purple{% else %}primary{% endif %}">
-                                {{ user.role }}
-                            </span>
-                        </td>
-                        <td>{{ user.extension or '-' }}</td>
-                        <td>
-                            <span class="badge badge-{% if user.is_active %}success{% else %}danger{% endif %}">
-                                {{ 'Aktif' if user.is_active else 'Pasif' }}
-                            </span>
-                        </td>
-                        <td>{{ user.last_login|datetime if user.last_login else 'Hiç' }}</td>
-                        <td>
-                            <button class="btn btn-ghost btn-sm">
+.user-filters {
+    background: white;
+    border-radius: 12px;
+    padding: 1rem;
+    margin-bottom: 1.5rem;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+    display: flex;
+    gap: 1rem;
+    flex-wrap: wrap;
+    align-items: center;
+}
+
+.user-filters input,
+.user-filters select {
+    padding: 0.5rem 0.75rem;
+    border: 1px solid #e0e0e0;
+    border-radius: 8px;
+    font-size: 0.85rem;
+}
+
+.user-filters input {
+    min-width: 250px;
+}
+
+.users-table-container {
+    background: white;
+    border-radius: 16px;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.06);
+    overflow: hidden;
+}
+
+.users-table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.users-table th {
+    background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+    color: white;
+    padding: 1rem;
+    text-align: left;
+    font-size: 0.75rem;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.users-table td {
+    padding: 1rem;
+    border-bottom: 1px solid #f0f0f0;
+    font-size: 0.9rem;
+}
+
+.users-table tr:hover {
+    background: #f8f9fa;
+}
+
+.user-info {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+}
+
+.user-avatar {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #F5A623, #f4a623);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-weight: 600;
+    font-size: 0.9rem;
+}
+
+.user-avatar.admin {
+    background: linear-gradient(135deg, #e53935, #c62828);
+}
+
+.user-avatar.supervisor {
+    background: linear-gradient(135deg, #8e24aa, #6a1b9a);
+}
+
+.user-avatar.agent {
+    background: linear-gradient(135deg, #1e88e5, #1565c0);
+}
+
+.user-name {
+    font-weight: 600;
+    color: #1a1a2e;
+}
+
+.user-email {
+    font-size: 0.8rem;
+    color: #888;
+}
+
+.role-badge {
+    padding: 0.25rem 0.75rem;
+    border-radius: 20px;
+    font-size: 0.75rem;
+    font-weight: 600;
+    text-transform: uppercase;
+}
+
+.role-badge.super_admin {
+    background: linear-gradient(135deg, #ff6b6b, #ee5a5a);
+    color: white;
+}
+
+.role-badge.admin {
+    background: linear-gradient(135deg, #e53935, #c62828);
+    color: white;
+}
+
+.role-badge.supervisor {
+    background: linear-gradient(135deg, #8e24aa, #6a1b9a);
+    color: white;
+}
+
+.role-badge.agent {
+    background: linear-gradient(135deg, #1e88e5, #1565c0);
+    color: white;
+}
+
+.status-badge {
+    padding: 0.25rem 0.75rem;
+    border-radius: 20px;
+    font-size: 0.75rem;
+    font-weight: 600;
+}
+
+.status-badge.active {
+    background: #e8f5e9;
+    color: #2e7d32;
+}
+
+.status-badge.inactive {
+    background: #ffebee;
+    color: #c62828;
+}
+
+.action-buttons {
+    display: flex;
+    gap: 0.5rem;
+}
+
+.action-btn {
+    width: 32px;
+    height: 32px;
+    border-radius: 8px;
+    border: none;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s;
+}
+
+.action-btn.edit {
+    background: #e3f2fd;
+    color: #1976D2;
+}
+
+.action-btn.delete {
+    background: #ffebee;
+    color: #c62828;
+}
+
+.action-btn.password {
+    background: #fff3e0;
+    color: #ef6c00;
+}
+
+.action-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+}
+
+/* Modal */
+.modal-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.6);
+    backdrop-filter: blur(4px);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 1000;
+    opacity: 0;
+    visibility: hidden;
+    transition: all 0.3s;
+}
+
+.modal-overlay.show {
+    opacity: 1;
+    visibility: visible;
+}
+
+.modal-content {
+    background: white;
+    border-radius: 20px;
+    width: 100%;
+    max-width: 600px;
+    max-height: 90vh;
+    overflow: hidden;
+}
+
+.modal-header {
+    padding: 1.5rem;
+    background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+    color: white;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.modal-header h3 {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+}
+
+.modal-header h3 i {
+    color: #F5A623;
+}
+
+.modal-close {
+    background: rgba(255,255,255,0.1);
+    border: none;
+    color: white;
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    cursor: pointer;
+}
+
+.modal-body {
+    padding: 1.5rem;
+    max-height: 60vh;
+    overflow-y: auto;
+}
+
+.modal-footer {
+    padding: 1rem 1.5rem;
+    background: #f8f9fa;
+    display: flex;
+    gap: 1rem;
+    justify-content: flex-end;
+}
+
+.form-group {
+    margin-bottom: 1rem;
+}
+
+.form-group label {
+    display: block;
+    margin-bottom: 0.5rem;
+    font-weight: 500;
+    color: #333;
+    font-size: 0.85rem;
+}
+
+.form-group input,
+.form-group select {
+    width: 100%;
+    padding: 0.75rem;
+    border: 1px solid #e0e0e0;
+    border-radius: 8px;
+    font-size: 0.9rem;
+}
+
+.form-group input:focus,
+.form-group select:focus {
+    outline: none;
+    border-color: #F5A623;
+    box-shadow: 0 0 0 3px rgba(245, 166, 35, 0.1);
+}
+
+.form-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1rem;
+}
+
+.stats-row {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 1rem;
+    margin-bottom: 1.5rem;
+}
+
+.stat-card {
+    background: white;
+    border-radius: 12px;
+    padding: 1.25rem;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+}
+
+.stat-icon {
+    width: 50px;
+    height: 50px;
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.5rem;
+    color: white;
+}
+
+.stat-icon.blue { background: linear-gradient(135deg, #2196F3, #1976D2); }
+.stat-icon.green { background: linear-gradient(135deg, #4CAF50, #388E3C); }
+.stat-icon.orange { background: linear-gradient(135deg, #FF9800, #F57C00); }
+.stat-icon.purple { background: linear-gradient(135deg, #9C27B0, #7B1FA2); }
+
+.stat-value {
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: #1a1a2e;
+}
+
+.stat-label {
+    font-size: 0.8rem;
+    color: #888;
+}
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="users-page">
+    <div class="page-header">
+        <div>
+            <h1 class="page-title">
+                <i class="ti ti-users" style="color: #F5A623;"></i>
+                <span data-tr="Kullanıcı Yönetimi" data-de="Benutzerverwaltung">Kullanıcı Yönetimi</span>
+            </h1>
+            <p class="page-subtitle" data-tr="Sistem kullanıcılarını yönetin" data-de="Systembenutzer verwalten">Sistem kullanıcılarını yönetin</p>
+        </div>
+        <button class="btn btn-primary" onclick="openNewUserModal()">
+            <i class="ti ti-plus"></i>
+            <span data-tr="Yeni Kullanıcı" data-de="Neuer Benutzer">Yeni Kullanıcı</span>
+        </button>
+    </div>
+
+    <!-- Stats -->
+    <div class="stats-row">
+        <div class="stat-card">
+            <div class="stat-icon blue"><i class="ti ti-users"></i></div>
+            <div>
+                <div class="stat-value">{{ users|length if users else 0 }}</div>
+                <div class="stat-label" data-tr="Toplam Kullanıcı" data-de="Gesamt Benutzer">Toplam Kullanıcı</div>
+            </div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-icon green"><i class="ti ti-user-check"></i></div>
+            <div>
+                <div class="stat-value">{{ users|selectattr('is_active', 'equalto', true)|list|length if users else 0 }}</div>
+                <div class="stat-label" data-tr="Aktif" data-de="Aktiv">Aktif</div>
+            </div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-icon orange"><i class="ti ti-headset"></i></div>
+            <div>
+                <div class="stat-value">{{ users|selectattr('role', 'equalto', 'agent')|list|length if users else 0 }}</div>
+                <div class="stat-label" data-tr="Agent" data-de="Agenten">Agent</div>
+            </div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-icon purple"><i class="ti ti-shield"></i></div>
+            <div>
+                <div class="stat-value">{{ users|selectattr('role', 'equalto', 'admin')|list|length if users else 0 }}</div>
+                <div class="stat-label" data-tr="Admin" data-de="Admin">Admin</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Filters -->
+    <div class="user-filters">
+        <input type="text" id="searchInput" onkeyup="filterUsers()" 
+               data-tr-placeholder="Kullanıcı ara..." data-de-placeholder="Benutzer suchen...">
+        <select id="roleFilter" onchange="filterUsers()">
+            <option value="" data-tr="Tüm Roller" data-de="Alle Rollen">Tüm Roller</option>
+            <option value="super_admin">Super Admin</option>
+            <option value="admin">Admin</option>
+            <option value="supervisor">Supervisor</option>
+            <option value="agent">Agent</option>
+        </select>
+        <select id="statusFilter" onchange="filterUsers()">
+            <option value="" data-tr="Tüm Durumlar" data-de="Alle Status">Tüm Durumlar</option>
+            <option value="active" data-tr="Aktif" data-de="Aktiv">Aktif</option>
+            <option value="inactive" data-tr="Pasif" data-de="Inaktiv">Pasif</option>
+        </select>
+        <button class="btn btn-secondary btn-sm" onclick="resetFilters()">
+            <i class="ti ti-refresh"></i>
+        </button>
+    </div>
+
+    <!-- Users Table -->
+    <div class="users-table-container">
+        <table class="users-table" id="usersTable">
+            <thead>
+                <tr>
+                    <th data-tr="Kullanıcı" data-de="Benutzer">Kullanıcı</th>
+                    <th data-tr="E-posta" data-de="E-Mail">E-posta</th>
+                    <th data-tr="Rol" data-de="Rolle">Rol</th>
+                    <th data-tr="Dahili" data-de="Durchwahl">Dahili</th>
+                    <th data-tr="Durum" data-de="Status">Durum</th>
+                    <th data-tr="Son Giriş" data-de="Letzte Anmeldung">Son Giriş</th>
+                    <th data-tr="İşlemler" data-de="Aktionen">İşlemler</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for user in users %}
+                <tr data-role="{{ user.role }}" data-status="{{ 'active' if user.is_active else 'inactive' }}" data-search="{{ user.username|lower }} {{ user.full_name|lower if user.full_name else '' }} {{ user.email|lower }}">
+                    <td>
+                        <div class="user-info">
+                            <div class="user-avatar {{ user.role }}">{{ user.username[:2]|upper }}</div>
+                            <div>
+                                <div class="user-name">{{ user.username }}</div>
+                                <div class="user-email">{{ user.full_name or 'İsim belirtilmemiş' }}</div>
+                            </div>
+                        </div>
+                    </td>
+                    <td>{{ user.email }}</td>
+                    <td><span class="role-badge {{ user.role }}">{{ user.role|replace('_', ' ')|upper }}</span></td>
+                    <td>{{ user.extension or '-' }}</td>
+                    <td>
+                        <span class="status-badge {{ 'active' if user.is_active else 'inactive' }}" 
+                              data-tr="{{ 'Aktif' if user.is_active else 'Pasif' }}" 
+                              data-de="{{ 'Aktiv' if user.is_active else 'Inaktiv' }}">
+                            {{ 'Aktif' if user.is_active else 'Pasif' }}
+                        </span>
+                    </td>
+                    <td>{{ user.last_login.strftime('%d.%m.%Y %H:%M') if user.last_login else '-' }}</td>
+                    <td>
+                        <div class="action-buttons">
+                            <button class="action-btn edit" onclick="editUser({{ user.id }})" title="Düzenle">
                                 <i class="ti ti-edit"></i>
                             </button>
-                        </td>
-                    </tr>
-                    {% endfor %}
-                </tbody>
-            </table>
+                            <button class="action-btn password" onclick="changePassword({{ user.id }})" title="Şifre Değiştir">
+                                <i class="ti ti-key"></i>
+                            </button>
+                            <button class="action-btn delete" onclick="deleteUser({{ user.id }}, '{{ user.username }}')" title="Sil">
+                                <i class="ti ti-trash"></i>
+                            </button>
+                        </div>
+                    </td>
+                </tr>
+                {% else %}
+                <tr>
+                    <td colspan="7" style="text-align: center; padding: 3rem; color: #888;">
+                        <i class="ti ti-users-minus" style="font-size: 3rem; display: block; margin-bottom: 1rem;"></i>
+                        <span data-tr="Henüz kullanıcı bulunmuyor" data-de="Noch keine Benutzer vorhanden">Henüz kullanıcı bulunmuyor</span>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<!-- New/Edit User Modal -->
+<div class="modal-overlay" id="userModal">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h3><i class="ti ti-user-plus"></i> <span id="modalTitle" data-tr="Yeni Kullanıcı" data-de="Neuer Benutzer">Yeni Kullanıcı</span></h3>
+            <button class="modal-close" onclick="closeModal()">
+                <i class="ti ti-x"></i>
+            </button>
         </div>
+        <form id="userForm" onsubmit="saveUser(event)">
+            <div class="modal-body">
+                <input type="hidden" id="userId" name="user_id">
+                
+                <div class="form-row">
+                    <div class="form-group">
+                        <label data-tr="Kullanıcı Adı" data-de="Benutzername">Kullanıcı Adı</label>
+                        <input type="text" id="username" name="username" required 
+                               data-tr-placeholder="Kullanıcı adı" data-de-placeholder="Benutzername">
+                    </div>
+                    <div class="form-group">
+                        <label data-tr="E-posta" data-de="E-Mail">E-posta</label>
+                        <input type="email" id="email" name="email" required
+                               data-tr-placeholder="ornek@email.com" data-de-placeholder="beispiel@email.com">
+                    </div>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label data-tr="Ad" data-de="Vorname">Ad</label>
+                        <input type="text" id="firstName" name="first_name"
+                               data-tr-placeholder="Ad" data-de-placeholder="Vorname">
+                    </div>
+                    <div class="form-group">
+                        <label data-tr="Soyad" data-de="Nachname">Soyad</label>
+                        <input type="text" id="lastName" name="last_name"
+                               data-tr-placeholder="Soyad" data-de-placeholder="Nachname">
+                    </div>
+                </div>
+
+                <div class="form-row" id="passwordRow">
+                    <div class="form-group">
+                        <label data-tr="Şifre" data-de="Passwort">Şifre</label>
+                        <input type="password" id="password" name="password"
+                               data-tr-placeholder="••••••••" data-de-placeholder="••••••••">
+                    </div>
+                    <div class="form-group">
+                        <label data-tr="Şifre Tekrar" data-de="Passwort bestätigen">Şifre Tekrar</label>
+                        <input type="password" id="passwordConfirm" name="password_confirm"
+                               data-tr-placeholder="••••••••" data-de-placeholder="••••••••">
+                    </div>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label data-tr="Rol" data-de="Rolle">Rol</label>
+                        <select id="role" name="role" required>
+                            <option value="agent">Agent</option>
+                            <option value="supervisor">Supervisor</option>
+                            <option value="admin">Admin</option>
+                            <option value="super_admin">Super Admin</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label data-tr="Dahili Numara" data-de="Durchwahl">Dahili Numara</label>
+                        <input type="text" id="extension" name="extension"
+                               data-tr-placeholder="Örn: 101" data-de-placeholder="z.B. 101">
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label data-tr="Durum" data-de="Status">Durum</label>
+                    <select id="isActive" name="is_active">
+                        <option value="1" data-tr="Aktif" data-de="Aktiv">Aktif</option>
+                        <option value="0" data-tr="Pasif" data-de="Inaktiv">Pasif</option>
+                    </select>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" onclick="closeModal()" data-tr="İptal" data-de="Abbrechen">İptal</button>
+                <button type="submit" class="btn btn-primary">
+                    <i class="ti ti-device-floppy"></i> <span data-tr="Kaydet" data-de="Speichern">Kaydet</span>
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Change Password Modal -->
+<div class="modal-overlay" id="passwordModal">
+    <div class="modal-content" style="max-width: 400px;">
+        <div class="modal-header">
+            <h3><i class="ti ti-key"></i> <span data-tr="Şifre Değiştir" data-de="Passwort ändern">Şifre Değiştir</span></h3>
+            <button class="modal-close" onclick="closePasswordModal()">
+                <i class="ti ti-x"></i>
+            </button>
+        </div>
+        <form id="passwordForm" onsubmit="savePassword(event)">
+            <div class="modal-body">
+                <input type="hidden" id="passwordUserId">
+                <div class="form-group">
+                    <label data-tr="Yeni Şifre" data-de="Neues Passwort">Yeni Şifre</label>
+                    <input type="password" id="newPassword" required>
+                </div>
+                <div class="form-group">
+                    <label data-tr="Şifre Tekrar" data-de="Passwort bestätigen">Şifre Tekrar</label>
+                    <input type="password" id="newPasswordConfirm" required>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" onclick="closePasswordModal()" data-tr="İptal" data-de="Abbrechen">İptal</button>
+                <button type="submit" class="btn btn-primary">
+                    <i class="ti ti-check"></i> <span data-tr="Değiştir" data-de="Ändern">Değiştir</span>
+                </button>
+            </div>
+        </form>
     </div>
 </div>
 {% endblock %}
 
+{% block extra_js %}
+<script>
+(function() {
+    'use strict';
+    
+    function getCurrentLang() {
+        return localStorage.getItem('selectedLang') || 'tr';
+    }
+    
+    function showNotification(message, type) {
+        const toast = document.createElement('div');
+        toast.style.cssText = 'position:fixed;top:20px;right:20px;padding:15px 25px;border-radius:10px;color:white;font-weight:500;z-index:9999;box-shadow:0 4px 20px rgba(0,0,0,0.2);animation:slideIn 0.3s ease;';
+        toast.style.background = type === 'success' ? 'linear-gradient(135deg, #4CAF50, #45a049)' : 
+                                  type === 'error' ? 'linear-gradient(135deg, #f44336, #d32f2f)' : 
+                                  'linear-gradient(135deg, #2196F3, #1976D2)';
+        toast.textContent = message;
+        document.body.appendChild(toast);
+        setTimeout(function() { toast.remove(); }, 3000);
+    }
 
+    const translations = {
+        tr: {
+            newUser: 'Yeni Kullanıcı',
+            editUser: 'Kullanıcı Düzenle',
+            saved: 'Kullanıcı kaydedildi',
+            deleted: 'Kullanıcı silindi',
+            passwordChanged: 'Şifre değiştirildi',
+            deleteConfirm: 'Bu kullanıcıyı silmek istediğinize emin misiniz?',
+            passwordMismatch: 'Şifreler eşleşmiyor'
+        },
+        de: {
+            newUser: 'Neuer Benutzer',
+            editUser: 'Benutzer bearbeiten',
+            saved: 'Benutzer gespeichert',
+            deleted: 'Benutzer gelöscht',
+            passwordChanged: 'Passwort geändert',
+            deleteConfirm: 'Sind Sie sicher, dass Sie diesen Benutzer löschen möchten?',
+            passwordMismatch: 'Passwörter stimmen nicht überein'
+        }
+    };
 
+    function t(key) {
+        const lang = getCurrentLang();
+        return translations[lang][key] || translations['tr'][key];
+    }
+
+    // Filter users
+    window.filterUsers = function() {
+        const search = document.getElementById('searchInput').value.toLowerCase();
+        const role = document.getElementById('roleFilter').value;
+        const status = document.getElementById('statusFilter').value;
+        
+        document.querySelectorAll('#usersTable tbody tr').forEach(function(row) {
+            if (!row.dataset.search) return;
+            
+            const matchSearch = !search || row.dataset.search.includes(search);
+            const matchRole = !role || row.dataset.role === role;
+            const matchStatus = !status || row.dataset.status === status;
+            
+            row.style.display = matchSearch && matchRole && matchStatus ? '' : 'none';
+        });
+    };
+
+    window.resetFilters = function() {
+        document.getElementById('searchInput').value = '';
+        document.getElementById('roleFilter').value = '';
+        document.getElementById('statusFilter').value = '';
+        filterUsers();
+    };
+
+    // Modal functions
+    window.openNewUserModal = function() {
+        document.getElementById('modalTitle').textContent = t('newUser');
+        document.getElementById('userForm').reset();
+        document.getElementById('userId').value = '';
+        document.getElementById('passwordRow').style.display = 'grid';
+        document.getElementById('password').required = true;
+        document.getElementById('userModal').classList.add('show');
+    };
+
+    window.editUser = function(userId) {
+        document.getElementById('modalTitle').textContent = t('editUser');
+        document.getElementById('userId').value = userId;
+        document.getElementById('passwordRow').style.display = 'none';
+        document.getElementById('password').required = false;
+        
+        // In a real app, fetch user data here
+        // For demo, just open modal
+        document.getElementById('userModal').classList.add('show');
+        showNotification(getCurrentLang() === 'de' ? 'Benutzer wird geladen...' : 'Kullanıcı yükleniyor...', 'info');
+    };
+
+    window.closeModal = function() {
+        document.getElementById('userModal').classList.remove('show');
+    };
+
+    window.saveUser = function(event) {
+        event.preventDefault();
+        
+        const password = document.getElementById('password').value;
+        const passwordConfirm = document.getElementById('passwordConfirm').value;
+        
+        if (password && password !== passwordConfirm) {
+            showNotification(t('passwordMismatch'), 'error');
+            return;
+        }
+        
+        showNotification(t('saved'), 'success');
+        closeModal();
+        setTimeout(function() { location.reload(); }, 1000);
+    };
+
+    window.deleteUser = function(userId, username) {
+        if (confirm(t('deleteConfirm') + '\n\n' + username)) {
+            showNotification(t('deleted'), 'success');
+            setTimeout(function() { location.reload(); }, 1000);
+        }
+    };
+
+    window.changePassword = function(userId) {
+        document.getElementById('passwordUserId').value = userId;
+        document.getElementById('passwordForm').reset();
+        document.getElementById('passwordModal').classList.add('show');
+    };
+
+    window.closePasswordModal = function() {
+        document.getElementById('passwordModal').classList.remove('show');
+    };
+
+    window.savePassword = function(event) {
+        event.preventDefault();
+        
+        const newPassword = document.getElementById('newPassword').value;
+        const confirmPassword = document.getElementById('newPasswordConfirm').value;
+        
+        if (newPassword !== confirmPassword) {
+            showNotification(t('passwordMismatch'), 'error');
+            return;
+        }
+        
+        showNotification(t('passwordChanged'), 'success');
+        closePasswordModal();
+    };
+
+    // Add animation styles
+    const style = document.createElement('style');
+    style.textContent = '@keyframes slideIn{from{transform:translateX(100%);opacity:0}to{transform:translateX(0);opacity:1}}';
+    document.head.appendChild(style);
+
+    // Set placeholder for search input
+    const searchInput = document.getElementById('searchInput');
+    if (searchInput) {
+        const lang = getCurrentLang();
+        searchInput.placeholder = lang === 'de' ? 'Benutzer suchen...' : 'Kullanıcı ara...';
+    }
+
+    console.log('Users page initialized');
+})();
+</script>
+{% endblock %}
