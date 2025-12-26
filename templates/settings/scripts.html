@@ -2,65 +2,768 @@
 
 {% block title %}Script Yönetimi - AI BEE CC{% endblock %}
 
+{% block extra_css %}
+<style>
+.script-page {
+    padding: 1.5rem;
+}
+
+.stats-row {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 1rem;
+    margin-bottom: 1.5rem;
+}
+
+.stat-card {
+    background: white;
+    border-radius: 12px;
+    padding: 1.25rem;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+}
+
+.stat-icon {
+    width: 50px;
+    height: 50px;
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.5rem;
+    color: white;
+}
+
+.stat-icon.blue { background: linear-gradient(135deg, #2196F3, #1976D2); }
+.stat-icon.green { background: linear-gradient(135deg, #4CAF50, #388E3C); }
+.stat-icon.orange { background: linear-gradient(135deg, #FF9800, #F57C00); }
+.stat-icon.purple { background: linear-gradient(135deg, #9C27B0, #7B1FA2); }
+
+.stat-value { font-size: 1.5rem; font-weight: 700; color: #1a1a2e; }
+.stat-label { font-size: 0.8rem; color: #888; }
+
+.script-container {
+    background: white;
+    border-radius: 16px;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.06);
+    overflow: hidden;
+}
+
+.script-header {
+    padding: 1.25rem 1.5rem;
+    background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+    color: white;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.script-header h3 {
+    margin: 0;
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+}
+
+.script-header h3 i { color: #F5A623; }
+
+.script-table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.script-table th {
+    background: #f8f9fa;
+    padding: 1rem;
+    text-align: left;
+    font-size: 0.75rem;
+    text-transform: uppercase;
+    color: #888;
+}
+
+.script-table td {
+    padding: 1rem;
+    border-bottom: 1px solid #f0f0f0;
+}
+
+.script-table tr:hover { background: #fafafa; }
+
+.script-info {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+}
+
+.script-icon {
+    width: 40px;
+    height: 40px;
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.25rem;
+    color: white;
+}
+
+.script-icon.sales { background: linear-gradient(135deg, #4CAF50, #388E3C); }
+.script-icon.support { background: linear-gradient(135deg, #2196F3, #1976D2); }
+.script-icon.survey { background: linear-gradient(135deg, #9C27B0, #7B1FA2); }
+.script-icon.callback { background: linear-gradient(135deg, #FF9800, #F57C00); }
+
+.script-name { font-weight: 600; color: #1a1a2e; }
+.script-desc { font-size: 0.8rem; color: #888; }
+
+.type-badge {
+    padding: 0.25rem 0.75rem;
+    border-radius: 20px;
+    font-size: 0.75rem;
+    font-weight: 600;
+}
+
+.type-badge.outbound { background: #e8f5e9; color: #2e7d32; }
+.type-badge.inbound { background: #e3f2fd; color: #1565c0; }
+.type-badge.survey { background: #f3e5f5; color: #7b1fa2; }
+.type-badge.callback { background: #fff3e0; color: #ef6c00; }
+
+.version-badge {
+    background: #f5f5f5;
+    padding: 0.25rem 0.5rem;
+    border-radius: 4px;
+    font-family: monospace;
+    font-size: 0.8rem;
+}
+
+.status-badge {
+    padding: 0.25rem 0.75rem;
+    border-radius: 20px;
+    font-size: 0.75rem;
+    font-weight: 600;
+}
+
+.status-badge.active { background: #e8f5e9; color: #2e7d32; }
+.status-badge.inactive { background: #ffebee; color: #c62828; }
+.status-badge.draft { background: #fff3e0; color: #ef6c00; }
+
+.action-buttons { display: flex; gap: 0.5rem; }
+
+.action-btn {
+    width: 32px;
+    height: 32px;
+    border-radius: 8px;
+    border: none;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s;
+}
+
+.action-btn.preview { background: #e3f2fd; color: #1976D2; }
+.action-btn.edit { background: #fff3e0; color: #ef6c00; }
+.action-btn.copy { background: #f3e5f5; color: #7b1fa2; }
+.action-btn.delete { background: #ffebee; color: #c62828; }
+
+.action-btn:hover { transform: translateY(-2px); }
+
+/* Modal */
+.modal-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.6);
+    backdrop-filter: blur(4px);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 1000;
+    opacity: 0;
+    visibility: hidden;
+    transition: all 0.3s;
+}
+
+.modal-overlay.show { opacity: 1; visibility: visible; }
+
+.modal-content {
+    background: white;
+    border-radius: 20px;
+    width: 100%;
+    max-width: 900px;
+    max-height: 90vh;
+    overflow: hidden;
+}
+
+.modal-header {
+    padding: 1.5rem;
+    background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+    color: white;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.modal-header h3 { margin: 0; display: flex; align-items: center; gap: 0.75rem; }
+.modal-header h3 i { color: #F5A623; }
+
+.modal-close {
+    background: rgba(255,255,255,0.1);
+    border: none;
+    color: white;
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    cursor: pointer;
+}
+
+.modal-body { padding: 1.5rem; max-height: 65vh; overflow-y: auto; }
+
+.modal-footer {
+    padding: 1rem 1.5rem;
+    background: #f8f9fa;
+    display: flex;
+    gap: 1rem;
+    justify-content: flex-end;
+}
+
+.form-group { margin-bottom: 1rem; }
+.form-group label { display: block; margin-bottom: 0.5rem; font-weight: 500; }
+.form-group input, .form-group select, .form-group textarea {
+    width: 100%;
+    padding: 0.75rem;
+    border: 1px solid #e0e0e0;
+    border-radius: 8px;
+}
+
+.form-group input:focus, .form-group select:focus, .form-group textarea:focus {
+    outline: none;
+    border-color: #F5A623;
+}
+
+.form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
+
+/* Script Builder */
+.script-builder {
+    border: 1px solid #e0e0e0;
+    border-radius: 12px;
+    overflow: hidden;
+}
+
+.builder-toolbar {
+    background: #f8f9fa;
+    padding: 0.75rem;
+    display: flex;
+    gap: 0.5rem;
+    border-bottom: 1px solid #e0e0e0;
+    flex-wrap: wrap;
+}
+
+.toolbar-btn {
+    padding: 0.5rem 0.75rem;
+    border: 1px solid #e0e0e0;
+    background: white;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 0.8rem;
+    display: flex;
+    align-items: center;
+    gap: 0.25rem;
+    transition: all 0.2s;
+}
+
+.toolbar-btn:hover { border-color: #F5A623; color: #F5A623; }
+
+.builder-content {
+    min-height: 300px;
+    padding: 1rem;
+}
+
+.script-block {
+    background: #f8f9fa;
+    border: 1px solid #e0e0e0;
+    border-radius: 8px;
+    padding: 1rem;
+    margin-bottom: 0.75rem;
+    position: relative;
+}
+
+.script-block-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 0.5rem;
+}
+
+.block-type {
+    font-size: 0.75rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    color: #888;
+}
+
+.block-type.greeting { color: #4CAF50; }
+.block-type.question { color: #2196F3; }
+.block-type.objection { color: #f44336; }
+.block-type.closing { color: #9C27B0; }
+
+.block-actions {
+    display: flex;
+    gap: 0.25rem;
+}
+
+.block-action {
+    width: 24px;
+    height: 24px;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.75rem;
+    background: white;
+}
+
+.block-content {
+    font-size: 0.9rem;
+    line-height: 1.5;
+}
+
+.script-preview {
+    background: #1a1a2e;
+    color: #fff;
+    padding: 1.5rem;
+    border-radius: 12px;
+    font-family: 'Georgia', serif;
+    line-height: 1.8;
+}
+
+.preview-section {
+    margin-bottom: 1.5rem;
+}
+
+.preview-label {
+    color: #F5A623;
+    font-size: 0.75rem;
+    text-transform: uppercase;
+    margin-bottom: 0.5rem;
+}
+
+.preview-text {
+    color: #e0e0e0;
+}
+
+.highlight {
+    background: rgba(245, 166, 35, 0.2);
+    padding: 0.1rem 0.25rem;
+    border-radius: 3px;
+}
+</style>
+{% endblock %}
+
 {% block content %}
-<div class="page-header">
-    <div>
-        <h1 class="page-title">Script Yönetimi</h1>
-        <p class="page-subtitle">Agent konuşma scriptlerini oluşturun</p>
+<div class="script-page">
+    <div class="page-header">
+        <div>
+            <h1 class="page-title">
+                <i class="ti ti-script" style="color: #F5A623;"></i>
+                <span data-tr="Script Yönetimi" data-de="Script-Verwaltung">Script Yönetimi</span>
+            </h1>
+            <p class="page-subtitle" data-tr="Agent konuşma scriptlerini oluşturun" data-de="Agent-Gesprächsskripte erstellen">Agent konuşma scriptlerini oluşturun</p>
+        </div>
+        <button class="btn btn-primary" onclick="openNewScriptModal()">
+            <i class="ti ti-plus"></i>
+            <span data-tr="Yeni Script" data-de="Neues Script">Yeni Script</span>
+        </button>
     </div>
-    <button class="btn btn-primary">
-        <i class="ti ti-plus"></i> Yeni Script
-    </button>
+
+    <!-- Stats -->
+    <div class="stats-row">
+        <div class="stat-card">
+            <div class="stat-icon blue"><i class="ti ti-script"></i></div>
+            <div>
+                <div class="stat-value">8</div>
+                <div class="stat-label" data-tr="Toplam Script" data-de="Gesamt Scripts">Toplam Script</div>
+            </div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-icon green"><i class="ti ti-check"></i></div>
+            <div>
+                <div class="stat-value">6</div>
+                <div class="stat-label" data-tr="Aktif" data-de="Aktiv">Aktif</div>
+            </div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-icon orange"><i class="ti ti-pencil"></i></div>
+            <div>
+                <div class="stat-value">2</div>
+                <div class="stat-label" data-tr="Taslak" data-de="Entwurf">Taslak</div>
+            </div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-icon purple"><i class="ti ti-folder"></i></div>
+            <div>
+                <div class="stat-value">4</div>
+                <div class="stat-label" data-tr="Proje" data-de="Projekte">Proje</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Scripts Table -->
+    <div class="script-container">
+        <div class="script-header">
+            <h3><i class="ti ti-script"></i> <span data-tr="Scriptler" data-de="Scripts">Scriptler</span></h3>
+        </div>
+        <table class="script-table">
+            <thead>
+                <tr>
+                    <th data-tr="Script Adı" data-de="Script-Name">Script Adı</th>
+                    <th data-tr="Tür" data-de="Typ">Tür</th>
+                    <th data-tr="Proje" data-de="Projekt">Proje</th>
+                    <th data-tr="Versiyon" data-de="Version">Versiyon</th>
+                    <th data-tr="Durum" data-de="Status">Durum</th>
+                    <th data-tr="İşlemler" data-de="Aktionen">İşlemler</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>
+                        <div class="script-info">
+                            <div class="script-icon sales"><i class="ti ti-phone-outgoing"></i></div>
+                            <div>
+                                <div class="script-name" data-tr="Satış Ana Script" data-de="Verkaufs-Hauptscript">Satış Ana Script</div>
+                                <div class="script-desc" data-tr="Outbound satış kampanyası" data-de="Outbound-Verkaufskampagne">Outbound satış kampanyası</div>
+                            </div>
+                        </div>
+                    </td>
+                    <td><span class="type-badge outbound">Outbound</span></td>
+                    <td>Finans Satış</td>
+                    <td><span class="version-badge">v2.3</span></td>
+                    <td><span class="status-badge active" data-tr="Aktif" data-de="Aktiv">Aktif</span></td>
+                    <td>
+                        <div class="action-buttons">
+                            <button class="action-btn preview" onclick="previewScript(1)" title="Önizleme"><i class="ti ti-eye"></i></button>
+                            <button class="action-btn edit" onclick="editScript(1)" title="Düzenle"><i class="ti ti-edit"></i></button>
+                            <button class="action-btn copy" onclick="copyScript(1)" title="Kopyala"><i class="ti ti-copy"></i></button>
+                            <button class="action-btn delete" onclick="deleteScript(1)" title="Sil"><i class="ti ti-trash"></i></button>
+                        </div>
+                    </td>
+                </tr>
+                <tr>
+                    <td>
+                        <div class="script-info">
+                            <div class="script-icon support"><i class="ti ti-headset"></i></div>
+                            <div>
+                                <div class="script-name" data-tr="Destek Karşılama" data-de="Support-Begrüßung">Destek Karşılama</div>
+                                <div class="script-desc" data-tr="Gelen çağrı karşılama" data-de="Eingehende Anruf-Begrüßung">Gelen çağrı karşılama</div>
+                            </div>
+                        </div>
+                    </td>
+                    <td><span class="type-badge inbound">Inbound</span></td>
+                    <td>Müşteri Destek</td>
+                    <td><span class="version-badge">v1.5</span></td>
+                    <td><span class="status-badge active">Aktif</span></td>
+                    <td>
+                        <div class="action-buttons">
+                            <button class="action-btn preview" onclick="previewScript(2)"><i class="ti ti-eye"></i></button>
+                            <button class="action-btn edit" onclick="editScript(2)"><i class="ti ti-edit"></i></button>
+                            <button class="action-btn copy" onclick="copyScript(2)"><i class="ti ti-copy"></i></button>
+                            <button class="action-btn delete" onclick="deleteScript(2)"><i class="ti ti-trash"></i></button>
+                        </div>
+                    </td>
+                </tr>
+                <tr>
+                    <td>
+                        <div class="script-info">
+                            <div class="script-icon survey"><i class="ti ti-clipboard-list"></i></div>
+                            <div>
+                                <div class="script-name" data-tr="Müşteri Anketi" data-de="Kundenumfrage">Müşteri Anketi</div>
+                                <div class="script-desc" data-tr="Memnuniyet anketi" data-de="Zufriedenheitsumfrage">Memnuniyet anketi</div>
+                            </div>
+                        </div>
+                    </td>
+                    <td><span class="type-badge survey">Survey</span></td>
+                    <td data-tr="Genel" data-de="Allgemein">Genel</td>
+                    <td><span class="version-badge">v1.0</span></td>
+                    <td><span class="status-badge active">Aktif</span></td>
+                    <td>
+                        <div class="action-buttons">
+                            <button class="action-btn preview" onclick="previewScript(3)"><i class="ti ti-eye"></i></button>
+                            <button class="action-btn edit" onclick="editScript(3)"><i class="ti ti-edit"></i></button>
+                            <button class="action-btn copy" onclick="copyScript(3)"><i class="ti ti-copy"></i></button>
+                            <button class="action-btn delete" onclick="deleteScript(3)"><i class="ti ti-trash"></i></button>
+                        </div>
+                    </td>
+                </tr>
+                <tr>
+                    <td>
+                        <div class="script-info">
+                            <div class="script-icon callback"><i class="ti ti-phone-call"></i></div>
+                            <div>
+                                <div class="script-name" data-tr="Geri Arama Script" data-de="Rückruf-Script">Geri Arama Script</div>
+                                <div class="script-desc" data-tr="Callback kampanyası" data-de="Callback-Kampagne">Callback kampanyası</div>
+                            </div>
+                        </div>
+                    </td>
+                    <td><span class="type-badge callback">Callback</span></td>
+                    <td>Lotto</td>
+                    <td><span class="version-badge">v1.2</span></td>
+                    <td><span class="status-badge draft" data-tr="Taslak" data-de="Entwurf">Taslak</span></td>
+                    <td>
+                        <div class="action-buttons">
+                            <button class="action-btn preview" onclick="previewScript(4)"><i class="ti ti-eye"></i></button>
+                            <button class="action-btn edit" onclick="editScript(4)"><i class="ti ti-edit"></i></button>
+                            <button class="action-btn copy" onclick="copyScript(4)"><i class="ti ti-copy"></i></button>
+                            <button class="action-btn delete" onclick="deleteScript(4)"><i class="ti ti-trash"></i></button>
+                        </div>
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
 </div>
 
-<div class="card">
-    <div class="card-body">
-        <div class="table-wrapper">
-            <table class="table">
-                <thead>
-                    <tr>
-                        <th>Script Adı</th>
-                        <th>Tür</th>
-                        <th>Proje</th>
-                        <th>Versiyon</th>
-                        <th>Durum</th>
-                        <th>İşlemler</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {% for script in scripts %}
-                    <tr>
-                        <td><strong>{{ script.name }}</strong></td>
-                        <td>
-                            <span class="badge badge-info">{{ script.script_type|capitalize }}</span>
-                        </td>
-                        <td>{{ script.project.name if script.project else 'Genel' }}</td>
-                        <td>v{{ script.version }}</td>
-                        <td>
-                            <span class="badge badge-{{ 'success' if script.is_active else 'warning' }}">
-                                {{ 'Aktif' if script.is_active else 'Pasif' }}
-                            </span>
-                        </td>
-                        <td>
-                            <button class="btn btn-sm btn-ghost" title="Önizleme">
-                                <i class="ti ti-eye"></i>
-                            </button>
-                            <button class="btn btn-sm btn-ghost" title="Builder">
-                                <i class="ti ti-edit"></i>
-                            </button>
-                        </td>
-                    </tr>
-                    {% else %}
-                    <tr>
-                        <td colspan="6" class="text-muted">Henüz script oluşturulmamış</td>
-                    </tr>
-                    {% endfor %}
-                </tbody>
-            </table>
+<!-- New/Edit Script Modal -->
+<div class="modal-overlay" id="scriptModal">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h3><i class="ti ti-script"></i> <span id="scriptModalTitle" data-tr="Yeni Script" data-de="Neues Script">Yeni Script</span></h3>
+            <button class="modal-close" onclick="closeScriptModal()"><i class="ti ti-x"></i></button>
+        </div>
+        <div class="modal-body">
+            <div class="form-row">
+                <div class="form-group">
+                    <label data-tr="Script Adı" data-de="Script-Name">Script Adı</label>
+                    <input type="text" id="scriptName" data-tr-placeholder="Örn: Satış Ana Script" data-de-placeholder="z.B. Verkaufs-Hauptscript">
+                </div>
+                <div class="form-group">
+                    <label data-tr="Tür" data-de="Typ">Tür</label>
+                    <select id="scriptType">
+                        <option value="outbound">Outbound</option>
+                        <option value="inbound">Inbound</option>
+                        <option value="survey">Survey</option>
+                        <option value="callback">Callback</option>
+                    </select>
+                </div>
+            </div>
+            <div class="form-row">
+                <div class="form-group">
+                    <label data-tr="Proje" data-de="Projekt">Proje</label>
+                    <select id="scriptProject">
+                        <option value="" data-tr="Genel" data-de="Allgemein">Genel</option>
+                        <option value="1">Finans Satış</option>
+                        <option value="2">Müşteri Destek</option>
+                        <option value="3">Lotto</option>
+                        <option value="4">Gewinnspiel</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label data-tr="Durum" data-de="Status">Durum</label>
+                    <select id="scriptStatus">
+                        <option value="active" data-tr="Aktif" data-de="Aktiv">Aktif</option>
+                        <option value="draft" data-tr="Taslak" data-de="Entwurf">Taslak</option>
+                        <option value="inactive" data-tr="Pasif" data-de="Inaktiv">Pasif</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label data-tr="Script Builder" data-de="Script-Builder">Script Builder</label>
+                <div class="script-builder">
+                    <div class="builder-toolbar">
+                        <button class="toolbar-btn" onclick="addBlock('greeting')"><i class="ti ti-message-circle"></i> <span data-tr="Karşılama" data-de="Begrüßung">Karşılama</span></button>
+                        <button class="toolbar-btn" onclick="addBlock('question')"><i class="ti ti-help"></i> <span data-tr="Soru" data-de="Frage">Soru</span></button>
+                        <button class="toolbar-btn" onclick="addBlock('objection')"><i class="ti ti-alert-circle"></i> <span data-tr="İtiraz Yanıtı" data-de="Einwand">İtiraz Yanıtı</span></button>
+                        <button class="toolbar-btn" onclick="addBlock('closing')"><i class="ti ti-check"></i> <span data-tr="Kapanış" data-de="Abschluss">Kapanış</span></button>
+                        <button class="toolbar-btn" onclick="addBlock('note')"><i class="ti ti-note"></i> <span data-tr="Not" data-de="Notiz">Not</span></button>
+                    </div>
+                    <div class="builder-content" id="builderContent">
+                        <div class="script-block">
+                            <div class="script-block-header">
+                                <span class="block-type greeting" data-tr="Karşılama" data-de="Begrüßung">Karşılama</span>
+                                <div class="block-actions">
+                                    <button class="block-action" onclick="editBlock(0)"><i class="ti ti-edit"></i></button>
+                                    <button class="block-action" onclick="deleteBlock(0)"><i class="ti ti-trash"></i></button>
+                                </div>
+                            </div>
+                            <div class="block-content">
+                                <span data-tr="Merhaba, ben" data-de="Hallo, ich bin">Merhaba, ben</span> <span class="highlight">[Agent Adı]</span>, <span class="highlight">[Şirket Adı]</span><span data-tr="'dan arıyorum. Nasıl yardımcı olabilirim?" data-de=" rufe an. Wie kann ich Ihnen helfen?">'dan arıyorum. Nasıl yardımcı olabilirim?</span>
+                            </div>
+                        </div>
+                        <div class="script-block">
+                            <div class="script-block-header">
+                                <span class="block-type question" data-tr="Soru" data-de="Frage">Soru</span>
+                                <div class="block-actions">
+                                    <button class="block-action" onclick="editBlock(1)"><i class="ti ti-edit"></i></button>
+                                    <button class="block-action" onclick="deleteBlock(1)"><i class="ti ti-trash"></i></button>
+                                </div>
+                            </div>
+                            <div class="block-content" data-tr="Size özel bir teklifimiz var. Birkaç dakikanızı alabilir miyim?" data-de="Wir haben ein spezielles Angebot für Sie. Darf ich Ihnen ein paar Minuten Zeit nehmen?">Size özel bir teklifimiz var. Birkaç dakikanızı alabilir miyim?</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="modal-footer">
+            <button class="btn btn-secondary" onclick="closeScriptModal()" data-tr="İptal" data-de="Abbrechen">İptal</button>
+            <button class="btn btn-primary" onclick="saveScript()"><i class="ti ti-device-floppy"></i> <span data-tr="Kaydet" data-de="Speichern">Kaydet</span></button>
+        </div>
+    </div>
+</div>
+
+<!-- Preview Modal -->
+<div class="modal-overlay" id="previewModal">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h3><i class="ti ti-eye"></i> <span id="previewTitle" data-tr="Script Önizleme" data-de="Script-Vorschau">Script Önizleme</span></h3>
+            <button class="modal-close" onclick="closePreviewModal()"><i class="ti ti-x"></i></button>
+        </div>
+        <div class="modal-body">
+            <div class="script-preview" id="previewContent">
+                <!-- Preview content will be loaded here -->
+            </div>
+        </div>
+        <div class="modal-footer">
+            <button class="btn btn-secondary" onclick="closePreviewModal()" data-tr="Kapat" data-de="Schließen">Kapat</button>
+            <button class="btn btn-primary" onclick="printScript()"><i class="ti ti-printer"></i> <span data-tr="Yazdır" data-de="Drucken">Yazdır</span></button>
         </div>
     </div>
 </div>
 {% endblock %}
 
+{% block extra_js %}
+<script>
+(function() {
+    'use strict';
 
+    function getCurrentLang() { return localStorage.getItem('selectedLang') || 'tr'; }
 
+    function showNotification(message, type) {
+        const toast = document.createElement('div');
+        toast.style.cssText = 'position:fixed;top:20px;right:20px;padding:15px 25px;border-radius:10px;color:white;font-weight:500;z-index:9999;box-shadow:0 4px 20px rgba(0,0,0,0.2);animation:slideIn 0.3s ease;';
+        toast.style.background = type === 'success' ? 'linear-gradient(135deg, #4CAF50, #45a049)' : type === 'error' ? 'linear-gradient(135deg, #f44336, #d32f2f)' : 'linear-gradient(135deg, #2196F3, #1976D2)';
+        toast.textContent = message;
+        document.body.appendChild(toast);
+        setTimeout(function() { toast.remove(); }, 3000);
+    }
+
+    const scriptData = {
+        1: {
+            name: 'Satış Ana Script',
+            sections: [
+                { type: 'greeting', text: 'Merhaba, ben [Agent Adı], [Şirket Adı]\'dan arıyorum.' },
+                { type: 'question', text: 'Bugün size özel bir teklifimiz var. Birkaç dakikanızı alabilir miyim?' },
+                { type: 'objection', text: 'Anlıyorum, zamanınız kısıtlı. Sadece 2 dakikanızı alacağım.' },
+                { type: 'closing', text: 'Teklifimizi değerlendirdiğiniz için teşekkür ederim. İyi günler dilerim.' }
+            ]
+        },
+        2: {
+            name: 'Destek Karşılama',
+            sections: [
+                { type: 'greeting', text: 'Hoş geldiniz, [Şirket Adı] müşteri hizmetleri, ben [Agent Adı]. Size nasıl yardımcı olabilirim?' },
+                { type: 'question', text: 'Sorununuzu daha iyi anlayabilmem için müşteri numaranızı alabilir miyim?' },
+                { type: 'closing', text: 'Yardımcı olabildiğime sevindim. Başka bir sorunuz var mı?' }
+            ]
+        }
+    };
+
+    window.openNewScriptModal = function() {
+        document.getElementById('scriptModalTitle').textContent = getCurrentLang() === 'de' ? 'Neues Script' : 'Yeni Script';
+        document.getElementById('scriptModal').classList.add('show');
+    };
+
+    window.closeScriptModal = function() {
+        document.getElementById('scriptModal').classList.remove('show');
+    };
+
+    window.editScript = function(id) {
+        document.getElementById('scriptModalTitle').textContent = getCurrentLang() === 'de' ? 'Script bearbeiten' : 'Script Düzenle';
+        document.getElementById('scriptModal').classList.add('show');
+        showNotification(getCurrentLang() === 'de' ? 'Script wird geladen...' : 'Script yükleniyor...', 'info');
+    };
+
+    window.saveScript = function() {
+        const name = document.getElementById('scriptName').value;
+        if (!name) {
+            showNotification(getCurrentLang() === 'de' ? 'Bitte geben Sie einen Namen ein' : 'Lütfen bir ad girin', 'error');
+            return;
+        }
+        showNotification(getCurrentLang() === 'de' ? 'Script erfolgreich gespeichert!' : 'Script başarıyla kaydedildi!', 'success');
+        closeScriptModal();
+    };
+
+    window.deleteScript = function(id) {
+        const msg = getCurrentLang() === 'de' ? 'Dieses Script wirklich löschen?' : 'Bu scripti silmek istediğinize emin misiniz?';
+        if (confirm(msg)) {
+            showNotification(getCurrentLang() === 'de' ? 'Script gelöscht' : 'Script silindi', 'success');
+        }
+    };
+
+    window.copyScript = function(id) {
+        showNotification(getCurrentLang() === 'de' ? 'Script kopiert!' : 'Script kopyalandı!', 'success');
+    };
+
+    window.previewScript = function(id) {
+        const data = scriptData[id] || scriptData[1];
+        document.getElementById('previewTitle').textContent = data.name + (getCurrentLang() === 'de' ? ' - Vorschau' : ' - Önizleme');
+        
+        let html = '';
+        const typeNames = {
+            greeting: getCurrentLang() === 'de' ? 'Begrüßung' : 'Karşılama',
+            question: getCurrentLang() === 'de' ? 'Frage' : 'Soru',
+            objection: getCurrentLang() === 'de' ? 'Einwand' : 'İtiraz Yanıtı',
+            closing: getCurrentLang() === 'de' ? 'Abschluss' : 'Kapanış'
+        };
+        
+        data.sections.forEach(function(s) {
+            html += '<div class="preview-section">';
+            html += '<div class="preview-label">' + typeNames[s.type] + '</div>';
+            html += '<div class="preview-text">' + s.text + '</div>';
+            html += '</div>';
+        });
+        
+        document.getElementById('previewContent').innerHTML = html;
+        document.getElementById('previewModal').classList.add('show');
+    };
+
+    window.closePreviewModal = function() {
+        document.getElementById('previewModal').classList.remove('show');
+    };
+
+    window.printScript = function() {
+        window.print();
+    };
+
+    window.addBlock = function(type) {
+        const typeNames = {
+            greeting: getCurrentLang() === 'de' ? 'Begrüßung' : 'Karşılama',
+            question: getCurrentLang() === 'de' ? 'Frage' : 'Soru',
+            objection: getCurrentLang() === 'de' ? 'Einwand' : 'İtiraz Yanıtı',
+            closing: getCurrentLang() === 'de' ? 'Abschluss' : 'Kapanış',
+            note: getCurrentLang() === 'de' ? 'Notiz' : 'Not'
+        };
+
+        const block = document.createElement('div');
+        block.className = 'script-block';
+        block.innerHTML = '<div class="script-block-header"><span class="block-type ' + type + '">' + typeNames[type] + '</span><div class="block-actions"><button class="block-action" onclick="editBlock(this)"><i class="ti ti-edit"></i></button><button class="block-action" onclick="deleteBlock(this)"><i class="ti ti-trash"></i></button></div></div><div class="block-content" contenteditable="true">' + (getCurrentLang() === 'de' ? 'Hier Text eingeben...' : 'Buraya metin girin...') + '</div>';
+        
+        document.getElementById('builderContent').appendChild(block);
+        showNotification(getCurrentLang() === 'de' ? 'Block hinzugefügt' : 'Blok eklendi', 'success');
+    };
+
+    window.editBlock = function(el) {
+        showNotification(getCurrentLang() === 'de' ? 'Zum Bearbeiten klicken' : 'Düzenlemek için tıklayın', 'info');
+    };
+
+    window.deleteBlock = function(el) {
+        if (typeof el === 'object') {
+            el.closest('.script-block').remove();
+        }
+        showNotification(getCurrentLang() === 'de' ? 'Block gelöscht' : 'Blok silindi', 'success');
+    };
+
+    const style = document.createElement('style');
+    style.textContent = '@keyframes slideIn{from{transform:translateX(100%);opacity:0}to{transform:translateX(0);opacity:1}}';
+    document.head.appendChild(style);
+})();
+</script>
+{% endblock %}
