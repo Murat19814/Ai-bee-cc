@@ -1,68 +1,833 @@
 {% extends "base.html" %}
 
-{% block title %}Rol Yönetimi - AI BEE CC{% endblock %}
+{% block title %}Rol Şablonları - AI BEE CC{% endblock %}
+
+{% block extra_css %}
+<style>
+.roles-page {
+    padding: 1.5rem;
+}
+
+.roles-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+    gap: 1.5rem;
+    margin-top: 1.5rem;
+}
+
+.role-card {
+    background: white;
+    border-radius: 16px;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.06);
+    overflow: hidden;
+    transition: all 0.3s;
+}
+
+.role-card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 8px 30px rgba(0,0,0,0.12);
+}
+
+.role-card-header {
+    padding: 1.25rem;
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+}
+
+.role-card-header.super_admin {
+    background: linear-gradient(135deg, #e53935, #c62828);
+}
+
+.role-card-header.admin {
+    background: linear-gradient(135deg, #8e24aa, #6a1b9a);
+}
+
+.role-card-header.supervisor {
+    background: linear-gradient(135deg, #1e88e5, #1565c0);
+}
+
+.role-card-header.qc_listener {
+    background: linear-gradient(135deg, #00acc1, #00838f);
+}
+
+.role-card-header.agent {
+    background: linear-gradient(135deg, #43a047, #2e7d32);
+}
+
+.role-card-header.custom {
+    background: linear-gradient(135deg, #F5A623, #e09800);
+}
+
+.role-icon {
+    width: 50px;
+    height: 50px;
+    background: rgba(255,255,255,0.2);
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-size: 1.5rem;
+}
+
+.role-info h3 {
+    color: white;
+    margin: 0;
+    font-size: 1.1rem;
+}
+
+.role-info p {
+    color: rgba(255,255,255,0.8);
+    margin: 0.25rem 0 0 0;
+    font-size: 0.8rem;
+}
+
+.role-badge {
+    margin-left: auto;
+    background: rgba(255,255,255,0.2);
+    color: white;
+    padding: 0.25rem 0.75rem;
+    border-radius: 20px;
+    font-size: 0.7rem;
+    font-weight: 600;
+}
+
+.role-card-body {
+    padding: 1.25rem;
+}
+
+.permission-summary {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 0.75rem;
+    margin-bottom: 1rem;
+}
+
+.perm-stat {
+    background: #f8f9fa;
+    padding: 0.75rem;
+    border-radius: 8px;
+    text-align: center;
+}
+
+.perm-stat-value {
+    font-size: 1.25rem;
+    font-weight: 700;
+    color: #1a1a2e;
+}
+
+.perm-stat-label {
+    font-size: 0.7rem;
+    color: #888;
+    text-transform: uppercase;
+}
+
+.module-permissions {
+    margin-top: 1rem;
+}
+
+.module-perm {
+    display: flex;
+    align-items: center;
+    padding: 0.5rem 0;
+    border-bottom: 1px solid #f0f0f0;
+}
+
+.module-perm:last-child {
+    border-bottom: none;
+}
+
+.module-perm i {
+    width: 24px;
+    color: #F5A623;
+}
+
+.module-perm-name {
+    flex: 1;
+    font-size: 0.85rem;
+    color: #333;
+}
+
+.module-perm-status {
+    font-size: 0.75rem;
+    font-weight: 600;
+}
+
+.module-perm-status.full {
+    color: #2e7d32;
+}
+
+.module-perm-status.partial {
+    color: #f57c00;
+}
+
+.module-perm-status.none {
+    color: #c62828;
+}
+
+.role-card-footer {
+    padding: 1rem 1.25rem;
+    background: #f8f9fa;
+    display: flex;
+    gap: 0.5rem;
+}
+
+.role-card-footer button {
+    flex: 1;
+    padding: 0.5rem;
+    border-radius: 8px;
+    border: none;
+    cursor: pointer;
+    font-size: 0.8rem;
+    font-weight: 500;
+    transition: all 0.2s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+}
+
+.btn-view {
+    background: #e3f2fd;
+    color: #1976D2;
+}
+
+.btn-apply {
+    background: #e8f5e9;
+    color: #2e7d32;
+}
+
+.btn-edit {
+    background: #fff3e0;
+    color: #ef6c00;
+}
+
+.role-card-footer button:hover {
+    transform: translateY(-2px);
+}
+
+/* Stats Row */
+.stats-row {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 1rem;
+    margin-bottom: 1.5rem;
+}
+
+.stat-card {
+    background: white;
+    border-radius: 12px;
+    padding: 1.25rem;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+}
+
+.stat-icon {
+    width: 50px;
+    height: 50px;
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.5rem;
+    color: white;
+}
+
+.stat-icon.red { background: linear-gradient(135deg, #e53935, #c62828); }
+.stat-icon.purple { background: linear-gradient(135deg, #8e24aa, #6a1b9a); }
+.stat-icon.blue { background: linear-gradient(135deg, #1e88e5, #1565c0); }
+.stat-icon.green { background: linear-gradient(135deg, #43a047, #2e7d32); }
+
+.stat-value {
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: #1a1a2e;
+}
+
+.stat-label {
+    font-size: 0.8rem;
+    color: #888;
+}
+
+/* Modal */
+.modal-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.6);
+    backdrop-filter: blur(4px);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 1000;
+    opacity: 0;
+    visibility: hidden;
+    transition: all 0.3s;
+}
+
+.modal-overlay.show {
+    opacity: 1;
+    visibility: visible;
+}
+
+.modal-content {
+    background: white;
+    border-radius: 20px;
+    width: 100%;
+    max-width: 700px;
+    max-height: 90vh;
+    overflow: hidden;
+}
+
+.modal-header {
+    padding: 1.5rem;
+    background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+    color: white;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.modal-header h3 {
+    margin: 0;
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+}
+
+.modal-header h3 i {
+    color: #F5A623;
+}
+
+.modal-close {
+    background: rgba(255,255,255,0.1);
+    border: none;
+    color: white;
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    cursor: pointer;
+}
+
+.modal-body {
+    padding: 1.5rem;
+    max-height: 60vh;
+    overflow-y: auto;
+}
+
+.modal-footer {
+    padding: 1rem 1.5rem;
+    background: #f8f9fa;
+    display: flex;
+    gap: 1rem;
+    justify-content: flex-end;
+}
+
+.perm-list-item {
+    display: flex;
+    align-items: center;
+    padding: 0.75rem;
+    background: #f8f9fa;
+    border-radius: 8px;
+    margin-bottom: 0.5rem;
+}
+
+.perm-list-item i {
+    margin-right: 0.75rem;
+    color: #F5A623;
+}
+
+.perm-list-item .name {
+    flex: 1;
+    font-weight: 500;
+}
+
+.perm-list-item .status {
+    padding: 0.2rem 0.5rem;
+    border-radius: 4px;
+    font-size: 0.7rem;
+    font-weight: 600;
+}
+
+.perm-list-item .status.granted {
+    background: #e8f5e9;
+    color: #2e7d32;
+}
+
+.perm-list-item .status.denied {
+    background: #ffebee;
+    color: #c62828;
+}
+
+.section-title {
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: #666;
+    margin: 1.5rem 0 0.75rem 0;
+    padding-bottom: 0.5rem;
+    border-bottom: 1px solid #e0e0e0;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.section-title i {
+    color: #F5A623;
+}
+</style>
+{% endblock %}
 
 {% block content %}
-<div class="page-header">
-    <div>
-        <h1 class="page-title">Rol Yönetimi</h1>
-        <p class="page-subtitle">Kullanıcı rollerini ve yetkilerini tanımlayın</p>
+<div class="roles-page">
+    <div class="page-header">
+        <div>
+            <h1 class="page-title">
+                <i class="ti ti-shield-check" style="color: #F5A623;"></i>
+                <span data-tr="Rol Şablonları" data-de="Rollenvorlagen">Rol Şablonları</span>
+            </h1>
+            <p class="page-subtitle" data-tr="Sistem rolleri ve varsayılan yetkileri görüntüleyin" data-de="Systemrollen und Standardberechtigungen anzeigen">Sistem rolleri ve varsayılan yetkileri görüntüleyin</p>
+        </div>
+        <button class="btn btn-primary" onclick="openNewRoleModal()">
+            <i class="ti ti-plus"></i>
+            <span data-tr="Özel Şablon" data-de="Benutzerdefinierte Vorlage">Özel Şablon</span>
+        </button>
     </div>
-    <button class="btn btn-primary">
-        <i class="ti ti-plus"></i> Yeni Rol
-    </button>
+
+    <!-- Stats -->
+    <div class="stats-row">
+        <div class="stat-card">
+            <div class="stat-icon red"><i class="ti ti-crown"></i></div>
+            <div>
+                <div class="stat-value">1</div>
+                <div class="stat-label">Super Admin</div>
+            </div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-icon purple"><i class="ti ti-shield"></i></div>
+            <div>
+                <div class="stat-value">1</div>
+                <div class="stat-label">Admin</div>
+            </div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-icon blue"><i class="ti ti-users"></i></div>
+            <div>
+                <div class="stat-value">0</div>
+                <div class="stat-label">Supervisor</div>
+            </div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-icon green"><i class="ti ti-headset"></i></div>
+            <div>
+                <div class="stat-value">0</div>
+                <div class="stat-label">Agent</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Roles Grid -->
+    <div class="roles-grid">
+        <!-- Super Admin -->
+        <div class="role-card">
+            <div class="role-card-header super_admin">
+                <div class="role-icon"><i class="ti ti-crown"></i></div>
+                <div class="role-info">
+                    <h3>Super Admin</h3>
+                    <p data-tr="Tam sistem erişimi" data-de="Vollständiger Systemzugriff">Tam sistem erişimi</p>
+                </div>
+                <span class="role-badge" data-tr="SİSTEM" data-de="SYSTEM">SİSTEM</span>
+            </div>
+            <div class="role-card-body">
+                <div class="permission-summary">
+                    <div class="perm-stat">
+                        <div class="perm-stat-value">88</div>
+                        <div class="perm-stat-label" data-tr="Toplam Yetki" data-de="Gesamt Rechte">Toplam Yetki</div>
+                    </div>
+                    <div class="perm-stat">
+                        <div class="perm-stat-value">88</div>
+                        <div class="perm-stat-label" data-tr="Aktif" data-de="Aktiv">Aktif</div>
+                    </div>
+                </div>
+                <div class="module-permissions">
+                    <div class="module-perm"><i class="ti ti-dashboard"></i><span class="module-perm-name">Dashboard</span><span class="module-perm-status full" data-tr="Tam" data-de="Voll">Tam</span></div>
+                    <div class="module-perm"><i class="ti ti-address-book"></i><span class="module-perm-name">CRM</span><span class="module-perm-status full">Tam</span></div>
+                    <div class="module-perm"><i class="ti ti-speakerphone"></i><span class="module-perm-name" data-tr="Kampanyalar" data-de="Kampagnen">Kampanyalar</span><span class="module-perm-status full">Tam</span></div>
+                    <div class="module-perm"><i class="ti ti-phone"></i><span class="module-perm-name">VoIP</span><span class="module-perm-status full">Tam</span></div>
+                    <div class="module-perm"><i class="ti ti-settings"></i><span class="module-perm-name" data-tr="Yönetim" data-de="Verwaltung">Yönetim</span><span class="module-perm-status full">Tam</span></div>
+                </div>
+            </div>
+            <div class="role-card-footer">
+                <button class="btn-view" onclick="viewRolePermissions('super_admin')"><i class="ti ti-eye"></i> <span data-tr="Detay" data-de="Details">Detay</span></button>
+                <button class="btn-apply" onclick="applyRoleTemplate('super_admin')"><i class="ti ti-user-plus"></i> <span data-tr="Uygula" data-de="Anwenden">Uygula</span></button>
+            </div>
+        </div>
+
+        <!-- Admin -->
+        <div class="role-card">
+            <div class="role-card-header admin">
+                <div class="role-icon"><i class="ti ti-shield"></i></div>
+                <div class="role-info">
+                    <h3>Admin</h3>
+                    <p data-tr="CC yönetim yetkisi" data-de="CC-Verwaltungsberechtigung">CC yönetim yetkisi</p>
+                </div>
+                <span class="role-badge">SİSTEM</span>
+            </div>
+            <div class="role-card-body">
+                <div class="permission-summary">
+                    <div class="perm-stat">
+                        <div class="perm-stat-value">88</div>
+                        <div class="perm-stat-label">Toplam Yetki</div>
+                    </div>
+                    <div class="perm-stat">
+                        <div class="perm-stat-value">72</div>
+                        <div class="perm-stat-label">Aktif</div>
+                    </div>
+                </div>
+                <div class="module-permissions">
+                    <div class="module-perm"><i class="ti ti-dashboard"></i><span class="module-perm-name">Dashboard</span><span class="module-perm-status full">Tam</span></div>
+                    <div class="module-perm"><i class="ti ti-address-book"></i><span class="module-perm-name">CRM</span><span class="module-perm-status full">Tam</span></div>
+                    <div class="module-perm"><i class="ti ti-speakerphone"></i><span class="module-perm-name">Kampanyalar</span><span class="module-perm-status full">Tam</span></div>
+                    <div class="module-perm"><i class="ti ti-phone"></i><span class="module-perm-name">VoIP</span><span class="module-perm-status partial" data-tr="Kısmi" data-de="Teilweise">Kısmi</span></div>
+                    <div class="module-perm"><i class="ti ti-building"></i><span class="module-perm-name">Platform</span><span class="module-perm-status none" data-tr="Yok" data-de="Keine">Yok</span></div>
+                </div>
+            </div>
+            <div class="role-card-footer">
+                <button class="btn-view" onclick="viewRolePermissions('admin')"><i class="ti ti-eye"></i> Detay</button>
+                <button class="btn-apply" onclick="applyRoleTemplate('admin')"><i class="ti ti-user-plus"></i> Uygula</button>
+            </div>
+        </div>
+
+        <!-- Supervisor -->
+        <div class="role-card">
+            <div class="role-card-header supervisor">
+                <div class="role-icon"><i class="ti ti-users"></i></div>
+                <div class="role-info">
+                    <h3>Supervisor</h3>
+                    <p data-tr="Takım yönetimi" data-de="Teamverwaltung">Takım yönetimi</p>
+                </div>
+                <span class="role-badge">SİSTEM</span>
+            </div>
+            <div class="role-card-body">
+                <div class="permission-summary">
+                    <div class="perm-stat">
+                        <div class="perm-stat-value">88</div>
+                        <div class="perm-stat-label">Toplam Yetki</div>
+                    </div>
+                    <div class="perm-stat">
+                        <div class="perm-stat-value">45</div>
+                        <div class="perm-stat-label">Aktif</div>
+                    </div>
+                </div>
+                <div class="module-permissions">
+                    <div class="module-perm"><i class="ti ti-dashboard"></i><span class="module-perm-name">Dashboard</span><span class="module-perm-status full">Tam</span></div>
+                    <div class="module-perm"><i class="ti ti-address-book"></i><span class="module-perm-name">CRM</span><span class="module-perm-status partial">Kısmi</span></div>
+                    <div class="module-perm"><i class="ti ti-speakerphone"></i><span class="module-perm-name">Kampanyalar</span><span class="module-perm-status partial">Kısmi</span></div>
+                    <div class="module-perm"><i class="ti ti-chart-bar"></i><span class="module-perm-name" data-tr="Raporlar" data-de="Berichte">Raporlar</span><span class="module-perm-status full">Tam</span></div>
+                    <div class="module-perm"><i class="ti ti-settings"></i><span class="module-perm-name">Yönetim</span><span class="module-perm-status none">Yok</span></div>
+                </div>
+            </div>
+            <div class="role-card-footer">
+                <button class="btn-view" onclick="viewRolePermissions('supervisor')"><i class="ti ti-eye"></i> Detay</button>
+                <button class="btn-apply" onclick="applyRoleTemplate('supervisor')"><i class="ti ti-user-plus"></i> Uygula</button>
+            </div>
+        </div>
+
+        <!-- QC Listener -->
+        <div class="role-card">
+            <div class="role-card-header qc_listener">
+                <div class="role-icon"><i class="ti ti-headphones"></i></div>
+                <div class="role-info">
+                    <h3 data-tr="QC Dinleme" data-de="QC-Prüfer">QC Dinleme</h3>
+                    <p data-tr="Kalite kontrol dinleyici" data-de="Qualitätskontrollprüfer">Kalite kontrol dinleyici</p>
+                </div>
+                <span class="role-badge">SİSTEM</span>
+            </div>
+            <div class="role-card-body">
+                <div class="permission-summary">
+                    <div class="perm-stat">
+                        <div class="perm-stat-value">88</div>
+                        <div class="perm-stat-label">Toplam Yetki</div>
+                    </div>
+                    <div class="perm-stat">
+                        <div class="perm-stat-value">28</div>
+                        <div class="perm-stat-label">Aktif</div>
+                    </div>
+                </div>
+                <div class="module-permissions">
+                    <div class="module-perm"><i class="ti ti-dashboard"></i><span class="module-perm-name">Dashboard</span><span class="module-perm-status partial">Kısmi</span></div>
+                    <div class="module-perm"><i class="ti ti-certificate"></i><span class="module-perm-name" data-tr="Kalite (QA)" data-de="Qualität (QA)">Kalite (QA)</span><span class="module-perm-status full">Tam</span></div>
+                    <div class="module-perm"><i class="ti ti-microphone"></i><span class="module-perm-name" data-tr="Ses Kayıtları" data-de="Aufnahmen">Ses Kayıtları</span><span class="module-perm-status full">Tam</span></div>
+                    <div class="module-perm"><i class="ti ti-chart-bar"></i><span class="module-perm-name">Raporlar</span><span class="module-perm-status partial">Kısmi</span></div>
+                    <div class="module-perm"><i class="ti ti-settings"></i><span class="module-perm-name">Yönetim</span><span class="module-perm-status none">Yok</span></div>
+                </div>
+            </div>
+            <div class="role-card-footer">
+                <button class="btn-view" onclick="viewRolePermissions('qc_listener')"><i class="ti ti-eye"></i> Detay</button>
+                <button class="btn-apply" onclick="applyRoleTemplate('qc_listener')"><i class="ti ti-user-plus"></i> Uygula</button>
+            </div>
+        </div>
+
+        <!-- Agent -->
+        <div class="role-card">
+            <div class="role-card-header agent">
+                <div class="role-icon"><i class="ti ti-headset"></i></div>
+                <div class="role-info">
+                    <h3>Agent</h3>
+                    <p data-tr="Çağrı merkezi operatörü" data-de="Callcenter-Agent">Çağrı merkezi operatörü</p>
+                </div>
+                <span class="role-badge">SİSTEM</span>
+            </div>
+            <div class="role-card-body">
+                <div class="permission-summary">
+                    <div class="perm-stat">
+                        <div class="perm-stat-value">88</div>
+                        <div class="perm-stat-label">Toplam Yetki</div>
+                    </div>
+                    <div class="perm-stat">
+                        <div class="perm-stat-value">12</div>
+                        <div class="perm-stat-label">Aktif</div>
+                    </div>
+                </div>
+                <div class="module-permissions">
+                    <div class="module-perm"><i class="ti ti-dashboard"></i><span class="module-perm-name">Dashboard</span><span class="module-perm-status partial">Kısmi</span></div>
+                    <div class="module-perm"><i class="ti ti-address-book"></i><span class="module-perm-name">CRM</span><span class="module-perm-status partial">Kısmi</span></div>
+                    <div class="module-perm"><i class="ti ti-phone-call"></i><span class="module-perm-name" data-tr="Çağrı" data-de="Anrufe">Çağrı</span><span class="module-perm-status full">Tam</span></div>
+                    <div class="module-perm"><i class="ti ti-chart-bar"></i><span class="module-perm-name">Raporlar</span><span class="module-perm-status none">Yok</span></div>
+                    <div class="module-perm"><i class="ti ti-settings"></i><span class="module-perm-name">Yönetim</span><span class="module-perm-status none">Yok</span></div>
+                </div>
+            </div>
+            <div class="role-card-footer">
+                <button class="btn-view" onclick="viewRolePermissions('agent')"><i class="ti ti-eye"></i> Detay</button>
+                <button class="btn-apply" onclick="applyRoleTemplate('agent')"><i class="ti ti-user-plus"></i> Uygula</button>
+            </div>
+        </div>
+
+        <!-- Custom Template Card -->
+        <div class="role-card" style="border: 2px dashed #F5A623;">
+            <div class="role-card-header custom">
+                <div class="role-icon"><i class="ti ti-plus"></i></div>
+                <div class="role-info">
+                    <h3 data-tr="Özel Şablon Oluştur" data-de="Benutzerdefinierte Vorlage erstellen">Özel Şablon Oluştur</h3>
+                    <p data-tr="Kendi yetki şablonunuzu tanımlayın" data-de="Definieren Sie Ihre eigene Berechtigungsvorlage">Kendi yetki şablonunuzu tanımlayın</p>
+                </div>
+            </div>
+            <div class="role-card-body" style="text-align: center; padding: 2rem;">
+                <i class="ti ti-template" style="font-size: 3rem; color: #F5A623; display: block; margin-bottom: 1rem;"></i>
+                <p style="color: #888; margin: 0;" data-tr="Mevcut rollerden bağımsız özel yetki şablonları oluşturun ve kullanıcılara hızlıca uygulayın." data-de="Erstellen Sie benutzerdefinierte Berechtigungsvorlagen unabhängig von vorhandenen Rollen und wenden Sie sie schnell auf Benutzer an.">
+                    Mevcut rollerden bağımsız özel yetki şablonları oluşturun ve kullanıcılara hızlıca uygulayın.
+                </p>
+            </div>
+            <div class="role-card-footer">
+                <button class="btn-edit" onclick="openNewRoleModal()" style="flex: 1;"><i class="ti ti-plus"></i> <span data-tr="Yeni Şablon" data-de="Neue Vorlage">Yeni Şablon</span></button>
+            </div>
+        </div>
+    </div>
 </div>
 
-<div class="card">
-    <div class="card-body">
-        <div class="table-wrapper">
-            <table class="table">
-                <thead>
-                    <tr>
-                        <th>Kod</th>
-                        <th>Ad</th>
-                        <th>Açıklama</th>
-                        <th>Yetki Sayısı</th>
-                        <th>Sistem Rolü</th>
-                        <th>İşlemler</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {% for role in roles %}
-                    <tr>
-                        <td><code>{{ role.code }}</code></td>
-                        <td><strong>{{ role.name }}</strong></td>
-                        <td>{{ role.description or '-' }}</td>
-                        <td>{{ role.permissions.count() }}</td>
-                        <td>
-                            {% if role.is_system %}
-                            <span class="badge badge-info">Sistem</span>
-                            {% else %}
-                            <span class="badge badge-secondary">Özel</span>
-                            {% endif %}
-                        </td>
-                        <td>
-                            <button class="btn btn-sm btn-ghost" title="Yetkileri Düzenle">
-                                <i class="ti ti-shield"></i>
-                            </button>
-                            {% if not role.is_system %}
-                            <button class="btn btn-sm btn-ghost" title="Düzenle">
-                                <i class="ti ti-edit"></i>
-                            </button>
-                            {% endif %}
-                        </td>
-                    </tr>
-                    {% else %}
-                    <tr>
-                        <td colspan="6" class="text-muted">Henüz rol tanımlanmamış</td>
-                    </tr>
-                    {% endfor %}
-                </tbody>
-            </table>
+<!-- View Permissions Modal -->
+<div class="modal-overlay" id="viewModal">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h3><i class="ti ti-shield-check"></i> <span id="viewModalTitle" data-tr="Rol Yetkileri" data-de="Rollenberechtigungen">Rol Yetkileri</span></h3>
+            <button class="modal-close" onclick="closeViewModal()">
+                <i class="ti ti-x"></i>
+            </button>
+        </div>
+        <div class="modal-body" id="viewModalBody">
+            <!-- Permissions will be loaded here -->
+        </div>
+        <div class="modal-footer">
+            <button class="btn btn-secondary" onclick="closeViewModal()" data-tr="Kapat" data-de="Schließen">Kapat</button>
+        </div>
+    </div>
+</div>
+
+<!-- Apply Template Modal -->
+<div class="modal-overlay" id="applyModal">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h3><i class="ti ti-user-plus"></i> <span data-tr="Şablon Uygula" data-de="Vorlage anwenden">Şablon Uygula</span></h3>
+            <button class="modal-close" onclick="closeApplyModal()">
+                <i class="ti ti-x"></i>
+            </button>
+        </div>
+        <div class="modal-body">
+            <p id="applyRoleName" style="font-weight: 600; margin-bottom: 1rem;"></p>
+            <div class="form-group">
+                <label data-tr="Kullanıcı Seçin" data-de="Benutzer auswählen">Kullanıcı Seçin</label>
+                <select id="applyUserSelect" class="form-control" style="width: 100%; padding: 0.75rem; border: 1px solid #e0e0e0; border-radius: 8px;">
+                    <option value="" data-tr="-- Kullanıcı seçin --" data-de="-- Benutzer auswählen --">-- Kullanıcı seçin --</option>
+                    <option value="1">Murat66 (murat@ai-bee-cc.com)</option>
+                    <option value="2">admin (admin@ai-bee-cc.com)</option>
+                </select>
+            </div>
+            <div style="background: #fff3e0; padding: 1rem; border-radius: 8px; margin-top: 1rem;">
+                <i class="ti ti-alert-triangle" style="color: #ef6c00;"></i>
+                <span style="color: #ef6c00; font-size: 0.85rem;" data-tr="Bu işlem seçilen kullanıcının mevcut yetkilerinin üzerine yazacaktır." data-de="Dieser Vorgang überschreibt die vorhandenen Berechtigungen des ausgewählten Benutzers.">
+                    Bu işlem seçilen kullanıcının mevcut yetkilerinin üzerine yazacaktır.
+                </span>
+            </div>
+        </div>
+        <div class="modal-footer">
+            <button class="btn btn-secondary" onclick="closeApplyModal()" data-tr="İptal" data-de="Abbrechen">İptal</button>
+            <button class="btn btn-primary" onclick="confirmApplyTemplate()">
+                <i class="ti ti-check"></i> <span data-tr="Uygula" data-de="Anwenden">Uygula</span>
+            </button>
         </div>
     </div>
 </div>
 {% endblock %}
 
-
-
+{% block extra_js %}
+<script>
+(function() {
+    'use strict';
+    
+    let currentRole = null;
+    
+    function getCurrentLang() {
+        return localStorage.getItem('selectedLang') || 'tr';
+    }
+    
+    function showNotification(message, type) {
+        const toast = document.createElement('div');
+        toast.style.cssText = 'position:fixed;top:20px;right:20px;padding:15px 25px;border-radius:10px;color:white;font-weight:500;z-index:9999;box-shadow:0 4px 20px rgba(0,0,0,0.2);animation:slideIn 0.3s ease;';
+        toast.style.background = type === 'success' ? 'linear-gradient(135deg, #4CAF50, #45a049)' : 
+                                  type === 'error' ? 'linear-gradient(135deg, #f44336, #d32f2f)' : 
+                                  'linear-gradient(135deg, #2196F3, #1976D2)';
+        toast.textContent = message;
+        document.body.appendChild(toast);
+        setTimeout(function() { toast.remove(); }, 3000);
+    }
+    
+    const rolePermissions = {
+        super_admin: {
+            name: 'Super Admin',
+            permissions: [
+                { module: 'Dashboard', perms: ['Görüntüle', 'İstatistikler', 'Canlı Veri', 'Dışa Aktar'], status: 'full' },
+                { module: 'CRM', perms: ['Müşteri Listesi', 'Müşteri Ekle', 'Müşteri Düzenle', 'Müşteri Sil', 'Ticket Yönetimi', 'Çağrı Geçmişi'], status: 'full' },
+                { module: 'Kampanyalar', perms: ['Kampanya Listesi', 'Kampanya Oluştur', 'Kampanya Düzenle', 'Kampanya Sil', 'Başlat/Durdur', 'Liste Yönetimi'], status: 'full' },
+                { module: 'VoIP', perms: ['Dashboard', 'SIP Trunk', 'IVR Builder', 'Ses Kayıtları', 'DID Yönetimi', 'CDR Logları'], status: 'full' },
+                { module: 'Kalite (QA)', perms: ['QA Dashboard', 'Değerlendirme Yap', 'QA Formları', 'Raporlar'], status: 'full' },
+                { module: 'Raporlar', perms: ['Genel Raporlar', 'Agent Performans', 'Kampanya Raporu', 'Dışa Aktar'], status: 'full' },
+                { module: 'Yapay Zeka', perms: ['AI Dashboard', 'AI Ayarları', 'Voice Bot', 'RAG Yönetimi'], status: 'full' },
+                { module: 'Yönetim', perms: ['Kullanıcılar', 'Roller', 'Departmanlar', 'Takımlar', 'Ayarlar', 'Entegrasyonlar'], status: 'full' },
+                { module: 'Platform', perms: ['Tenant Yönetimi', 'Faturalandırma', 'Fiyatlandırma', 'Sistem Ayarları'], status: 'full' }
+            ]
+        },
+        admin: {
+            name: 'Admin',
+            permissions: [
+                { module: 'Dashboard', perms: ['Görüntüle', 'İstatistikler', 'Canlı Veri', 'Dışa Aktar'], status: 'full' },
+                { module: 'CRM', perms: ['Müşteri Listesi', 'Müşteri Ekle', 'Müşteri Düzenle', 'Müşteri Sil', 'Ticket Yönetimi', 'Çağrı Geçmişi'], status: 'full' },
+                { module: 'Kampanyalar', perms: ['Kampanya Listesi', 'Kampanya Oluştur', 'Kampanya Düzenle', 'Kampanya Sil', 'Başlat/Durdur', 'Liste Yönetimi'], status: 'full' },
+                { module: 'VoIP', perms: ['Dashboard', 'Ses Kayıtları', 'CDR Logları'], status: 'partial' },
+                { module: 'Kalite (QA)', perms: ['QA Dashboard', 'Değerlendirme Yap', 'QA Formları', 'Raporlar'], status: 'full' },
+                { module: 'Raporlar', perms: ['Genel Raporlar', 'Agent Performans', 'Kampanya Raporu', 'Dışa Aktar'], status: 'full' },
+                { module: 'Yönetim', perms: ['Kullanıcılar', 'Departmanlar', 'Takımlar'], status: 'partial' },
+                { module: 'Platform', perms: [], status: 'none' }
+            ]
+        },
+        supervisor: {
+            name: 'Supervisor',
+            permissions: [
+                { module: 'Dashboard', perms: ['Görüntüle', 'İstatistikler', 'Canlı Veri'], status: 'full' },
+                { module: 'CRM', perms: ['Müşteri Listesi', 'Müşteri Görüntüle', 'Çağrı Geçmişi'], status: 'partial' },
+                { module: 'Kampanyalar', perms: ['Kampanya Listesi', 'Kampanya Görüntüle'], status: 'partial' },
+                { module: 'Raporlar', perms: ['Genel Raporlar', 'Agent Performans', 'Dışa Aktar'], status: 'full' },
+                { module: 'Yönetim', perms: [], status: 'none' }
+            ]
+        },
+        qc_listener: {
+            name: 'QC Dinleme',
+            permissions: [
+                { module: 'Dashboard', perms: ['Görüntüle', 'QA İstatistikleri'], status: 'partial' },
+                { module: 'Kalite (QA)', perms: ['QA Dashboard', 'Değerlendirme Yap', 'QA Formları Görüntüle', 'Ses Dinle'], status: 'full' },
+                { module: 'Ses Kayıtları', perms: ['Kayıt Listesi', 'Dinle', 'Not Ekle'], status: 'full' },
+                { module: 'Raporlar', perms: ['QA Raporları'], status: 'partial' },
+                { module: 'Yönetim', perms: [], status: 'none' }
+            ]
+        },
+        agent: {
+            name: 'Agent',
+            permissions: [
+                { module: 'Dashboard', perms: ['Kendi İstatistikleri'], status: 'partial' },
+                { module: 'CRM', perms: ['Müşteri Görüntüle', 'Çağrı Notu Ekle'], status: 'partial' },
+                { module: 'Çağrı', perms: ['Gelen Çağrı', 'Giden Çağrı', 'Transfer', 'Beklet'], status: 'full' },
+                { module: 'Raporlar', perms: [], status: 'none' },
+                { module: 'Yönetim', perms: [], status: 'none' }
+            ]
+        }
+    };
+    
+    window.viewRolePermissions = function(role) {
+        const data = rolePermissions[role];
+        if (!data) return;
+        
+        document.getElementById('viewModalTitle').textContent = data.name + ' ' + (getCurrentLang() === 'de' ? 'Berechtigungen' : 'Yetkileri');
+        
+        let html = '';
+        data.permissions.forEach(function(p) {
+            const statusClass = p.status;
+            const statusText = p.status === 'full' ? (getCurrentLang() === 'de' ? 'Voll' : 'Tam') : 
+                              p.status === 'partial' ? (getCurrentLang() === 'de' ? 'Teilweise' : 'Kısmi') : 
+                              (getCurrentLang() === 'de' ? 'Keine' : 'Yok');
+            
+            html += '<div class="section-title"><i class="ti ti-folder"></i> ' + p.module + ' <span class="module-perm-status ' + statusClass + '">' + statusText + '</span></div>';
+            
+            if (p.perms.length > 0) {
+                p.perms.forEach(function(perm) {
+                    html += '<div class="perm-list-item"><i class="ti ti-check"></i><span class="name">' + perm + '</span><span class="status granted">✓</span></div>';
+                });
+            } else {
+                html += '<div class="perm-list-item"><i class="ti ti-x" style="color: #c62828;"></i><span class="name" style="color: #888;">' + (getCurrentLang() === 'de' ? 'Kein Zugriff' : 'Erişim yok') + '</span></div>';
+            }
+        });
+        
+        document.getElementById('viewModalBody').innerHTML = html;
+        document.getElementById('viewModal').classList.add('show');
+    };
+    
+    window.closeViewModal = function() {
+        document.getElementById('viewModal').classList.remove('show');
+    };
+    
+    window.applyRoleTemplate = function(role) {
+        currentRole = role;
+        const data = rolePermissions[role];
+        if (!data) return;
+        
+        document.getElementById('applyRoleName').textContent = data.name + ' ' + (getCurrentLang() === 'de' ? 'Vorlage' : 'şablonu');
+        document.getElementById('applyModal').classList.add('show');
+    };
+    
+    window.closeApplyModal = function() {
+        document.getElementById('applyModal').classList.remove('show');
+    };
+    
+    window.confirmApplyTemplate = function() {
+        const userId = document.getElementById('applyUserSelect').value;
+        if (!userId) {
+            showNotification(getCurrentLang() === 'de' ? 'Bitte wählen Sie einen Benutzer aus' : 'Lütfen bir kullanıcı seçin', 'error');
+            return;
+        }
+        
+        showNotification(getCurrentLang() === 'de' ? 'Vorlage erfolgreich angewendet' : 'Şablon başarıyla uygulandı', 'success');
+        closeApplyModal();
+    };
+    
+    window.openNewRoleModal = function() {
+        showNotification(getCurrentLang() === 'de' ? 'Diese Funktion wird bald verfügbar sein' : 'Bu özellik yakında kullanıma sunulacak', 'info');
+    };
+    
+    // Add animation styles
+    const style = document.createElement('style');
+    style.textContent = '@keyframes slideIn{from{transform:translateX(100%);opacity:0}to{transform:translateX(0);opacity:1}}';
+    document.head.appendChild(style);
+    
+    console.log('Roles page initialized');
+})();
+</script>
+{% endblock %}
