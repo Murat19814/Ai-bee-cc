@@ -207,7 +207,63 @@
     color: white;
 }
 
-/* CDR Detail Modal */
+/* Modal */
+.modal-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.6);
+    backdrop-filter: blur(4px);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 1000;
+    opacity: 0;
+    visibility: hidden;
+    transition: all 0.3s;
+}
+
+.modal-overlay.show { opacity: 1; visibility: visible; }
+
+.modal-content {
+    background: white;
+    border-radius: 20px;
+    width: 100%;
+    max-width: 800px;
+    max-height: 90vh;
+    overflow: hidden;
+}
+
+.modal-header {
+    padding: 1.5rem;
+    background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+    color: white;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.modal-header h3 {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+}
+
+.modal-header h3 i { color: #F5A623; }
+
+.modal-close {
+    background: rgba(255,255,255,0.1);
+    border: none;
+    color: white;
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    cursor: pointer;
+}
+
+.modal-body { padding: 1.5rem; max-height: 70vh; overflow-y: auto; }
+.modal-footer { padding: 1rem 1.5rem; background: #f8f9fa; display: flex; gap: 1rem; justify-content: flex-end; }
+
+/* CDR Detail */
 .cdr-detail {
     display: grid;
     grid-template-columns: 1fr 1fr;
@@ -309,62 +365,6 @@
     background: #F5A623;
     border-radius: 2px;
 }
-
-/* Modal */
-.modal-overlay {
-    position: fixed;
-    inset: 0;
-    background: rgba(0,0,0,0.6);
-    backdrop-filter: blur(4px);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    z-index: 1000;
-    opacity: 0;
-    visibility: hidden;
-    transition: all 0.3s;
-}
-
-.modal-overlay.show { opacity: 1; visibility: visible; }
-
-.modal-content {
-    background: white;
-    border-radius: 20px;
-    width: 100%;
-    max-width: 800px;
-    max-height: 90vh;
-    overflow: hidden;
-}
-
-.modal-header {
-    padding: 1.5rem;
-    background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
-    color: white;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-}
-
-.modal-header h3 {
-    display: flex;
-    align-items: center;
-    gap: 0.75rem;
-}
-
-.modal-header h3 i { color: #F5A623; }
-
-.modal-close {
-    background: rgba(255,255,255,0.1);
-    border: none;
-    color: white;
-    width: 36px;
-    height: 36px;
-    border-radius: 50%;
-    cursor: pointer;
-}
-
-.modal-body { padding: 1.5rem; max-height: 70vh; overflow-y: auto; }
-.modal-footer { padding: 1rem 1.5rem; background: #f8f9fa; display: flex; gap: 1rem; justify-content: flex-end; }
 </style>
 {% endblock %}
 
@@ -374,13 +374,13 @@
         <div>
             <h1 class="page-title">
                 <i class="ti ti-file-analytics" style="color: #F5A623;"></i>
-                CDR - Çağrı Kayıtları
+                <span data-tr="CDR - Çağrı Kayıtları" data-de="CDR - Anrufprotokolle">CDR - Çağrı Kayıtları</span>
             </h1>
-            <p class="page-subtitle">Tüm çağrı detaylarını görüntüleyin ve analiz edin</p>
+            <p class="page-subtitle" data-tr="Tüm çağrı detaylarını görüntüleyin ve analiz edin" data-de="Alle Anrufdetails anzeigen und analysieren">Tüm çağrı detaylarını görüntüleyin ve analiz edin</p>
         </div>
         <div class="page-header-actions">
             <button class="btn btn-secondary" onclick="exportCDR()">
-                <i class="ti ti-download"></i> Dışa Aktar
+                <i class="ti ti-download"></i> <span data-tr="Dışa Aktar" data-de="Exportieren">Dışa Aktar</span>
             </button>
         </div>
     </div>
@@ -392,7 +392,7 @@
                 <div class="icon-3d blue"><i class="ti ti-phone"></i></div>
                 <div class="stat-content">
                     <div class="stat-value">1,247</div>
-                    <div class="stat-label">Toplam Çağrı</div>
+                    <div class="stat-label" data-tr="Toplam Çağrı" data-de="Gesamt Anrufe">Toplam Çağrı</div>
                 </div>
             </div>
         </div>
@@ -401,7 +401,7 @@
                 <div class="icon-3d green"><i class="ti ti-phone-check"></i></div>
                 <div class="stat-content">
                     <div class="stat-value">1,089</div>
-                    <div class="stat-label">Cevaplanan</div>
+                    <div class="stat-label" data-tr="Cevaplanan" data-de="Beantwortet">Cevaplanan</div>
                 </div>
             </div>
         </div>
@@ -410,7 +410,7 @@
                 <div class="icon-3d red"><i class="ti ti-phone-off"></i></div>
                 <div class="stat-content">
                     <div class="stat-value">158</div>
-                    <div class="stat-label">Kaçırılan</div>
+                    <div class="stat-label" data-tr="Kaçırılan" data-de="Verpasst">Kaçırılan</div>
                 </div>
             </div>
         </div>
@@ -419,7 +419,7 @@
                 <div class="icon-3d orange"><i class="ti ti-clock"></i></div>
                 <div class="stat-content">
                     <div class="stat-value">3:42</div>
-                    <div class="stat-label">Ort. Süre</div>
+                    <div class="stat-label" data-tr="Ort. Süre" data-de="Durchschn. Dauer">Ort. Süre</div>
                 </div>
             </div>
         </div>
@@ -428,7 +428,7 @@
                 <div class="icon-3d purple"><i class="ti ti-microphone"></i></div>
                 <div class="stat-content">
                     <div class="stat-value">1,089</div>
-                    <div class="stat-label">Kayıt</div>
+                    <div class="stat-label" data-tr="Kayıt" data-de="Aufnahmen">Kayıt</div>
                 </div>
             </div>
         </div>
@@ -438,7 +438,7 @@
     <div class="filter-panel">
         <div class="filter-row">
             <div class="filter-group">
-                <label>Tarih Aralığı</label>
+                <label data-tr="Tarih Aralığı" data-de="Datumsbereich">Tarih Aralığı</label>
                 <input type="date" class="form-control" id="dateFrom">
             </div>
             <div class="filter-group">
@@ -446,49 +446,49 @@
                 <input type="date" class="form-control" id="dateTo">
             </div>
             <div class="filter-group">
-                <label>Çağrı Tipi</label>
+                <label data-tr="Çağrı Tipi" data-de="Anruftyp">Çağrı Tipi</label>
                 <select class="form-control" id="callType">
-                    <option value="">Tümü</option>
-                    <option value="inbound">Gelen</option>
-                    <option value="outbound">Giden</option>
-                    <option value="internal">Dahili</option>
+                    <option value="" data-tr="Tümü" data-de="Alle">Tümü</option>
+                    <option value="inbound" data-tr="Gelen" data-de="Eingehend">Gelen</option>
+                    <option value="outbound" data-tr="Giden" data-de="Ausgehend">Giden</option>
+                    <option value="internal" data-tr="Dahili" data-de="Intern">Dahili</option>
                 </select>
             </div>
             <div class="filter-group">
-                <label>Durum</label>
+                <label data-tr="Durum" data-de="Status">Durum</label>
                 <select class="form-control" id="callStatus">
-                    <option value="">Tümü</option>
-                    <option value="answered">Cevaplanan</option>
-                    <option value="missed">Kaçırılan</option>
-                    <option value="busy">Meşgul</option>
-                    <option value="failed">Başarısız</option>
+                    <option value="" data-tr="Tümü" data-de="Alle">Tümü</option>
+                    <option value="answered" data-tr="Cevaplanan" data-de="Beantwortet">Cevaplanan</option>
+                    <option value="missed" data-tr="Kaçırılan" data-de="Verpasst">Kaçırılan</option>
+                    <option value="busy" data-tr="Meşgul" data-de="Besetzt">Meşgul</option>
+                    <option value="failed" data-tr="Başarısız" data-de="Fehlgeschlagen">Başarısız</option>
                 </select>
             </div>
             <div class="filter-group">
-                <label>Kuyruk</label>
+                <label data-tr="Kuyruk" data-de="Warteschlange">Kuyruk</label>
                 <select class="form-control" id="queue">
-                    <option value="">Tümü</option>
-                    <option value="1">Satış Ekibi</option>
-                    <option value="2">Destek Ekibi</option>
+                    <option value="" data-tr="Tümü" data-de="Alle">Tümü</option>
+                    <option value="1" data-tr="Satış Ekibi" data-de="Verkaufsteam">Satış Ekibi</option>
+                    <option value="2" data-tr="Destek Ekibi" data-de="Support-Team">Destek Ekibi</option>
                     <option value="3">VIP</option>
                 </select>
             </div>
             <div class="filter-group">
-                <label>Agent</label>
+                <label data-tr="Agent" data-de="Agent">Agent</label>
                 <select class="form-control" id="agent">
-                    <option value="">Tümü</option>
-                    <option value="1">Ahmet Yılmaz</option>
-                    <option value="2">Ayşe Kaya</option>
-                    <option value="3">Mehmet Demir</option>
+                    <option value="" data-tr="Tümü" data-de="Alle">Tümü</option>
+                    <option value="1">Ahmet K.</option>
+                    <option value="2">Buse Y.</option>
+                    <option value="3">Can D.</option>
                 </select>
             </div>
             <div class="filter-group">
-                <label>Numara Ara</label>
-                <input type="text" class="form-control" placeholder="Numara..." id="phoneSearch">
+                <label data-tr="Numara Ara" data-de="Nummer suchen">Numara Ara</label>
+                <input type="text" class="form-control" id="phoneSearch" data-tr-placeholder="Numara..." data-de-placeholder="Nummer...">
             </div>
             <div class="filter-actions">
                 <button class="btn btn-primary" onclick="applyFilters()">
-                    <i class="ti ti-filter"></i> Filtrele
+                    <i class="ti ti-filter"></i> <span data-tr="Filtrele" data-de="Filtern">Filtrele</span>
                 </button>
                 <button class="btn btn-secondary" onclick="clearFilters()">
                     <i class="ti ti-x"></i>
@@ -501,14 +501,14 @@
     <div class="cdr-table-container">
         <div class="table-header">
             <div class="table-info">
-                <strong>1,247</strong> kayıt bulundu | Sayfa <strong>1</strong> / 125
+                <strong>1,247</strong> <span data-tr="kayıt bulundu" data-de="Einträge gefunden">kayıt bulundu</span> | <span data-tr="Sayfa" data-de="Seite">Sayfa</span> <strong>1</strong> / 125
             </div>
             <div>
                 <select class="form-control" style="width: auto; display: inline-block;">
-                    <option>10 kayıt</option>
-                    <option>25 kayıt</option>
-                    <option>50 kayıt</option>
-                    <option>100 kayıt</option>
+                    <option data-tr="10 kayıt" data-de="10 Einträge">10 kayıt</option>
+                    <option data-tr="25 kayıt" data-de="25 Einträge">25 kayıt</option>
+                    <option data-tr="50 kayıt" data-de="50 Einträge">50 kayıt</option>
+                    <option data-tr="100 kayıt" data-de="100 Einträge">100 kayıt</option>
                 </select>
             </div>
         </div>
@@ -518,60 +518,60 @@
                 <thead>
                     <tr>
                         <th>ID</th>
-                        <th>Tarih/Saat</th>
-                        <th>Tip</th>
-                        <th>Arayan</th>
-                        <th>Aranan</th>
-                        <th>Agent</th>
-                        <th>Kuyruk</th>
-                        <th>Süre</th>
-                        <th>Durum</th>
-                        <th>Kayıt</th>
-                        <th>İşlem</th>
+                        <th data-tr="Tarih/Saat" data-de="Datum/Zeit">Tarih/Saat</th>
+                        <th data-tr="Tip" data-de="Typ">Tip</th>
+                        <th data-tr="Arayan" data-de="Anrufer">Arayan</th>
+                        <th data-tr="Aranan" data-de="Angerufen">Aranan</th>
+                        <th data-tr="Agent" data-de="Agent">Agent</th>
+                        <th data-tr="Kuyruk" data-de="Warteschlange">Kuyruk</th>
+                        <th data-tr="Süre" data-de="Dauer">Süre</th>
+                        <th data-tr="Durum" data-de="Status">Durum</th>
+                        <th data-tr="Kayıt" data-de="Aufnahme">Kayıt</th>
+                        <th data-tr="İşlem" data-de="Aktion">İşlem</th>
                     </tr>
                 </thead>
                 <tbody>
                     <tr>
                         <td>#10247</td>
-                        <td>25.12.2024 14:32:15</td>
-                        <td><span class="call-type inbound"><i class="ti ti-phone-incoming"></i> Gelen</span></td>
-                        <td class="phone-number">+90 532 XXX XX45</td>
+                        <td>26.12.2025 14:32</td>
+                        <td><span class="call-type inbound"><i class="ti ti-phone-incoming"></i> <span data-tr="Gelen" data-de="Eingehend">Gelen</span></span></td>
+                        <td class="phone-number">+49 176 XXX XX45</td>
                         <td class="phone-number">8001</td>
                         <td>
                             <div class="agent-info">
-                                <div class="agent-avatar-sm">AY</div>
-                                <span>Ahmet Y.</span>
+                                <div class="agent-avatar-sm">AK</div>
+                                <span>Ahmet K.</span>
                             </div>
                         </td>
-                        <td>Satış</td>
+                        <td data-tr="Satış" data-de="Verkauf">Satış</td>
                         <td><span class="duration long">05:42</span></td>
-                        <td><span class="call-status answered"><i class="ti ti-check"></i> Cevaplandı</span></td>
-                        <td><span class="recording-link" onclick="playRecording(10247)"><i class="ti ti-player-play"></i> Dinle</span></td>
+                        <td><span class="call-status answered"><i class="ti ti-check"></i> <span data-tr="Cevaplandı" data-de="Beantwortet">Cevaplandı</span></span></td>
+                        <td><span class="recording-link" onclick="playRecording(10247)"><i class="ti ti-player-play"></i> <span data-tr="Dinle" data-de="Anhören">Dinle</span></span></td>
                         <td><button class="btn btn-sm btn-secondary" onclick="showCDRDetail(10247)"><i class="ti ti-eye"></i></button></td>
                     </tr>
                     <tr>
                         <td>#10246</td>
-                        <td>25.12.2024 14:28:03</td>
-                        <td><span class="call-type outbound"><i class="ti ti-phone-outgoing"></i> Giden</span></td>
-                        <td class="phone-number">+90 212 555 0001</td>
-                        <td class="phone-number">+90 555 XXX XX12</td>
+                        <td>26.12.2025 14:28</td>
+                        <td><span class="call-type outbound"><i class="ti ti-phone-outgoing"></i> <span data-tr="Giden" data-de="Ausgehend">Giden</span></span></td>
+                        <td class="phone-number">+49 30 555 0001</td>
+                        <td class="phone-number">+49 151 XXX XX12</td>
                         <td>
                             <div class="agent-info">
-                                <div class="agent-avatar-sm">AK</div>
-                                <span>Ayşe K.</span>
+                                <div class="agent-avatar-sm">BY</div>
+                                <span>Buse Y.</span>
                             </div>
                         </td>
-                        <td>Satış</td>
+                        <td data-tr="Satış" data-de="Verkauf">Satış</td>
                         <td><span class="duration medium">02:18</span></td>
-                        <td><span class="call-status answered"><i class="ti ti-check"></i> Cevaplandı</span></td>
-                        <td><span class="recording-link" onclick="playRecording(10246)"><i class="ti ti-player-play"></i> Dinle</span></td>
+                        <td><span class="call-status answered"><i class="ti ti-check"></i> <span data-tr="Cevaplandı" data-de="Beantwortet">Cevaplandı</span></span></td>
+                        <td><span class="recording-link" onclick="playRecording(10246)"><i class="ti ti-player-play"></i> <span data-tr="Dinle" data-de="Anhören">Dinle</span></span></td>
                         <td><button class="btn btn-sm btn-secondary" onclick="showCDRDetail(10246)"><i class="ti ti-eye"></i></button></td>
                     </tr>
                     <tr>
                         <td>#10245</td>
-                        <td>25.12.2024 14:25:41</td>
-                        <td><span class="call-type inbound"><i class="ti ti-phone-incoming"></i> Gelen</span></td>
-                        <td class="phone-number">+90 544 XXX XX89</td>
+                        <td>26.12.2025 14:25</td>
+                        <td><span class="call-type inbound"><i class="ti ti-phone-incoming"></i> <span data-tr="Gelen" data-de="Eingehend">Gelen</span></span></td>
+                        <td class="phone-number">+49 172 XXX XX89</td>
                         <td class="phone-number">8002</td>
                         <td>
                             <div class="agent-info">
@@ -579,34 +579,34 @@
                                 <span>-</span>
                             </div>
                         </td>
-                        <td>Destek</td>
+                        <td data-tr="Destek" data-de="Support">Destek</td>
                         <td><span class="duration short">00:00</span></td>
-                        <td><span class="call-status missed"><i class="ti ti-x"></i> Kaçırıldı</span></td>
+                        <td><span class="call-status missed"><i class="ti ti-x"></i> <span data-tr="Kaçırıldı" data-de="Verpasst">Kaçırıldı</span></span></td>
                         <td>-</td>
                         <td><button class="btn btn-sm btn-secondary" onclick="showCDRDetail(10245)"><i class="ti ti-eye"></i></button></td>
                     </tr>
                     <tr>
                         <td>#10244</td>
-                        <td>25.12.2024 14:20:55</td>
-                        <td><span class="call-type inbound"><i class="ti ti-phone-incoming"></i> Gelen</span></td>
-                        <td class="phone-number">+90 507 XXX XX33</td>
+                        <td>26.12.2025 14:20</td>
+                        <td><span class="call-type inbound"><i class="ti ti-phone-incoming"></i> <span data-tr="Gelen" data-de="Eingehend">Gelen</span></span></td>
+                        <td class="phone-number">+49 160 XXX XX33</td>
                         <td class="phone-number">8001</td>
                         <td>
                             <div class="agent-info">
-                                <div class="agent-avatar-sm">MD</div>
-                                <span>Mehmet D.</span>
+                                <div class="agent-avatar-sm">CD</div>
+                                <span>Can D.</span>
                             </div>
                         </td>
                         <td>VIP</td>
                         <td><span class="duration long">08:15</span></td>
-                        <td><span class="call-status answered"><i class="ti ti-check"></i> Cevaplandı</span></td>
-                        <td><span class="recording-link" onclick="playRecording(10244)"><i class="ti ti-player-play"></i> Dinle</span></td>
+                        <td><span class="call-status answered"><i class="ti ti-check"></i> <span data-tr="Cevaplandı" data-de="Beantwortet">Cevaplandı</span></span></td>
+                        <td><span class="recording-link" onclick="playRecording(10244)"><i class="ti ti-player-play"></i> <span data-tr="Dinle" data-de="Anhören">Dinle</span></span></td>
                         <td><button class="btn btn-sm btn-secondary" onclick="showCDRDetail(10244)"><i class="ti ti-eye"></i></button></td>
                     </tr>
                     <tr>
                         <td>#10243</td>
-                        <td>25.12.2024 14:15:22</td>
-                        <td><span class="call-type internal"><i class="ti ti-phone"></i> Dahili</span></td>
+                        <td>26.12.2025 14:15</td>
+                        <td><span class="call-type internal"><i class="ti ti-phone"></i> <span data-tr="Dahili" data-de="Intern">Dahili</span></span></td>
                         <td class="phone-number">101</td>
                         <td class="phone-number">102</td>
                         <td>
@@ -617,25 +617,25 @@
                         </td>
                         <td>-</td>
                         <td><span class="duration short">00:45</span></td>
-                        <td><span class="call-status answered"><i class="ti ti-check"></i> Cevaplandı</span></td>
-                        <td><span class="recording-link"><i class="ti ti-player-play"></i> Dinle</span></td>
+                        <td><span class="call-status answered"><i class="ti ti-check"></i> <span data-tr="Cevaplandı" data-de="Beantwortet">Cevaplandı</span></span></td>
+                        <td><span class="recording-link"><i class="ti ti-player-play"></i> <span data-tr="Dinle" data-de="Anhören">Dinle</span></span></td>
                         <td><button class="btn btn-sm btn-secondary" onclick="showCDRDetail(10243)"><i class="ti ti-eye"></i></button></td>
                     </tr>
                     <tr>
                         <td>#10242</td>
-                        <td>25.12.2024 14:10:08</td>
-                        <td><span class="call-type outbound"><i class="ti ti-phone-outgoing"></i> Giden</span></td>
-                        <td class="phone-number">+90 212 555 0002</td>
-                        <td class="phone-number">+90 533 XXX XX67</td>
+                        <td>26.12.2025 14:10</td>
+                        <td><span class="call-type outbound"><i class="ti ti-phone-outgoing"></i> <span data-tr="Giden" data-de="Ausgehend">Giden</span></span></td>
+                        <td class="phone-number">+49 30 555 0002</td>
+                        <td class="phone-number">+49 157 XXX XX67</td>
                         <td>
                             <div class="agent-info">
-                                <div class="agent-avatar-sm">EF</div>
-                                <span>Elif F.</span>
+                                <div class="agent-avatar-sm">MK</div>
+                                <span>Mehmet K.</span>
                             </div>
                         </td>
-                        <td>Satış</td>
+                        <td data-tr="Satış" data-de="Verkauf">Satış</td>
                         <td><span class="duration short">00:12</span></td>
-                        <td><span class="call-status busy"><i class="ti ti-phone-off"></i> Meşgul</span></td>
+                        <td><span class="call-status busy"><i class="ti ti-phone-off"></i> <span data-tr="Meşgul" data-de="Besetzt">Meşgul</span></span></td>
                         <td>-</td>
                         <td><button class="btn btn-sm btn-secondary" onclick="showCDRDetail(10242)"><i class="ti ti-eye"></i></button></td>
                     </tr>
@@ -660,87 +660,87 @@
 <div class="modal-overlay" id="cdrModal">
     <div class="modal-content">
         <div class="modal-header">
-            <h3><i class="ti ti-file-analytics"></i> Çağrı Detayı #<span id="cdrId">10247</span></h3>
+            <h3><i class="ti ti-file-analytics"></i> <span data-tr="Çağrı Detayı" data-de="Anrufdetails">Çağrı Detayı</span> #<span id="cdrId">10247</span></h3>
             <button class="modal-close" onclick="closeModal()"><i class="ti ti-x"></i></button>
         </div>
         <div class="modal-body">
             <div class="cdr-detail">
                 <div class="cdr-detail-section">
-                    <h4>Çağrı Bilgileri</h4>
+                    <h4 data-tr="Çağrı Bilgileri" data-de="Anrufinformationen">Çağrı Bilgileri</h4>
                     <div class="cdr-detail-row">
-                        <span>Çağrı ID:</span>
+                        <span data-tr="Çağrı ID:" data-de="Anruf-ID:">Çağrı ID:</span>
                         <span>#10247</span>
                     </div>
                     <div class="cdr-detail-row">
-                        <span>Tarih/Saat:</span>
-                        <span>25.12.2024 14:32:15</span>
+                        <span data-tr="Tarih/Saat:" data-de="Datum/Zeit:">Tarih/Saat:</span>
+                        <span>26.12.2025 14:32:15</span>
                     </div>
                     <div class="cdr-detail-row">
-                        <span>Tip:</span>
-                        <span>Gelen (Inbound)</span>
+                        <span data-tr="Tip:" data-de="Typ:">Tip:</span>
+                        <span data-tr="Gelen (Inbound)" data-de="Eingehend">Gelen (Inbound)</span>
                     </div>
                     <div class="cdr-detail-row">
-                        <span>Durum:</span>
-                        <span style="color: #4CAF50;">Cevaplandı</span>
+                        <span data-tr="Durum:" data-de="Status:">Durum:</span>
+                        <span style="color: #4CAF50;" data-tr="Cevaplandı" data-de="Beantwortet">Cevaplandı</span>
                     </div>
                 </div>
 
                 <div class="cdr-detail-section">
-                    <h4>Numara Bilgileri</h4>
+                    <h4 data-tr="Numara Bilgileri" data-de="Nummerninfo">Numara Bilgileri</h4>
                     <div class="cdr-detail-row">
-                        <span>Arayan:</span>
-                        <span>+90 532 XXX XX45</span>
+                        <span data-tr="Arayan:" data-de="Anrufer:">Arayan:</span>
+                        <span>+49 176 XXX XX45</span>
                     </div>
                     <div class="cdr-detail-row">
-                        <span>Aranan:</span>
-                        <span>8001 (Satış Kuyruğu)</span>
+                        <span data-tr="Aranan:" data-de="Angerufen:">Aranan:</span>
+                        <span>8001 (<span data-tr="Satış Kuyruğu" data-de="Verkaufswarteschlange">Satış Kuyruğu</span>)</span>
                     </div>
                     <div class="cdr-detail-row">
                         <span>DID:</span>
-                        <span>+90 212 555 0001</span>
+                        <span>+49 30 555 0001</span>
                     </div>
                     <div class="cdr-detail-row">
                         <span>Trunk:</span>
-                        <span>Turkcell SIP</span>
+                        <span>Sipgate Business</span>
                     </div>
                 </div>
 
                 <div class="cdr-detail-section">
-                    <h4>Süre Bilgileri</h4>
+                    <h4 data-tr="Süre Bilgileri" data-de="Dauerinformationen">Süre Bilgileri</h4>
                     <div class="cdr-detail-row">
-                        <span>Toplam Süre:</span>
+                        <span data-tr="Toplam Süre:" data-de="Gesamtdauer:">Toplam Süre:</span>
                         <span>05:42</span>
                     </div>
                     <div class="cdr-detail-row">
-                        <span>Çalma Süresi:</span>
+                        <span data-tr="Çalma Süresi:" data-de="Klingeldauer:">Çalma Süresi:</span>
                         <span>00:08</span>
                     </div>
                     <div class="cdr-detail-row">
-                        <span>Konuşma Süresi:</span>
+                        <span data-tr="Konuşma Süresi:" data-de="Gesprächsdauer:">Konuşma Süresi:</span>
                         <span>05:34</span>
                     </div>
                     <div class="cdr-detail-row">
-                        <span>Kuyruk Bekleme:</span>
+                        <span data-tr="Kuyruk Bekleme:" data-de="Wartezeit:">Kuyruk Bekleme:</span>
                         <span>00:12</span>
                     </div>
                 </div>
 
                 <div class="cdr-detail-section">
-                    <h4>Agent & Sonuç</h4>
+                    <h4 data-tr="Agent & Sonuç" data-de="Agent & Ergebnis">Agent & Sonuç</h4>
                     <div class="cdr-detail-row">
                         <span>Agent:</span>
-                        <span>Ahmet Yılmaz</span>
+                        <span>Ahmet K.</span>
                     </div>
                     <div class="cdr-detail-row">
-                        <span>Kuyruk:</span>
-                        <span>Satış Ekibi</span>
+                        <span data-tr="Kuyruk:" data-de="Warteschlange:">Kuyruk:</span>
+                        <span data-tr="Satış Ekibi" data-de="Verkaufsteam">Satış Ekibi</span>
                     </div>
                     <div class="cdr-detail-row">
                         <span>Disposition:</span>
-                        <span style="color: #4CAF50;">Satış Tamam</span>
+                        <span style="color: #4CAF50;" data-tr="Satış Tamam" data-de="Verkauf OK">Satış Tamam</span>
                     </div>
                     <div class="cdr-detail-row">
-                        <span>QA Puanı:</span>
+                        <span data-tr="QA Puanı:" data-de="QA-Punktzahl:">QA Puanı:</span>
                         <span>92/100</span>
                     </div>
                 </div>
@@ -748,18 +748,18 @@
                 <!-- Waveform Player -->
                 <div class="waveform-player">
                     <div class="waveform-controls">
-                        <button class="play-btn"><i class="ti ti-player-play"></i></button>
+                        <button class="play-btn" onclick="togglePlayback()"><i class="ti ti-player-play" id="playIcon"></i></button>
                         <div class="time-display">
                             <span id="currentTime">00:00</span> / <span id="totalTime">05:42</span>
                         </div>
                         <div class="speed-control">
-                            <button class="speed-btn">0.5x</button>
-                            <button class="speed-btn active">1x</button>
-                            <button class="speed-btn">1.5x</button>
-                            <button class="speed-btn">2x</button>
+                            <button class="speed-btn" onclick="setSpeed(0.5)">0.5x</button>
+                            <button class="speed-btn active" onclick="setSpeed(1)">1x</button>
+                            <button class="speed-btn" onclick="setSpeed(1.5)">1.5x</button>
+                            <button class="speed-btn" onclick="setSpeed(2)">2x</button>
                         </div>
-                        <button class="btn btn-sm btn-secondary" style="margin-left: 1rem;">
-                            <i class="ti ti-download"></i> İndir
+                        <button class="btn btn-sm btn-secondary" style="margin-left: 1rem;" onclick="downloadRecording()">
+                            <i class="ti ti-download"></i> <span data-tr="İndir" data-de="Download">İndir</span>
                         </button>
                     </div>
                     <div class="waveform-visual" id="waveform">
@@ -769,9 +769,9 @@
             </div>
         </div>
         <div class="modal-footer">
-            <button class="btn btn-secondary" onclick="closeModal()">Kapat</button>
-            <button class="btn btn-info"><i class="ti ti-message"></i> AI Özet</button>
-            <button class="btn btn-primary"><i class="ti ti-clipboard"></i> CRM'e Git</button>
+            <button class="btn btn-secondary" onclick="closeModal()" data-tr="Kapat" data-de="Schließen">Kapat</button>
+            <button class="btn btn-info"><i class="ti ti-message"></i> <span data-tr="AI Özet" data-de="AI-Zusammenfassung">AI Özet</span></button>
+            <button class="btn btn-primary"><i class="ti ti-clipboard"></i> <span data-tr="CRM'e Git" data-de="Zu CRM gehen">CRM'e Git</span></button>
         </div>
     </div>
 </div>
@@ -779,60 +779,104 @@
 
 {% block extra_js %}
 <script>
-function applyFilters() {
-    alert('Filtreler uygulanıyor...');
-}
-
-function clearFilters() {
-    document.querySelectorAll('.filter-panel input, .filter-panel select').forEach(el => {
-        el.value = '';
-    });
-}
-
-function exportCDR() {
-    alert('CDR dışa aktarılıyor (CSV/Excel)...');
-}
-
-function showCDRDetail(id) {
-    document.getElementById('cdrId').textContent = id;
-    document.getElementById('cdrModal').classList.add('show');
-    generateWaveform();
-}
-
-function playRecording(id) {
-    showCDRDetail(id);
-}
-
-function closeModal() {
-    document.getElementById('cdrModal').classList.remove('show');
-}
-
-function generateWaveform() {
-    const waveform = document.getElementById('waveform');
-    waveform.innerHTML = '';
+(function() {
+    'use strict';
     
-    for (let i = 0; i < 100; i++) {
-        const bar = document.createElement('div');
-        bar.className = 'waveform-bar';
-        bar.style.height = (Math.random() * 40 + 10) + 'px';
-        waveform.appendChild(bar);
+    function getCurrentLang() {
+        return localStorage.getItem('selectedLang') || 'tr';
     }
-}
+    
+    function showNotification(message, type) {
+        const toast = document.createElement('div');
+        toast.style.cssText = 'position:fixed;top:20px;right:20px;padding:15px 25px;border-radius:10px;color:white;font-weight:500;z-index:9999;box-shadow:0 4px 20px rgba(0,0,0,0.2);animation:slideIn 0.3s ease;';
+        toast.style.background = type === 'success' ? 'linear-gradient(135deg, #4CAF50, #45a049)' : 
+                                  type === 'error' ? 'linear-gradient(135deg, #f44336, #d32f2f)' : 
+                                  'linear-gradient(135deg, #2196F3, #1976D2)';
+        toast.textContent = message;
+        document.body.appendChild(toast);
+        setTimeout(function() { toast.remove(); }, 3000);
+    }
 
-// Speed control
-document.querySelectorAll('.speed-btn').forEach(btn => {
-    btn.addEventListener('click', function() {
-        document.querySelectorAll('.speed-btn').forEach(b => b.classList.remove('active'));
-        this.classList.add('active');
-    });
-});
+    window.applyFilters = function() {
+        const msg = getCurrentLang() === 'de' ? 'Filter werden angewendet...' : 'Filtreler uygulanıyor...';
+        showNotification(msg, 'info');
+    };
 
-// Set default dates
-const today = new Date().toISOString().split('T')[0];
-document.getElementById('dateFrom').value = today;
-document.getElementById('dateTo').value = today;
+    window.clearFilters = function() {
+        document.querySelectorAll('.filter-panel input, .filter-panel select').forEach(function(el) {
+            el.value = '';
+        });
+        const msg = getCurrentLang() === 'de' ? 'Filter zurückgesetzt' : 'Filtreler sıfırlandı';
+        showNotification(msg, 'info');
+    };
+
+    window.exportCDR = function() {
+        const msg = getCurrentLang() === 'de' ? 'CDR wird exportiert (CSV/Excel)...' : 'CDR dışa aktarılıyor (CSV/Excel)...';
+        showNotification(msg, 'info');
+    };
+
+    window.showCDRDetail = function(id) {
+        document.getElementById('cdrId').textContent = id;
+        document.getElementById('cdrModal').classList.add('show');
+        generateWaveform();
+    };
+
+    window.playRecording = function(id) {
+        showCDRDetail(id);
+    };
+
+    window.closeModal = function() {
+        document.getElementById('cdrModal').classList.remove('show');
+    };
+
+    window.generateWaveform = function() {
+        const waveform = document.getElementById('waveform');
+        waveform.innerHTML = '';
+        
+        for (let i = 0; i < 100; i++) {
+            const bar = document.createElement('div');
+            bar.className = 'waveform-bar';
+            bar.style.height = (Math.random() * 40 + 10) + 'px';
+            waveform.appendChild(bar);
+        }
+    };
+
+    window.togglePlayback = function() {
+        const icon = document.getElementById('playIcon');
+        if (icon.classList.contains('ti-player-play')) {
+            icon.className = 'ti ti-player-pause';
+            const msg = getCurrentLang() === 'de' ? 'Wiedergabe gestartet' : 'Oynatma başladı';
+            showNotification(msg, 'info');
+        } else {
+            icon.className = 'ti ti-player-play';
+        }
+    };
+
+    window.setSpeed = function(speed) {
+        document.querySelectorAll('.speed-btn').forEach(function(b) { b.classList.remove('active'); });
+        event.target.classList.add('active');
+        const msg = getCurrentLang() === 'de' ? 'Geschwindigkeit: ' + speed + 'x' : 'Hız: ' + speed + 'x';
+        showNotification(msg, 'info');
+    };
+
+    window.downloadRecording = function() {
+        const msg = getCurrentLang() === 'de' ? 'Aufnahme wird heruntergeladen...' : 'Kayıt indiriliyor...';
+        showNotification(msg, 'info');
+    };
+
+    // Set default dates
+    const today = new Date().toISOString().split('T')[0];
+    const dateFrom = document.getElementById('dateFrom');
+    const dateTo = document.getElementById('dateTo');
+    if (dateFrom) dateFrom.value = today;
+    if (dateTo) dateTo.value = today;
+
+    // Add animation styles
+    const style = document.createElement('style');
+    style.textContent = '@keyframes slideIn{from{transform:translateX(100%);opacity:0}to{transform:translateX(0);opacity:1}}';
+    document.head.appendChild(style);
+    
+    console.log('CDR page initialized');
+})();
 </script>
 {% endblock %}
-
-
-
