@@ -850,6 +850,8 @@
 
 {% block extra_js %}
 <script>
+console.log('SIP Trunk script loaded');
+
 // Get current language
 function getCurrentLang() {
     return localStorage.getItem('selectedLang') || 'tr';
@@ -910,11 +912,31 @@ function t(key) {
 
 // Modal functions
 function openAddTrunkModal() {
-    document.getElementById('modalTitle').textContent = t('newTrunk');
-    document.getElementById('trunkForm').reset();
-    document.getElementById('trunkId').value = '';
-    document.getElementById('testResult').classList.remove('show');
-    document.getElementById('trunkModal').classList.add('show');
+    console.log('openAddTrunkModal called');
+    try {
+        const modal = document.getElementById('trunkModal');
+        const form = document.getElementById('trunkForm');
+        const title = document.getElementById('modalTitle');
+        const testResult = document.getElementById('testResult');
+        const trunkId = document.getElementById('trunkId');
+        
+        if (!modal) {
+            console.error('Modal element not found!');
+            alert('Modal bulunamadı!');
+            return;
+        }
+        
+        if (title) title.textContent = t('newTrunk');
+        if (form) form.reset();
+        if (trunkId) trunkId.value = '';
+        if (testResult) testResult.classList.remove('show');
+        
+        modal.classList.add('show');
+        console.log('Modal should be visible now');
+    } catch (e) {
+        console.error('Error opening modal:', e);
+        alert('Hata: ' + e.message);
+    }
 }
 
 function closeModal() {
