@@ -644,6 +644,97 @@
     </div>
 </div>
 
+<!-- New Custom Role Modal -->
+<div class="modal-overlay" id="newRoleModal">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h3><i class="ti ti-plus"></i> <span data-tr="Özel Şablon Oluştur" data-de="Benutzerdefinierte Vorlage erstellen">Özel Şablon Oluştur</span></h3>
+            <button class="modal-close" onclick="closeNewRoleModal()">
+                <i class="ti ti-x"></i>
+            </button>
+        </div>
+        <div class="modal-body">
+            <div class="form-group">
+                <label data-tr="Şablon Adı" data-de="Vorlagenname">Şablon Adı</label>
+                <input type="text" id="newRoleName" class="form-control" style="width: 100%; padding: 0.75rem; border: 1px solid #e0e0e0; border-radius: 8px;" 
+                       data-tr-placeholder="Örn: Satış Temsilcisi" data-de-placeholder="z.B. Verkaufsberater">
+            </div>
+            <div class="form-group">
+                <label data-tr="Açıklama" data-de="Beschreibung">Açıklama</label>
+                <input type="text" id="newRoleDesc" class="form-control" style="width: 100%; padding: 0.75rem; border: 1px solid #e0e0e0; border-radius: 8px;"
+                       data-tr-placeholder="Şablon açıklaması" data-de-placeholder="Vorlagenbeschreibung">
+            </div>
+            <div class="form-group">
+                <label data-tr="Temel Rol (Başlangıç Yetkileri)" data-de="Basisrolle (Startberechtigungen)">Temel Rol (Başlangıç Yetkileri)</label>
+                <select id="baseRole" class="form-control" style="width: 100%; padding: 0.75rem; border: 1px solid #e0e0e0; border-radius: 8px;">
+                    <option value="agent">Agent</option>
+                    <option value="qc_listener" data-tr="QC Dinleme" data-de="QC-Prüfer">QC Dinleme</option>
+                    <option value="supervisor">Supervisor</option>
+                    <option value="admin">Admin</option>
+                </select>
+            </div>
+            
+            <div class="section-title"><i class="ti ti-shield"></i> <span data-tr="Modül Yetkileri" data-de="Modulberechtigungen">Modül Yetkileri</span></div>
+            
+            <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 0.75rem;">
+                <label class="perm-list-item" style="cursor: pointer;">
+                    <input type="checkbox" id="perm_dashboard" checked style="margin-right: 0.75rem;">
+                    <i class="ti ti-dashboard"></i>
+                    <span class="name">Dashboard</span>
+                </label>
+                <label class="perm-list-item" style="cursor: pointer;">
+                    <input type="checkbox" id="perm_crm" checked style="margin-right: 0.75rem;">
+                    <i class="ti ti-address-book"></i>
+                    <span class="name">CRM</span>
+                </label>
+                <label class="perm-list-item" style="cursor: pointer;">
+                    <input type="checkbox" id="perm_campaigns" style="margin-right: 0.75rem;">
+                    <i class="ti ti-speakerphone"></i>
+                    <span class="name" data-tr="Kampanyalar" data-de="Kampagnen">Kampanyalar</span>
+                </label>
+                <label class="perm-list-item" style="cursor: pointer;">
+                    <input type="checkbox" id="perm_voip" style="margin-right: 0.75rem;">
+                    <i class="ti ti-phone"></i>
+                    <span class="name">VoIP</span>
+                </label>
+                <label class="perm-list-item" style="cursor: pointer;">
+                    <input type="checkbox" id="perm_qa" style="margin-right: 0.75rem;">
+                    <i class="ti ti-certificate"></i>
+                    <span class="name" data-tr="Kalite (QA)" data-de="Qualität (QA)">Kalite (QA)</span>
+                </label>
+                <label class="perm-list-item" style="cursor: pointer;">
+                    <input type="checkbox" id="perm_reports" style="margin-right: 0.75rem;">
+                    <i class="ti ti-chart-bar"></i>
+                    <span class="name" data-tr="Raporlar" data-de="Berichte">Raporlar</span>
+                </label>
+                <label class="perm-list-item" style="cursor: pointer;">
+                    <input type="checkbox" id="perm_ai" style="margin-right: 0.75rem;">
+                    <i class="ti ti-brain"></i>
+                    <span class="name" data-tr="Yapay Zeka" data-de="Künstliche Intelligenz">Yapay Zeka</span>
+                </label>
+                <label class="perm-list-item" style="cursor: pointer;">
+                    <input type="checkbox" id="perm_admin" style="margin-right: 0.75rem;">
+                    <i class="ti ti-settings"></i>
+                    <span class="name" data-tr="Yönetim" data-de="Verwaltung">Yönetim</span>
+                </label>
+            </div>
+            
+            <div style="background: #e8f5e9; padding: 1rem; border-radius: 8px; margin-top: 1rem;">
+                <i class="ti ti-info-circle" style="color: #2e7d32;"></i>
+                <span style="color: #2e7d32; font-size: 0.85rem;" data-tr="Şablon oluşturduktan sonra kullanıcılara hızlıca uygulayabilirsiniz." data-de="Nach dem Erstellen der Vorlage können Sie sie schnell auf Benutzer anwenden.">
+                    Şablon oluşturduktan sonra kullanıcılara hızlıca uygulayabilirsiniz.
+                </span>
+            </div>
+        </div>
+        <div class="modal-footer">
+            <button class="btn btn-secondary" onclick="closeNewRoleModal()" data-tr="İptal" data-de="Abbrechen">İptal</button>
+            <button class="btn btn-primary" onclick="saveNewRole()">
+                <i class="ti ti-device-floppy"></i> <span data-tr="Şablon Oluştur" data-de="Vorlage erstellen">Şablon Oluştur</span>
+            </button>
+        </div>
+    </div>
+</div>
+
 <!-- Apply Template Modal -->
 <div class="modal-overlay" id="applyModal">
     <div class="modal-content">
@@ -819,7 +910,49 @@
     };
     
     window.openNewRoleModal = function() {
-        showNotification(getCurrentLang() === 'de' ? 'Diese Funktion wird bald verfügbar sein' : 'Bu özellik yakında kullanıma sunulacak', 'info');
+        document.getElementById('newRoleName').value = '';
+        document.getElementById('newRoleDesc').value = '';
+        document.getElementById('baseRole').value = 'agent';
+        // Reset checkboxes
+        document.getElementById('perm_dashboard').checked = true;
+        document.getElementById('perm_crm').checked = true;
+        document.getElementById('perm_campaigns').checked = false;
+        document.getElementById('perm_voip').checked = false;
+        document.getElementById('perm_qa').checked = false;
+        document.getElementById('perm_reports').checked = false;
+        document.getElementById('perm_ai').checked = false;
+        document.getElementById('perm_admin').checked = false;
+        document.getElementById('newRoleModal').classList.add('show');
+    };
+    
+    window.closeNewRoleModal = function() {
+        document.getElementById('newRoleModal').classList.remove('show');
+    };
+    
+    window.saveNewRole = function() {
+        const name = document.getElementById('newRoleName').value.trim();
+        const desc = document.getElementById('newRoleDesc').value.trim();
+        
+        if (!name) {
+            showNotification(getCurrentLang() === 'de' ? 'Bitte geben Sie einen Vorlagennamen ein' : 'Lütfen şablon adı girin', 'error');
+            return;
+        }
+        
+        // Collect selected permissions
+        const perms = [];
+        if (document.getElementById('perm_dashboard').checked) perms.push('Dashboard');
+        if (document.getElementById('perm_crm').checked) perms.push('CRM');
+        if (document.getElementById('perm_campaigns').checked) perms.push('Kampanyalar');
+        if (document.getElementById('perm_voip').checked) perms.push('VoIP');
+        if (document.getElementById('perm_qa').checked) perms.push('QA');
+        if (document.getElementById('perm_reports').checked) perms.push('Raporlar');
+        if (document.getElementById('perm_ai').checked) perms.push('Yapay Zeka');
+        if (document.getElementById('perm_admin').checked) perms.push('Yönetim');
+        
+        console.log('Creating role template:', { name, desc, perms });
+        
+        showNotification(getCurrentLang() === 'de' ? 'Vorlage "' + name + '" erfolgreich erstellt' : '"' + name + '" şablonu başarıyla oluşturuldu', 'success');
+        closeNewRoleModal();
     };
     
     // Add animation styles
