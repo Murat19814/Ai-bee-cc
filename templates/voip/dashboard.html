@@ -439,20 +439,20 @@
     <div class="live-stats">
         <div class="live-stat calls">
             <div class="live-stat-icon"><i class="ti ti-phone-call"></i></div>
-            <div class="live-stat-value" id="activeCallsCount">24</div>
-            <div class="live-stat-label">Aktif Çağrı</div>
+            <div class="live-stat-value" id="activeCallsCount">23</div>
+            <div class="live-stat-label" data-tr="Aktif Çağrı" data-de="Aktive Anrufe">Aktif Çağrı</div>
             <div class="live-stat-trend up"><i class="ti ti-arrow-up"></i> 12%</div>
         </div>
         <div class="live-stat waiting">
             <div class="live-stat-icon"><i class="ti ti-clock"></i></div>
-            <div class="live-stat-value" id="waitingCount">8</div>
-            <div class="live-stat-label">Bekleyen</div>
+            <div class="live-stat-value" id="waitingCount">6</div>
+            <div class="live-stat-label" data-tr="Bekleyen" data-de="Wartend">Bekleyen</div>
             <div class="live-stat-trend down"><i class="ti ti-arrow-down"></i> 5%</div>
         </div>
         <div class="live-stat agents">
             <div class="live-stat-icon"><i class="ti ti-users"></i></div>
-            <div class="live-stat-value" id="availableAgents">32</div>
-            <div class="live-stat-label">Müsait Agent</div>
+            <div class="live-stat-value" id="availableAgents">37</div>
+            <div class="live-stat-label" data-tr="Müsait Agent" data-de="Verfügbare Agenten">Müsait Agent</div>
             <div class="live-stat-trend up"><i class="ti ti-arrow-up"></i> 8%</div>
         </div>
         <div class="live-stat sla">
@@ -470,7 +470,7 @@
         <div class="live-stat trunk">
             <div class="live-stat-icon"><i class="ti ti-server"></i></div>
             <div class="live-stat-value" id="trunkUsage">67%</div>
-            <div class="live-stat-label">Trunk Kullanımı</div>
+            <div class="live-stat-label" data-tr="Trunk Kullanımı" data-de="Trunk-Auslastung">Trunk Kullanımı</div>
             <div class="live-stat-trend up"><i class="ti ti-arrow-up"></i> 3%</div>
         </div>
     </div>
@@ -478,65 +478,65 @@
     <!-- Active Calls Panel -->
     <div class="panel">
         <div class="panel-header">
-            <h3><i class="ti ti-phone-call"></i> Aktif Çağrılar</h3>
+            <h3><i class="ti ti-phone-call"></i> <span data-tr="Aktif Çağrılar" data-de="Aktive Anrufe">Aktif Çağrılar</span></h3>
             <span class="live-badge">LIVE</span>
         </div>
         <div class="panel-body">
             <div class="active-call">
                 <div class="active-call-header">
-                    <span class="call-type-badge inbound"><i class="ti ti-phone-incoming"></i> Gelen</span>
+                    <span class="call-type-badge inbound"><i class="ti ti-phone-incoming"></i> <span data-tr="Gelen" data-de="Eingehend">Gelen</span></span>
                     <span class="call-timer">05:42</span>
                 </div>
                 <div class="active-call-body">
                     <div class="call-info-row"><i class="ti ti-phone"></i> +90 532 XXX XX45</div>
                     <div class="call-info-row"><i class="ti ti-user"></i> Ahmet Y.</div>
-                    <div class="call-info-row"><i class="ti ti-users-group"></i> Satış</div>
+                    <div class="call-info-row"><i class="ti ti-users-group"></i> <span data-tr="Satış" data-de="Vertrieb">Satış</span></div>
                     <div class="call-info-row"><i class="ti ti-building"></i> ABC Şirket</div>
                 </div>
                 <div class="active-call-footer">
-                    <button class="call-action-btn listen"><i class="ti ti-ear"></i> Dinle</button>
-                    <button class="call-action-btn whisper"><i class="ti ti-message"></i> Fısılda</button>
-                    <button class="call-action-btn barge"><i class="ti ti-phone-plus"></i> Katıl</button>
+                    <button class="call-action-btn listen" onclick="listenCall(1)"><i class="ti ti-ear"></i> <span data-tr="Dinle" data-de="Hören">Dinle</span></button>
+                    <button class="call-action-btn whisper" onclick="whisperCall(1)"><i class="ti ti-message"></i> <span data-tr="Fısılda" data-de="Flüstern">Fısılda</span></button>
+                    <button class="call-action-btn barge" onclick="bargeCall(1)"><i class="ti ti-phone-plus"></i> <span data-tr="Katıl" data-de="Beitreten">Katıl</span></button>
                 </div>
             </div>
 
             <div class="active-call ringing">
                 <div class="active-call-header">
-                    <span class="call-type-badge inbound"><i class="ti ti-phone-incoming"></i> Çalıyor</span>
+                    <span class="call-type-badge inbound"><i class="ti ti-phone-incoming"></i> <span data-tr="Çalıyor" data-de="Klingelt">Çalıyor</span></span>
                     <span class="call-timer" style="color: #FF9800;">00:08</span>
                 </div>
                 <div class="active-call-body">
                     <div class="call-info-row"><i class="ti ti-phone"></i> +90 555 XXX XX12</div>
-                    <div class="call-info-row"><i class="ti ti-user"></i> Beklemede</div>
-                    <div class="call-info-row"><i class="ti ti-users-group"></i> Destek</div>
+                    <div class="call-info-row"><i class="ti ti-user"></i> <span data-tr="Beklemede" data-de="Wartend">Beklemede</span></div>
+                    <div class="call-info-row"><i class="ti ti-users-group"></i> <span data-tr="Destek" data-de="Support">Destek</span></div>
                     <div class="call-info-row"><i class="ti ti-building"></i> -</div>
                 </div>
                 <div class="active-call-footer">
-                    <button class="call-action-btn hangup"><i class="ti ti-phone-off"></i> Kapat</button>
+                    <button class="call-action-btn hangup" onclick="hangupCall(2)"><i class="ti ti-phone-off"></i> <span data-tr="Kapat" data-de="Auflegen">Kapat</span></button>
                 </div>
             </div>
 
             <div class="active-call">
                 <div class="active-call-header">
-                    <span class="call-type-badge outbound"><i class="ti ti-phone-outgoing"></i> Giden</span>
+                    <span class="call-type-badge outbound"><i class="ti ti-phone-outgoing"></i> <span data-tr="Giden" data-de="Ausgehend">Giden</span></span>
                     <span class="call-timer">02:18</span>
                 </div>
                 <div class="active-call-body">
                     <div class="call-info-row"><i class="ti ti-phone"></i> +90 544 XXX XX89</div>
                     <div class="call-info-row"><i class="ti ti-user"></i> Ayşe K.</div>
-                    <div class="call-info-row"><i class="ti ti-users-group"></i> Satış</div>
+                    <div class="call-info-row"><i class="ti ti-users-group"></i> <span data-tr="Satış" data-de="Vertrieb">Satış</span></div>
                     <div class="call-info-row"><i class="ti ti-building"></i> XYZ Ltd.</div>
                 </div>
                 <div class="active-call-footer">
-                    <button class="call-action-btn listen"><i class="ti ti-ear"></i> Dinle</button>
-                    <button class="call-action-btn whisper"><i class="ti ti-message"></i> Fısılda</button>
-                    <button class="call-action-btn barge"><i class="ti ti-phone-plus"></i> Katıl</button>
+                    <button class="call-action-btn listen" onclick="listenCall(3)"><i class="ti ti-ear"></i> <span data-tr="Dinle" data-de="Hören">Dinle</span></button>
+                    <button class="call-action-btn whisper" onclick="whisperCall(3)"><i class="ti ti-message"></i> <span data-tr="Fısılda" data-de="Flüstern">Fısılda</span></button>
+                    <button class="call-action-btn barge" onclick="bargeCall(3)"><i class="ti ti-phone-plus"></i> <span data-tr="Katıl" data-de="Beitreten">Katıl</span></button>
                 </div>
             </div>
 
             <div class="active-call hold">
                 <div class="active-call-header">
-                    <span class="call-type-badge inbound" style="background: rgba(156, 39, 176, 0.1); color: #7B1FA2;"><i class="ti ti-player-pause"></i> Bekletme</span>
+                    <span class="call-type-badge inbound" style="background: rgba(156, 39, 176, 0.1); color: #7B1FA2;"><i class="ti ti-player-pause"></i> <span data-tr="Bekletme" data-de="Halten">Bekletme</span></span>
                     <span class="call-timer" style="color: #9C27B0;">00:45</span>
                 </div>
                 <div class="active-call-body">
@@ -546,8 +546,8 @@
                     <div class="call-info-row"><i class="ti ti-building"></i> Premium Ltd.</div>
                 </div>
                 <div class="active-call-footer">
-                    <button class="call-action-btn listen"><i class="ti ti-ear"></i> Dinle</button>
-                    <button class="call-action-btn hangup"><i class="ti ti-phone-off"></i> Kapat</button>
+                    <button class="call-action-btn listen" onclick="listenCall(4)"><i class="ti ti-ear"></i> <span data-tr="Dinle" data-de="Hören">Dinle</span></button>
+                    <button class="call-action-btn hangup" onclick="hangupCall(4)"><i class="ti ti-phone-off"></i> <span data-tr="Kapat" data-de="Auflegen">Kapat</span></button>
                 </div>
             </div>
         </div>
@@ -556,19 +556,19 @@
     <!-- Queue Status Panel -->
     <div class="panel">
         <div class="panel-header">
-            <h3><i class="ti ti-users-group"></i> Kuyruk Durumu</h3>
+            <h3><i class="ti ti-users-group"></i> <span data-tr="Kuyruk Durumu" data-de="Warteschlangen-Status">Kuyruk Durumu</span></h3>
         </div>
         <div class="panel-body">
             <div class="queue-status-grid">
                 <div class="queue-status-item">
                     <div class="queue-status-header">
-                        <span class="queue-name"><i class="ti ti-shopping-cart"></i> Satış Ekibi</span>
-                        <span class="queue-waiting">3 bekliyor</span>
+                        <span class="queue-name"><i class="ti ti-shopping-cart"></i> <span data-tr="Satış Ekibi" data-de="Vertriebsteam">Satış Ekibi</span></span>
+                        <span class="queue-waiting"><span data-tr="3 bekliyor" data-de="3 wartend">3 bekliyor</span></span>
                     </div>
                     <div class="queue-stats-row">
-                        <span><i class="ti ti-user-check"></i> 5 müsait</span>
-                        <span><i class="ti ti-phone-call"></i> 4 meşgul</span>
-                        <span><i class="ti ti-clock"></i> 12s ort.</span>
+                        <span><i class="ti ti-user-check"></i> <span data-tr="5 müsait" data-de="5 verfügbar">5 müsait</span></span>
+                        <span><i class="ti ti-phone-call"></i> <span data-tr="4 meşgul" data-de="4 beschäftigt">4 meşgul</span></span>
+                        <span><i class="ti ti-clock"></i> <span data-tr="12s ort." data-de="12s Ø">12s ort.</span></span>
                     </div>
                     <div class="sla-mini">
                         <span style="font-size: 0.75rem; color: #888;">SLA</span>
@@ -581,13 +581,13 @@
 
                 <div class="queue-status-item">
                     <div class="queue-status-header">
-                        <span class="queue-name"><i class="ti ti-headset"></i> Destek Ekibi</span>
-                        <span class="queue-waiting" style="background: #f44336;">5 bekliyor</span>
+                        <span class="queue-name"><i class="ti ti-headset"></i> <span data-tr="Destek Ekibi" data-de="Support-Team">Destek Ekibi</span></span>
+                        <span class="queue-waiting" style="background: #f44336;"><span data-tr="5 bekliyor" data-de="5 wartend">5 bekliyor</span></span>
                     </div>
                     <div class="queue-stats-row">
-                        <span><i class="ti ti-user-check"></i> 2 müsait</span>
-                        <span><i class="ti ti-phone-call"></i> 6 meşgul</span>
-                        <span><i class="ti ti-clock"></i> 45s ort.</span>
+                        <span><i class="ti ti-user-check"></i> <span data-tr="2 müsait" data-de="2 verfügbar">2 müsait</span></span>
+                        <span><i class="ti ti-phone-call"></i> <span data-tr="6 meşgul" data-de="6 beschäftigt">6 meşgul</span></span>
+                        <span><i class="ti ti-clock"></i> <span data-tr="45s ort." data-de="45s Ø">45s ort.</span></span>
                     </div>
                     <div class="sla-mini">
                         <span style="font-size: 0.75rem; color: #888;">SLA</span>
@@ -601,12 +601,12 @@
                 <div class="queue-status-item">
                     <div class="queue-status-header">
                         <span class="queue-name"><i class="ti ti-crown"></i> VIP</span>
-                        <span class="queue-waiting" style="background: #4CAF50;">0 bekliyor</span>
+                        <span class="queue-waiting" style="background: #4CAF50;"><span data-tr="0 bekliyor" data-de="0 wartend">0 bekliyor</span></span>
                     </div>
                     <div class="queue-stats-row">
-                        <span><i class="ti ti-user-check"></i> 4 müsait</span>
-                        <span><i class="ti ti-phone-call"></i> 1 meşgul</span>
-                        <span><i class="ti ti-clock"></i> 5s ort.</span>
+                        <span><i class="ti ti-user-check"></i> <span data-tr="4 müsait" data-de="4 verfügbar">4 müsait</span></span>
+                        <span><i class="ti ti-phone-call"></i> <span data-tr="1 meşgul" data-de="1 beschäftigt">1 meşgul</span></span>
+                        <span><i class="ti ti-clock"></i> <span data-tr="5s ort." data-de="5s Ø">5s ort.</span></span>
                     </div>
                     <div class="sla-mini">
                         <span style="font-size: 0.75rem; color: #888;">SLA</span>
@@ -619,13 +619,13 @@
             </div>
 
             <!-- Trunk Health -->
-            <h4 style="margin: 1.5rem 0 0.75rem; font-size: 0.85rem; color: #888;">Trunk Durumu</h4>
+            <h4 style="margin: 1.5rem 0 0.75rem; font-size: 0.85rem; color: #888;" data-tr="Trunk Durumu" data-de="Trunk-Status">Trunk Durumu</h4>
             <div class="trunk-health-list">
                 <div class="trunk-health-item">
                     <div class="trunk-icon"><i class="ti ti-server-bolt"></i></div>
                     <div class="trunk-info">
                         <strong>Turkcell SIP</strong>
-                        <span>30 kanal aktif</span>
+                        <span data-tr="30 kanal aktif" data-de="30 Kanäle aktiv">30 kanal aktif</span>
                     </div>
                     <div class="trunk-metrics">
                         <div class="trunk-channels">24/30</div>
@@ -636,7 +636,7 @@
                     <div class="trunk-icon"><i class="ti ti-server-bolt"></i></div>
                     <div class="trunk-info">
                         <strong>Vodafone Trunk</strong>
-                        <span>20 kanal aktif</span>
+                        <span data-tr="20 kanal aktif" data-de="20 Kanäle aktiv">20 kanal aktif</span>
                     </div>
                     <div class="trunk-metrics">
                         <div class="trunk-channels">12/20</div>
@@ -650,13 +650,13 @@
     <!-- Agent Status Panel -->
     <div class="panel" style="grid-column: 3; grid-row: 2 / 4;">
         <div class="panel-header">
-            <h3><i class="ti ti-users"></i> Agent Durumları</h3>
+            <h3><i class="ti ti-users"></i> <span data-tr="Agent Durumları" data-de="Agent-Status">Agent Durumları</span></h3>
         </div>
         <div class="panel-body">
             <div class="panel-tabs">
-                <button class="panel-tab active">Tümü (45)</button>
-                <button class="panel-tab">Müsait (32)</button>
-                <button class="panel-tab">Meşgul (13)</button>
+                <button class="panel-tab active" data-filter="all"><span data-tr="Tümü (45)" data-de="Alle (45)">Tümü (45)</span></button>
+                <button class="panel-tab" data-filter="available"><span data-tr="Müsait (32)" data-de="Verfügbar (32)">Müsait (32)</span></button>
+                <button class="panel-tab" data-filter="busy"><span data-tr="Meşgul (13)" data-de="Beschäftigt (13)">Meşgul (13)</span></button>
             </div>
 
             <div class="agent-status-list">
@@ -765,9 +765,13 @@
 <script>
 // Simulate real-time updates
 function updateStats() {
-    document.getElementById('activeCallsCount').textContent = Math.floor(Math.random() * 10) + 20;
-    document.getElementById('waitingCount').textContent = Math.floor(Math.random() * 8) + 3;
-    document.getElementById('availableAgents').textContent = Math.floor(Math.random() * 10) + 28;
+    const activeCount = Math.floor(Math.random() * 10) + 18;
+    const waitingCount = Math.floor(Math.random() * 8) + 3;
+    const agentsCount = Math.floor(Math.random() * 10) + 30;
+    
+    document.getElementById('activeCallsCount').textContent = activeCount;
+    document.getElementById('waitingCount').textContent = waitingCount;
+    document.getElementById('availableAgents').textContent = agentsCount;
 }
 
 setInterval(updateStats, 5000);
@@ -777,23 +781,119 @@ document.querySelectorAll('.panel-tab').forEach(tab => {
     tab.addEventListener('click', function() {
         document.querySelectorAll('.panel-tab').forEach(t => t.classList.remove('active'));
         this.classList.add('active');
+        
+        const filter = this.getAttribute('data-filter');
+        filterAgents(filter);
     });
 });
 
-// WebSocket for real-time updates (simulation)
+// Filter agents by status
+function filterAgents(filter) {
+    const agents = document.querySelectorAll('.agent-status-item');
+    agents.forEach(agent => {
+        if (filter === 'all') {
+            agent.style.display = 'flex';
+        } else {
+            const badge = agent.querySelector('.agent-status-badge');
+            if (badge && badge.classList.contains(filter)) {
+                agent.style.display = 'flex';
+            } else {
+                agent.style.display = 'none';
+            }
+        }
+    });
+}
+
+// Call Actions
+function listenCall(callId) {
+    const msg = document.documentElement.lang === 'de' 
+        ? `Anruf #${callId} wird mitgehört...` 
+        : `Çağrı #${callId} dinleniyor...`;
+    showToast(msg, 'info');
+    console.log('Listening to call:', callId);
+}
+
+function whisperCall(callId) {
+    const msg = document.documentElement.lang === 'de' 
+        ? `Flüstermodus für Anruf #${callId} aktiviert` 
+        : `Çağrı #${callId} için fısıltı modu aktif`;
+    showToast(msg, 'info');
+    console.log('Whispering to call:', callId);
+}
+
+function bargeCall(callId) {
+    const confirmMsg = document.documentElement.lang === 'de' 
+        ? 'Möchten Sie diesem Anruf wirklich beitreten?' 
+        : 'Bu çağrıya katılmak istediğinize emin misiniz?';
+    
+    if (confirm(confirmMsg)) {
+        const msg = document.documentElement.lang === 'de' 
+            ? `Sie treten Anruf #${callId} bei...` 
+            : `Çağrı #${callId}'e katılıyorsunuz...`;
+        showToast(msg, 'success');
+        console.log('Barging into call:', callId);
+    }
+}
+
+function hangupCall(callId) {
+    const confirmMsg = document.documentElement.lang === 'de' 
+        ? 'Diesen Anruf wirklich beenden?' 
+        : 'Bu çağrıyı sonlandırmak istediğinize emin misiniz?';
+    
+    if (confirm(confirmMsg)) {
+        const msg = document.documentElement.lang === 'de' 
+            ? `Anruf #${callId} wurde beendet` 
+            : `Çağrı #${callId} sonlandırıldı`;
+        showToast(msg, 'danger');
+        console.log('Hanging up call:', callId);
+        
+        // Remove the call card with animation
+        // In real app, this would be handled by WebSocket
+    }
+}
+
+// Update call timers
+function updateCallTimers() {
+    document.querySelectorAll('.call-timer').forEach(timer => {
+        const current = timer.textContent;
+        const parts = current.split(':');
+        if (parts.length === 2) {
+            let mins = parseInt(parts[0]);
+            let secs = parseInt(parts[1]);
+            secs++;
+            if (secs >= 60) {
+                secs = 0;
+                mins++;
+            }
+            timer.textContent = `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
+        }
+    });
+}
+
+setInterval(updateCallTimers, 1000);
+
+// WebSocket for real-time updates
 if (typeof io !== 'undefined') {
     const socket = io();
     
     socket.on('call_update', function(data) {
         console.log('Call update:', data);
+        // Update call list dynamically
     });
     
     socket.on('agent_status', function(data) {
         console.log('Agent status:', data);
+        // Update agent list dynamically
+    });
+    
+    socket.on('queue_update', function(data) {
+        console.log('Queue update:', data);
+        // Update queue stats dynamically
     });
 }
 </script>
 {% endblock %}
+
 
 
 
