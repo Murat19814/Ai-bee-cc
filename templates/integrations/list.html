@@ -412,13 +412,13 @@
             <p data-tr="API erişim anahtarları" data-de="API-Zugriffsschlüssel">API erişim anahtarları</p>
             <span class="count">8 <span data-tr="anahtar" data-de="Schlüssel">anahtar</span></span>
         </a>
-        <div class="type-card" onclick="openCRMIntegrations()">
+        <div class="type-card" onclick="openCRMModal()">
             <div class="type-card-icon crm"><i class="ti ti-database"></i></div>
             <h4>CRM</h4>
             <p data-tr="CRM entegrasyonları" data-de="CRM-Integrationen">CRM entegrasyonları</p>
             <span class="count">2 <span data-tr="bağlı" data-de="verbunden">bağlı</span></span>
         </div>
-        <div class="type-card" onclick="openAppMarket()">
+        <div class="type-card" onclick="openAppMarketModal()">
             <div class="type-card-icon market"><i class="ti ti-apps"></i></div>
             <h4>App Market</h4>
             <p data-tr="Hazır entegrasyonlar" data-de="Fertige Integrationen">Hazır entegrasyonlar</p>
@@ -661,6 +661,145 @@
         </div>
     </div>
 </div>
+
+<!-- CRM Modal -->
+<div class="modal-overlay" id="crmModal">
+    <div class="modal-content" style="max-width: 800px;">
+        <div class="modal-header">
+            <h3><i class="ti ti-database"></i> <span data-tr="CRM Entegrasyonları" data-de="CRM-Integrationen">CRM Entegrasyonları</span></h3>
+            <button class="modal-close" onclick="closeCRMModal()"><i class="ti ti-x"></i></button>
+        </div>
+        <div class="modal-body">
+            <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 1rem;">
+                <div style="border: 2px solid #e0e0e0; border-radius: 12px; padding: 1.5rem; text-align: center; cursor: pointer; transition: all 0.3s;" onclick="connectCRM('salesforce')" onmouseover="this.style.borderColor='#F5A623'" onmouseout="this.style.borderColor='#e0e0e0'">
+                    <div style="width: 50px; height: 50px; background: #00A1E0; border-radius: 12px; display: flex; align-items: center; justify-content: center; margin: 0 auto 1rem; color: white; font-size: 1.5rem;"><i class="ti ti-brand-salesforce"></i></div>
+                    <h4 style="margin: 0 0 0.5rem 0;">Salesforce</h4>
+                    <span style="background: #e8f5e9; color: #2e7d32; padding: 0.25rem 0.75rem; border-radius: 20px; font-size: 0.75rem;" data-tr="Bağlı" data-de="Verbunden">Bağlı</span>
+                </div>
+                <div style="border: 2px solid #e0e0e0; border-radius: 12px; padding: 1.5rem; text-align: center; cursor: pointer; transition: all 0.3s;" onclick="connectCRM('hubspot')" onmouseover="this.style.borderColor='#F5A623'" onmouseout="this.style.borderColor='#e0e0e0'">
+                    <div style="width: 50px; height: 50px; background: #FF7A59; border-radius: 12px; display: flex; align-items: center; justify-content: center; margin: 0 auto 1rem; color: white; font-size: 1.5rem;"><i class="ti ti-brand-google"></i></div>
+                    <h4 style="margin: 0 0 0.5rem 0;">HubSpot</h4>
+                    <span style="background: #e8f5e9; color: #2e7d32; padding: 0.25rem 0.75rem; border-radius: 20px; font-size: 0.75rem;">Bağlı</span>
+                </div>
+                <div style="border: 2px solid #e0e0e0; border-radius: 12px; padding: 1.5rem; text-align: center; cursor: pointer; transition: all 0.3s;" onclick="connectCRM('pipedrive')" onmouseover="this.style.borderColor='#F5A623'" onmouseout="this.style.borderColor='#e0e0e0'">
+                    <div style="width: 50px; height: 50px; background: #017737; border-radius: 12px; display: flex; align-items: center; justify-content: center; margin: 0 auto 1rem; color: white; font-size: 1.5rem;"><i class="ti ti-chart-pie"></i></div>
+                    <h4 style="margin: 0 0 0.5rem 0;">Pipedrive</h4>
+                    <button class="btn btn-sm btn-primary" data-tr="Bağlan" data-de="Verbinden">Bağlan</button>
+                </div>
+                <div style="border: 2px solid #e0e0e0; border-radius: 12px; padding: 1.5rem; text-align: center; cursor: pointer; transition: all 0.3s;" onclick="connectCRM('zoho')" onmouseover="this.style.borderColor='#F5A623'" onmouseout="this.style.borderColor='#e0e0e0'">
+                    <div style="width: 50px; height: 50px; background: #C8202B; border-radius: 12px; display: flex; align-items: center; justify-content: center; margin: 0 auto 1rem; color: white; font-size: 1.5rem;"><i class="ti ti-letter-z"></i></div>
+                    <h4 style="margin: 0 0 0.5rem 0;">Zoho CRM</h4>
+                    <button class="btn btn-sm btn-primary">Bağlan</button>
+                </div>
+                <div style="border: 2px solid #e0e0e0; border-radius: 12px; padding: 1.5rem; text-align: center; cursor: pointer; transition: all 0.3s;" onclick="connectCRM('dynamics')" onmouseover="this.style.borderColor='#F5A623'" onmouseout="this.style.borderColor='#e0e0e0'">
+                    <div style="width: 50px; height: 50px; background: #002050; border-radius: 12px; display: flex; align-items: center; justify-content: center; margin: 0 auto 1rem; color: white; font-size: 1.5rem;"><i class="ti ti-brand-windows"></i></div>
+                    <h4 style="margin: 0 0 0.5rem 0;">Dynamics 365</h4>
+                    <button class="btn btn-sm btn-primary">Bağlan</button>
+                </div>
+                <div style="border: 2px solid #e0e0e0; border-radius: 12px; padding: 1.5rem; text-align: center; cursor: pointer; transition: all 0.3s;" onclick="connectCRM('sugarcrm')" onmouseover="this.style.borderColor='#F5A623'" onmouseout="this.style.borderColor='#e0e0e0'">
+                    <div style="width: 50px; height: 50px; background: #E61B23; border-radius: 12px; display: flex; align-items: center; justify-content: center; margin: 0 auto 1rem; color: white; font-size: 1.5rem;"><i class="ti ti-cube"></i></div>
+                    <h4 style="margin: 0 0 0.5rem 0;">SugarCRM</h4>
+                    <button class="btn btn-sm btn-primary">Bağlan</button>
+                </div>
+            </div>
+        </div>
+        <div class="modal-footer">
+            <button class="btn btn-secondary" onclick="closeCRMModal()" data-tr="Kapat" data-de="Schließen">Kapat</button>
+        </div>
+    </div>
+</div>
+
+<!-- App Market Modal -->
+<div class="modal-overlay" id="appMarketModal">
+    <div class="modal-content" style="max-width: 900px;">
+        <div class="modal-header">
+            <h3><i class="ti ti-apps"></i> <span data-tr="App Market" data-de="App Market">App Market</span></h3>
+            <button class="modal-close" onclick="closeAppMarketModal()"><i class="ti ti-x"></i></button>
+        </div>
+        <div class="modal-body">
+            <div style="margin-bottom: 1rem;">
+                <input type="text" placeholder="Uygulama ara..." data-tr-placeholder="Uygulama ara..." data-de-placeholder="Apps suchen..." style="width: 100%; padding: 0.75rem; border: 1px solid #e0e0e0; border-radius: 8px;">
+            </div>
+            <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 1rem; max-height: 400px; overflow-y: auto;">
+                <div style="border: 1px solid #e0e0e0; border-radius: 12px; padding: 1rem; display: flex; gap: 1rem; align-items: center;">
+                    <div style="width: 45px; height: 45px; background: #FF4A00; border-radius: 10px; display: flex; align-items: center; justify-content: center; color: white;"><i class="ti ti-bolt"></i></div>
+                    <div style="flex: 1;">
+                        <h5 style="margin: 0;">Zapier</h5>
+                        <small style="color: #888;">Automation</small>
+                    </div>
+                    <button class="btn btn-sm btn-ghost" onclick="installApp('zapier')"><i class="ti ti-download"></i></button>
+                </div>
+                <div style="border: 1px solid #e0e0e0; border-radius: 12px; padding: 1rem; display: flex; gap: 1rem; align-items: center;">
+                    <div style="width: 45px; height: 45px; background: #4A154B; border-radius: 10px; display: flex; align-items: center; justify-content: center; color: white;"><i class="ti ti-brand-slack"></i></div>
+                    <div style="flex: 1;">
+                        <h5 style="margin: 0;">Slack</h5>
+                        <small style="color: #888;">Communication</small>
+                    </div>
+                    <button class="btn btn-sm btn-ghost" onclick="installApp('slack')"><i class="ti ti-download"></i></button>
+                </div>
+                <div style="border: 1px solid #e0e0e0; border-radius: 12px; padding: 1rem; display: flex; gap: 1rem; align-items: center;">
+                    <div style="width: 45px; height: 45px; background: #6264A7; border-radius: 10px; display: flex; align-items: center; justify-content: center; color: white;"><i class="ti ti-brand-teams"></i></div>
+                    <div style="flex: 1;">
+                        <h5 style="margin: 0;">Teams</h5>
+                        <small style="color: #888;">Communication</small>
+                    </div>
+                    <button class="btn btn-sm btn-ghost" onclick="installApp('teams')"><i class="ti ti-download"></i></button>
+                </div>
+                <div style="border: 1px solid #e0e0e0; border-radius: 12px; padding: 1rem; display: flex; gap: 1rem; align-items: center;">
+                    <div style="width: 45px; height: 45px; background: #25D366; border-radius: 10px; display: flex; align-items: center; justify-content: center; color: white;"><i class="ti ti-brand-whatsapp"></i></div>
+                    <div style="flex: 1;">
+                        <h5 style="margin: 0;">WhatsApp</h5>
+                        <small style="color: #888;">Messaging</small>
+                    </div>
+                    <button class="btn btn-sm btn-ghost" onclick="installApp('whatsapp')"><i class="ti ti-download"></i></button>
+                </div>
+                <div style="border: 1px solid #e0e0e0; border-radius: 12px; padding: 1rem; display: flex; gap: 1rem; align-items: center;">
+                    <div style="width: 45px; height: 45px; background: #0A66C2; border-radius: 10px; display: flex; align-items: center; justify-content: center; color: white;"><i class="ti ti-brand-linkedin"></i></div>
+                    <div style="flex: 1;">
+                        <h5 style="margin: 0;">LinkedIn</h5>
+                        <small style="color: #888;">Social</small>
+                    </div>
+                    <button class="btn btn-sm btn-ghost" onclick="installApp('linkedin')"><i class="ti ti-download"></i></button>
+                </div>
+                <div style="border: 1px solid #e0e0e0; border-radius: 12px; padding: 1rem; display: flex; gap: 1rem; align-items: center;">
+                    <div style="width: 45px; height: 45px; background: #DB4437; border-radius: 10px; display: flex; align-items: center; justify-content: center; color: white;"><i class="ti ti-mail"></i></div>
+                    <div style="flex: 1;">
+                        <h5 style="margin: 0;">Gmail</h5>
+                        <small style="color: #888;">Email</small>
+                    </div>
+                    <button class="btn btn-sm btn-ghost" onclick="installApp('gmail')"><i class="ti ti-download"></i></button>
+                </div>
+                <div style="border: 1px solid #e0e0e0; border-radius: 12px; padding: 1rem; display: flex; gap: 1rem; align-items: center;">
+                    <div style="width: 45px; height: 45px; background: #0078D4; border-radius: 10px; display: flex; align-items: center; justify-content: center; color: white;"><i class="ti ti-mail"></i></div>
+                    <div style="flex: 1;">
+                        <h5 style="margin: 0;">Outlook</h5>
+                        <small style="color: #888;">Email</small>
+                    </div>
+                    <button class="btn btn-sm btn-ghost" onclick="installApp('outlook')"><i class="ti ti-download"></i></button>
+                </div>
+                <div style="border: 1px solid #e0e0e0; border-radius: 12px; padding: 1rem; display: flex; gap: 1rem; align-items: center;">
+                    <div style="width: 45px; height: 45px; background: #4285F4; border-radius: 10px; display: flex; align-items: center; justify-content: center; color: white;"><i class="ti ti-calendar"></i></div>
+                    <div style="flex: 1;">
+                        <h5 style="margin: 0;">Google Calendar</h5>
+                        <small style="color: #888;">Calendar</small>
+                    </div>
+                    <button class="btn btn-sm btn-ghost" onclick="installApp('gcal')"><i class="ti ti-download"></i></button>
+                </div>
+                <div style="border: 1px solid #e0e0e0; border-radius: 12px; padding: 1rem; display: flex; gap: 1rem; align-items: center;">
+                    <div style="width: 45px; height: 45px; background: #000000; border-radius: 10px; display: flex; align-items: center; justify-content: center; color: white;"><i class="ti ti-brand-notion"></i></div>
+                    <div style="flex: 1;">
+                        <h5 style="margin: 0;">Notion</h5>
+                        <small style="color: #888;">Documentation</small>
+                    </div>
+                    <button class="btn btn-sm btn-ghost" onclick="installApp('notion')"><i class="ti ti-download"></i></button>
+                </div>
+            </div>
+        </div>
+        <div class="modal-footer">
+            <button class="btn btn-secondary" onclick="closeAppMarketModal()" data-tr="Kapat" data-de="Schließen">Kapat</button>
+        </div>
+    </div>
+</div>
 {% endblock %}
 
 {% block extra_js %}
@@ -772,12 +911,34 @@
         }, 2000);
     };
 
-    window.openCRMIntegrations = function() {
-        showNotification(getCurrentLang() === 'de' ? 'CRM-Integrationen werden geladen...' : 'CRM entegrasyonları yükleniyor...', 'info');
+    window.openCRMModal = function() {
+        document.getElementById('crmModal').classList.add('show');
     };
 
-    window.openAppMarket = function() {
-        showNotification(getCurrentLang() === 'de' ? 'App Market wird vorbereitet...' : 'App Market hazırlanıyor...', 'info');
+    window.closeCRMModal = function() {
+        document.getElementById('crmModal').classList.remove('show');
+    };
+
+    window.connectCRM = function(crm) {
+        showNotification(getCurrentLang() === 'de' ? crm + ' wird verbunden...' : crm + ' bağlanıyor...', 'info');
+        setTimeout(function() {
+            showNotification(getCurrentLang() === 'de' ? crm + ' erfolgreich verbunden!' : crm + ' başarıyla bağlandı!', 'success');
+        }, 1500);
+    };
+
+    window.openAppMarketModal = function() {
+        document.getElementById('appMarketModal').classList.add('show');
+    };
+
+    window.closeAppMarketModal = function() {
+        document.getElementById('appMarketModal').classList.remove('show');
+    };
+
+    window.installApp = function(app) {
+        showNotification(getCurrentLang() === 'de' ? app + ' wird installiert...' : app + ' yükleniyor...', 'info');
+        setTimeout(function() {
+            showNotification(getCurrentLang() === 'de' ? app + ' erfolgreich installiert!' : app + ' başarıyla yüklendi!', 'success');
+        }, 1500);
     };
 
     const style = document.createElement('style');

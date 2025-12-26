@@ -2,65 +2,601 @@
 
 {% block title %}Webhook Yönetimi - AI BEE CC{% endblock %}
 
+{% block extra_css %}
+<style>
+.webhook-page {
+    padding: 1.5rem;
+}
+
+.stats-row {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 1rem;
+    margin-bottom: 1.5rem;
+}
+
+.stat-card {
+    background: white;
+    border-radius: 12px;
+    padding: 1.25rem;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+}
+
+.stat-icon {
+    width: 50px;
+    height: 50px;
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.5rem;
+    color: white;
+}
+
+.stat-icon.blue { background: linear-gradient(135deg, #2196F3, #1976D2); }
+.stat-icon.green { background: linear-gradient(135deg, #4CAF50, #388E3C); }
+.stat-icon.orange { background: linear-gradient(135deg, #FF9800, #F57C00); }
+.stat-icon.red { background: linear-gradient(135deg, #f44336, #d32f2f); }
+
+.stat-value { font-size: 1.5rem; font-weight: 700; color: #1a1a2e; }
+.stat-label { font-size: 0.8rem; color: #888; }
+
+.webhook-container {
+    background: white;
+    border-radius: 16px;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.06);
+    overflow: hidden;
+}
+
+.webhook-header {
+    padding: 1.25rem 1.5rem;
+    background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+    color: white;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.webhook-header h3 {
+    margin: 0;
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+}
+
+.webhook-header h3 i { color: #F5A623; }
+
+.webhook-table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.webhook-table th {
+    background: #f8f9fa;
+    padding: 1rem;
+    text-align: left;
+    font-size: 0.75rem;
+    text-transform: uppercase;
+    color: #888;
+}
+
+.webhook-table td {
+    padding: 1rem;
+    border-bottom: 1px solid #f0f0f0;
+}
+
+.webhook-table tr:hover { background: #fafafa; }
+
+.hook-info {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+}
+
+.hook-icon {
+    width: 40px;
+    height: 40px;
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.25rem;
+    background: linear-gradient(135deg, #FF6B6B, #ee5a5a);
+    color: white;
+}
+
+.hook-name { font-weight: 600; color: #1a1a2e; }
+.hook-desc { font-size: 0.8rem; color: #888; }
+
+.url-value {
+    font-family: 'Monaco', 'Consolas', monospace;
+    background: #f5f5f5;
+    padding: 0.4rem 0.75rem;
+    border-radius: 6px;
+    font-size: 0.75rem;
+    max-width: 200px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.event-badges {
+    display: flex;
+    gap: 0.25rem;
+    flex-wrap: wrap;
+}
+
+.event-badge {
+    padding: 0.2rem 0.5rem;
+    border-radius: 4px;
+    font-size: 0.7rem;
+    font-weight: 600;
+    background: #e3f2fd;
+    color: #1565c0;
+}
+
+.status-badge {
+    padding: 0.25rem 0.75rem;
+    border-radius: 20px;
+    font-size: 0.75rem;
+    font-weight: 600;
+}
+
+.status-badge.active { background: #e8f5e9; color: #2e7d32; }
+.status-badge.inactive { background: #ffebee; color: #c62828; }
+
+.action-buttons { display: flex; gap: 0.5rem; }
+
+.action-btn {
+    width: 32px;
+    height: 32px;
+    border-radius: 8px;
+    border: none;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s;
+}
+
+.action-btn.test { background: #e8f5e9; color: #2e7d32; }
+.action-btn.edit { background: #fff3e0; color: #ef6c00; }
+.action-btn.delete { background: #ffebee; color: #c62828; }
+.action-btn.logs { background: #e3f2fd; color: #1976D2; }
+
+.action-btn:hover { transform: translateY(-2px); }
+
+/* Modal */
+.modal-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.6);
+    backdrop-filter: blur(4px);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 1000;
+    opacity: 0;
+    visibility: hidden;
+    transition: all 0.3s;
+}
+
+.modal-overlay.show { opacity: 1; visibility: visible; }
+
+.modal-content {
+    background: white;
+    border-radius: 20px;
+    width: 100%;
+    max-width: 650px;
+    max-height: 90vh;
+    overflow: hidden;
+}
+
+.modal-header {
+    padding: 1.5rem;
+    background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+    color: white;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.modal-header h3 { margin: 0; display: flex; align-items: center; gap: 0.75rem; }
+.modal-header h3 i { color: #F5A623; }
+
+.modal-close {
+    background: rgba(255,255,255,0.1);
+    border: none;
+    color: white;
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    cursor: pointer;
+}
+
+.modal-body { padding: 1.5rem; max-height: 60vh; overflow-y: auto; }
+
+.modal-footer {
+    padding: 1rem 1.5rem;
+    background: #f8f9fa;
+    display: flex;
+    gap: 1rem;
+    justify-content: flex-end;
+}
+
+.form-group { margin-bottom: 1rem; }
+.form-group label { display: block; margin-bottom: 0.5rem; font-weight: 500; }
+.form-group input, .form-group select {
+    width: 100%;
+    padding: 0.75rem;
+    border: 1px solid #e0e0e0;
+    border-radius: 8px;
+}
+
+.form-group input:focus, .form-group select:focus {
+    outline: none;
+    border-color: #F5A623;
+}
+
+.event-checkboxes {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 0.5rem;
+    margin-top: 0.5rem;
+}
+
+.event-checkbox {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.5rem 0.75rem;
+    border: 1px solid #e0e0e0;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 0.85rem;
+}
+
+.event-checkbox:hover { background: #f8f9fa; }
+.event-checkbox input { width: auto; }
+
+.log-entries {
+    max-height: 300px;
+    overflow-y: auto;
+}
+
+.log-entry {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0.75rem;
+    border-bottom: 1px solid #f0f0f0;
+}
+
+.log-entry:last-child { border-bottom: none; }
+
+.log-status {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    margin-right: 0.5rem;
+}
+
+.log-status.success { background: #4CAF50; }
+.log-status.error { background: #f44336; }
+
+.log-info { display: flex; align-items: center; flex: 1; }
+.log-event { font-weight: 600; margin-right: 0.5rem; }
+.log-time { font-size: 0.8rem; color: #888; }
+.log-code { font-size: 0.8rem; }
+</style>
+{% endblock %}
+
 {% block content %}
-<div class="page-header">
-    <div>
-        <h1 class="page-title">Webhook Yönetimi</h1>
-        <p class="page-subtitle">Olay bildirimlerini yapılandırın</p>
+<div class="webhook-page">
+    <div class="page-header">
+        <div>
+            <h1 class="page-title">
+                <i class="ti ti-webhook" style="color: #F5A623;"></i>
+                <span data-tr="Webhook Yönetimi" data-de="Webhook-Verwaltung">Webhook Yönetimi</span>
+            </h1>
+            <p class="page-subtitle" data-tr="Olay bildirimlerini yapılandırın" data-de="Event-Benachrichtigungen konfigurieren">Olay bildirimlerini yapılandırın</p>
+        </div>
+        <button class="btn btn-primary" onclick="openNewWebhookModal()">
+            <i class="ti ti-plus"></i>
+            <span data-tr="Yeni Webhook" data-de="Neuer Webhook">Yeni Webhook</span>
+        </button>
     </div>
-    <button class="btn btn-primary">
-        <i class="ti ti-plus"></i> Yeni Webhook
-    </button>
+
+    <!-- Stats -->
+    <div class="stats-row">
+        <div class="stat-card">
+            <div class="stat-icon blue"><i class="ti ti-webhook"></i></div>
+            <div>
+                <div class="stat-value">3</div>
+                <div class="stat-label" data-tr="Toplam Webhook" data-de="Gesamt Webhooks">Toplam Webhook</div>
+            </div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-icon green"><i class="ti ti-send"></i></div>
+            <div>
+                <div class="stat-value">1,842</div>
+                <div class="stat-label" data-tr="Gönderilen" data-de="Gesendet">Gönderilen</div>
+            </div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-icon orange"><i class="ti ti-clock"></i></div>
+            <div>
+                <div class="stat-value">12</div>
+                <div class="stat-label" data-tr="Bekleyen" data-de="Ausstehend">Bekleyen</div>
+            </div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-icon red"><i class="ti ti-x"></i></div>
+            <div>
+                <div class="stat-value">5</div>
+                <div class="stat-label" data-tr="Başarısız" data-de="Fehlgeschlagen">Başarısız</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Webhooks Table -->
+    <div class="webhook-container">
+        <div class="webhook-header">
+            <h3><i class="ti ti-webhook"></i> <span data-tr="Webhook Listesi" data-de="Webhook-Liste">Webhook Listesi</span></h3>
+        </div>
+        <table class="webhook-table">
+            <thead>
+                <tr>
+                    <th data-tr="Ad" data-de="Name">Ad</th>
+                    <th data-tr="URL" data-de="URL">URL</th>
+                    <th data-tr="Olaylar" data-de="Events">Olaylar</th>
+                    <th data-tr="Gönderilen" data-de="Gesendet">Gönderilen</th>
+                    <th data-tr="Başarısız" data-de="Fehlgeschlagen">Başarısız</th>
+                    <th data-tr="Durum" data-de="Status">Durum</th>
+                    <th data-tr="İşlemler" data-de="Aktionen">İşlemler</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>
+                        <div class="hook-info">
+                            <div class="hook-icon"><i class="ti ti-webhook"></i></div>
+                            <div>
+                                <div class="hook-name">CRM Webhook</div>
+                                <div class="hook-desc" data-tr="Müşteri olayları" data-de="Kunden-Events">Müşteri olayları</div>
+                            </div>
+                        </div>
+                    </td>
+                    <td><span class="url-value">https://crm.example.com/webhook</span></td>
+                    <td>
+                        <div class="event-badges">
+                            <span class="event-badge">customer.created</span>
+                            <span class="event-badge">+2</span>
+                        </div>
+                    </td>
+                    <td>856</td>
+                    <td>2</td>
+                    <td><span class="status-badge active" data-tr="Aktif" data-de="Aktiv">Aktif</span></td>
+                    <td>
+                        <div class="action-buttons">
+                            <button class="action-btn test" onclick="testWebhook(1)" title="Test Et"><i class="ti ti-send"></i></button>
+                            <button class="action-btn logs" onclick="viewLogs(1)" title="Loglar"><i class="ti ti-list"></i></button>
+                            <button class="action-btn edit" onclick="editWebhook(1)" title="Düzenle"><i class="ti ti-edit"></i></button>
+                            <button class="action-btn delete" onclick="deleteWebhook(1)" title="Sil"><i class="ti ti-trash"></i></button>
+                        </div>
+                    </td>
+                </tr>
+                <tr>
+                    <td>
+                        <div class="hook-info">
+                            <div class="hook-icon"><i class="ti ti-webhook"></i></div>
+                            <div>
+                                <div class="hook-name">Slack Notification</div>
+                                <div class="hook-desc" data-tr="Satış bildirimleri" data-de="Verkaufsbenachrichtigungen">Satış bildirimleri</div>
+                            </div>
+                        </div>
+                    </td>
+                    <td><span class="url-value">https://hooks.slack.com/services/...</span></td>
+                    <td>
+                        <div class="event-badges">
+                            <span class="event-badge">call.completed</span>
+                            <span class="event-badge">sale.created</span>
+                        </div>
+                    </td>
+                    <td>654</td>
+                    <td>1</td>
+                    <td><span class="status-badge active">Aktif</span></td>
+                    <td>
+                        <div class="action-buttons">
+                            <button class="action-btn test" onclick="testWebhook(2)"><i class="ti ti-send"></i></button>
+                            <button class="action-btn logs" onclick="viewLogs(2)"><i class="ti ti-list"></i></button>
+                            <button class="action-btn edit" onclick="editWebhook(2)"><i class="ti ti-edit"></i></button>
+                            <button class="action-btn delete" onclick="deleteWebhook(2)"><i class="ti ti-trash"></i></button>
+                        </div>
+                    </td>
+                </tr>
+                <tr>
+                    <td>
+                        <div class="hook-info">
+                            <div class="hook-icon"><i class="ti ti-webhook"></i></div>
+                            <div>
+                                <div class="hook-name">Analytics Webhook</div>
+                                <div class="hook-desc" data-tr="Veri analitik" data-de="Datenanalyse">Veri analitik</div>
+                            </div>
+                        </div>
+                    </td>
+                    <td><span class="url-value">https://analytics.example.com/api</span></td>
+                    <td>
+                        <div class="event-badges">
+                            <span class="event-badge">call.*</span>
+                        </div>
+                    </td>
+                    <td>332</td>
+                    <td>2</td>
+                    <td><span class="status-badge inactive" data-tr="Pasif" data-de="Inaktiv">Pasif</span></td>
+                    <td>
+                        <div class="action-buttons">
+                            <button class="action-btn test" onclick="testWebhook(3)"><i class="ti ti-send"></i></button>
+                            <button class="action-btn logs" onclick="viewLogs(3)"><i class="ti ti-list"></i></button>
+                            <button class="action-btn edit" onclick="editWebhook(3)"><i class="ti ti-edit"></i></button>
+                            <button class="action-btn delete" onclick="deleteWebhook(3)"><i class="ti ti-trash"></i></button>
+                        </div>
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
 </div>
 
-<div class="card">
-    <div class="card-body">
-        <div class="table-wrapper">
-            <table class="table">
-                <thead>
-                    <tr>
-                        <th>Ad</th>
-                        <th>URL</th>
-                        <th>Olaylar</th>
-                        <th>Gönderilen</th>
-                        <th>Başarısız</th>
-                        <th>Durum</th>
-                        <th>İşlemler</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {% for webhook in webhooks %}
-                    <tr>
-                        <td><strong>{{ webhook.name }}</strong></td>
-                        <td><code style="font-size: 0.75rem;">{{ webhook.url[:40] }}...</code></td>
-                        <td>{{ webhook.events|length if webhook.events else 0 }} olay</td>
-                        <td>{{ webhook.total_sent }}</td>
-                        <td>{{ webhook.total_failed }}</td>
-                        <td>
-                            <span class="badge badge-{{ 'success' if webhook.is_active else 'warning' }}">
-                                {{ 'Aktif' if webhook.is_active else 'Pasif' }}
-                            </span>
-                        </td>
-                        <td>
-                            <button class="btn btn-sm btn-ghost" title="Test Et">
-                                <i class="ti ti-send"></i>
-                            </button>
-                            <button class="btn btn-sm btn-ghost" title="Düzenle">
-                                <i class="ti ti-edit"></i>
-                            </button>
-                        </td>
-                    </tr>
-                    {% else %}
-                    <tr>
-                        <td colspan="7" class="text-muted">Henüz webhook tanımlanmamış</td>
-                    </tr>
-                    {% endfor %}
-                </tbody>
-            </table>
+<!-- New Webhook Modal -->
+<div class="modal-overlay" id="newWebhookModal">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h3><i class="ti ti-webhook"></i> <span data-tr="Yeni Webhook" data-de="Neuer Webhook">Yeni Webhook</span></h3>
+            <button class="modal-close" onclick="closeNewModal()"><i class="ti ti-x"></i></button>
+        </div>
+        <div class="modal-body">
+            <div class="form-group">
+                <label data-tr="Webhook Adı" data-de="Webhook-Name">Webhook Adı</label>
+                <input type="text" id="webhookName" data-tr-placeholder="Örn: CRM Webhook" data-de-placeholder="z.B. CRM-Webhook" placeholder="Örn: CRM Webhook">
+            </div>
+            <div class="form-group">
+                <label data-tr="URL" data-de="URL">URL</label>
+                <input type="url" id="webhookUrl" placeholder="https://example.com/webhook">
+            </div>
+            <div class="form-group">
+                <label data-tr="Olaylar" data-de="Events">Olaylar</label>
+                <div class="event-checkboxes">
+                    <label class="event-checkbox"><input type="checkbox" checked> customer.created</label>
+                    <label class="event-checkbox"><input type="checkbox" checked> customer.updated</label>
+                    <label class="event-checkbox"><input type="checkbox"> customer.deleted</label>
+                    <label class="event-checkbox"><input type="checkbox" checked> call.started</label>
+                    <label class="event-checkbox"><input type="checkbox" checked> call.completed</label>
+                    <label class="event-checkbox"><input type="checkbox"> call.failed</label>
+                    <label class="event-checkbox"><input type="checkbox" checked> sale.created</label>
+                    <label class="event-checkbox"><input type="checkbox"> ticket.created</label>
+                </div>
+            </div>
+            <div class="form-group">
+                <label data-tr="Secret Key (Opsiyonel)" data-de="Secret Key (Optional)">Secret Key (Opsiyonel)</label>
+                <input type="password" id="secretKey" placeholder="whsec_xxxxxxxx">
+            </div>
+        </div>
+        <div class="modal-footer">
+            <button class="btn btn-secondary" onclick="closeNewModal()" data-tr="İptal" data-de="Abbrechen">İptal</button>
+            <button class="btn btn-primary" onclick="saveWebhook()"><i class="ti ti-plus"></i> <span data-tr="Oluştur" data-de="Erstellen">Oluştur</span></button>
+        </div>
+    </div>
+</div>
+
+<!-- Logs Modal -->
+<div class="modal-overlay" id="logsModal">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h3><i class="ti ti-list"></i> <span id="logsModalTitle" data-tr="Webhook Logları" data-de="Webhook-Logs">Webhook Logları</span></h3>
+            <button class="modal-close" onclick="closeLogsModal()"><i class="ti ti-x"></i></button>
+        </div>
+        <div class="modal-body">
+            <div class="log-entries" id="logEntries">
+                <!-- Logs will be loaded here -->
+            </div>
+        </div>
+        <div class="modal-footer">
+            <button class="btn btn-secondary" onclick="closeLogsModal()" data-tr="Kapat" data-de="Schließen">Kapat</button>
         </div>
     </div>
 </div>
 {% endblock %}
 
+{% block extra_js %}
+<script>
+(function() {
+    'use strict';
 
+    function getCurrentLang() { return localStorage.getItem('selectedLang') || 'tr'; }
 
+    function showNotification(message, type) {
+        const toast = document.createElement('div');
+        toast.style.cssText = 'position:fixed;top:20px;right:20px;padding:15px 25px;border-radius:10px;color:white;font-weight:500;z-index:9999;box-shadow:0 4px 20px rgba(0,0,0,0.2);animation:slideIn 0.3s ease;';
+        toast.style.background = type === 'success' ? 'linear-gradient(135deg, #4CAF50, #45a049)' : type === 'error' ? 'linear-gradient(135deg, #f44336, #d32f2f)' : 'linear-gradient(135deg, #2196F3, #1976D2)';
+        toast.textContent = message;
+        document.body.appendChild(toast);
+        setTimeout(function() { toast.remove(); }, 3000);
+    }
+
+    window.openNewWebhookModal = function() {
+        document.getElementById('newWebhookModal').classList.add('show');
+    };
+
+    window.closeNewModal = function() {
+        document.getElementById('newWebhookModal').classList.remove('show');
+    };
+
+    window.saveWebhook = function() {
+        const name = document.getElementById('webhookName').value;
+        const url = document.getElementById('webhookUrl').value;
+        if (!name || !url) {
+            showNotification(getCurrentLang() === 'de' ? 'Bitte füllen Sie alle Felder aus' : 'Lütfen tüm alanları doldurun', 'error');
+            return;
+        }
+        showNotification(getCurrentLang() === 'de' ? 'Webhook erfolgreich erstellt!' : 'Webhook başarıyla oluşturuldu!', 'success');
+        closeNewModal();
+    };
+
+    window.testWebhook = function(id) {
+        showNotification(getCurrentLang() === 'de' ? 'Test wird gesendet...' : 'Test gönderiliyor...', 'info');
+        setTimeout(function() {
+            showNotification(getCurrentLang() === 'de' ? 'Webhook-Test erfolgreich!' : 'Webhook testi başarılı!', 'success');
+        }, 1500);
+    };
+
+    window.editWebhook = function(id) {
+        openNewWebhookModal();
+        showNotification(getCurrentLang() === 'de' ? 'Webhook wird geladen...' : 'Webhook yükleniyor...', 'info');
+    };
+
+    window.deleteWebhook = function(id) {
+        const msg = getCurrentLang() === 'de' ? 'Diesen Webhook wirklich löschen?' : 'Bu webhook\'u silmek istediğinize emin misiniz?';
+        if (confirm(msg)) {
+            showNotification(getCurrentLang() === 'de' ? 'Webhook gelöscht' : 'Webhook silindi', 'success');
+        }
+    };
+
+    window.viewLogs = function(id) {
+        const webhookNames = { 1: 'CRM Webhook', 2: 'Slack Notification', 3: 'Analytics Webhook' };
+        document.getElementById('logsModalTitle').textContent = webhookNames[id] + ' - Logs';
+        
+        const logs = [
+            { status: 'success', event: 'customer.created', time: '10:45:23', code: '200' },
+            { status: 'success', event: 'call.completed', time: '10:42:15', code: '200' },
+            { status: 'error', event: 'sale.created', time: '10:38:42', code: '500' },
+            { status: 'success', event: 'customer.updated', time: '10:35:11', code: '200' },
+            { status: 'success', event: 'call.completed', time: '10:32:05', code: '200' }
+        ];
+        
+        let html = '';
+        logs.forEach(function(log) {
+            html += '<div class="log-entry">';
+            html += '<div class="log-info"><span class="log-status ' + log.status + '"></span><span class="log-event">' + log.event + '</span></div>';
+            html += '<span class="log-time">' + log.time + '</span>';
+            html += '<span class="log-code" style="color:' + (log.status === 'success' ? '#4CAF50' : '#f44336') + '">' + log.code + '</span>';
+            html += '</div>';
+        });
+        
+        document.getElementById('logEntries').innerHTML = html;
+        document.getElementById('logsModal').classList.add('show');
+    };
+
+    window.closeLogsModal = function() {
+        document.getElementById('logsModal').classList.remove('show');
+    };
+
+    const style = document.createElement('style');
+    style.textContent = '@keyframes slideIn{from{transform:translateX(100%);opacity:0}to{transform:translateX(0);opacity:1}}';
+    document.head.appendChild(style);
+})();
+</script>
+{% endblock %}
