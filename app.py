@@ -878,6 +878,15 @@ def voip_ivr_builder():
     return render_template('voip/ivr_builder.html', ivrs=ivrs, queues=queues_list)
 
 
+@app.route('/voip/recordings')
+@app.route('/telephony/recordings')
+@login_required
+@admin_required
+def voip_recordings():
+    """Ses Kayıtları - Call Recordings"""
+    return render_template('voip/recordings.html')
+
+
 @app.route('/voip/queues')
 @app.route('/queues')
 @login_required

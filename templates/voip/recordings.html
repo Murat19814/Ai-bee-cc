@@ -1,0 +1,714 @@
+{% extends "base.html" %}
+
+{% block title %}Ses Kayıtları - {{ app_name }}{% endblock %}
+
+{% block extra_css %}
+<style>
+.recordings-page {
+    padding: 1.5rem;
+}
+
+.recordings-filters {
+    background: white;
+    border-radius: 16px;
+    padding: 1.5rem;
+    margin-bottom: 1.5rem;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.06);
+}
+
+.filter-row {
+    display: flex;
+    gap: 1rem;
+    flex-wrap: wrap;
+    align-items: flex-end;
+}
+
+.filter-group {
+    flex: 1;
+    min-width: 150px;
+}
+
+.filter-group label {
+    display: block;
+    font-size: 0.8rem;
+    color: #666;
+    margin-bottom: 0.5rem;
+}
+
+.filter-group input,
+.filter-group select {
+    width: 100%;
+    padding: 0.6rem 0.75rem;
+    border: 1px solid #e0e0e0;
+    border-radius: 8px;
+    font-size: 0.85rem;
+}
+
+.recordings-stats {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 1rem;
+    margin-bottom: 1.5rem;
+}
+
+.stat-card {
+    background: white;
+    border-radius: 12px;
+    padding: 1.25rem;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.06);
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+}
+
+.stat-icon {
+    width: 50px;
+    height: 50px;
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.5rem;
+    color: white;
+}
+
+.stat-icon.blue { background: linear-gradient(135deg, #2196F3, #1976D2); }
+.stat-icon.green { background: linear-gradient(135deg, #4CAF50, #388E3C); }
+.stat-icon.orange { background: linear-gradient(135deg, #FF9800, #F57C00); }
+.stat-icon.purple { background: linear-gradient(135deg, #9C27B0, #7B1FA2); }
+
+.stat-content .stat-value {
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: #1a1a2e;
+}
+
+.stat-content .stat-label {
+    font-size: 0.8rem;
+    color: #888;
+}
+
+.recordings-table-container {
+    background: white;
+    border-radius: 16px;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.06);
+    overflow: hidden;
+}
+
+.recordings-table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.recordings-table th {
+    background: #f8f9fa;
+    padding: 1rem;
+    text-align: left;
+    font-size: 0.75rem;
+    text-transform: uppercase;
+    color: #666;
+    letter-spacing: 0.5px;
+    border-bottom: 1px solid #eee;
+}
+
+.recordings-table td {
+    padding: 1rem;
+    border-bottom: 1px solid #f0f0f0;
+    font-size: 0.9rem;
+}
+
+.recordings-table tr:hover {
+    background: #fafafa;
+}
+
+.recording-info {
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+}
+
+.recording-id {
+    font-weight: 600;
+    color: #1a1a2e;
+}
+
+.recording-date {
+    font-size: 0.8rem;
+    color: #888;
+}
+
+.caller-info {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+}
+
+.caller-avatar {
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #F5A623, #f4a623);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-weight: 600;
+    font-size: 0.85rem;
+}
+
+.caller-name {
+    font-weight: 500;
+}
+
+.caller-number {
+    font-size: 0.8rem;
+    color: #888;
+}
+
+.duration-badge {
+    background: #e3f2fd;
+    color: #1976D2;
+    padding: 0.25rem 0.75rem;
+    border-radius: 20px;
+    font-size: 0.85rem;
+    font-weight: 500;
+}
+
+.status-badge {
+    padding: 0.25rem 0.75rem;
+    border-radius: 20px;
+    font-size: 0.75rem;
+    font-weight: 600;
+}
+
+.status-badge.completed {
+    background: #e8f5e9;
+    color: #2e7d32;
+}
+
+.status-badge.missed {
+    background: #ffebee;
+    color: #c62828;
+}
+
+.status-badge.voicemail {
+    background: #fff3e0;
+    color: #ef6c00;
+}
+
+.audio-player {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.play-btn {
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #4CAF50, #388E3C);
+    color: white;
+    border: none;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s;
+}
+
+.play-btn:hover {
+    transform: scale(1.1);
+    box-shadow: 0 4px 12px rgba(76, 175, 80, 0.4);
+}
+
+.play-btn.playing {
+    background: linear-gradient(135deg, #f44336, #d32f2f);
+}
+
+.waveform {
+    flex: 1;
+    height: 24px;
+    background: #f0f0f0;
+    border-radius: 4px;
+    overflow: hidden;
+    position: relative;
+}
+
+.waveform-progress {
+    height: 100%;
+    background: linear-gradient(90deg, #4CAF50, #8BC34A);
+    width: 0%;
+    transition: width 0.1s linear;
+}
+
+.action-buttons {
+    display: flex;
+    gap: 0.5rem;
+}
+
+.action-btn {
+    width: 32px;
+    height: 32px;
+    border-radius: 8px;
+    border: none;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s;
+}
+
+.action-btn.download {
+    background: #e3f2fd;
+    color: #1976D2;
+}
+
+.action-btn.delete {
+    background: #ffebee;
+    color: #c62828;
+}
+
+.action-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+}
+
+.pagination {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 1rem;
+    border-top: 1px solid #eee;
+}
+
+.pagination-info {
+    color: #888;
+    font-size: 0.85rem;
+}
+
+.pagination-buttons {
+    display: flex;
+    gap: 0.5rem;
+}
+
+.pagination-buttons button {
+    padding: 0.5rem 1rem;
+    border: 1px solid #e0e0e0;
+    background: white;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.pagination-buttons button:hover {
+    background: #f5f5f5;
+}
+
+.pagination-buttons button.active {
+    background: #F5A623;
+    color: white;
+    border-color: #F5A623;
+}
+
+/* Empty State */
+.empty-state {
+    text-align: center;
+    padding: 4rem 2rem;
+    color: #888;
+}
+
+.empty-state i {
+    font-size: 4rem;
+    color: #ddd;
+    margin-bottom: 1rem;
+}
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="recordings-page">
+    <div class="page-header">
+        <div>
+            <h1 class="page-title">
+                <i class="ti ti-microphone" style="color: #F5A623;"></i>
+                <span data-tr="Ses Kayıtları" data-de="Anrufaufnahmen">Ses Kayıtları</span>
+            </h1>
+            <p class="page-subtitle" data-tr="Çağrı kayıtlarını dinleyin, indirin ve yönetin" data-de="Anrufaufnahmen anhören, herunterladen und verwalten">Çağrı kayıtlarını dinleyin, indirin ve yönetin</p>
+        </div>
+        <div class="page-header-actions">
+            <button class="btn btn-secondary" onclick="exportRecordings()">
+                <i class="ti ti-download"></i> <span data-tr="Dışa Aktar" data-de="Exportieren">Dışa Aktar</span>
+            </button>
+        </div>
+    </div>
+
+    <!-- Filters -->
+    <div class="recordings-filters">
+        <div class="filter-row">
+            <div class="filter-group">
+                <label data-tr="Tarih Aralığı" data-de="Datumsbereich">Tarih Aralığı</label>
+                <input type="date" id="dateFrom" value="2025-12-01">
+            </div>
+            <div class="filter-group">
+                <label>&nbsp;</label>
+                <input type="date" id="dateTo" value="2025-12-26">
+            </div>
+            <div class="filter-group">
+                <label data-tr="Agent" data-de="Agent">Agent</label>
+                <select id="agentFilter">
+                    <option value="" data-tr="Tümü" data-de="Alle">Tümü</option>
+                    <option value="1">Ahmet K.</option>
+                    <option value="2">Buse Y.</option>
+                    <option value="3">Can D.</option>
+                </select>
+            </div>
+            <div class="filter-group">
+                <label data-tr="Kuyruk" data-de="Warteschlange">Kuyruk</label>
+                <select id="queueFilter">
+                    <option value="" data-tr="Tümü" data-de="Alle">Tümü</option>
+                    <option value="sales" data-tr="Satış" data-de="Verkauf">Satış</option>
+                    <option value="support" data-tr="Destek" data-de="Support">Destek</option>
+                </select>
+            </div>
+            <div class="filter-group">
+                <label data-tr="Durum" data-de="Status">Durum</label>
+                <select id="statusFilter">
+                    <option value="" data-tr="Tümü" data-de="Alle">Tümü</option>
+                    <option value="completed" data-tr="Tamamlandı" data-de="Abgeschlossen">Tamamlandı</option>
+                    <option value="missed" data-tr="Cevapsız" data-de="Verpasst">Cevapsız</option>
+                    <option value="voicemail" data-tr="Sesli Mesaj" data-de="Voicemail">Sesli Mesaj</option>
+                </select>
+            </div>
+            <div class="filter-group">
+                <label>&nbsp;</label>
+                <button class="btn btn-primary" onclick="applyFilters()">
+                    <i class="ti ti-search"></i> <span data-tr="Filtrele" data-de="Filtern">Filtrele</span>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Stats -->
+    <div class="recordings-stats">
+        <div class="stat-card">
+            <div class="stat-icon blue"><i class="ti ti-microphone"></i></div>
+            <div class="stat-content">
+                <div class="stat-value">1,247</div>
+                <div class="stat-label" data-tr="Toplam Kayıt" data-de="Gesamt Aufnahmen">Toplam Kayıt</div>
+            </div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-icon green"><i class="ti ti-clock"></i></div>
+            <div class="stat-content">
+                <div class="stat-value">156h 32m</div>
+                <div class="stat-label" data-tr="Toplam Süre" data-de="Gesamtdauer">Toplam Süre</div>
+            </div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-icon orange"><i class="ti ti-database"></i></div>
+            <div class="stat-content">
+                <div class="stat-value">4.2 GB</div>
+                <div class="stat-label" data-tr="Depolama" data-de="Speicher">Depolama</div>
+            </div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-icon purple"><i class="ti ti-chart-line"></i></div>
+            <div class="stat-content">
+                <div class="stat-value">4:32</div>
+                <div class="stat-label" data-tr="Ort. Süre" data-de="Durchschn. Dauer">Ort. Süre</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Recordings Table -->
+    <div class="recordings-table-container">
+        <table class="recordings-table">
+            <thead>
+                <tr>
+                    <th data-tr="Kayıt" data-de="Aufnahme">Kayıt</th>
+                    <th data-tr="Arayan" data-de="Anrufer">Arayan</th>
+                    <th data-tr="Agent" data-de="Agent">Agent</th>
+                    <th data-tr="Süre" data-de="Dauer">Süre</th>
+                    <th data-tr="Durum" data-de="Status">Durum</th>
+                    <th data-tr="Oynat" data-de="Abspielen">Oynat</th>
+                    <th data-tr="İşlem" data-de="Aktion">İşlem</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>
+                        <div class="recording-info">
+                            <span class="recording-id">#REC-2025-1247</span>
+                            <span class="recording-date">26.12.2025 14:32</span>
+                        </div>
+                    </td>
+                    <td>
+                        <div class="caller-info">
+                            <div class="caller-avatar">MK</div>
+                            <div>
+                                <div class="caller-name">Max König</div>
+                                <div class="caller-number">+49 176 1234567</div>
+                            </div>
+                        </div>
+                    </td>
+                    <td>Ahmet K.</td>
+                    <td><span class="duration-badge">5:42</span></td>
+                    <td><span class="status-badge completed" data-tr="Tamamlandı" data-de="Abgeschlossen">Tamamlandı</span></td>
+                    <td>
+                        <div class="audio-player">
+                            <button class="play-btn" onclick="togglePlay(this, 'rec1')">
+                                <i class="ti ti-player-play"></i>
+                            </button>
+                            <div class="waveform">
+                                <div class="waveform-progress" id="progress-rec1"></div>
+                            </div>
+                        </div>
+                    </td>
+                    <td>
+                        <div class="action-buttons">
+                            <button class="action-btn download" onclick="downloadRecording('rec1')" title="Download">
+                                <i class="ti ti-download"></i>
+                            </button>
+                            <button class="action-btn delete" onclick="deleteRecording('rec1')" title="Delete">
+                                <i class="ti ti-trash"></i>
+                            </button>
+                        </div>
+                    </td>
+                </tr>
+                <tr>
+                    <td>
+                        <div class="recording-info">
+                            <span class="recording-id">#REC-2025-1246</span>
+                            <span class="recording-date">26.12.2025 13:15</span>
+                        </div>
+                    </td>
+                    <td>
+                        <div class="caller-info">
+                            <div class="caller-avatar">SM</div>
+                            <div>
+                                <div class="caller-name">Stefan Müller</div>
+                                <div class="caller-number">+49 151 9876543</div>
+                            </div>
+                        </div>
+                    </td>
+                    <td>Buse Y.</td>
+                    <td><span class="duration-badge">3:18</span></td>
+                    <td><span class="status-badge completed" data-tr="Tamamlandı" data-de="Abgeschlossen">Tamamlandı</span></td>
+                    <td>
+                        <div class="audio-player">
+                            <button class="play-btn" onclick="togglePlay(this, 'rec2')">
+                                <i class="ti ti-player-play"></i>
+                            </button>
+                            <div class="waveform">
+                                <div class="waveform-progress" id="progress-rec2"></div>
+                            </div>
+                        </div>
+                    </td>
+                    <td>
+                        <div class="action-buttons">
+                            <button class="action-btn download" onclick="downloadRecording('rec2')">
+                                <i class="ti ti-download"></i>
+                            </button>
+                            <button class="action-btn delete" onclick="deleteRecording('rec2')">
+                                <i class="ti ti-trash"></i>
+                            </button>
+                        </div>
+                    </td>
+                </tr>
+                <tr>
+                    <td>
+                        <div class="recording-info">
+                            <span class="recording-id">#REC-2025-1245</span>
+                            <span class="recording-date">26.12.2025 11:42</span>
+                        </div>
+                    </td>
+                    <td>
+                        <div class="caller-info">
+                            <div class="caller-avatar">LW</div>
+                            <div>
+                                <div class="caller-name">Lisa Weber</div>
+                                <div class="caller-number">+49 160 5554321</div>
+                            </div>
+                        </div>
+                    </td>
+                    <td>Can D.</td>
+                    <td><span class="duration-badge">0:45</span></td>
+                    <td><span class="status-badge voicemail" data-tr="Sesli Mesaj" data-de="Voicemail">Sesli Mesaj</span></td>
+                    <td>
+                        <div class="audio-player">
+                            <button class="play-btn" onclick="togglePlay(this, 'rec3')">
+                                <i class="ti ti-player-play"></i>
+                            </button>
+                            <div class="waveform">
+                                <div class="waveform-progress" id="progress-rec3"></div>
+                            </div>
+                        </div>
+                    </td>
+                    <td>
+                        <div class="action-buttons">
+                            <button class="action-btn download" onclick="downloadRecording('rec3')">
+                                <i class="ti ti-download"></i>
+                            </button>
+                            <button class="action-btn delete" onclick="deleteRecording('rec3')">
+                                <i class="ti ti-trash"></i>
+                            </button>
+                        </div>
+                    </td>
+                </tr>
+                <tr>
+                    <td>
+                        <div class="recording-info">
+                            <span class="recording-id">#REC-2025-1244</span>
+                            <span class="recording-date">26.12.2025 10:28</span>
+                        </div>
+                    </td>
+                    <td>
+                        <div class="caller-info">
+                            <div class="caller-avatar">TF</div>
+                            <div>
+                                <div class="caller-name">Thomas Fischer</div>
+                                <div class="caller-number">+49 172 8765432</div>
+                            </div>
+                        </div>
+                    </td>
+                    <td>-</td>
+                    <td><span class="duration-badge">0:00</span></td>
+                    <td><span class="status-badge missed" data-tr="Cevapsız" data-de="Verpasst">Cevapsız</span></td>
+                    <td>
+                        <div class="audio-player">
+                            <span style="color: #888; font-size: 0.85rem;" data-tr="Kayıt yok" data-de="Keine Aufnahme">Kayıt yok</span>
+                        </div>
+                    </td>
+                    <td>
+                        <div class="action-buttons">
+                            <button class="action-btn download" disabled style="opacity: 0.5;">
+                                <i class="ti ti-download"></i>
+                            </button>
+                            <button class="action-btn delete" onclick="deleteRecording('rec4')">
+                                <i class="ti ti-trash"></i>
+                            </button>
+                        </div>
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+
+        <div class="pagination">
+            <div class="pagination-info" data-tr="1-4 / 1247 kayıt gösteriliyor" data-de="1-4 von 1247 Aufnahmen">1-4 / 1247 kayıt gösteriliyor</div>
+            <div class="pagination-buttons">
+                <button disabled>&laquo;</button>
+                <button class="active">1</button>
+                <button>2</button>
+                <button>3</button>
+                <button>...</button>
+                <button>312</button>
+                <button>&raquo;</button>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+(function() {
+    'use strict';
+    
+    let currentlyPlaying = null;
+    let playInterval = null;
+    
+    function getCurrentLang() {
+        return localStorage.getItem('selectedLang') || 'tr';
+    }
+    
+    function showNotification(message, type) {
+        const toast = document.createElement('div');
+        toast.style.cssText = 'position:fixed;top:20px;right:20px;padding:15px 25px;border-radius:10px;color:white;font-weight:500;z-index:9999;box-shadow:0 4px 20px rgba(0,0,0,0.2);animation:slideIn 0.3s ease;';
+        toast.style.background = type === 'success' ? 'linear-gradient(135deg, #4CAF50, #45a049)' : 
+                                  type === 'error' ? 'linear-gradient(135deg, #f44336, #d32f2f)' : 
+                                  'linear-gradient(135deg, #2196F3, #1976D2)';
+        toast.textContent = message;
+        document.body.appendChild(toast);
+        setTimeout(function() { toast.remove(); }, 3000);
+    }
+    
+    window.togglePlay = function(btn, recId) {
+        const icon = btn.querySelector('i');
+        const progress = document.getElementById('progress-' + recId);
+        
+        if (currentlyPlaying === recId) {
+            // Stop
+            btn.classList.remove('playing');
+            icon.className = 'ti ti-player-play';
+            clearInterval(playInterval);
+            currentlyPlaying = null;
+        } else {
+            // Stop any currently playing
+            if (currentlyPlaying) {
+                const prevBtn = document.querySelector('.play-btn.playing');
+                if (prevBtn) {
+                    prevBtn.classList.remove('playing');
+                    prevBtn.querySelector('i').className = 'ti ti-player-play';
+                }
+                clearInterval(playInterval);
+            }
+            
+            // Play new
+            btn.classList.add('playing');
+            icon.className = 'ti ti-player-pause';
+            currentlyPlaying = recId;
+            
+            let progressValue = 0;
+            progress.style.width = '0%';
+            
+            playInterval = setInterval(function() {
+                progressValue += 2;
+                progress.style.width = progressValue + '%';
+                
+                if (progressValue >= 100) {
+                    clearInterval(playInterval);
+                    btn.classList.remove('playing');
+                    icon.className = 'ti ti-player-play';
+                    currentlyPlaying = null;
+                    progress.style.width = '0%';
+                }
+            }, 100);
+        }
+    };
+    
+    window.downloadRecording = function(recId) {
+        const msg = getCurrentLang() === 'de' ? 'Aufnahme wird heruntergeladen...' : 'Kayıt indiriliyor...';
+        showNotification(msg, 'info');
+    };
+    
+    window.deleteRecording = function(recId) {
+        const confirmMsg = getCurrentLang() === 'de' 
+            ? 'Sind Sie sicher, dass Sie diese Aufnahme löschen möchten?' 
+            : 'Bu kaydı silmek istediğinize emin misiniz?';
+        
+        if (confirm(confirmMsg)) {
+            const msg = getCurrentLang() === 'de' ? 'Aufnahme gelöscht' : 'Kayıt silindi';
+            showNotification(msg, 'success');
+        }
+    };
+    
+    window.applyFilters = function() {
+        const msg = getCurrentLang() === 'de' ? 'Filter angewendet' : 'Filtreler uygulandı';
+        showNotification(msg, 'info');
+    };
+    
+    window.exportRecordings = function() {
+        const msg = getCurrentLang() === 'de' ? 'Export wird vorbereitet...' : 'Dışa aktarma hazırlanıyor...';
+        showNotification(msg, 'info');
+    };
+    
+    // Add animation styles
+    const style = document.createElement('style');
+    style.textContent = '@keyframes slideIn{from{transform:translateX(100%);opacity:0}to{transform:translateX(0);opacity:1}}';
+    document.head.appendChild(style);
+    
+    console.log('Recordings page initialized');
+})();
+</script>
+{% endblock %}
+
