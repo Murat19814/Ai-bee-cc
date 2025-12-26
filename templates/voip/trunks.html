@@ -496,71 +496,6 @@
 
     <!-- Trunk Grid -->
     <div class="trunk-grid" id="trunkGrid">
-        {% if trunks %}
-            {% for trunk in trunks %}
-            <div class="trunk-card" data-trunk-id="{{ trunk.id }}">
-                <div class="trunk-header">
-                    <div class="trunk-name">
-                        <i class="ti ti-server-bolt"></i>
-                        {{ trunk.name }}
-                    </div>
-                    <div class="trunk-status {{ trunk.status }}">
-                        {{ trunk.status|upper }}
-                    </div>
-                </div>
-                <div class="trunk-body">
-                    <div class="trunk-info-grid">
-                        <div class="trunk-info-item">
-                            <span class="trunk-info-label">Host / IP</span>
-                            <span class="trunk-info-value">{{ trunk.host }}</span>
-                        </div>
-                        <div class="trunk-info-item">
-                            <span class="trunk-info-label">Port</span>
-                            <span class="trunk-info-value">{{ trunk.port or 5060 }}</span>
-                        </div>
-                        <div class="trunk-info-item">
-                            <span class="trunk-info-label">Kullanıcı</span>
-                            <span class="trunk-info-value">{{ trunk.username or '-' }}</span>
-                        </div>
-                        <div class="trunk-info-item">
-                            <span class="trunk-info-label">Transport</span>
-                            <span class="trunk-info-value">{{ trunk.transport or 'UDP' }}</span>
-                        </div>
-                    </div>
-                    
-                    <div class="trunk-stats">
-                        <div class="trunk-stat">
-                            <div class="trunk-stat-value">{{ trunk.max_channels or 30 }}</div>
-                            <div class="trunk-stat-label">Max Kanal</div>
-                        </div>
-                        <div class="trunk-stat">
-                            <div class="trunk-stat-value" id="activeChannels_{{ trunk.id }}">0</div>
-                            <div class="trunk-stat-label">Kullanılan</div>
-                        </div>
-                        <div class="trunk-stat">
-                            <div class="trunk-stat-value">{{ trunk.codecs or 'G.711' }}</div>
-                            <div class="trunk-stat-label">Codec</div>
-                        </div>
-                    </div>
-                    
-                    <div class="health-bar">
-                        <div class="health-bar-fill" style="width: 85%;"></div>
-                    </div>
-                </div>
-                <div class="trunk-actions">
-                    <button class="btn btn-info btn-sm" onclick="testTrunk({{ trunk.id }})">
-                        <i class="ti ti-phone-check"></i> Test
-                    </button>
-                    <button class="btn btn-secondary btn-sm" onclick="editTrunk({{ trunk.id }})">
-                        <i class="ti ti-edit"></i> Düzenle
-                    </button>
-                    <button class="btn btn-danger btn-sm" onclick="deleteTrunk({{ trunk.id }})">
-                        <i class="ti ti-trash"></i>
-                    </button>
-                </div>
-            </div>
-            {% endfor %}
-        {% else %}
             <!-- Demo Trunks for Germany -->
             <div class="trunk-card" data-trunk-id="1">
                 <div class="trunk-header">
@@ -741,7 +676,6 @@
                     </button>
                 </div>
             </div>
-        {% endif %}
     </div>
 </div>
 
