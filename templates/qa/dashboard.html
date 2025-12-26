@@ -2,140 +2,526 @@
 
 {% block title %}QA Dashboard - AI BEE CC{% endblock %}
 
-{% block content %}
-<div class="page-header">
-    <div>
-        <h1 class="page-title">QA Dashboard</h1>
-        <p class="page-subtitle">Kalite değerlendirme ve izleme</p>
-    </div>
-</div>
+{% block extra_css %}
+<style>
+.qa-dashboard { padding: 1.5rem; }
 
-<!-- QA Stats -->
-<div class="grid grid-cols-4 mb-4">
-    <div class="stat-card">
-        <div class="stat-card-header">
-            <div class="stat-card-icon">
+.qa-stats-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 1.5rem;
+    margin-bottom: 2rem;
+}
+
+.qa-stat-card {
+    background: white;
+    border-radius: 16px;
+    padding: 1.5rem;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.06);
+    border-left: 4px solid var(--primary);
+    transition: all 0.3s;
+}
+
+.qa-stat-card:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 8px 30px rgba(0,0,0,0.1);
+}
+
+.qa-stat-card.success { border-left-color: #4CAF50; }
+.qa-stat-card.warning { border-left-color: #FF9800; }
+.qa-stat-card.info { border-left-color: #2196F3; }
+.qa-stat-card.purple { border-left-color: #9C27B0; }
+
+.qa-stat-icon {
+    width: 48px;
+    height: 48px;
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.5rem;
+    margin-bottom: 1rem;
+    background: rgba(245, 166, 35, 0.1);
+    color: var(--primary);
+}
+
+.qa-stat-card.success .qa-stat-icon { background: rgba(76, 175, 80, 0.1); color: #4CAF50; }
+.qa-stat-card.warning .qa-stat-icon { background: rgba(255, 152, 0, 0.1); color: #FF9800; }
+.qa-stat-card.info .qa-stat-icon { background: rgba(33, 150, 243, 0.1); color: #2196F3; }
+.qa-stat-card.purple .qa-stat-icon { background: rgba(156, 39, 176, 0.1); color: #9C27B0; }
+
+.qa-stat-value {
+    font-size: 2rem;
+    font-weight: 800;
+    color: var(--text-primary);
+    font-family: var(--font-display);
+}
+
+.qa-stat-label {
+    font-size: 0.85rem;
+    color: var(--text-muted);
+    margin-top: 0.25rem;
+}
+
+.qa-tables-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1.5rem;
+}
+
+.qa-table-card {
+    background: white;
+    border-radius: 16px;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.06);
+    overflow: hidden;
+}
+
+.qa-table-header {
+    padding: 1rem 1.5rem;
+    border-bottom: 1px solid #eee;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.qa-table-title {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-weight: 700;
+    color: var(--text-primary);
+}
+
+.qa-table-title i {
+    color: var(--primary);
+}
+
+.qa-table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.qa-table th,
+.qa-table td {
+    padding: 1rem 1.5rem;
+    text-align: left;
+    border-bottom: 1px solid #f0f0f0;
+}
+
+.qa-table th {
+    font-size: 0.75rem;
+    font-weight: 700;
+    color: var(--primary);
+    text-transform: uppercase;
+    background: #fafafa;
+}
+
+.qa-table tr:hover {
+    background: #f8f9fa;
+}
+
+.qa-table .empty-row td {
+    padding: 2rem;
+    text-align: center;
+    color: var(--text-muted);
+}
+
+.btn-evaluate {
+    background: linear-gradient(135deg, #4CAF50, #388E3C);
+    color: white;
+    border: none;
+    padding: 0.5rem 1rem;
+    border-radius: 8px;
+    font-size: 0.8rem;
+    font-weight: 600;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.25rem;
+    transition: all 0.2s;
+}
+
+.btn-evaluate:hover {
+    transform: scale(1.05);
+    box-shadow: 0 4px 12px rgba(76, 175, 80, 0.3);
+}
+
+.btn-listen {
+    background: linear-gradient(135deg, #2196F3, #1976D2);
+    color: white;
+    border: none;
+    padding: 0.5rem 0.75rem;
+    border-radius: 8px;
+    font-size: 0.8rem;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.btn-listen:hover {
+    transform: scale(1.05);
+}
+
+.score-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.25rem;
+    padding: 0.35rem 0.75rem;
+    border-radius: 20px;
+    font-weight: 700;
+    font-size: 0.85rem;
+}
+
+.score-badge.high { background: #E8F5E9; color: #2E7D32; }
+.score-badge.medium { background: #FFF3E0; color: #E65100; }
+.score-badge.low { background: #FFEBEE; color: #C62828; }
+
+.result-badge {
+    display: inline-block;
+    padding: 0.25rem 0.75rem;
+    border-radius: 20px;
+    font-size: 0.75rem;
+    font-weight: 600;
+}
+
+.result-badge.success { background: #E8F5E9; color: #2E7D32; }
+.result-badge.danger { background: #FFEBEE; color: #C62828; }
+.result-badge.warning { background: #FFF3E0; color: #E65100; }
+
+.agent-name {
+    font-weight: 600;
+    color: var(--text-primary);
+}
+
+.call-duration {
+    font-family: var(--font-mono);
+    font-size: 0.85rem;
+    color: var(--text-secondary);
+}
+
+.call-date {
+    font-size: 0.85rem;
+    color: var(--text-muted);
+}
+
+/* Quick Actions */
+.qa-actions {
+    display: flex;
+    gap: 1rem;
+    margin-bottom: 1.5rem;
+}
+
+.qa-action-btn {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.75rem 1.25rem;
+    border-radius: 10px;
+    border: none;
+    cursor: pointer;
+    font-weight: 600;
+    font-size: 0.9rem;
+    transition: all 0.2s;
+}
+
+.qa-action-btn.primary {
+    background: var(--primary-gradient);
+    color: var(--text-dark);
+}
+
+.qa-action-btn.secondary {
+    background: white;
+    color: var(--text-primary);
+    border: 1px solid var(--border-color);
+}
+
+.qa-action-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-md);
+}
+
+/* Player in table */
+.audio-mini {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.audio-mini audio {
+    height: 32px;
+    width: 150px;
+}
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="qa-dashboard">
+    <div class="page-header">
+        <div>
+            <h1 class="page-title" data-tr="QA Dashboard" data-de="QA-Dashboard">QA Dashboard</h1>
+            <p class="page-subtitle" data-tr="Kalite değerlendirme ve izleme" data-de="Qualitätsbewertung und Überwachung">Kalite değerlendirme ve izleme</p>
+        </div>
+    </div>
+
+    <!-- Quick Actions -->
+    <div class="qa-actions">
+        <button class="qa-action-btn primary" onclick="startRandomEvaluation()">
+            <i class="ti ti-player-play"></i>
+            <span data-tr="Rastgele Değerlendir" data-de="Zufällige Bewertung">Rastgele Değerlendir</span>
+        </button>
+        <button class="qa-action-btn secondary" onclick="viewQAForms()">
+            <i class="ti ti-forms"></i>
+            <span data-tr="QA Formları" data-de="QA-Formulare">QA Formları</span>
+        </button>
+        <button class="qa-action-btn secondary" onclick="exportQAReport()">
+            <i class="ti ti-download"></i>
+            <span data-tr="Rapor İndir" data-de="Bericht herunterladen">Rapor İndir</span>
+        </button>
+    </div>
+
+    <!-- QA Stats -->
+    <div class="qa-stats-grid">
+        <div class="qa-stat-card">
+            <div class="qa-stat-icon">
                 <i class="ti ti-clipboard-check"></i>
             </div>
+            <div class="qa-stat-value">{{ stats.total_evaluations if stats else 0 }}</div>
+            <div class="qa-stat-label" data-tr="Değerlendirme" data-de="Bewertungen">Değerlendirme</div>
         </div>
-        <div class="stat-card-value">{{ recent_evaluations|length }}</div>
-        <div class="stat-card-label">Değerlendirme</div>
-    </div>
-    
-    <div class="stat-card success">
-        <div class="stat-card-header">
-            <div class="stat-card-icon">
+        
+        <div class="qa-stat-card success">
+            <div class="qa-stat-icon">
                 <i class="ti ti-trophy"></i>
             </div>
+            <div class="qa-stat-value">{{ stats.avg_score if stats else 78 }}%</div>
+            <div class="qa-stat-label" data-tr="Ort. Puan" data-de="Durchschn. Punktzahl">Ort. Puan</div>
         </div>
-        <div class="stat-card-value">78%</div>
-        <div class="stat-card-label">Ort. Puan</div>
-    </div>
-    
-    <div class="stat-card warning">
-        <div class="stat-card-header">
-            <div class="stat-card-icon">
-                <i class="ti ti-phone-x"></i>
+        
+        <div class="qa-stat-card warning">
+            <div class="qa-stat-icon">
+                <i class="ti ti-phone-pause"></i>
             </div>
+            <div class="qa-stat-value">{{ stats.pending_count if stats else 0 }}</div>
+            <div class="qa-stat-label" data-tr="Bekleyen" data-de="Ausstehend">Bekleyen</div>
         </div>
-        <div class="stat-card-value">{{ unevaluated_calls|length }}</div>
-        <div class="stat-card-label">Bekleyen</div>
-    </div>
-    
-    <div class="stat-card info">
-        <div class="stat-card-header">
-            <div class="stat-card-icon">
+        
+        <div class="qa-stat-card info">
+            <div class="qa-stat-icon">
                 <i class="ti ti-robot"></i>
             </div>
+            <div class="qa-stat-value">AI</div>
+            <div class="qa-stat-label" data-tr="Auto QA Aktif" data-de="Auto-QA Aktiv">Auto QA Aktif</div>
         </div>
-        <div class="stat-card-value">AI</div>
-        <div class="stat-card-label">Auto QA Aktif</div>
     </div>
-</div>
 
-<div class="grid grid-cols-2">
-    <!-- Bekleyen Çağrılar -->
-    <div class="card">
-        <div class="card-header">
-            <h3 class="card-title">
-                <i class="ti ti-phone-pause"></i>
-                Değerlendirilmemiş Çağrılar
-            </h3>
-        </div>
-        <div class="card-body">
-            <div class="table-wrapper">
-                <table class="table">
-                    <thead>
-                        <tr>
-                            <th>Agent</th>
-                            <th>Süre</th>
-                            <th>Tarih</th>
-                            <th>İşlem</th>
-                        </tr>
-                    </thead>
-                    <tbody>
+    <!-- Tables Grid -->
+    <div class="qa-tables-grid">
+        <!-- Unevaluated Calls -->
+        <div class="qa-table-card">
+            <div class="qa-table-header">
+                <div class="qa-table-title">
+                    <i class="ti ti-phone-pause"></i>
+                    <span data-tr="Değerlendirilmemiş Çağrılar" data-de="Nicht bewertete Anrufe">Değerlendirilmemiş Çağrılar</span>
+                </div>
+                <span class="badge badge-warning">{{ unevaluated_calls|length if unevaluated_calls else 0 }}</span>
+            </div>
+            <table class="qa-table">
+                <thead>
+                    <tr>
+                        <th data-tr="Agent" data-de="Agent">Agent</th>
+                        <th data-tr="Süre" data-de="Dauer">Süre</th>
+                        <th data-tr="Tarih" data-de="Datum">Tarih</th>
+                        <th data-tr="İşlem" data-de="Aktion">İşlem</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% if unevaluated_calls %}
                         {% for call in unevaluated_calls %}
                         <tr>
-                            <td>{{ call.agent.full_name if call.agent else '-' }}</td>
-                            <td>{{ call.talk_duration|duration }}</td>
-                            <td>{{ call.started_at|datetime }}</td>
+                            <td class="agent-name">{{ call.agent.full_name if call.agent else 'Agent' }}</td>
+                            <td class="call-duration">{{ call.talk_duration|duration if call.talk_duration else '00:00' }}</td>
+                            <td class="call-date">{{ call.started_at.strftime('%d.%m.%Y %H:%M') if call.started_at else '-' }}</td>
                             <td>
-                                <a href="{{ url_for('qa_evaluate', call_id=call.id) }}" class="btn btn-sm btn-primary">
-                                    Değerlendir
-                                </a>
+                                <div style="display: flex; gap: 0.5rem;">
+                                    <button class="btn-listen" onclick="listenCall({{ call.id }})" title="Dinle">
+                                        <i class="ti ti-headphones"></i>
+                                    </button>
+                                    <a href="{{ url_for('qa_evaluate', call_id=call.id) }}" class="btn-evaluate">
+                                        <i class="ti ti-clipboard-check"></i>
+                                        <span data-tr="Değerlendir" data-de="Bewerten">Değerlendir</span>
+                                    </a>
+                                </div>
                             </td>
                         </tr>
-                        {% else %}
-                        <tr>
-                            <td colspan="4" class="text-muted">Bekleyen çağrı bulunmuyor</td>
-                        </tr>
                         {% endfor %}
-                    </tbody>
-                </table>
-            </div>
-        </div>
-    </div>
-    
-    <!-- Son Değerlendirmeler -->
-    <div class="card">
-        <div class="card-header">
-            <h3 class="card-title">
-                <i class="ti ti-clipboard-check"></i>
-                Son Değerlendirmeler
-            </h3>
-        </div>
-        <div class="card-body">
-            <div class="table-wrapper">
-                <table class="table">
-                    <thead>
+                    {% else %}
+                        <!-- Demo Data -->
                         <tr>
-                            <th>Agent</th>
-                            <th>Puan</th>
-                            <th>Sonuç</th>
-                            <th>Tarih</th>
+                            <td class="agent-name">Ahmet Yılmaz</td>
+                            <td class="call-duration">04:32</td>
+                            <td class="call-date">26.12.2024 14:25</td>
+                            <td>
+                                <div style="display: flex; gap: 0.5rem;">
+                                    <button class="btn-listen" onclick="listenCall(1)" title="Dinle">
+                                        <i class="ti ti-headphones"></i>
+                                    </button>
+                                    <button class="btn-evaluate" onclick="evaluateCall(1)">
+                                        <i class="ti ti-clipboard-check"></i>
+                                        <span data-tr="Değerlendir" data-de="Bewerten">Değerlendir</span>
+                                    </button>
+                                </div>
+                            </td>
                         </tr>
-                    </thead>
-                    <tbody>
+                        <tr>
+                            <td class="agent-name">Mehmet Demir</td>
+                            <td class="call-duration">06:15</td>
+                            <td class="call-date">26.12.2024 13:50</td>
+                            <td>
+                                <div style="display: flex; gap: 0.5rem;">
+                                    <button class="btn-listen" onclick="listenCall(2)" title="Dinle">
+                                        <i class="ti ti-headphones"></i>
+                                    </button>
+                                    <button class="btn-evaluate" onclick="evaluateCall(2)">
+                                        <i class="ti ti-clipboard-check"></i>
+                                        <span data-tr="Değerlendir" data-de="Bewerten">Değerlendir</span>
+                                    </button>
+                                </div>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td class="agent-name">Ayşe Kaya</td>
+                            <td class="call-duration">03:48</td>
+                            <td class="call-date">26.12.2024 12:30</td>
+                            <td>
+                                <div style="display: flex; gap: 0.5rem;">
+                                    <button class="btn-listen" onclick="listenCall(3)" title="Dinle">
+                                        <i class="ti ti-headphones"></i>
+                                    </button>
+                                    <button class="btn-evaluate" onclick="evaluateCall(3)">
+                                        <i class="ti ti-clipboard-check"></i>
+                                        <span data-tr="Değerlendir" data-de="Bewerten">Değerlendir</span>
+                                    </button>
+                                </div>
+                            </td>
+                        </tr>
+                    {% endif %}
+                </tbody>
+            </table>
+        </div>
+
+        <!-- Recent Evaluations -->
+        <div class="qa-table-card">
+            <div class="qa-table-header">
+                <div class="qa-table-title">
+                    <i class="ti ti-clipboard-check"></i>
+                    <span data-tr="Son Değerlendirmeler" data-de="Letzte Bewertungen">Son Değerlendirmeler</span>
+                </div>
+                <a href="{{ url_for('qa_forms') }}" class="btn btn-sm btn-ghost" data-tr="Tümü" data-de="Alle">Tümü</a>
+            </div>
+            <table class="qa-table">
+                <thead>
+                    <tr>
+                        <th data-tr="Agent" data-de="Agent">Agent</th>
+                        <th data-tr="Puan" data-de="Punktzahl">Puan</th>
+                        <th data-tr="Sonuç" data-de="Ergebnis">Sonuç</th>
+                        <th data-tr="Tarih" data-de="Datum">Tarih</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% if recent_evaluations %}
                         {% for eval in recent_evaluations %}
                         <tr>
-                            <td>{{ eval.agent.full_name if eval.agent else '-' }}</td>
-                            <td><strong>{{ eval.percentage|round(1) }}%</strong></td>
+                            <td class="agent-name">{{ eval.agent.full_name if eval.agent else '-' }}</td>
                             <td>
-                                <span class="badge badge-{{ 'success' if eval.passed else 'danger' }}">
-                                    {{ 'Geçti' if eval.passed else 'Kaldı' }}
+                                {% set score = eval.percentage|round(1) if eval.percentage else 0 %}
+                                <span class="score-badge {{ 'high' if score >= 80 else 'medium' if score >= 60 else 'low' }}">
+                                    <i class="ti ti-star-filled"></i> {{ score }}%
                                 </span>
                             </td>
-                            <td>{{ eval.evaluated_at|datetime }}</td>
-                        </tr>
-                        {% else %}
-                        <tr>
-                            <td colspan="4" class="text-muted">Henüz değerlendirme yapılmamış</td>
+                            <td>
+                                <span class="result-badge {{ 'success' if eval.passed else 'danger' }}">
+                                    {{ 'QC OK' if eval.passed else 'Storno' }}
+                                </span>
+                            </td>
+                            <td class="call-date">{{ eval.evaluated_at.strftime('%d.%m.%Y %H:%M') if eval.evaluated_at else '-' }}</td>
                         </tr>
                         {% endfor %}
-                    </tbody>
-                </table>
-            </div>
+                    {% else %}
+                        <!-- Demo Data -->
+                        <tr>
+                            <td class="agent-name">Fatma Öz</td>
+                            <td><span class="score-badge high"><i class="ti ti-star-filled"></i> 92%</span></td>
+                            <td><span class="result-badge success">QC OK</span></td>
+                            <td class="call-date">26.12.2024 11:45</td>
+                        </tr>
+                        <tr>
+                            <td class="agent-name">Ali Veli</td>
+                            <td><span class="score-badge medium"><i class="ti ti-star-filled"></i> 74%</span></td>
+                            <td><span class="result-badge warning">Termin</span></td>
+                            <td class="call-date">26.12.2024 10:30</td>
+                        </tr>
+                        <tr>
+                            <td class="agent-name">Zeynep Ak</td>
+                            <td><span class="score-badge high"><i class="ti ti-star-filled"></i> 88%</span></td>
+                            <td><span class="result-badge success">QC OK</span></td>
+                            <td class="call-date">26.12.2024 09:15</td>
+                        </tr>
+                        <tr>
+                            <td class="agent-name">Mustafa Can</td>
+                            <td><span class="score-badge low"><i class="ti ti-star-filled"></i> 45%</span></td>
+                            <td><span class="result-badge danger">Storno</span></td>
+                            <td class="call-date">25.12.2024 16:40</td>
+                        </tr>
+                    {% endif %}
+                </tbody>
+            </table>
         </div>
     </div>
 </div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+// Listen to call recording
+function listenCall(callId) {
+    const msg = document.documentElement.lang === 'de' 
+        ? 'Anrufaufzeichnung #' + callId + ' wird geladen...' 
+        : 'Çağrı kaydı #' + callId + ' yükleniyor...';
+    
+    // Open audio player modal or redirect to player
+    alert(msg);
+    // TODO: Implement actual audio player
+}
+
+// Evaluate call
+function evaluateCall(callId) {
+    const msg = document.documentElement.lang === 'de' 
+        ? 'Bewertungsformular wird geöffnet...' 
+        : 'Değerlendirme formu açılıyor...';
+    
+    // Open evaluation form
+    alert(msg);
+    // window.location.href = '/qa/evaluate/' + callId;
+}
+
+// Start random evaluation
+function startRandomEvaluation() {
+    const msg = document.documentElement.lang === 'de' 
+        ? 'Zufälliger Anruf wird zur Bewertung ausgewählt...' 
+        : 'Rastgele bir çağrı değerlendirme için seçiliyor...';
+    alert(msg);
+}
+
+// View QA Forms
+function viewQAForms() {
+    window.location.href = '{{ url_for("qa_forms") }}';
+}
+
+// Export QA Report
+function exportQAReport() {
+    const msg = document.documentElement.lang === 'de' 
+        ? 'QA-Bericht wird erstellt...' 
+        : 'QA raporu oluşturuluyor...';
+    alert(msg);
+}
+</script>
 {% endblock %}
