@@ -2,62 +2,844 @@
 
 {% block title %}Departman Yönetimi - AI BEE CC{% endblock %}
 
+{% block extra_css %}
+<style>
+.dept-page {
+    padding: 1.5rem;
+}
+
+.stats-row {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 1rem;
+    margin-bottom: 1.5rem;
+}
+
+.stat-card {
+    background: white;
+    border-radius: 12px;
+    padding: 1.25rem;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+}
+
+.stat-icon {
+    width: 50px;
+    height: 50px;
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.5rem;
+    color: white;
+}
+
+.stat-icon.blue { background: linear-gradient(135deg, #2196F3, #1976D2); }
+.stat-icon.green { background: linear-gradient(135deg, #4CAF50, #388E3C); }
+.stat-icon.orange { background: linear-gradient(135deg, #FF9800, #F57C00); }
+.stat-icon.purple { background: linear-gradient(135deg, #9C27B0, #7B1FA2); }
+
+.stat-value {
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: #1a1a2e;
+}
+
+.stat-label {
+    font-size: 0.8rem;
+    color: #888;
+}
+
+.dept-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+    gap: 1.5rem;
+}
+
+.dept-card {
+    background: white;
+    border-radius: 16px;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.06);
+    overflow: hidden;
+    transition: all 0.3s;
+}
+
+.dept-card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 8px 30px rgba(0,0,0,0.12);
+}
+
+.dept-card-header {
+    padding: 1.25rem;
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+}
+
+.dept-card-header.sales {
+    background: linear-gradient(135deg, #4CAF50, #388E3C);
+}
+
+.dept-card-header.support {
+    background: linear-gradient(135deg, #2196F3, #1976D2);
+}
+
+.dept-card-header.qc {
+    background: linear-gradient(135deg, #9C27B0, #7B1FA2);
+}
+
+.dept-card-header.tech {
+    background: linear-gradient(135deg, #FF9800, #F57C00);
+}
+
+.dept-card-header.admin {
+    background: linear-gradient(135deg, #607D8B, #455A64);
+}
+
+.dept-icon {
+    width: 50px;
+    height: 50px;
+    background: rgba(255,255,255,0.2);
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-size: 1.5rem;
+}
+
+.dept-info h3 {
+    color: white;
+    margin: 0;
+    font-size: 1.1rem;
+}
+
+.dept-info p {
+    color: rgba(255,255,255,0.8);
+    margin: 0.25rem 0 0 0;
+    font-size: 0.8rem;
+}
+
+.dept-badge {
+    margin-left: auto;
+    background: rgba(255,255,255,0.2);
+    color: white;
+    padding: 0.25rem 0.75rem;
+    border-radius: 20px;
+    font-size: 0.7rem;
+    font-weight: 600;
+}
+
+.dept-card-body {
+    padding: 1.25rem;
+}
+
+.dept-stats {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 0.75rem;
+    margin-bottom: 1rem;
+}
+
+.dept-stat {
+    background: #f8f9fa;
+    padding: 0.75rem;
+    border-radius: 8px;
+    text-align: center;
+}
+
+.dept-stat-value {
+    font-size: 1.25rem;
+    font-weight: 700;
+    color: #1a1a2e;
+}
+
+.dept-stat-label {
+    font-size: 0.7rem;
+    color: #888;
+    text-transform: uppercase;
+}
+
+.dept-manager {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 0.75rem;
+    background: #f8f9fa;
+    border-radius: 8px;
+    margin-top: 1rem;
+}
+
+.dept-manager-avatar {
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #F5A623, #e09800);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-weight: 600;
+    font-size: 0.8rem;
+}
+
+.dept-manager-info {
+    flex: 1;
+}
+
+.dept-manager-name {
+    font-weight: 600;
+    font-size: 0.85rem;
+    color: #333;
+}
+
+.dept-manager-role {
+    font-size: 0.75rem;
+    color: #888;
+}
+
+.dept-card-footer {
+    padding: 1rem 1.25rem;
+    background: #f8f9fa;
+    display: flex;
+    gap: 0.5rem;
+}
+
+.dept-card-footer button {
+    flex: 1;
+    padding: 0.5rem;
+    border-radius: 8px;
+    border: none;
+    cursor: pointer;
+    font-size: 0.8rem;
+    font-weight: 500;
+    transition: all 0.2s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+}
+
+.btn-view {
+    background: #e3f2fd;
+    color: #1976D2;
+}
+
+.btn-edit {
+    background: #fff3e0;
+    color: #ef6c00;
+}
+
+.btn-delete {
+    background: #ffebee;
+    color: #c62828;
+}
+
+.dept-card-footer button:hover {
+    transform: translateY(-2px);
+}
+
+/* Modal */
+.modal-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.6);
+    backdrop-filter: blur(4px);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 1000;
+    opacity: 0;
+    visibility: hidden;
+    transition: all 0.3s;
+}
+
+.modal-overlay.show {
+    opacity: 1;
+    visibility: visible;
+}
+
+.modal-content {
+    background: white;
+    border-radius: 20px;
+    width: 100%;
+    max-width: 600px;
+    max-height: 90vh;
+    overflow: hidden;
+}
+
+.modal-header {
+    padding: 1.5rem;
+    background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+    color: white;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.modal-header h3 {
+    margin: 0;
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+}
+
+.modal-header h3 i {
+    color: #F5A623;
+}
+
+.modal-close {
+    background: rgba(255,255,255,0.1);
+    border: none;
+    color: white;
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    cursor: pointer;
+}
+
+.modal-body {
+    padding: 1.5rem;
+    max-height: 60vh;
+    overflow-y: auto;
+}
+
+.modal-footer {
+    padding: 1rem 1.5rem;
+    background: #f8f9fa;
+    display: flex;
+    gap: 1rem;
+    justify-content: flex-end;
+}
+
+.form-group {
+    margin-bottom: 1rem;
+}
+
+.form-group label {
+    display: block;
+    margin-bottom: 0.5rem;
+    font-weight: 500;
+    color: #333;
+    font-size: 0.85rem;
+}
+
+.form-group input,
+.form-group select,
+.form-group textarea {
+    width: 100%;
+    padding: 0.75rem;
+    border: 1px solid #e0e0e0;
+    border-radius: 8px;
+    font-size: 0.9rem;
+}
+
+.form-group input:focus,
+.form-group select:focus,
+.form-group textarea:focus {
+    outline: none;
+    border-color: #F5A623;
+    box-shadow: 0 0 0 3px rgba(245, 166, 35, 0.1);
+}
+
+.form-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1rem;
+}
+
+.color-options {
+    display: flex;
+    gap: 0.5rem;
+    margin-top: 0.5rem;
+}
+
+.color-option {
+    width: 32px;
+    height: 32px;
+    border-radius: 8px;
+    cursor: pointer;
+    border: 3px solid transparent;
+    transition: all 0.2s;
+}
+
+.color-option:hover {
+    transform: scale(1.1);
+}
+
+.color-option.selected {
+    border-color: #1a1a2e;
+}
+
+.color-option.green { background: linear-gradient(135deg, #4CAF50, #388E3C); }
+.color-option.blue { background: linear-gradient(135deg, #2196F3, #1976D2); }
+.color-option.purple { background: linear-gradient(135deg, #9C27B0, #7B1FA2); }
+.color-option.orange { background: linear-gradient(135deg, #FF9800, #F57C00); }
+.color-option.gray { background: linear-gradient(135deg, #607D8B, #455A64); }
+.color-option.red { background: linear-gradient(135deg, #f44336, #d32f2f); }
+</style>
+{% endblock %}
+
 {% block content %}
-<div class="page-header">
-    <div>
-        <h1 class="page-title">Departman Yönetimi</h1>
-        <p class="page-subtitle">Organizasyon yapısını düzenleyin</p>
+<div class="dept-page">
+    <div class="page-header">
+        <div>
+            <h1 class="page-title">
+                <i class="ti ti-building" style="color: #F5A623;"></i>
+                <span data-tr="Departman Yönetimi" data-de="Abteilungsverwaltung">Departman Yönetimi</span>
+            </h1>
+            <p class="page-subtitle" data-tr="Organizasyon yapısını düzenleyin" data-de="Organisationsstruktur verwalten">Organizasyon yapısını düzenleyin</p>
+        </div>
+        <button class="btn btn-primary" onclick="openNewDeptModal()">
+            <i class="ti ti-plus"></i>
+            <span data-tr="Yeni Departman" data-de="Neue Abteilung">Yeni Departman</span>
+        </button>
     </div>
-    <button class="btn btn-primary">
-        <i class="ti ti-plus"></i> Yeni Departman
-    </button>
+
+    <!-- Stats -->
+    <div class="stats-row">
+        <div class="stat-card">
+            <div class="stat-icon blue"><i class="ti ti-building"></i></div>
+            <div>
+                <div class="stat-value">5</div>
+                <div class="stat-label" data-tr="Toplam Departman" data-de="Gesamt Abteilungen">Toplam Departman</div>
+            </div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-icon green"><i class="ti ti-users-group"></i></div>
+            <div>
+                <div class="stat-value">12</div>
+                <div class="stat-label" data-tr="Toplam Takım" data-de="Gesamt Teams">Toplam Takım</div>
+            </div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-icon orange"><i class="ti ti-users"></i></div>
+            <div>
+                <div class="stat-value">48</div>
+                <div class="stat-label" data-tr="Toplam Çalışan" data-de="Gesamt Mitarbeiter">Toplam Çalışan</div>
+            </div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-icon purple"><i class="ti ti-check"></i></div>
+            <div>
+                <div class="stat-value">5</div>
+                <div class="stat-label" data-tr="Aktif Departman" data-de="Aktive Abteilungen">Aktif Departman</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Departments Grid -->
+    <div class="dept-grid">
+        <!-- Sales Department -->
+        <div class="dept-card">
+            <div class="dept-card-header sales">
+                <div class="dept-icon"><i class="ti ti-phone-outgoing"></i></div>
+                <div class="dept-info">
+                    <h3 data-tr="Satış Departmanı" data-de="Vertriebsabteilung">Satış Departmanı</h3>
+                    <p>SALES</p>
+                </div>
+                <span class="dept-badge" data-tr="AKTİF" data-de="AKTIV">AKTİF</span>
+            </div>
+            <div class="dept-card-body">
+                <div class="dept-stats">
+                    <div class="dept-stat">
+                        <div class="dept-stat-value">4</div>
+                        <div class="dept-stat-label" data-tr="Takım" data-de="Teams">Takım</div>
+                    </div>
+                    <div class="dept-stat">
+                        <div class="dept-stat-value">18</div>
+                        <div class="dept-stat-label" data-tr="Çalışan" data-de="Mitarbeiter">Çalışan</div>
+                    </div>
+                    <div class="dept-stat">
+                        <div class="dept-stat-value">3</div>
+                        <div class="dept-stat-label" data-tr="Kampanya" data-de="Kampagnen">Kampanya</div>
+                    </div>
+                </div>
+                <div class="dept-manager">
+                    <div class="dept-manager-avatar">AY</div>
+                    <div class="dept-manager-info">
+                        <div class="dept-manager-name">Ahmet Yılmaz</div>
+                        <div class="dept-manager-role" data-tr="Departman Müdürü" data-de="Abteilungsleiter">Departman Müdürü</div>
+                    </div>
+                </div>
+            </div>
+            <div class="dept-card-footer">
+                <button class="btn-view" onclick="viewDept(1)"><i class="ti ti-eye"></i> <span data-tr="Detay" data-de="Details">Detay</span></button>
+                <button class="btn-edit" onclick="editDept(1)"><i class="ti ti-edit"></i> <span data-tr="Düzenle" data-de="Bearbeiten">Düzenle</span></button>
+                <button class="btn-delete" onclick="deleteDept(1)"><i class="ti ti-trash"></i></button>
+            </div>
+        </div>
+
+        <!-- Support Department -->
+        <div class="dept-card">
+            <div class="dept-card-header support">
+                <div class="dept-icon"><i class="ti ti-headset"></i></div>
+                <div class="dept-info">
+                    <h3 data-tr="Destek Departmanı" data-de="Support-Abteilung">Destek Departmanı</h3>
+                    <p>SUPPORT</p>
+                </div>
+                <span class="dept-badge">AKTİF</span>
+            </div>
+            <div class="dept-card-body">
+                <div class="dept-stats">
+                    <div class="dept-stat">
+                        <div class="dept-stat-value">3</div>
+                        <div class="dept-stat-label">Takım</div>
+                    </div>
+                    <div class="dept-stat">
+                        <div class="dept-stat-value">12</div>
+                        <div class="dept-stat-label">Çalışan</div>
+                    </div>
+                    <div class="dept-stat">
+                        <div class="dept-stat-value">2</div>
+                        <div class="dept-stat-label">Kampanya</div>
+                    </div>
+                </div>
+                <div class="dept-manager">
+                    <div class="dept-manager-avatar">MK</div>
+                    <div class="dept-manager-info">
+                        <div class="dept-manager-name">Mehmet Kaya</div>
+                        <div class="dept-manager-role">Departman Müdürü</div>
+                    </div>
+                </div>
+            </div>
+            <div class="dept-card-footer">
+                <button class="btn-view" onclick="viewDept(2)"><i class="ti ti-eye"></i> Detay</button>
+                <button class="btn-edit" onclick="editDept(2)"><i class="ti ti-edit"></i> Düzenle</button>
+                <button class="btn-delete" onclick="deleteDept(2)"><i class="ti ti-trash"></i></button>
+            </div>
+        </div>
+
+        <!-- QC Department -->
+        <div class="dept-card">
+            <div class="dept-card-header qc">
+                <div class="dept-icon"><i class="ti ti-certificate"></i></div>
+                <div class="dept-info">
+                    <h3 data-tr="Kalite Kontrol" data-de="Qualitätskontrolle">Kalite Kontrol</h3>
+                    <p>QC</p>
+                </div>
+                <span class="dept-badge">AKTİF</span>
+            </div>
+            <div class="dept-card-body">
+                <div class="dept-stats">
+                    <div class="dept-stat">
+                        <div class="dept-stat-value">2</div>
+                        <div class="dept-stat-label">Takım</div>
+                    </div>
+                    <div class="dept-stat">
+                        <div class="dept-stat-value">8</div>
+                        <div class="dept-stat-label">Çalışan</div>
+                    </div>
+                    <div class="dept-stat">
+                        <div class="dept-stat-value">-</div>
+                        <div class="dept-stat-label">Kampanya</div>
+                    </div>
+                </div>
+                <div class="dept-manager">
+                    <div class="dept-manager-avatar">ZD</div>
+                    <div class="dept-manager-info">
+                        <div class="dept-manager-name">Zeynep Demir</div>
+                        <div class="dept-manager-role">QC Müdürü</div>
+                    </div>
+                </div>
+            </div>
+            <div class="dept-card-footer">
+                <button class="btn-view" onclick="viewDept(3)"><i class="ti ti-eye"></i> Detay</button>
+                <button class="btn-edit" onclick="editDept(3)"><i class="ti ti-edit"></i> Düzenle</button>
+                <button class="btn-delete" onclick="deleteDept(3)"><i class="ti ti-trash"></i></button>
+            </div>
+        </div>
+
+        <!-- Tech Department -->
+        <div class="dept-card">
+            <div class="dept-card-header tech">
+                <div class="dept-icon"><i class="ti ti-code"></i></div>
+                <div class="dept-info">
+                    <h3 data-tr="Teknik Departman" data-de="Technische Abteilung">Teknik Departman</h3>
+                    <p>TECH</p>
+                </div>
+                <span class="dept-badge">AKTİF</span>
+            </div>
+            <div class="dept-card-body">
+                <div class="dept-stats">
+                    <div class="dept-stat">
+                        <div class="dept-stat-value">2</div>
+                        <div class="dept-stat-label">Takım</div>
+                    </div>
+                    <div class="dept-stat">
+                        <div class="dept-stat-value">6</div>
+                        <div class="dept-stat-label">Çalışan</div>
+                    </div>
+                    <div class="dept-stat">
+                        <div class="dept-stat-value">-</div>
+                        <div class="dept-stat-label">Kampanya</div>
+                    </div>
+                </div>
+                <div class="dept-manager">
+                    <div class="dept-manager-avatar">CA</div>
+                    <div class="dept-manager-info">
+                        <div class="dept-manager-name">Can Arslan</div>
+                        <div class="dept-manager-role">Teknik Müdür</div>
+                    </div>
+                </div>
+            </div>
+            <div class="dept-card-footer">
+                <button class="btn-view" onclick="viewDept(4)"><i class="ti ti-eye"></i> Detay</button>
+                <button class="btn-edit" onclick="editDept(4)"><i class="ti ti-edit"></i> Düzenle</button>
+                <button class="btn-delete" onclick="deleteDept(4)"><i class="ti ti-trash"></i></button>
+            </div>
+        </div>
+
+        <!-- Admin Department -->
+        <div class="dept-card">
+            <div class="dept-card-header admin">
+                <div class="dept-icon"><i class="ti ti-settings"></i></div>
+                <div class="dept-info">
+                    <h3 data-tr="İdari İşler" data-de="Verwaltung">İdari İşler</h3>
+                    <p>ADMIN</p>
+                </div>
+                <span class="dept-badge">AKTİF</span>
+            </div>
+            <div class="dept-card-body">
+                <div class="dept-stats">
+                    <div class="dept-stat">
+                        <div class="dept-stat-value">1</div>
+                        <div class="dept-stat-label">Takım</div>
+                    </div>
+                    <div class="dept-stat">
+                        <div class="dept-stat-value">4</div>
+                        <div class="dept-stat-label">Çalışan</div>
+                    </div>
+                    <div class="dept-stat">
+                        <div class="dept-stat-value">-</div>
+                        <div class="dept-stat-label">Kampanya</div>
+                    </div>
+                </div>
+                <div class="dept-manager">
+                    <div class="dept-manager-avatar">SÖ</div>
+                    <div class="dept-manager-info">
+                        <div class="dept-manager-name">Selin Öztürk</div>
+                        <div class="dept-manager-role">İdari Müdür</div>
+                    </div>
+                </div>
+            </div>
+            <div class="dept-card-footer">
+                <button class="btn-view" onclick="viewDept(5)"><i class="ti ti-eye"></i> Detay</button>
+                <button class="btn-edit" onclick="editDept(5)"><i class="ti ti-edit"></i> Düzenle</button>
+                <button class="btn-delete" onclick="deleteDept(5)"><i class="ti ti-trash"></i></button>
+            </div>
+        </div>
+    </div>
 </div>
 
-<div class="card">
-    <div class="card-body">
-        <div class="table-wrapper">
-            <table class="table">
-                <thead>
-                    <tr>
-                        <th>Kod</th>
-                        <th>Ad</th>
-                        <th>Takım Sayısı</th>
-                        <th>Çalışan Sayısı</th>
-                        <th>Yönetici</th>
-                        <th>Durum</th>
-                        <th>İşlemler</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {% for dept in departments %}
-                    <tr>
-                        <td><code>{{ dept.code or '-' }}</code></td>
-                        <td><strong>{{ dept.name }}</strong></td>
-                        <td>{{ dept.teams.count() }}</td>
-                        <td>{{ dept.users.count() }}</td>
-                        <td>{{ dept.manager.full_name if dept.manager else '-' }}</td>
-                        <td>
-                            <span class="badge badge-{{ 'success' if dept.is_active else 'warning' }}">
-                                {{ 'Aktif' if dept.is_active else 'Pasif' }}
-                            </span>
-                        </td>
-                        <td>
-                            <button class="btn btn-sm btn-ghost" title="Düzenle">
-                                <i class="ti ti-edit"></i>
-                            </button>
-                        </td>
-                    </tr>
-                    {% else %}
-                    <tr>
-                        <td colspan="7" class="text-muted">Henüz departman tanımlanmamış</td>
-                    </tr>
-                    {% endfor %}
-                </tbody>
-            </table>
+<!-- New/Edit Department Modal -->
+<div class="modal-overlay" id="deptModal">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h3><i class="ti ti-building-plus"></i> <span id="modalTitle" data-tr="Yeni Departman" data-de="Neue Abteilung">Yeni Departman</span></h3>
+            <button class="modal-close" onclick="closeModal()">
+                <i class="ti ti-x"></i>
+            </button>
+        </div>
+        <form id="deptForm" onsubmit="saveDept(event)">
+            <div class="modal-body">
+                <input type="hidden" id="deptId">
+                
+                <div class="form-row">
+                    <div class="form-group">
+                        <label data-tr="Departman Adı" data-de="Abteilungsname">Departman Adı</label>
+                        <input type="text" id="deptName" required
+                               data-tr-placeholder="Örn: Satış Departmanı" data-de-placeholder="z.B. Vertriebsabteilung">
+                    </div>
+                    <div class="form-group">
+                        <label data-tr="Kod" data-de="Code">Kod</label>
+                        <input type="text" id="deptCode" required
+                               data-tr-placeholder="Örn: SALES" data-de-placeholder="z.B. SALES" style="text-transform: uppercase;">
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label data-tr="Açıklama" data-de="Beschreibung">Açıklama</label>
+                    <textarea id="deptDesc" rows="2"
+                              data-tr-placeholder="Departman açıklaması" data-de-placeholder="Abteilungsbeschreibung"></textarea>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label data-tr="Departman Müdürü" data-de="Abteilungsleiter">Departman Müdürü</label>
+                        <select id="deptManager">
+                            <option value="" data-tr="-- Seçiniz --" data-de="-- Auswählen --">-- Seçiniz --</option>
+                            <option value="1">Ahmet Yılmaz</option>
+                            <option value="2">Mehmet Kaya</option>
+                            <option value="3">Zeynep Demir</option>
+                            <option value="4">Can Arslan</option>
+                            <option value="5">Selin Öztürk</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label data-tr="Durum" data-de="Status">Durum</label>
+                        <select id="deptStatus">
+                            <option value="1" data-tr="Aktif" data-de="Aktiv">Aktif</option>
+                            <option value="0" data-tr="Pasif" data-de="Inaktiv">Pasif</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label data-tr="Renk" data-de="Farbe">Renk</label>
+                    <div class="color-options">
+                        <div class="color-option green selected" data-color="sales" onclick="selectColor(this)"></div>
+                        <div class="color-option blue" data-color="support" onclick="selectColor(this)"></div>
+                        <div class="color-option purple" data-color="qc" onclick="selectColor(this)"></div>
+                        <div class="color-option orange" data-color="tech" onclick="selectColor(this)"></div>
+                        <div class="color-option gray" data-color="admin" onclick="selectColor(this)"></div>
+                        <div class="color-option red" data-color="red" onclick="selectColor(this)"></div>
+                    </div>
+                    <input type="hidden" id="deptColor" value="sales">
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" onclick="closeModal()" data-tr="İptal" data-de="Abbrechen">İptal</button>
+                <button type="submit" class="btn btn-primary">
+                    <i class="ti ti-device-floppy"></i> <span data-tr="Kaydet" data-de="Speichern">Kaydet</span>
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- View Department Modal -->
+<div class="modal-overlay" id="viewModal">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h3><i class="ti ti-building"></i> <span id="viewModalTitle">Departman Detay</span></h3>
+            <button class="modal-close" onclick="closeViewModal()">
+                <i class="ti ti-x"></i>
+            </button>
+        </div>
+        <div class="modal-body" id="viewModalBody">
+            <!-- Content will be loaded here -->
+        </div>
+        <div class="modal-footer">
+            <button class="btn btn-secondary" onclick="closeViewModal()" data-tr="Kapat" data-de="Schließen">Kapat</button>
         </div>
     </div>
 </div>
 {% endblock %}
 
+{% block extra_js %}
+<script>
+(function() {
+    'use strict';
+    
+    let selectedColor = 'sales';
+    
+    function getCurrentLang() {
+        return localStorage.getItem('selectedLang') || 'tr';
+    }
+    
+    function showNotification(message, type) {
+        const toast = document.createElement('div');
+        toast.style.cssText = 'position:fixed;top:20px;right:20px;padding:15px 25px;border-radius:10px;color:white;font-weight:500;z-index:9999;box-shadow:0 4px 20px rgba(0,0,0,0.2);animation:slideIn 0.3s ease;';
+        toast.style.background = type === 'success' ? 'linear-gradient(135deg, #4CAF50, #45a049)' : 
+                                  type === 'error' ? 'linear-gradient(135deg, #f44336, #d32f2f)' : 
+                                  'linear-gradient(135deg, #2196F3, #1976D2)';
+        toast.textContent = message;
+        document.body.appendChild(toast);
+        setTimeout(function() { toast.remove(); }, 3000);
+    }
 
+    window.selectColor = function(el) {
+        document.querySelectorAll('.color-option').forEach(function(opt) {
+            opt.classList.remove('selected');
+        });
+        el.classList.add('selected');
+        selectedColor = el.dataset.color;
+        document.getElementById('deptColor').value = selectedColor;
+    };
 
+    window.openNewDeptModal = function() {
+        document.getElementById('modalTitle').textContent = getCurrentLang() === 'de' ? 'Neue Abteilung' : 'Yeni Departman';
+        document.getElementById('deptForm').reset();
+        document.getElementById('deptId').value = '';
+        document.querySelectorAll('.color-option').forEach(function(opt) {
+            opt.classList.remove('selected');
+        });
+        document.querySelector('.color-option.green').classList.add('selected');
+        selectedColor = 'sales';
+        document.getElementById('deptModal').classList.add('show');
+    };
+
+    window.editDept = function(id) {
+        document.getElementById('modalTitle').textContent = getCurrentLang() === 'de' ? 'Abteilung bearbeiten' : 'Departman Düzenle';
+        document.getElementById('deptId').value = id;
+        // Load department data here
+        document.getElementById('deptModal').classList.add('show');
+        showNotification(getCurrentLang() === 'de' ? 'Abteilung wird geladen...' : 'Departman yükleniyor...', 'info');
+    };
+
+    window.closeModal = function() {
+        document.getElementById('deptModal').classList.remove('show');
+    };
+
+    window.saveDept = function(event) {
+        event.preventDefault();
+        const name = document.getElementById('deptName').value;
+        showNotification(getCurrentLang() === 'de' ? '"' + name + '" erfolgreich gespeichert' : '"' + name + '" başarıyla kaydedildi', 'success');
+        closeModal();
+    };
+
+    window.deleteDept = function(id) {
+        const msg = getCurrentLang() === 'de' ? 
+            'Sind Sie sicher, dass Sie diese Abteilung löschen möchten?' : 
+            'Bu departmanı silmek istediğinize emin misiniz?';
+        if (confirm(msg)) {
+            showNotification(getCurrentLang() === 'de' ? 'Abteilung gelöscht' : 'Departman silindi', 'success');
+        }
+    };
+
+    window.viewDept = function(id) {
+        const deptData = {
+            1: { name: 'Satış Departmanı', teams: ['Outbound Satış', 'Inbound Satış', 'VIP Satış', 'B2B Satış'], employees: 18 },
+            2: { name: 'Destek Departmanı', teams: ['Teknik Destek', 'Müşteri Hizmetleri', 'Şikayet Yönetimi'], employees: 12 },
+            3: { name: 'Kalite Kontrol', teams: ['QC Dinleme', 'Eğitim'], employees: 8 },
+            4: { name: 'Teknik Departman', teams: ['Yazılım', 'Sistem'], employees: 6 },
+            5: { name: 'İdari İşler', teams: ['İnsan Kaynakları'], employees: 4 }
+        };
+        
+        const data = deptData[id];
+        if (!data) return;
+        
+        document.getElementById('viewModalTitle').textContent = data.name;
+        
+        let html = '<div style="margin-bottom: 1rem;">';
+        html += '<strong>' + (getCurrentLang() === 'de' ? 'Mitarbeiter:' : 'Çalışan Sayısı:') + '</strong> ' + data.employees;
+        html += '</div>';
+        html += '<div style="margin-bottom: 1rem;">';
+        html += '<strong>' + (getCurrentLang() === 'de' ? 'Teams:' : 'Takımlar:') + '</strong>';
+        html += '<ul style="margin: 0.5rem 0; padding-left: 1.5rem;">';
+        data.teams.forEach(function(team) {
+            html += '<li>' + team + '</li>';
+        });
+        html += '</ul>';
+        html += '</div>';
+        
+        document.getElementById('viewModalBody').innerHTML = html;
+        document.getElementById('viewModal').classList.add('show');
+    };
+
+    window.closeViewModal = function() {
+        document.getElementById('viewModal').classList.remove('show');
+    };
+
+    // Add animation styles
+    const style = document.createElement('style');
+    style.textContent = '@keyframes slideIn{from{transform:translateX(100%);opacity:0}to{transform:translateX(0);opacity:1}}';
+    document.head.appendChild(style);
+
+    console.log('Departments page initialized');
+})();
+</script>
+{% endblock %}
