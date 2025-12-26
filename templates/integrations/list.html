@@ -2,103 +2,789 @@
 
 {% block title %}Entegrasyonlar - AI BEE CC{% endblock %}
 
+{% block extra_css %}
+<style>
+.integration-page {
+    padding: 1.5rem;
+}
+
+.stats-row {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 1rem;
+    margin-bottom: 1.5rem;
+}
+
+.stat-card {
+    background: white;
+    border-radius: 12px;
+    padding: 1.25rem;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+}
+
+.stat-icon {
+    width: 50px;
+    height: 50px;
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.5rem;
+    color: white;
+}
+
+.stat-icon.blue { background: linear-gradient(135deg, #2196F3, #1976D2); }
+.stat-icon.green { background: linear-gradient(135deg, #4CAF50, #388E3C); }
+.stat-icon.orange { background: linear-gradient(135deg, #FF9800, #F57C00); }
+.stat-icon.purple { background: linear-gradient(135deg, #9C27B0, #7B1FA2); }
+
+.stat-value { font-size: 1.5rem; font-weight: 700; color: #1a1a2e; }
+.stat-label { font-size: 0.8rem; color: #888; }
+
+/* Integration Type Cards */
+.type-cards {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 1.5rem;
+    margin-bottom: 2rem;
+}
+
+.type-card {
+    background: white;
+    border-radius: 16px;
+    padding: 1.5rem;
+    text-align: center;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+    cursor: pointer;
+    transition: all 0.3s;
+    border: 2px solid transparent;
+    text-decoration: none;
+    color: inherit;
+}
+
+.type-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 8px 25px rgba(0,0,0,0.1);
+    border-color: #F5A623;
+}
+
+.type-card-icon {
+    width: 60px;
+    height: 60px;
+    border-radius: 16px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto 1rem;
+    font-size: 1.75rem;
+}
+
+.type-card-icon.webhook { background: linear-gradient(135deg, #FF6B6B, #ee5a5a); color: white; }
+.type-card-icon.api { background: linear-gradient(135deg, #4ECDC4, #45b7aa); color: white; }
+.type-card-icon.crm { background: linear-gradient(135deg, #45B7D1, #3da8c1); color: white; }
+.type-card-icon.market { background: linear-gradient(135deg, #96CEB4, #7fc4a0); color: white; }
+
+.type-card h4 { margin: 0 0 0.5rem 0; font-size: 1rem; }
+.type-card p { margin: 0; font-size: 0.8rem; color: #888; }
+.type-card .count { 
+    display: inline-block; 
+    background: #f0f0f0; 
+    padding: 0.25rem 0.75rem; 
+    border-radius: 20px; 
+    font-size: 0.75rem; 
+    margin-top: 0.75rem;
+    font-weight: 600;
+}
+
+/* Active Integrations */
+.integrations-container {
+    background: white;
+    border-radius: 16px;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.06);
+    overflow: hidden;
+}
+
+.integrations-header {
+    padding: 1.25rem 1.5rem;
+    background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+    color: white;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.integrations-header h3 {
+    margin: 0;
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    font-size: 1rem;
+}
+
+.integrations-header h3 i { color: #F5A623; }
+
+.integration-table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.integration-table th {
+    background: #f8f9fa;
+    padding: 1rem;
+    text-align: left;
+    font-size: 0.75rem;
+    text-transform: uppercase;
+    color: #888;
+    font-weight: 600;
+}
+
+.integration-table td {
+    padding: 1rem;
+    border-bottom: 1px solid #f0f0f0;
+}
+
+.integration-table tr:hover { background: #fafafa; }
+
+.integration-info {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+}
+
+.integration-icon {
+    width: 40px;
+    height: 40px;
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.25rem;
+}
+
+.integration-icon.salesforce { background: #00A1E0; color: white; }
+.integration-icon.hubspot { background: #FF7A59; color: white; }
+.integration-icon.zapier { background: #FF4A00; color: white; }
+.integration-icon.slack { background: #4A154B; color: white; }
+.integration-icon.teams { background: #6264A7; color: white; }
+
+.integration-name { font-weight: 600; color: #1a1a2e; }
+.integration-desc { font-size: 0.8rem; color: #888; }
+
+.type-badge {
+    padding: 0.25rem 0.75rem;
+    border-radius: 20px;
+    font-size: 0.75rem;
+    font-weight: 600;
+}
+
+.type-badge.crm { background: #e3f2fd; color: #1565c0; }
+.type-badge.webhook { background: #ffebee; color: #c62828; }
+.type-badge.automation { background: #fff3e0; color: #ef6c00; }
+.type-badge.communication { background: #f3e5f5; color: #7b1fa2; }
+
+.status-badge {
+    padding: 0.25rem 0.75rem;
+    border-radius: 20px;
+    font-size: 0.75rem;
+    font-weight: 600;
+}
+
+.status-badge.active { background: #e8f5e9; color: #2e7d32; }
+.status-badge.inactive { background: #ffebee; color: #c62828; }
+.status-badge.error { background: #fff3e0; color: #ef6c00; }
+
+.action-buttons {
+    display: flex;
+    gap: 0.5rem;
+}
+
+.action-btn {
+    width: 32px;
+    height: 32px;
+    border-radius: 8px;
+    border: none;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s;
+}
+
+.action-btn.test { background: #e8f5e9; color: #2e7d32; }
+.action-btn.settings { background: #e3f2fd; color: #1976D2; }
+.action-btn.delete { background: #ffebee; color: #c62828; }
+
+.action-btn:hover { transform: translateY(-2px); }
+
+/* Modal */
+.modal-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.6);
+    backdrop-filter: blur(4px);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 1000;
+    opacity: 0;
+    visibility: hidden;
+    transition: all 0.3s;
+}
+
+.modal-overlay.show { opacity: 1; visibility: visible; }
+
+.modal-content {
+    background: white;
+    border-radius: 20px;
+    width: 100%;
+    max-width: 700px;
+    max-height: 90vh;
+    overflow: hidden;
+}
+
+.modal-header {
+    padding: 1.5rem;
+    background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+    color: white;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.modal-header h3 {
+    margin: 0;
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+}
+
+.modal-header h3 i { color: #F5A623; }
+
+.modal-close {
+    background: rgba(255,255,255,0.1);
+    border: none;
+    color: white;
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    cursor: pointer;
+}
+
+.modal-body {
+    padding: 1.5rem;
+    max-height: 60vh;
+    overflow-y: auto;
+}
+
+.modal-footer {
+    padding: 1rem 1.5rem;
+    background: #f8f9fa;
+    display: flex;
+    gap: 1rem;
+    justify-content: flex-end;
+}
+
+.form-group { margin-bottom: 1rem; }
+.form-group label { display: block; margin-bottom: 0.5rem; font-weight: 500; color: #333; }
+.form-group input, .form-group select, .form-group textarea {
+    width: 100%;
+    padding: 0.75rem;
+    border: 1px solid #e0e0e0;
+    border-radius: 8px;
+}
+
+.form-group input:focus, .form-group select:focus {
+    outline: none;
+    border-color: #F5A623;
+    box-shadow: 0 0 0 3px rgba(245, 166, 35, 0.1);
+}
+
+.form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
+
+/* Provider Grid */
+.provider-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 1rem;
+    margin-bottom: 1.5rem;
+}
+
+.provider-option {
+    position: relative;
+}
+
+.provider-option input { position: absolute; opacity: 0; }
+
+.provider-option label {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 1rem;
+    border: 2px solid #e8e8e8;
+    border-radius: 12px;
+    cursor: pointer;
+    transition: all 0.3s;
+}
+
+.provider-option input:checked + label {
+    border-color: #F5A623;
+    background: #fff8e7;
+}
+
+.provider-logo {
+    width: 40px;
+    height: 40px;
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 0.5rem;
+    font-size: 1.25rem;
+    color: white;
+}
+
+.provider-option label span { font-weight: 600; font-size: 0.85rem; }
+</style>
+{% endblock %}
+
 {% block content %}
-<div class="page-header">
-    <div>
-        <h1 class="page-title">Entegrasyonlar</h1>
-        <p class="page-subtitle">Harici sistemleri bağlayın</p>
-    </div>
-    <button class="btn btn-primary">
-        <i class="ti ti-plug"></i> Yeni Entegrasyon
-    </button>
-</div>
-
-<div class="grid grid-cols-3 mb-4">
-    <a href="{{ url_for('integration_webhooks') }}" class="card" style="text-decoration: none;">
-        <div class="card-body text-center" style="padding: 1.5rem;">
-            <div class="stat-card-icon" style="margin: 0 auto 1rem; width: 48px; height: 48px; font-size: 1.5rem;">
-                <i class="ti ti-webhook"></i>
-            </div>
-            <h4 style="color: var(--text-primary);">Webhooks</h4>
-            <p class="text-muted" style="font-size: 0.875rem;">Olay bildirimleri</p>
+<div class="integration-page">
+    <div class="page-header">
+        <div>
+            <h1 class="page-title">
+                <i class="ti ti-plug" style="color: #F5A623;"></i>
+                <span data-tr="Entegrasyonlar" data-de="Integrationen">Entegrasyonlar</span>
+            </h1>
+            <p class="page-subtitle" data-tr="Harici sistemleri bağlayın ve yönetin" data-de="Externe Systeme verbinden und verwalten">Harici sistemleri bağlayın ve yönetin</p>
         </div>
-    </a>
-    
-    <a href="{{ url_for('integration_api_keys') }}" class="card" style="text-decoration: none;">
-        <div class="card-body text-center" style="padding: 1.5rem;">
-            <div class="stat-card-icon" style="margin: 0 auto 1rem; width: 48px; height: 48px; font-size: 1.5rem;">
-                <i class="ti ti-key"></i>
-            </div>
-            <h4 style="color: var(--text-primary);">API Keys</h4>
-            <p class="text-muted" style="font-size: 0.875rem;">API erişim anahtarları</p>
-        </div>
-    </a>
-    
-    <div class="card" style="text-decoration: none; cursor: pointer;">
-        <div class="card-body text-center" style="padding: 1.5rem;">
-            <div class="stat-card-icon" style="margin: 0 auto 1rem; width: 48px; height: 48px; font-size: 1.5rem;">
-                <i class="ti ti-apps"></i>
-            </div>
-            <h4 style="color: var(--text-primary);">App Market</h4>
-            <p class="text-muted" style="font-size: 0.875rem;">Hazır entegrasyonlar</p>
-        </div>
-    </div>
-</div>
-
-<div class="card">
-    <div class="card-header">
-        <h3 class="card-title">
+        <button class="btn btn-primary" onclick="openNewIntegrationModal()">
             <i class="ti ti-plug"></i>
-            Aktif Entegrasyonlar
-        </h3>
+            <span data-tr="Yeni Entegrasyon" data-de="Neue Integration">Yeni Entegrasyon</span>
+        </button>
     </div>
-    <div class="card-body">
-        <div class="table-wrapper">
-            <table class="table">
-                <thead>
-                    <tr>
-                        <th>Ad</th>
-                        <th>Tür</th>
-                        <th>Sağlayıcı</th>
-                        <th>Son Senkron</th>
-                        <th>Durum</th>
-                        <th>İşlemler</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {% for integration in integrations %}
-                    <tr>
-                        <td><strong>{{ integration.name }}</strong></td>
-                        <td>
-                            <span class="badge badge-info">{{ integration.type|capitalize }}</span>
-                        </td>
-                        <td>{{ integration.provider or '-' }}</td>
-                        <td>{{ integration.last_sync_at|datetime if integration.last_sync_at else 'Hiç' }}</td>
-                        <td>
-                            <span class="badge badge-{{ 'success' if integration.is_active else 'warning' }}">
-                                {{ 'Aktif' if integration.is_active else 'Pasif' }}
-                            </span>
-                        </td>
-                        <td>
-                            <button class="btn btn-sm btn-ghost" title="Test Et">
-                                <i class="ti ti-refresh"></i>
-                            </button>
-                            <button class="btn btn-sm btn-ghost" title="Ayarlar">
-                                <i class="ti ti-settings"></i>
-                            </button>
-                        </td>
-                    </tr>
-                    {% else %}
-                    <tr>
-                        <td colspan="6" class="text-muted">Henüz entegrasyon yapılmamış</td>
-                    </tr>
-                    {% endfor %}
-                </tbody>
-            </table>
+
+    <!-- Stats -->
+    <div class="stats-row">
+        <div class="stat-card">
+            <div class="stat-icon blue"><i class="ti ti-plug"></i></div>
+            <div>
+                <div class="stat-value">5</div>
+                <div class="stat-label" data-tr="Aktif Entegrasyon" data-de="Aktive Integrationen">Aktif Entegrasyon</div>
+            </div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-icon green"><i class="ti ti-webhook"></i></div>
+            <div>
+                <div class="stat-value">3</div>
+                <div class="stat-label" data-tr="Webhook" data-de="Webhooks">Webhook</div>
+            </div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-icon orange"><i class="ti ti-key"></i></div>
+            <div>
+                <div class="stat-value">8</div>
+                <div class="stat-label" data-tr="API Key" data-de="API-Schlüssel">API Key</div>
+            </div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-icon purple"><i class="ti ti-refresh"></i></div>
+            <div>
+                <div class="stat-value">1.2K</div>
+                <div class="stat-label" data-tr="Bugünkü Senkron" data-de="Heutige Syncs">Bugünkü Senkron</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Type Cards -->
+    <div class="type-cards">
+        <a href="{{ url_for('integration_webhooks') }}" class="type-card">
+            <div class="type-card-icon webhook"><i class="ti ti-webhook"></i></div>
+            <h4>Webhooks</h4>
+            <p data-tr="Olay bildirimleri" data-de="Event-Benachrichtigungen">Olay bildirimleri</p>
+            <span class="count">3 <span data-tr="aktif" data-de="aktiv">aktif</span></span>
+        </a>
+        <a href="{{ url_for('integration_api_keys') }}" class="type-card">
+            <div class="type-card-icon api"><i class="ti ti-key"></i></div>
+            <h4>API Keys</h4>
+            <p data-tr="API erişim anahtarları" data-de="API-Zugriffsschlüssel">API erişim anahtarları</p>
+            <span class="count">8 <span data-tr="anahtar" data-de="Schlüssel">anahtar</span></span>
+        </a>
+        <div class="type-card" onclick="openCRMIntegrations()">
+            <div class="type-card-icon crm"><i class="ti ti-database"></i></div>
+            <h4>CRM</h4>
+            <p data-tr="CRM entegrasyonları" data-de="CRM-Integrationen">CRM entegrasyonları</p>
+            <span class="count">2 <span data-tr="bağlı" data-de="verbunden">bağlı</span></span>
+        </div>
+        <div class="type-card" onclick="openAppMarket()">
+            <div class="type-card-icon market"><i class="ti ti-apps"></i></div>
+            <h4>App Market</h4>
+            <p data-tr="Hazır entegrasyonlar" data-de="Fertige Integrationen">Hazır entegrasyonlar</p>
+            <span class="count">15+ <span data-tr="uygulama" data-de="Apps">uygulama</span></span>
+        </div>
+    </div>
+
+    <!-- Active Integrations -->
+    <div class="integrations-container">
+        <div class="integrations-header">
+            <h3>
+                <i class="ti ti-plug-connected"></i>
+                <span data-tr="Aktif Entegrasyonlar" data-de="Aktive Integrationen">Aktif Entegrasyonlar</span>
+            </h3>
+            <button class="btn btn-sm" style="background: rgba(255,255,255,0.1); color: white;" onclick="refreshAll()">
+                <i class="ti ti-refresh"></i>
+                <span data-tr="Tümünü Senkronla" data-de="Alle synchronisieren">Tümünü Senkronla</span>
+            </button>
+        </div>
+        <table class="integration-table">
+            <thead>
+                <tr>
+                    <th data-tr="Entegrasyon" data-de="Integration">Entegrasyon</th>
+                    <th data-tr="Tür" data-de="Typ">Tür</th>
+                    <th data-tr="Son Senkron" data-de="Letzte Sync">Son Senkron</th>
+                    <th data-tr="Durum" data-de="Status">Durum</th>
+                    <th data-tr="İşlemler" data-de="Aktionen">İşlemler</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>
+                        <div class="integration-info">
+                            <div class="integration-icon salesforce"><i class="ti ti-brand-salesforce"></i></div>
+                            <div>
+                                <div class="integration-name">Salesforce CRM</div>
+                                <div class="integration-desc" data-tr="Müşteri verisi senkronizasyonu" data-de="Kundendaten-Synchronisation">Müşteri verisi senkronizasyonu</div>
+                            </div>
+                        </div>
+                    </td>
+                    <td><span class="type-badge crm">CRM</span></td>
+                    <td>2 <span data-tr="dk önce" data-de="Min. her">dk önce</span></td>
+                    <td><span class="status-badge active" data-tr="Aktif" data-de="Aktiv">Aktif</span></td>
+                    <td>
+                        <div class="action-buttons">
+                            <button class="action-btn test" onclick="testIntegration(1)" title="Test Et"><i class="ti ti-refresh"></i></button>
+                            <button class="action-btn settings" onclick="editIntegration(1)" title="Ayarlar"><i class="ti ti-settings"></i></button>
+                            <button class="action-btn delete" onclick="deleteIntegration(1)" title="Sil"><i class="ti ti-trash"></i></button>
+                        </div>
+                    </td>
+                </tr>
+                <tr>
+                    <td>
+                        <div class="integration-info">
+                            <div class="integration-icon hubspot"><i class="ti ti-brand-google"></i></div>
+                            <div>
+                                <div class="integration-name">HubSpot</div>
+                                <div class="integration-desc">Marketing automation</div>
+                            </div>
+                        </div>
+                    </td>
+                    <td><span class="type-badge crm">CRM</span></td>
+                    <td>15 <span data-tr="dk önce" data-de="Min. her">dk önce</span></td>
+                    <td><span class="status-badge active">Aktif</span></td>
+                    <td>
+                        <div class="action-buttons">
+                            <button class="action-btn test" onclick="testIntegration(2)"><i class="ti ti-refresh"></i></button>
+                            <button class="action-btn settings" onclick="editIntegration(2)"><i class="ti ti-settings"></i></button>
+                            <button class="action-btn delete" onclick="deleteIntegration(2)"><i class="ti ti-trash"></i></button>
+                        </div>
+                    </td>
+                </tr>
+                <tr>
+                    <td>
+                        <div class="integration-info">
+                            <div class="integration-icon zapier"><i class="ti ti-bolt"></i></div>
+                            <div>
+                                <div class="integration-name">Zapier</div>
+                                <div class="integration-desc" data-tr="Otomasyon bağlantısı" data-de="Automatisierungsverbindung">Otomasyon bağlantısı</div>
+                            </div>
+                        </div>
+                    </td>
+                    <td><span class="type-badge automation">Automation</span></td>
+                    <td>1 <span data-tr="saat önce" data-de="Std. her">saat önce</span></td>
+                    <td><span class="status-badge active">Aktif</span></td>
+                    <td>
+                        <div class="action-buttons">
+                            <button class="action-btn test" onclick="testIntegration(3)"><i class="ti ti-refresh"></i></button>
+                            <button class="action-btn settings" onclick="editIntegration(3)"><i class="ti ti-settings"></i></button>
+                            <button class="action-btn delete" onclick="deleteIntegration(3)"><i class="ti ti-trash"></i></button>
+                        </div>
+                    </td>
+                </tr>
+                <tr>
+                    <td>
+                        <div class="integration-info">
+                            <div class="integration-icon slack"><i class="ti ti-brand-slack"></i></div>
+                            <div>
+                                <div class="integration-name">Slack</div>
+                                <div class="integration-desc" data-tr="Bildirimler" data-de="Benachrichtigungen">Bildirimler</div>
+                            </div>
+                        </div>
+                    </td>
+                    <td><span class="type-badge communication">Communication</span></td>
+                    <td>5 <span data-tr="dk önce" data-de="Min. her">dk önce</span></td>
+                    <td><span class="status-badge active">Aktif</span></td>
+                    <td>
+                        <div class="action-buttons">
+                            <button class="action-btn test" onclick="testIntegration(4)"><i class="ti ti-refresh"></i></button>
+                            <button class="action-btn settings" onclick="editIntegration(4)"><i class="ti ti-settings"></i></button>
+                            <button class="action-btn delete" onclick="deleteIntegration(4)"><i class="ti ti-trash"></i></button>
+                        </div>
+                    </td>
+                </tr>
+                <tr>
+                    <td>
+                        <div class="integration-info">
+                            <div class="integration-icon teams"><i class="ti ti-brand-teams"></i></div>
+                            <div>
+                                <div class="integration-name">Microsoft Teams</div>
+                                <div class="integration-desc" data-tr="Ekip iletişimi" data-de="Team-Kommunikation">Ekip iletişimi</div>
+                            </div>
+                        </div>
+                    </td>
+                    <td><span class="type-badge communication">Communication</span></td>
+                    <td>30 <span data-tr="dk önce" data-de="Min. her">dk önce</span></td>
+                    <td><span class="status-badge error" data-tr="Hata" data-de="Fehler">Hata</span></td>
+                    <td>
+                        <div class="action-buttons">
+                            <button class="action-btn test" onclick="testIntegration(5)"><i class="ti ti-refresh"></i></button>
+                            <button class="action-btn settings" onclick="editIntegration(5)"><i class="ti ti-settings"></i></button>
+                            <button class="action-btn delete" onclick="deleteIntegration(5)"><i class="ti ti-trash"></i></button>
+                        </div>
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<!-- New Integration Modal -->
+<div class="modal-overlay" id="newIntegrationModal">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h3><i class="ti ti-plug"></i> <span data-tr="Yeni Entegrasyon" data-de="Neue Integration">Yeni Entegrasyon</span></h3>
+            <button class="modal-close" onclick="closeNewModal()"><i class="ti ti-x"></i></button>
+        </div>
+        <div class="modal-body">
+            <h4 style="margin-bottom: 1rem;" data-tr="Sağlayıcı Seçin" data-de="Anbieter auswählen">Sağlayıcı Seçin</h4>
+            <div class="provider-grid">
+                <div class="provider-option">
+                    <input type="radio" name="provider" id="provSalesforce" value="salesforce">
+                    <label for="provSalesforce">
+                        <div class="provider-logo" style="background: #00A1E0;"><i class="ti ti-brand-salesforce"></i></div>
+                        <span>Salesforce</span>
+                    </label>
+                </div>
+                <div class="provider-option">
+                    <input type="radio" name="provider" id="provHubspot" value="hubspot">
+                    <label for="provHubspot">
+                        <div class="provider-logo" style="background: #FF7A59;"><i class="ti ti-brand-google"></i></div>
+                        <span>HubSpot</span>
+                    </label>
+                </div>
+                <div class="provider-option">
+                    <input type="radio" name="provider" id="provZapier" value="zapier">
+                    <label for="provZapier">
+                        <div class="provider-logo" style="background: #FF4A00;"><i class="ti ti-bolt"></i></div>
+                        <span>Zapier</span>
+                    </label>
+                </div>
+                <div class="provider-option">
+                    <input type="radio" name="provider" id="provSlack" value="slack">
+                    <label for="provSlack">
+                        <div class="provider-logo" style="background: #4A154B;"><i class="ti ti-brand-slack"></i></div>
+                        <span>Slack</span>
+                    </label>
+                </div>
+                <div class="provider-option">
+                    <input type="radio" name="provider" id="provTeams" value="teams">
+                    <label for="provTeams">
+                        <div class="provider-logo" style="background: #6264A7;"><i class="ti ti-brand-teams"></i></div>
+                        <span>Teams</span>
+                    </label>
+                </div>
+                <div class="provider-option">
+                    <input type="radio" name="provider" id="provCustom" value="custom">
+                    <label for="provCustom">
+                        <div class="provider-logo" style="background: #666;"><i class="ti ti-code"></i></div>
+                        <span data-tr="Özel" data-de="Benutzerdefiniert">Özel</span>
+                    </label>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label data-tr="Entegrasyon Adı" data-de="Integrationsname">Entegrasyon Adı</label>
+                <input type="text" id="integrationName" data-tr-placeholder="Örn: Ana CRM Bağlantısı" data-de-placeholder="z.B. Haupt-CRM-Verbindung" placeholder="Örn: Ana CRM Bağlantısı">
+            </div>
+
+            <div class="form-row">
+                <div class="form-group">
+                    <label>API Key / Token</label>
+                    <input type="password" id="apiKey" placeholder="sk-xxxxxxxx">
+                </div>
+                <div class="form-group">
+                    <label>API Secret</label>
+                    <input type="password" id="apiSecret" placeholder="xxxxxxxx">
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label data-tr="Webhook URL (Opsiyonel)" data-de="Webhook-URL (Optional)">Webhook URL (Opsiyonel)</label>
+                <input type="url" id="webhookUrl" placeholder="https://...">
+            </div>
+        </div>
+        <div class="modal-footer">
+            <button class="btn btn-secondary" onclick="closeNewModal()" data-tr="İptal" data-de="Abbrechen">İptal</button>
+            <button class="btn btn-primary" onclick="saveIntegration()">
+                <i class="ti ti-plug"></i> <span data-tr="Bağlan" data-de="Verbinden">Bağlan</span>
+            </button>
+        </div>
+    </div>
+</div>
+
+<!-- Settings Modal -->
+<div class="modal-overlay" id="settingsModal">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h3><i class="ti ti-settings"></i> <span id="settingsModalTitle" data-tr="Entegrasyon Ayarları" data-de="Integrationseinstellungen">Entegrasyon Ayarları</span></h3>
+            <button class="modal-close" onclick="closeSettingsModal()"><i class="ti ti-x"></i></button>
+        </div>
+        <div class="modal-body" id="settingsModalBody">
+            <!-- Content loaded dynamically -->
+        </div>
+        <div class="modal-footer">
+            <button class="btn btn-secondary" onclick="closeSettingsModal()" data-tr="İptal" data-de="Abbrechen">İptal</button>
+            <button class="btn btn-primary" onclick="updateIntegration()">
+                <i class="ti ti-device-floppy"></i> <span data-tr="Kaydet" data-de="Speichern">Kaydet</span>
+            </button>
         </div>
     </div>
 </div>
 {% endblock %}
 
+{% block extra_js %}
+<script>
+(function() {
+    'use strict';
 
+    function getCurrentLang() { return localStorage.getItem('selectedLang') || 'tr'; }
 
+    function showNotification(message, type) {
+        const toast = document.createElement('div');
+        toast.style.cssText = 'position:fixed;top:20px;right:20px;padding:15px 25px;border-radius:10px;color:white;font-weight:500;z-index:9999;box-shadow:0 4px 20px rgba(0,0,0,0.2);animation:slideIn 0.3s ease;';
+        toast.style.background = type === 'success' ? 'linear-gradient(135deg, #4CAF50, #45a049)' : type === 'error' ? 'linear-gradient(135deg, #f44336, #d32f2f)' : 'linear-gradient(135deg, #2196F3, #1976D2)';
+        toast.textContent = message;
+        document.body.appendChild(toast);
+        setTimeout(function() { toast.remove(); }, 3000);
+    }
+
+    window.openNewIntegrationModal = function() {
+        document.getElementById('newIntegrationModal').classList.add('show');
+    };
+
+    window.closeNewModal = function() {
+        document.getElementById('newIntegrationModal').classList.remove('show');
+    };
+
+    window.saveIntegration = function() {
+        const name = document.getElementById('integrationName').value;
+        const provider = document.querySelector('input[name="provider"]:checked');
+        
+        if (!name || !provider) {
+            showNotification(getCurrentLang() === 'de' ? 'Bitte füllen Sie alle Felder aus' : 'Lütfen tüm alanları doldurun', 'error');
+            return;
+        }
+        
+        showNotification(getCurrentLang() === 'de' ? 'Integration erfolgreich verbunden!' : 'Entegrasyon başarıyla bağlandı!', 'success');
+        closeNewModal();
+    };
+
+    window.testIntegration = function(id) {
+        showNotification(getCurrentLang() === 'de' ? 'Verbindung wird getestet...' : 'Bağlantı test ediliyor...', 'info');
+        setTimeout(function() {
+            showNotification(getCurrentLang() === 'de' ? 'Verbindung erfolgreich!' : 'Bağlantı başarılı!', 'success');
+        }, 1500);
+    };
+
+    window.editIntegration = function(id) {
+        const integrations = {
+            1: { name: 'Salesforce CRM', type: 'CRM' },
+            2: { name: 'HubSpot', type: 'CRM' },
+            3: { name: 'Zapier', type: 'Automation' },
+            4: { name: 'Slack', type: 'Communication' },
+            5: { name: 'Microsoft Teams', type: 'Communication' }
+        };
+        
+        const data = integrations[id];
+        document.getElementById('settingsModalTitle').textContent = data.name + (getCurrentLang() === 'de' ? ' - Einstellungen' : ' - Ayarları');
+        
+        document.getElementById('settingsModalBody').innerHTML = `
+            <div class="form-group">
+                <label>${getCurrentLang() === 'de' ? 'Integrationsname' : 'Entegrasyon Adı'}</label>
+                <input type="text" value="${data.name}">
+            </div>
+            <div class="form-group">
+                <label>${getCurrentLang() === 'de' ? 'Status' : 'Durum'}</label>
+                <select>
+                    <option value="1">${getCurrentLang() === 'de' ? 'Aktiv' : 'Aktif'}</option>
+                    <option value="0">${getCurrentLang() === 'de' ? 'Inaktiv' : 'Pasif'}</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label>${getCurrentLang() === 'de' ? 'Sync-Intervall' : 'Senkron Aralığı'}</label>
+                <select>
+                    <option value="1">1 ${getCurrentLang() === 'de' ? 'Minute' : 'dakika'}</option>
+                    <option value="5" selected>5 ${getCurrentLang() === 'de' ? 'Minuten' : 'dakika'}</option>
+                    <option value="15">15 ${getCurrentLang() === 'de' ? 'Minuten' : 'dakika'}</option>
+                    <option value="60">1 ${getCurrentLang() === 'de' ? 'Stunde' : 'saat'}</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label>API Key</label>
+                <input type="password" value="sk-xxxxxxxxxxxx">
+            </div>
+        `;
+        
+        document.getElementById('settingsModal').classList.add('show');
+    };
+
+    window.closeSettingsModal = function() {
+        document.getElementById('settingsModal').classList.remove('show');
+    };
+
+    window.updateIntegration = function() {
+        showNotification(getCurrentLang() === 'de' ? 'Einstellungen gespeichert!' : 'Ayarlar kaydedildi!', 'success');
+        closeSettingsModal();
+    };
+
+    window.deleteIntegration = function(id) {
+        const msg = getCurrentLang() === 'de' ? 'Diese Integration wirklich löschen?' : 'Bu entegrasyonu silmek istediğinize emin misiniz?';
+        if (confirm(msg)) {
+            showNotification(getCurrentLang() === 'de' ? 'Integration gelöscht' : 'Entegrasyon silindi', 'success');
+        }
+    };
+
+    window.refreshAll = function() {
+        showNotification(getCurrentLang() === 'de' ? 'Alle Integrationen werden synchronisiert...' : 'Tüm entegrasyonlar senkronlanıyor...', 'info');
+        setTimeout(function() {
+            showNotification(getCurrentLang() === 'de' ? 'Synchronisation abgeschlossen!' : 'Senkronizasyon tamamlandı!', 'success');
+        }, 2000);
+    };
+
+    window.openCRMIntegrations = function() {
+        showNotification(getCurrentLang() === 'de' ? 'CRM-Integrationen werden geladen...' : 'CRM entegrasyonları yükleniyor...', 'info');
+    };
+
+    window.openAppMarket = function() {
+        showNotification(getCurrentLang() === 'de' ? 'App Market wird vorbereitet...' : 'App Market hazırlanıyor...', 'info');
+    };
+
+    const style = document.createElement('style');
+    style.textContent = '@keyframes slideIn{from{transform:translateX(100%);opacity:0}to{transform:translateX(0);opacity:1}}';
+    document.head.appendChild(style);
+
+    console.log('Integrations page initialized');
+})();
+</script>
+{% endblock %}
