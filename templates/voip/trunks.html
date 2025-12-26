@@ -850,269 +850,265 @@
 
 {% block extra_js %}
 <script>
-console.log('SIP Trunk script loaded');
+(function() {
+    'use strict';
+    console.log('SIP Trunk script loaded');
 
-// Get current language
-function getCurrentLang() {
-    return localStorage.getItem('selectedLang') || 'tr';
-}
-
-// Translation helper
-const translations = {
-    tr: {
-        newTrunk: 'Yeni SIP Trunk',
-        editTrunk: 'Trunk Düzenle',
-        trunkSaved: 'Trunk başarıyla kaydedildi',
-        trunkDeleted: 'Trunk silindi',
-        error: 'Bir hata oluştu',
-        connectionError: 'Bağlantı hatası',
-        deleteConfirm: 'Bu trunk\'ı silmek istediğinizden emin misiniz?',
-        trunkInfoError: 'Trunk bilgileri alınamadı',
-        deleteError: 'Silme hatası',
-        testRunning: 'Test çağrısı yapılıyor...',
-        testSuccess: 'Test başarılı! Gecikme:',
-        testFailed: 'Test başarısız:',
-        testError: 'Test hatası',
-        connectionTesting: 'Bağlantı Test Ediliyor...',
-        pleaseWait: 'Lütfen bekleyin...',
-        testSuccessTitle: 'Test Başarılı',
-        testFailedTitle: 'Test Başarısız',
-        connectionTime: 'Bağlantı süresi',
-        registration: 'Kayıt: Başarılı',
-        timeoutError: 'Hata: Bağlantı zaman aşımı'
-    },
-    de: {
-        newTrunk: 'Neuer SIP Trunk',
-        editTrunk: 'Trunk bearbeiten',
-        trunkSaved: 'Trunk erfolgreich gespeichert',
-        trunkDeleted: 'Trunk gelöscht',
-        error: 'Ein Fehler ist aufgetreten',
-        connectionError: 'Verbindungsfehler',
-        deleteConfirm: 'Sind Sie sicher, dass Sie diesen Trunk löschen möchten?',
-        trunkInfoError: 'Trunk-Informationen konnten nicht abgerufen werden',
-        deleteError: 'Löschfehler',
-        testRunning: 'Testanruf wird durchgeführt...',
-        testSuccess: 'Test erfolgreich! Latenz:',
-        testFailed: 'Test fehlgeschlagen:',
-        testError: 'Testfehler',
-        connectionTesting: 'Verbindung wird getestet...',
-        pleaseWait: 'Bitte warten...',
-        testSuccessTitle: 'Test Erfolgreich',
-        testFailedTitle: 'Test Fehlgeschlagen',
-        connectionTime: 'Verbindungszeit',
-        registration: 'Registrierung: Erfolgreich',
-        timeoutError: 'Fehler: Verbindungs-Timeout'
+    // Get current language
+    function getCurrentLang() {
+        return localStorage.getItem('selectedLang') || 'tr';
     }
-};
 
-function t(key) {
-    const lang = getCurrentLang();
-    return translations[lang][key] || translations['tr'][key];
-}
+    // Translation helper
+    const translations = {
+        tr: {
+            newTrunk: 'Yeni SIP Trunk',
+            editTrunk: 'Trunk Düzenle',
+            trunkSaved: 'Trunk başarıyla kaydedildi',
+            trunkDeleted: 'Trunk silindi',
+            error: 'Bir hata oluştu',
+            connectionError: 'Bağlantı hatası',
+            deleteConfirm: 'Bu trunk\'ı silmek istediğinizden emin misiniz?',
+            trunkInfoError: 'Trunk bilgileri alınamadı',
+            deleteError: 'Silme hatası',
+            testRunning: 'Test çağrısı yapılıyor...',
+            testSuccess: 'Test başarılı! Gecikme:',
+            testFailed: 'Test başarısız:',
+            testError: 'Test hatası',
+            connectionTesting: 'Bağlantı Test Ediliyor...',
+            pleaseWait: 'Lütfen bekleyin...',
+            testSuccessTitle: 'Test Başarılı',
+            testFailedTitle: 'Test Başarısız',
+            connectionTime: 'Bağlantı süresi',
+            registration: 'Kayıt: Başarılı',
+            timeoutError: 'Hata: Bağlantı zaman aşımı'
+        },
+        de: {
+            newTrunk: 'Neuer SIP Trunk',
+            editTrunk: 'Trunk bearbeiten',
+            trunkSaved: 'Trunk erfolgreich gespeichert',
+            trunkDeleted: 'Trunk gelöscht',
+            error: 'Ein Fehler ist aufgetreten',
+            connectionError: 'Verbindungsfehler',
+            deleteConfirm: 'Sind Sie sicher, dass Sie diesen Trunk löschen möchten?',
+            trunkInfoError: 'Trunk-Informationen konnten nicht abgerufen werden',
+            deleteError: 'Löschfehler',
+            testRunning: 'Testanruf wird durchgeführt...',
+            testSuccess: 'Test erfolgreich! Latenz:',
+            testFailed: 'Test fehlgeschlagen:',
+            testError: 'Testfehler',
+            connectionTesting: 'Verbindung wird getestet...',
+            pleaseWait: 'Bitte warten...',
+            testSuccessTitle: 'Test Erfolgreich',
+            testFailedTitle: 'Test Fehlgeschlagen',
+            connectionTime: 'Verbindungszeit',
+            registration: 'Registrierung: Erfolgreich',
+            timeoutError: 'Fehler: Verbindungs-Timeout'
+        }
+    };
 
-// Modal functions
-function openAddTrunkModal() {
-    console.log('openAddTrunkModal called');
-    try {
+    function t(key) {
+        const lang = getCurrentLang();
+        return translations[lang][key] || translations['tr'][key];
+    }
+
+    // Demo data for German providers
+    const demoTrunks = {
+        1: { id: 1, name: 'Sipgate Business', provider: 'sipgate', host: 'sipconnect.sipgate.de', port: 5060, username: 'sipgate_user', transport: 'udp', max_channels: 50 },
+        2: { id: 2, name: 'Placetel (Cisco)', provider: 'placetel', host: 'sip.placetel.de', port: 5060, username: 'placetel_trunk', transport: 'tls', max_channels: 30 },
+        3: { id: 3, name: 'Easybell SIP Trunk', provider: 'easybell', host: 'sip.easybell.de', port: 5060, username: 'easybell_user', transport: 'udp', max_channels: 20 }
+    };
+
+    // Notification function
+    function showNotification(message, type) {
+        const toast = document.createElement('div');
+        toast.style.cssText = `
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            padding: 15px 25px;
+            border-radius: 10px;
+            color: white;
+            font-weight: 500;
+            z-index: 9999;
+            animation: slideIn 0.3s ease;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.2);
+        `;
+        
+        if (type === 'success') {
+            toast.style.background = 'linear-gradient(135deg, #4CAF50, #45a049)';
+        } else if (type === 'error') {
+            toast.style.background = 'linear-gradient(135deg, #f44336, #d32f2f)';
+        } else {
+            toast.style.background = 'linear-gradient(135deg, #2196F3, #1976D2)';
+        }
+        
+        toast.textContent = message;
+        document.body.appendChild(toast);
+        
+        setTimeout(() => {
+            toast.style.animation = 'slideOut 0.3s ease';
+            setTimeout(() => toast.remove(), 300);
+        }, 3000);
+    }
+
+    // Modal functions - Global scope
+    window.openAddTrunkModal = function() {
+        console.log('openAddTrunkModal called');
         const modal = document.getElementById('trunkModal');
         const form = document.getElementById('trunkForm');
         const title = document.getElementById('modalTitle');
         const testResult = document.getElementById('testResult');
-        const trunkId = document.getElementById('trunkId');
+        const trunkIdEl = document.getElementById('trunkId');
         
         if (!modal) {
-            console.error('Modal element not found!');
-            alert('Modal bulunamadı!');
+            alert('Modal nicht gefunden! / Modal bulunamadı!');
             return;
         }
         
         if (title) title.textContent = t('newTrunk');
         if (form) form.reset();
-        if (trunkId) trunkId.value = '';
+        if (trunkIdEl) trunkIdEl.value = '';
         if (testResult) testResult.classList.remove('show');
         
         modal.classList.add('show');
-        console.log('Modal should be visible now');
-    } catch (e) {
-        console.error('Error opening modal:', e);
-        alert('Hata: ' + e.message);
-    }
-}
+    };
 
-function closeModal() {
-    document.getElementById('trunkModal').classList.remove('show');
-}
+    window.closeModal = function() {
+        const modal = document.getElementById('trunkModal');
+        if (modal) modal.classList.remove('show');
+    };
 
-// Codec selection
-document.querySelectorAll('.codec-item').forEach(item => {
-    item.addEventListener('click', function() {
-        const checkbox = this.querySelector('input[type="checkbox"]');
-        checkbox.checked = !checkbox.checked;
-        this.classList.toggle('selected', checkbox.checked);
-    });
-});
-
-// Save trunk
-async function saveTrunk(event) {
-    event.preventDefault();
-    
-    const form = document.getElementById('trunkForm');
-    const formData = new FormData(form);
-    const data = Object.fromEntries(formData);
-    
-    // Collect codecs
-    const codecs = [];
-    document.querySelectorAll('input[name="codecs"]:checked').forEach(cb => {
-        codecs.push(cb.value);
-    });
-    data.codecs = codecs.join(',');
-    
-    // Simulate save (demo mode)
-    showNotification(t('trunkSaved'), 'success');
-    closeModal();
-    location.reload();
-}
-
-// Edit trunk - Demo data for German providers
-const demoTrunks = {
-    1: { id: 1, name: 'Sipgate Business', provider: 'sipgate', host: 'sipconnect.sipgate.de', port: 5060, username: 'sipgate_user', transport: 'udp', max_channels: 50 },
-    2: { id: 2, name: 'Placetel (Cisco)', provider: 'placetel', host: 'sip.placetel.de', port: 5060, username: 'placetel_trunk', transport: 'tls', max_channels: 30 },
-    3: { id: 3, name: 'Easybell SIP Trunk', provider: 'easybell', host: 'sip.easybell.de', port: 5060, username: 'easybell_user', transport: 'udp', max_channels: 20 }
-};
-
-function editTrunk(trunkId) {
-    const trunk = demoTrunks[trunkId];
-    if (!trunk) {
-        showNotification(t('trunkInfoError'), 'error');
-        return;
-    }
-    
-    document.getElementById('modalTitle').textContent = t('editTrunk');
-    document.getElementById('trunkId').value = trunk.id;
-    document.getElementById('trunkName').value = trunk.name;
-    document.getElementById('trunkProvider').value = trunk.provider || '';
-    document.getElementById('trunkHost').value = trunk.host;
-    document.getElementById('trunkPort').value = trunk.port || 5060;
-    document.getElementById('trunkUsername').value = trunk.username || '';
-    document.getElementById('trunkPassword').value = '';
-    document.getElementById('trunkTransport').value = trunk.transport || 'udp';
-    document.getElementById('trunkMaxChannels').value = trunk.max_channels || 30;
-    
-    document.getElementById('trunkModal').classList.add('show');
-}
-
-// Delete trunk
-function deleteTrunk(trunkId) {
-    if (!confirm(t('deleteConfirm'))) return;
-    
-    showNotification(t('trunkDeleted'), 'success');
-    document.querySelector(`[data-trunk-id="${trunkId}"]`).remove();
-}
-
-// Test trunk
-function testTrunk(trunkId) {
-    showNotification(t('testRunning'), 'info');
-    
-    // Simulate test
-    setTimeout(() => {
-        const success = Math.random() > 0.15;
-        if (success) {
-            const latency = Math.floor(Math.random() * 40 + 15);
-            showNotification(`${t('testSuccess')} ${latency}ms`, 'success');
-        } else {
-            showNotification(`${t('testFailed')} Timeout`, 'error');
+    window.editTrunk = function(trunkId) {
+        console.log('editTrunk called:', trunkId);
+        const trunk = demoTrunks[trunkId];
+        if (!trunk) {
+            showNotification(t('trunkInfoError'), 'error');
+            return;
         }
-    }, 1500);
-}
+        
+        document.getElementById('modalTitle').textContent = t('editTrunk');
+        document.getElementById('trunkId').value = trunk.id;
+        document.getElementById('trunkName').value = trunk.name;
+        document.getElementById('trunkProvider').value = trunk.provider || '';
+        document.getElementById('trunkHost').value = trunk.host;
+        document.getElementById('trunkPort').value = trunk.port || 5060;
+        document.getElementById('trunkUsername').value = trunk.username || '';
+        document.getElementById('trunkPassword').value = '';
+        document.getElementById('trunkTransport').value = trunk.transport || 'udp';
+        document.getElementById('trunkMaxChannels').value = trunk.max_channels || 30;
+        
+        document.getElementById('trunkModal').classList.add('show');
+    };
 
-// Test connection from modal
-function testTrunkConnection() {
-    const testResult = document.getElementById('testResult');
-    testResult.className = 'test-result show success';
-    document.getElementById('testResultTitle').textContent = t('connectionTesting');
-    document.getElementById('testResultDetails').textContent = t('pleaseWait');
-    
-    // Simulate test
-    setTimeout(() => {
-        const success = Math.random() > 0.2;
-        if (success) {
-            testResult.className = 'test-result show success';
-            const latency = Math.floor(Math.random() * 50 + 20);
-            document.getElementById('testResultTitle').innerHTML = `<i class="ti ti-circle-check"></i> ${t('testSuccessTitle')}`;
-            document.getElementById('testResultDetails').textContent = `${t('connectionTime')}: ${latency}ms | ${t('registration')}`;
-        } else {
-            testResult.className = 'test-result show error';
-            document.getElementById('testResultTitle').innerHTML = `<i class="ti ti-circle-x"></i> ${t('testFailedTitle')}`;
-            document.getElementById('testResultDetails').textContent = t('timeoutError');
+    window.deleteTrunk = function(trunkId) {
+        console.log('deleteTrunk called:', trunkId);
+        if (!confirm(t('deleteConfirm'))) return;
+        
+        const card = document.querySelector('[data-trunk-id="' + trunkId + '"]');
+        if (card) {
+            card.style.animation = 'fadeOut 0.3s ease';
+            setTimeout(() => {
+                card.remove();
+                showNotification(t('trunkDeleted'), 'success');
+            }, 300);
         }
-    }, 2000);
-}
+    };
 
-function refreshTrunks() {
-    location.reload();
-}
+    window.testTrunk = function(trunkId) {
+        console.log('testTrunk called:', trunkId);
+        showNotification(t('testRunning'), 'info');
+        
+        setTimeout(() => {
+            const success = Math.random() > 0.15;
+            if (success) {
+                const latency = Math.floor(Math.random() * 40 + 15);
+                showNotification(t('testSuccess') + ' ' + latency + 'ms', 'success');
+            } else {
+                showNotification(t('testFailed') + ' Timeout', 'error');
+            }
+        }, 1500);
+    };
 
-function showNotification(message, type) {
-    // Create toast notification
-    const toast = document.createElement('div');
-    toast.style.cssText = `
-        position: fixed;
-        top: 20px;
-        right: 20px;
-        padding: 15px 25px;
-        border-radius: 10px;
-        color: white;
-        font-weight: 500;
-        z-index: 9999;
-        animation: slideIn 0.3s ease;
-        box-shadow: 0 4px 20px rgba(0,0,0,0.2);
-    `;
-    
-    if (type === 'success') {
-        toast.style.background = 'linear-gradient(135deg, #4CAF50, #45a049)';
-    } else if (type === 'error') {
-        toast.style.background = 'linear-gradient(135deg, #f44336, #d32f2f)';
-    } else {
-        toast.style.background = 'linear-gradient(135deg, #2196F3, #1976D2)';
-    }
-    
-    toast.textContent = message;
-    document.body.appendChild(toast);
-    
-    setTimeout(() => {
-        toast.style.animation = 'slideOut 0.3s ease';
-        setTimeout(() => toast.remove(), 300);
-    }, 3000);
-}
+    window.testTrunkConnection = function() {
+        const testResult = document.getElementById('testResult');
+        if (!testResult) return;
+        
+        testResult.className = 'test-result show';
+        testResult.style.background = 'rgba(33, 150, 243, 0.1)';
+        testResult.style.borderColor = 'rgba(33, 150, 243, 0.3)';
+        testResult.style.color = '#1976D2';
+        document.getElementById('testResultTitle').textContent = t('connectionTesting');
+        document.getElementById('testResultDetails').textContent = t('pleaseWait');
+        
+        setTimeout(() => {
+            const success = Math.random() > 0.2;
+            if (success) {
+                testResult.style.background = 'rgba(76, 175, 80, 0.1)';
+                testResult.style.borderColor = 'rgba(76, 175, 80, 0.3)';
+                testResult.style.color = '#2E7D32';
+                const latency = Math.floor(Math.random() * 50 + 20);
+                document.getElementById('testResultTitle').innerHTML = '<i class="ti ti-circle-check"></i> ' + t('testSuccessTitle');
+                document.getElementById('testResultDetails').textContent = t('connectionTime') + ': ' + latency + 'ms | ' + t('registration');
+            } else {
+                testResult.style.background = 'rgba(244, 67, 54, 0.1)';
+                testResult.style.borderColor = 'rgba(244, 67, 54, 0.3)';
+                testResult.style.color = '#C62828';
+                document.getElementById('testResultTitle').innerHTML = '<i class="ti ti-circle-x"></i> ' + t('testFailedTitle');
+                document.getElementById('testResultDetails').textContent = t('timeoutError');
+            }
+        }, 2000);
+    };
 
-// Add animation styles
-const style = document.createElement('style');
-style.textContent = `
-    @keyframes slideIn {
-        from { transform: translateX(100%); opacity: 0; }
-        to { transform: translateX(0); opacity: 1; }
-    }
-    @keyframes slideOut {
-        from { transform: translateX(0); opacity: 1; }
-        to { transform: translateX(100%); opacity: 0; }
-    }
-`;
-document.head.appendChild(style);
+    window.saveTrunk = function(event) {
+        event.preventDefault();
+        showNotification(t('trunkSaved'), 'success');
+        window.closeModal();
+        setTimeout(() => location.reload(), 1000);
+    };
 
-// Update stats periodically (simulated)
-let activeCallCount = 1;
-setInterval(() => {
-    // Simulate real-time updates with realistic fluctuation
-    activeCallCount = Math.max(0, Math.min(25, activeCallCount + Math.floor(Math.random() * 5) - 2));
-    document.getElementById('activeCallsCount').textContent = activeCallCount;
-    
-    // Update total channels
-    const totalChannels = 12 + 8 + (activeCallCount > 10 ? 5 : 0);
-    document.getElementById('totalChannels').textContent = totalChannels;
-}, 5000);
+    window.refreshTrunks = function() {
+        location.reload();
+    };
 
-// Initialize total channels
-document.getElementById('totalChannels').textContent = '20';
+    // Add animation styles
+    const style = document.createElement('style');
+    style.textContent = '@keyframes slideIn { from { transform: translateX(100%); opacity: 0; } to { transform: translateX(0); opacity: 1; } } @keyframes slideOut { from { transform: translateX(0); opacity: 1; } to { transform: translateX(100%); opacity: 0; } } @keyframes fadeOut { from { opacity: 1; transform: scale(1); } to { opacity: 0; transform: scale(0.9); } }';
+    document.head.appendChild(style);
+
+    // DOM Ready
+    document.addEventListener('DOMContentLoaded', function() {
+        console.log('DOM ready, initializing...');
+        
+        // Codec selection
+        document.querySelectorAll('.codec-item').forEach(function(item) {
+            item.addEventListener('click', function() {
+                const checkbox = this.querySelector('input[type="checkbox"]');
+                if (checkbox) {
+                    checkbox.checked = !checkbox.checked;
+                    this.classList.toggle('selected', checkbox.checked);
+                }
+            });
+        });
+
+        // Initialize total channels
+        const totalChannelsEl = document.getElementById('totalChannels');
+        if (totalChannelsEl) totalChannelsEl.textContent = '20';
+
+        // Update stats periodically (simulated)
+        let activeCallCount = 1;
+        setInterval(function() {
+            activeCallCount = Math.max(0, Math.min(25, activeCallCount + Math.floor(Math.random() * 5) - 2));
+            const activeCallsEl = document.getElementById('activeCallsCount');
+            if (activeCallsEl) activeCallsEl.textContent = activeCallCount;
+            
+            const totalChannels = 12 + 8 + (activeCallCount > 10 ? 5 : 0);
+            if (totalChannelsEl) totalChannelsEl.textContent = totalChannels;
+        }, 5000);
+
+        console.log('SIP Trunk page initialized successfully');
+    });
+})();
 </script>
 {% endblock %}
 
