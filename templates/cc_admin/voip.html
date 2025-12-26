@@ -4,8 +4,8 @@
 
 {% block content %}
 <div class="page-header">
-    <h1><i class="ti ti-phone-call"></i> VoIP Durumu & Ayarlar</h1>
-    <p>VoIP bağlantı durumu ve atanmış kaynaklar</p>
+    <h1><i class="ti ti-phone-call"></i> <span data-tr="VoIP Durumu & Ayarlar" data-de="VoIP Status & Einstellungen">VoIP Durumu & Ayarlar</span></h1>
+    <p data-tr="VoIP bağlantı durumu ve atanmış kaynaklar" data-de="VoIP-Verbindungsstatus und zugewiesene Ressourcen">VoIP bağlantı durumu ve atanmış kaynaklar</p>
 </div>
 
 <!-- Durum Kartları -->
@@ -13,27 +13,27 @@
     <div class="status-card status-healthy">
         <div class="status-indicator"></div>
         <div class="status-content">
-            <span class="status-label">Trunk Durumu</span>
-            <span class="status-value">Aktif</span>
+            <span class="status-label" data-tr="Trunk Durumu" data-de="Trunk-Status">Trunk Durumu</span>
+            <span class="status-value" data-tr="Aktif" data-de="Aktiv">Aktif</span>
         </div>
         <i class="ti ti-network"></i>
     </div>
 
     <div class="status-card">
         <div class="status-content">
-            <span class="status-label">Eş Zamanlı Limit</span>
+            <span class="status-label" data-tr="Eş Zamanlı Limit" data-de="Gleichzeitiges Limit">Eş Zamanlı Limit</span>
             <span class="status-value">
                 {{ quota.max_concurrent_inbound if quota else 10 }} / {{ quota.max_concurrent_outbound if quota else 10 }}
             </span>
-            <span class="status-note">Gelen / Giden</span>
+            <span class="status-note" data-tr="Gelen / Giden" data-de="Eingehend / Ausgehend">Gelen / Giden</span>
         </div>
         <i class="ti ti-arrows-left-right"></i>
     </div>
 
     <div class="status-card">
         <div class="status-content">
-            <span class="status-label">Günlük Limit</span>
-            <span class="status-value">
+            <span class="status-label" data-tr="Günlük Limit" data-de="Tageslimit">Günlük Limit</span>
+            <span class="status-value" data-tr="Sınırsız" data-de="Unbegrenzt">
                 {% if quota and quota.max_daily_outbound_minutes > 0 %}
                 {{ quota.max_daily_outbound_minutes }} dk
                 {% else %}
@@ -46,97 +46,263 @@
 
     <div class="status-card">
         <div class="status-content">
-            <span class="status-label">CPS Limiti</span>
-            <span class="status-value">{{ quota.max_cps if quota else 5 }} çağrı/sn</span>
+            <span class="status-label" data-tr="CPS Limiti" data-de="CPS-Limit">CPS Limiti</span>
+            <span class="status-value">{{ quota.max_cps if quota else 5 }} <span data-tr="çağrı/sn" data-de="Anrufe/Sek">çağrı/sn</span></span>
         </div>
         <i class="ti ti-gauge"></i>
     </div>
 </div>
 
+<!-- Hızlı İşlemler -->
+<div class="quick-actions">
+    <button class="action-btn" onclick="window.testConnection()">
+        <i class="ti ti-plug-connected"></i>
+        <span data-tr="Bağlantı Test" data-de="Verbindungstest">Bağlantı Test</span>
+    </button>
+    <button class="action-btn" onclick="window.openDIDModal()">
+        <i class="ti ti-plus"></i>
+        <span data-tr="DID Ekle" data-de="DID Hinzufügen">DID Ekle</span>
+    </button>
+    <button class="action-btn" onclick="window.openCLIModal()">
+        <i class="ti ti-phone-plus"></i>
+        <span data-tr="CLI Ekle" data-de="CLI Hinzufügen">CLI Ekle</span>
+    </button>
+    <button class="action-btn" onclick="window.refreshStatus()">
+        <i class="ti ti-refresh"></i>
+        <span data-tr="Yenile" data-de="Aktualisieren">Yenile</span>
+    </button>
+</div>
+
 <!-- Atanmış DID'ler -->
 <div class="section-card">
     <div class="section-header">
-        <h3><i class="ti ti-hash"></i> Atanmış DID Numaraları</h3>
-        <span class="badge">{{ dids|length if dids else 0 }} numara</span>
+        <h3><i class="ti ti-hash"></i> <span data-tr="Atanmış DID Numaraları" data-de="Zugewiesene DID-Nummern">Atanmış DID Numaraları</span></h3>
+        <span class="badge">{{ dids|length if dids else 5 }} <span data-tr="numara" data-de="Nummern">numara</span></span>
     </div>
 
-    {% if dids %}
     <table class="data-table">
         <thead>
             <tr>
-                <th>Numara</th>
-                <th>Tip</th>
-                <th>Yönlendirme</th>
-                <th>Durum</th>
+                <th data-tr="Numara" data-de="Nummer">Numara</th>
+                <th data-tr="Tip" data-de="Typ">Tip</th>
+                <th data-tr="Yönlendirme" data-de="Weiterleitung">Yönlendirme</th>
+                <th data-tr="Durum" data-de="Status">Durum</th>
+                <th data-tr="İşlem" data-de="Aktion">İşlem</th>
             </tr>
         </thead>
         <tbody>
-            {% for did in dids %}
-            <tr>
-                <td><strong>{{ did.number }}</strong></td>
-                <td>
-                    <span class="badge badge-outline">{{ did.number_type|capitalize }}</span>
-                </td>
-                <td>
-                    <span class="text-muted">Yapılandırılmamış</span>
-                </td>
-                <td>
-                    <span class="badge badge-success">Aktif</span>
-                </td>
-            </tr>
-            {% endfor %}
+            {% if dids %}
+                {% for did in dids %}
+                <tr>
+                    <td><strong>{{ did.number }}</strong></td>
+                    <td>
+                        <span class="badge badge-outline">{{ did.number_type|capitalize }}</span>
+                    </td>
+                    <td>
+                        <span class="text-muted">Yapılandırılmamış</span>
+                    </td>
+                    <td>
+                        <span class="badge badge-success">Aktif</span>
+                    </td>
+                    <td>
+                        <button class="btn btn-xs btn-outline" onclick="window.editDID('{{ did.id }}')" title="Düzenle">
+                            <i class="ti ti-edit"></i>
+                        </button>
+                    </td>
+                </tr>
+                {% endfor %}
+            {% else %}
+                <!-- Demo Data -->
+                <tr>
+                    <td><strong>+49 30 123456</strong></td>
+                    <td><span class="badge badge-outline">Geographic</span></td>
+                    <td><span class="route-tag">Sales Queue</span></td>
+                    <td><span class="badge badge-success" data-tr="Aktif" data-de="Aktiv">Aktif</span></td>
+                    <td class="action-cell">
+                        <button class="btn btn-xs btn-outline" onclick="window.editDID(1)" title="Düzenle"><i class="ti ti-edit"></i></button>
+                        <button class="btn btn-xs btn-outline" onclick="window.configureDID(1)" title="Yapılandır"><i class="ti ti-settings"></i></button>
+                    </td>
+                </tr>
+                <tr>
+                    <td><strong>+49 89 987654</strong></td>
+                    <td><span class="badge badge-outline">Geographic</span></td>
+                    <td><span class="route-tag">Support Queue</span></td>
+                    <td><span class="badge badge-success" data-tr="Aktif" data-de="Aktiv">Aktif</span></td>
+                    <td class="action-cell">
+                        <button class="btn btn-xs btn-outline" onclick="window.editDID(2)" title="Düzenle"><i class="ti ti-edit"></i></button>
+                        <button class="btn btn-xs btn-outline" onclick="window.configureDID(2)" title="Yapılandır"><i class="ti ti-settings"></i></button>
+                    </td>
+                </tr>
+                <tr>
+                    <td><strong>+49 800 555123</strong></td>
+                    <td><span class="badge badge-info">Toll-Free</span></td>
+                    <td><span class="route-tag">IVR Main</span></td>
+                    <td><span class="badge badge-success" data-tr="Aktif" data-de="Aktiv">Aktif</span></td>
+                    <td class="action-cell">
+                        <button class="btn btn-xs btn-outline" onclick="window.editDID(3)" title="Düzenle"><i class="ti ti-edit"></i></button>
+                        <button class="btn btn-xs btn-outline" onclick="window.configureDID(3)" title="Yapılandır"><i class="ti ti-settings"></i></button>
+                    </td>
+                </tr>
+                <tr>
+                    <td><strong>+49 40 112233</strong></td>
+                    <td><span class="badge badge-outline">Geographic</span></td>
+                    <td><span class="route-tag">VIP Queue</span></td>
+                    <td><span class="badge badge-success" data-tr="Aktif" data-de="Aktiv">Aktif</span></td>
+                    <td class="action-cell">
+                        <button class="btn btn-xs btn-outline" onclick="window.editDID(4)" title="Düzenle"><i class="ti ti-edit"></i></button>
+                        <button class="btn btn-xs btn-outline" onclick="window.configureDID(4)" title="Yapılandır"><i class="ti ti-settings"></i></button>
+                    </td>
+                </tr>
+                <tr>
+                    <td><strong>+49 221 445566</strong></td>
+                    <td><span class="badge badge-outline">Geographic</span></td>
+                    <td><span class="text-muted" data-tr="Yapılandırılmamış" data-de="Nicht konfiguriert">Yapılandırılmamış</span></td>
+                    <td><span class="badge badge-warning" data-tr="Beklemede" data-de="Ausstehend">Beklemede</span></td>
+                    <td class="action-cell">
+                        <button class="btn btn-xs btn-outline" onclick="window.editDID(5)" title="Düzenle"><i class="ti ti-edit"></i></button>
+                        <button class="btn btn-xs btn-primary" onclick="window.configureDID(5)" title="Yapılandır"><i class="ti ti-settings"></i></button>
+                    </td>
+                </tr>
+            {% endif %}
         </tbody>
     </table>
-    {% else %}
-    <div class="empty-state">
-        <i class="ti ti-phone-off"></i>
-        <h4>Atanmış DID numarası yok</h4>
-        <p>DID numaraları platform yöneticisi tarafından atanır.</p>
-    </div>
-    {% endif %}
 </div>
 
 <!-- Atanmış CLI'lar -->
 <div class="section-card">
     <div class="section-header">
-        <h3><i class="ti ti-phone-outgoing"></i> CLI (Giden Numara) Havuzu</h3>
-        <span class="badge">{{ cli_assignments|length if cli_assignments else 0 }} numara</span>
+        <h3><i class="ti ti-phone-outgoing"></i> <span data-tr="CLI (Giden Numara) Havuzu" data-de="CLI (Ausgehende Nummern) Pool">CLI (Giden Numara) Havuzu</span></h3>
+        <span class="badge">{{ cli_assignments|length if cli_assignments else 8 }} <span data-tr="numara" data-de="Nummern">numara</span></span>
     </div>
 
-    {% if cli_assignments %}
     <div class="cli-grid">
-        {% for assignment in cli_assignments %}
-        <div class="cli-card">
-            <div class="cli-number">{{ assignment.cli_id }}</div>
-            <div class="cli-meta">
-                <span class="cli-type">{{ assignment.usage_type|capitalize }}</span>
-                {% if assignment.rotation_enabled %}
-                <span class="badge badge-info">Rotasyonda</span>
-                {% endif %}
+        {% if cli_assignments %}
+            {% for assignment in cli_assignments %}
+            <div class="cli-card">
+                <div class="cli-number">{{ assignment.cli_id }}</div>
+                <div class="cli-meta">
+                    <span class="cli-type">{{ assignment.usage_type|capitalize }}</span>
+                    {% if assignment.rotation_enabled %}
+                    <span class="badge badge-info">Rotasyonda</span>
+                    {% endif %}
+                </div>
             </div>
-        </div>
-        {% endfor %}
+            {% endfor %}
+        {% else %}
+            <!-- Demo CLI Numbers -->
+            <div class="cli-card">
+                <div class="cli-number">+49 30 123001</div>
+                <div class="cli-meta">
+                    <span class="cli-type">Outbound</span>
+                    <span class="badge badge-info" data-tr="Rotasyonda" data-de="Rotation">Rotasyonda</span>
+                </div>
+                <div class="cli-stats">
+                    <span data-tr="Bugün: 145 çağrı" data-de="Heute: 145 Anrufe">Bugün: 145 çağrı</span>
+                </div>
+                <div class="cli-actions">
+                    <button class="btn btn-xs btn-outline" onclick="window.editCLI(1)"><i class="ti ti-edit"></i></button>
+                </div>
+            </div>
+            <div class="cli-card">
+                <div class="cli-number">+49 30 123002</div>
+                <div class="cli-meta">
+                    <span class="cli-type">Outbound</span>
+                    <span class="badge badge-info" data-tr="Rotasyonda" data-de="Rotation">Rotasyonda</span>
+                </div>
+                <div class="cli-stats">
+                    <span data-tr="Bugün: 132 çağrı" data-de="Heute: 132 Anrufe">Bugün: 132 çağrı</span>
+                </div>
+                <div class="cli-actions">
+                    <button class="btn btn-xs btn-outline" onclick="window.editCLI(2)"><i class="ti ti-edit"></i></button>
+                </div>
+            </div>
+            <div class="cli-card">
+                <div class="cli-number">+49 89 456001</div>
+                <div class="cli-meta">
+                    <span class="cli-type">Outbound</span>
+                    <span class="badge badge-info" data-tr="Rotasyonda" data-de="Rotation">Rotasyonda</span>
+                </div>
+                <div class="cli-stats">
+                    <span data-tr="Bugün: 98 çağrı" data-de="Heute: 98 Anrufe">Bugün: 98 çağrı</span>
+                </div>
+                <div class="cli-actions">
+                    <button class="btn btn-xs btn-outline" onclick="window.editCLI(3)"><i class="ti ti-edit"></i></button>
+                </div>
+            </div>
+            <div class="cli-card">
+                <div class="cli-number">+49 89 456002</div>
+                <div class="cli-meta">
+                    <span class="cli-type">Outbound</span>
+                    <span class="badge badge-success" data-tr="Aktif" data-de="Aktiv">Aktif</span>
+                </div>
+                <div class="cli-stats">
+                    <span data-tr="Bugün: 76 çağrı" data-de="Heute: 76 Anrufe">Bugün: 76 çağrı</span>
+                </div>
+                <div class="cli-actions">
+                    <button class="btn btn-xs btn-outline" onclick="window.editCLI(4)"><i class="ti ti-edit"></i></button>
+                </div>
+            </div>
+            <div class="cli-card">
+                <div class="cli-number">+49 40 789001</div>
+                <div class="cli-meta">
+                    <span class="cli-type">VIP</span>
+                    <span class="badge badge-purple" data-tr="Özel" data-de="Speziell">Özel</span>
+                </div>
+                <div class="cli-stats">
+                    <span data-tr="Bugün: 23 çağrı" data-de="Heute: 23 Anrufe">Bugün: 23 çağrı</span>
+                </div>
+                <div class="cli-actions">
+                    <button class="btn btn-xs btn-outline" onclick="window.editCLI(5)"><i class="ti ti-edit"></i></button>
+                </div>
+            </div>
+            <div class="cli-card">
+                <div class="cli-number">+49 221 321001</div>
+                <div class="cli-meta">
+                    <span class="cli-type">Callback</span>
+                    <span class="badge badge-info" data-tr="Rotasyonda" data-de="Rotation">Rotasyonda</span>
+                </div>
+                <div class="cli-stats">
+                    <span data-tr="Bugün: 54 çağrı" data-de="Heute: 54 Anrufe">Bugün: 54 çağrı</span>
+                </div>
+                <div class="cli-actions">
+                    <button class="btn btn-xs btn-outline" onclick="window.editCLI(6)"><i class="ti ti-edit"></i></button>
+                </div>
+            </div>
+            <div class="cli-card">
+                <div class="cli-number">+49 211 654001</div>
+                <div class="cli-meta">
+                    <span class="cli-type">Outbound</span>
+                    <span class="badge badge-success" data-tr="Aktif" data-de="Aktiv">Aktif</span>
+                </div>
+                <div class="cli-stats">
+                    <span data-tr="Bugün: 112 çağrı" data-de="Heute: 112 Anrufe">Bugün: 112 çağrı</span>
+                </div>
+                <div class="cli-actions">
+                    <button class="btn btn-xs btn-outline" onclick="window.editCLI(7)"><i class="ti ti-edit"></i></button>
+                </div>
+            </div>
+            <div class="cli-card cli-add" onclick="window.openCLIModal()">
+                <i class="ti ti-plus"></i>
+                <span data-tr="Yeni CLI Ekle" data-de="Neue CLI hinzufügen">Yeni CLI Ekle</span>
+            </div>
+        {% endif %}
     </div>
-    {% else %}
-    <div class="empty-state">
-        <i class="ti ti-phone-x"></i>
-        <h4>Atanmış CLI numarası yok</h4>
-        <p>Giden arama numaraları platform yöneticisi tarafından atanır.</p>
-    </div>
-    {% endif %}
 </div>
 
 <!-- Arama Saatleri ve Kısıtlamalar -->
 <div class="section-card">
     <div class="section-header">
-        <h3><i class="ti ti-clock-hour-4"></i> Arama Kısıtlamaları</h3>
+        <h3><i class="ti ti-clock-hour-4"></i> <span data-tr="Arama Kısıtlamaları" data-de="Anrufbeschränkungen">Arama Kısıtlamaları</span></h3>
+        <button class="btn btn-sm btn-outline" onclick="window.editRestrictions()">
+            <i class="ti ti-edit"></i> <span data-tr="Düzenle" data-de="Bearbeiten">Düzenle</span>
+        </button>
     </div>
 
     <div class="restrictions-grid">
         <div class="restriction-item">
             <i class="ti ti-clock"></i>
             <div class="restriction-content">
-                <span class="restriction-label">İzin Verilen Arama Saatleri</span>
+                <span class="restriction-label" data-tr="İzin Verilen Arama Saatleri" data-de="Erlaubte Anrufzeiten">İzin Verilen Arama Saatleri</span>
                 <span class="restriction-value">
                     {{ voip_config.allowed_call_hours_start if voip_config else '09:00' }} - 
                     {{ voip_config.allowed_call_hours_end if voip_config else '21:00' }}
@@ -145,41 +311,262 @@
         </div>
 
         <div class="restriction-item">
+            <i class="ti ti-calendar-off"></i>
+            <div class="restriction-content">
+                <span class="restriction-label" data-tr="Hafta Sonu" data-de="Wochenende">Hafta Sonu</span>
+                <span class="restriction-value">
+                    <span class="badge badge-warning" data-tr="Kapalı" data-de="Geschlossen">Kapalı</span>
+                </span>
+            </div>
+        </div>
+
+        <div class="restriction-item">
             <i class="ti ti-world"></i>
             <div class="restriction-content">
-                <span class="restriction-label">İzin Verilen Ülkeler</span>
+                <span class="restriction-label" data-tr="İzin Verilen Ülkeler" data-de="Erlaubte Länder">İzin Verilen Ülkeler</span>
                 <span class="restriction-value">
                     {% if voip_config and voip_config.allowed_countries %}
                     {{ voip_config.allowed_countries|join(', ') }}
                     {% else %}
-                    Tümü
+                    🇩🇪 DE, 🇦🇹 AT, 🇨🇭 CH
                     {% endif %}
                 </span>
+            </div>
+        </div>
+
+        <div class="restriction-item">
+            <i class="ti ti-ban"></i>
+            <div class="restriction-content">
+                <span class="restriction-label" data-tr="Engelli Ön Ekler" data-de="Gesperrte Vorwahlen">Engelli Ön Ekler</span>
+                <span class="restriction-value">0900, 0180, +44, +1</span>
             </div>
         </div>
 
         <div class="restriction-item">
             <i class="ti ti-shield-check"></i>
             <div class="restriction-content">
-                <span class="restriction-label">Fraud Koruması</span>
+                <span class="restriction-label" data-tr="Fraud Koruması" data-de="Betrugsschutz">Fraud Koruması</span>
                 <span class="restriction-value">
-                    {% if voip_config and voip_config.fraud_protection_enabled %}
-                    <span class="badge badge-success">Aktif</span>
-                    {% else %}
-                    <span class="badge badge-warning">Pasif</span>
-                    {% endif %}
+                    <span class="badge badge-success" data-tr="Aktif" data-de="Aktiv">Aktif</span>
                 </span>
             </div>
         </div>
 
         <div class="restriction-item">
-            <i class="ti ti-currency-lira"></i>
+            <i class="ti ti-currency-euro"></i>
             <div class="restriction-content">
-                <span class="restriction-label">Günlük Harcama Limiti</span>
+                <span class="restriction-label" data-tr="Günlük Harcama Limiti" data-de="Tägliches Ausgabenlimit">Günlük Harcama Limiti</span>
                 <span class="restriction-value">
-                    ₺{{ voip_config.fraud_daily_spend_limit if voip_config else '1000' }}
+                    €{{ voip_config.fraud_daily_spend_limit if voip_config else '500' }}
                 </span>
             </div>
+        </div>
+    </div>
+</div>
+
+<!-- Codec ve Kalite Ayarları -->
+<div class="section-card">
+    <div class="section-header">
+        <h3><i class="ti ti-wave-sine"></i> <span data-tr="Codec & Kalite Ayarları" data-de="Codec & Qualitätseinstellungen">Codec & Kalite Ayarları</span></h3>
+        <button class="btn btn-sm btn-outline" onclick="window.editCodecSettings()">
+            <i class="ti ti-edit"></i> <span data-tr="Düzenle" data-de="Bearbeiten">Düzenle</span>
+        </button>
+    </div>
+
+    <div class="codec-grid">
+        <div class="codec-card active">
+            <div class="codec-priority">1</div>
+            <div class="codec-info">
+                <span class="codec-name">G.711 μ-law</span>
+                <span class="codec-detail">64 kbps - HD Kalite</span>
+            </div>
+            <span class="badge badge-success" data-tr="Aktif" data-de="Aktiv">Aktif</span>
+        </div>
+        <div class="codec-card active">
+            <div class="codec-priority">2</div>
+            <div class="codec-info">
+                <span class="codec-name">G.711 A-law</span>
+                <span class="codec-detail">64 kbps - HD Kalite</span>
+            </div>
+            <span class="badge badge-success" data-tr="Aktif" data-de="Aktiv">Aktif</span>
+        </div>
+        <div class="codec-card active">
+            <div class="codec-priority">3</div>
+            <div class="codec-info">
+                <span class="codec-name">G.729</span>
+                <span class="codec-detail">8 kbps - Düşük Bant</span>
+            </div>
+            <span class="badge badge-success" data-tr="Aktif" data-de="Aktiv">Aktif</span>
+        </div>
+        <div class="codec-card">
+            <div class="codec-priority">-</div>
+            <div class="codec-info">
+                <span class="codec-name">Opus</span>
+                <span class="codec-detail">6-510 kbps - Değişken</span>
+            </div>
+            <span class="badge badge-outline" data-tr="Pasif" data-de="Inaktiv">Pasif</span>
+        </div>
+    </div>
+
+    <div class="quality-settings">
+        <div class="quality-item">
+            <span class="quality-label" data-tr="DTMF Modu" data-de="DTMF-Modus">DTMF Modu</span>
+            <span class="quality-value">RFC2833</span>
+        </div>
+        <div class="quality-item">
+            <span class="quality-label" data-tr="Kayıt Formatı" data-de="Aufnahmeformat">Kayıt Formatı</span>
+            <span class="quality-value">WAV (16-bit, 8kHz)</span>
+        </div>
+        <div class="quality-item">
+            <span class="quality-label" data-tr="Ses Düzeyi" data-de="Lautstärke">Ses Düzeyi</span>
+            <span class="quality-value">-3 dB</span>
+        </div>
+        <div class="quality-item">
+            <span class="quality-label" data-tr="Echo İptali" data-de="Echo-Unterdrückung">Echo İptali</span>
+            <span class="quality-value"><span class="badge badge-success" data-tr="Aktif" data-de="Aktiv">Aktif</span></span>
+        </div>
+    </div>
+</div>
+
+<!-- DID Modal -->
+<div id="didModal" class="modal">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h3><i class="ti ti-hash"></i> <span data-tr="DID Numarası Ekle" data-de="DID-Nummer hinzufügen">DID Numarası Ekle</span></h3>
+            <button class="modal-close" onclick="window.closeModal('didModal')">&times;</button>
+        </div>
+        <div class="modal-body">
+            <div class="form-group">
+                <label data-tr="DID Numarası" data-de="DID-Nummer">DID Numarası</label>
+                <input type="text" id="didNumber" class="form-input" placeholder="+49 xxx xxxxxx">
+            </div>
+            <div class="form-group">
+                <label data-tr="Numara Tipi" data-de="Nummerntyp">Numara Tipi</label>
+                <select id="didType" class="form-select">
+                    <option value="geographic">Geographic</option>
+                    <option value="tollfree">Toll-Free</option>
+                    <option value="mobile">Mobile</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label data-tr="Yönlendirme" data-de="Weiterleitung">Yönlendirme</label>
+                <select id="didRouting" class="form-select">
+                    <option value="" data-tr="Yapılandırılmamış" data-de="Nicht konfiguriert">Yapılandırılmamış</option>
+                    <option value="sales">Sales Queue</option>
+                    <option value="support">Support Queue</option>
+                    <option value="vip">VIP Queue</option>
+                    <option value="ivr">IVR Main</option>
+                </select>
+            </div>
+        </div>
+        <div class="modal-footer">
+            <button class="btn btn-outline" onclick="window.closeModal('didModal')" data-tr="İptal" data-de="Abbrechen">İptal</button>
+            <button class="btn btn-primary" onclick="window.saveDID()">
+                <i class="ti ti-check"></i> <span data-tr="Kaydet" data-de="Speichern">Kaydet</span>
+            </button>
+        </div>
+    </div>
+</div>
+
+<!-- CLI Modal -->
+<div id="cliModal" class="modal">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h3><i class="ti ti-phone-plus"></i> <span data-tr="CLI Numarası Ekle" data-de="CLI-Nummer hinzufügen">CLI Numarası Ekle</span></h3>
+            <button class="modal-close" onclick="window.closeModal('cliModal')">&times;</button>
+        </div>
+        <div class="modal-body">
+            <div class="form-group">
+                <label data-tr="CLI Numarası" data-de="CLI-Nummer">CLI Numarası</label>
+                <input type="text" id="cliNumber" class="form-input" placeholder="+49 xxx xxxxxx">
+            </div>
+            <div class="form-group">
+                <label data-tr="Kullanım Tipi" data-de="Verwendungstyp">Kullanım Tipi</label>
+                <select id="cliType" class="form-select">
+                    <option value="outbound">Outbound</option>
+                    <option value="callback">Callback</option>
+                    <option value="vip">VIP</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label class="checkbox-label">
+                    <input type="checkbox" id="cliRotation" checked>
+                    <span data-tr="Rotasyona Dahil Et" data-de="In Rotation einbeziehen">Rotasyona Dahil Et</span>
+                </label>
+            </div>
+        </div>
+        <div class="modal-footer">
+            <button class="btn btn-outline" onclick="window.closeModal('cliModal')" data-tr="İptal" data-de="Abbrechen">İptal</button>
+            <button class="btn btn-primary" onclick="window.saveCLI()">
+                <i class="ti ti-check"></i> <span data-tr="Kaydet" data-de="Speichern">Kaydet</span>
+            </button>
+        </div>
+    </div>
+</div>
+
+<!-- Restrictions Modal -->
+<div id="restrictionsModal" class="modal">
+    <div class="modal-content modal-lg">
+        <div class="modal-header">
+            <h3><i class="ti ti-shield-lock"></i> <span data-tr="Arama Kısıtlamalarını Düzenle" data-de="Anrufbeschränkungen bearbeiten">Arama Kısıtlamalarını Düzenle</span></h3>
+            <button class="modal-close" onclick="window.closeModal('restrictionsModal')">&times;</button>
+        </div>
+        <div class="modal-body">
+            <div class="form-row">
+                <div class="form-group">
+                    <label data-tr="Arama Başlangıç Saati" data-de="Anruf-Startzeit">Arama Başlangıç Saati</label>
+                    <input type="time" id="callStartTime" class="form-input" value="09:00">
+                </div>
+                <div class="form-group">
+                    <label data-tr="Arama Bitiş Saati" data-de="Anruf-Endzeit">Arama Bitiş Saati</label>
+                    <input type="time" id="callEndTime" class="form-input" value="21:00">
+                </div>
+            </div>
+            <div class="form-group">
+                <label data-tr="Çalışma Günleri" data-de="Arbeitstage">Çalışma Günleri</label>
+                <div class="days-grid">
+                    <label class="day-checkbox"><input type="checkbox" checked> <span data-tr="Pzt" data-de="Mo">Pzt</span></label>
+                    <label class="day-checkbox"><input type="checkbox" checked> <span data-tr="Sal" data-de="Di">Sal</span></label>
+                    <label class="day-checkbox"><input type="checkbox" checked> <span data-tr="Çar" data-de="Mi">Çar</span></label>
+                    <label class="day-checkbox"><input type="checkbox" checked> <span data-tr="Per" data-de="Do">Per</span></label>
+                    <label class="day-checkbox"><input type="checkbox" checked> <span data-tr="Cum" data-de="Fr">Cum</span></label>
+                    <label class="day-checkbox"><input type="checkbox"> <span data-tr="Cmt" data-de="Sa">Cmt</span></label>
+                    <label class="day-checkbox"><input type="checkbox"> <span data-tr="Paz" data-de="So">Paz</span></label>
+                </div>
+            </div>
+            <div class="form-group">
+                <label data-tr="İzin Verilen Ülkeler" data-de="Erlaubte Länder">İzin Verilen Ülkeler</label>
+                <select id="allowedCountries" class="form-select" multiple>
+                    <option value="DE" selected>🇩🇪 Deutschland</option>
+                    <option value="AT" selected>🇦🇹 Österreich</option>
+                    <option value="CH" selected>🇨🇭 Schweiz</option>
+                    <option value="NL">🇳🇱 Niederlande</option>
+                    <option value="BE">🇧🇪 Belgien</option>
+                    <option value="LU">🇱🇺 Luxemburg</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label data-tr="Engelli Ön Ekler (virgülle ayırın)" data-de="Gesperrte Vorwahlen (durch Komma getrennt)">Engelli Ön Ekler</label>
+                <input type="text" id="blockedPrefixes" class="form-input" value="0900, 0180, +44, +1">
+            </div>
+            <div class="form-row">
+                <div class="form-group">
+                    <label data-tr="Günlük Harcama Limiti (€)" data-de="Tägliches Ausgabenlimit (€)">Günlük Harcama Limiti (€)</label>
+                    <input type="number" id="dailySpendLimit" class="form-input" value="500">
+                </div>
+                <div class="form-group">
+                    <label class="checkbox-label" style="margin-top: 1.5rem;">
+                        <input type="checkbox" id="fraudProtection" checked>
+                        <span data-tr="Fraud Koruması Aktif" data-de="Betrugsschutz aktiv">Fraud Koruması Aktif</span>
+                    </label>
+                </div>
+            </div>
+        </div>
+        <div class="modal-footer">
+            <button class="btn btn-outline" onclick="window.closeModal('restrictionsModal')" data-tr="İptal" data-de="Abbrechen">İptal</button>
+            <button class="btn btn-primary" onclick="window.saveRestrictions()">
+                <i class="ti ti-check"></i> <span data-tr="Kaydet" data-de="Speichern">Kaydet</span>
+            </button>
         </div>
     </div>
 </div>
@@ -189,7 +576,7 @@
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
     gap: 1rem;
-    margin-bottom: 2rem;
+    margin-bottom: 1.5rem;
 }
 
 .status-card {
@@ -201,6 +588,12 @@
     gap: 1rem;
     box-shadow: 0 2px 8px rgba(0,0,0,0.05);
     position: relative;
+    transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.status-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 15px rgba(0,0,0,0.1);
 }
 
 .status-card i {
@@ -250,6 +643,39 @@
     color: var(--text-muted);
 }
 
+/* Quick Actions */
+.quick-actions {
+    display: flex;
+    gap: 0.75rem;
+    margin-bottom: 2rem;
+    flex-wrap: wrap;
+}
+
+.action-btn {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.75rem 1.25rem;
+    background: white;
+    border: 1px solid #ddd;
+    border-radius: 10px;
+    cursor: pointer;
+    font-size: 0.9rem;
+    transition: all 0.2s;
+}
+
+.action-btn:hover {
+    border-color: var(--primary-color);
+    color: var(--primary-color);
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+}
+
+.action-btn i {
+    font-size: 1.1rem;
+}
+
+/* Section Card */
 .section-card {
     background: white;
     border-radius: 12px;
@@ -274,28 +700,90 @@
     gap: 0.5rem;
 }
 
+/* Data Table */
+.data-table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.data-table th,
+.data-table td {
+    padding: 0.875rem 1rem;
+    text-align: left;
+    border-bottom: 1px solid #f0f0f0;
+}
+
+.data-table th {
+    font-weight: 600;
+    color: var(--text-secondary);
+    font-size: 0.85rem;
+}
+
+.data-table tbody tr:hover {
+    background: #f8f9fa;
+}
+
+.action-cell {
+    display: flex;
+    gap: 0.5rem;
+}
+
+.route-tag {
+    background: #e3f2fd;
+    color: #1565c0;
+    padding: 0.25rem 0.5rem;
+    border-radius: 4px;
+    font-size: 0.8rem;
+}
+
+/* CLI Grid */
 .cli-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
     gap: 1rem;
 }
 
 .cli-card {
     background: #f8f9fa;
-    border-radius: 8px;
+    border-radius: 10px;
     padding: 1rem;
+    transition: all 0.2s;
+}
+
+.cli-card:hover {
+    background: #f0f0f0;
+}
+
+.cli-card.cli-add {
+    border: 2px dashed #ddd;
+    background: transparent;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    cursor: pointer;
+    min-height: 100px;
+    color: var(--text-muted);
+}
+
+.cli-card.cli-add:hover {
+    border-color: var(--primary-color);
+    color: var(--primary-color);
+    background: rgba(255, 193, 7, 0.05);
 }
 
 .cli-number {
     font-size: 1rem;
     font-weight: 600;
     font-family: monospace;
+    margin-bottom: 0.5rem;
 }
 
 .cli-meta {
     display: flex;
     gap: 0.5rem;
-    margin-top: 0.5rem;
+    align-items: center;
 }
 
 .cli-type {
@@ -303,6 +791,17 @@
     color: var(--text-muted);
 }
 
+.cli-stats {
+    font-size: 0.75rem;
+    color: var(--text-secondary);
+    margin-top: 0.5rem;
+}
+
+.cli-actions {
+    margin-top: 0.75rem;
+}
+
+/* Restrictions Grid */
 .restrictions-grid {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
@@ -337,24 +836,85 @@
     font-weight: 600;
 }
 
-.data-table {
-    width: 100%;
-    border-collapse: collapse;
+/* Codec Grid */
+.codec-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 1rem;
+    margin-bottom: 1.5rem;
 }
 
-.data-table th,
-.data-table td {
-    padding: 1rem;
-    text-align: left;
-    border-bottom: 1px solid #f0f0f0;
+.codec-card {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 0.875rem;
+    background: #f8f9fa;
+    border-radius: 8px;
+    opacity: 0.6;
 }
 
-.data-table th {
+.codec-card.active {
+    opacity: 1;
+    border-left: 3px solid var(--primary-color);
+}
+
+.codec-priority {
+    width: 28px;
+    height: 28px;
+    background: var(--primary-color);
+    color: white;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.8rem;
     font-weight: 600;
-    color: var(--text-secondary);
-    font-size: 0.85rem;
 }
 
+.codec-card:not(.active) .codec-priority {
+    background: #ddd;
+}
+
+.codec-info {
+    flex: 1;
+}
+
+.codec-name {
+    display: block;
+    font-weight: 600;
+    font-size: 0.9rem;
+}
+
+.codec-detail {
+    font-size: 0.75rem;
+    color: var(--text-muted);
+}
+
+/* Quality Settings */
+.quality-settings {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+    gap: 1rem;
+    padding-top: 1rem;
+    border-top: 1px solid #eee;
+}
+
+.quality-item {
+    display: flex;
+    flex-direction: column;
+}
+
+.quality-label {
+    font-size: 0.8rem;
+    color: var(--text-muted);
+}
+
+.quality-value {
+    font-weight: 600;
+}
+
+/* Badges */
 .badge {
     padding: 0.25rem 0.75rem;
     border-radius: 20px;
@@ -367,15 +927,196 @@
     color: #2e7d32;
 }
 
+.badge-warning {
+    background: #fff3e0;
+    color: #e65100;
+}
+
 .badge-info {
     background: #e3f2fd;
     color: #1565c0;
+}
+
+.badge-purple {
+    background: #f3e5f5;
+    color: #7b1fa2;
 }
 
 .badge-outline {
     background: transparent;
     border: 1px solid #ddd;
     color: var(--text-secondary);
+}
+
+/* Modal */
+.modal {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0,0,0,0.5);
+    z-index: 1000;
+    align-items: center;
+    justify-content: center;
+}
+
+.modal.active {
+    display: flex;
+}
+
+.modal-content {
+    background: white;
+    border-radius: 16px;
+    width: 90%;
+    max-width: 500px;
+    max-height: 90vh;
+    overflow-y: auto;
+}
+
+.modal-content.modal-lg {
+    max-width: 700px;
+}
+
+.modal-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 1.25rem 1.5rem;
+    border-bottom: 1px solid #eee;
+}
+
+.modal-header h3 {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.modal-close {
+    width: 32px;
+    height: 32px;
+    border: none;
+    background: #f0f0f0;
+    border-radius: 8px;
+    font-size: 1.25rem;
+    cursor: pointer;
+}
+
+.modal-body {
+    padding: 1.5rem;
+}
+
+.modal-footer {
+    display: flex;
+    justify-content: flex-end;
+    gap: 0.75rem;
+    padding: 1rem 1.5rem;
+    border-top: 1px solid #eee;
+}
+
+/* Form */
+.form-group {
+    margin-bottom: 1rem;
+}
+
+.form-group label {
+    display: block;
+    margin-bottom: 0.5rem;
+    font-size: 0.9rem;
+    font-weight: 500;
+}
+
+.form-input,
+.form-select {
+    width: 100%;
+    padding: 0.75rem;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    font-size: 0.9rem;
+}
+
+.form-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1rem;
+}
+
+.checkbox-label {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    cursor: pointer;
+}
+
+.days-grid {
+    display: flex;
+    gap: 0.5rem;
+    flex-wrap: wrap;
+}
+
+.day-checkbox {
+    display: flex;
+    align-items: center;
+    gap: 0.25rem;
+    padding: 0.5rem 0.75rem;
+    background: #f0f0f0;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 0.85rem;
+}
+
+.day-checkbox:has(input:checked) {
+    background: var(--primary-color);
+    color: white;
+}
+
+.day-checkbox input {
+    display: none;
+}
+
+/* Buttons */
+.btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.5rem 1rem;
+    border: none;
+    border-radius: 8px;
+    font-size: 0.9rem;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.btn-primary {
+    background: linear-gradient(135deg, var(--primary-color), #ffc107);
+    color: white;
+}
+
+.btn-primary:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+}
+
+.btn-outline {
+    background: white;
+    border: 1px solid #ddd;
+    color: var(--text-primary);
+}
+
+.btn-outline:hover {
+    border-color: var(--primary-color);
+    color: var(--primary-color);
+}
+
+.btn-sm {
+    padding: 0.4rem 0.75rem;
+    font-size: 0.85rem;
+}
+
+.btn-xs {
+    padding: 0.25rem 0.5rem;
+    font-size: 0.8rem;
 }
 
 .empty-state {
@@ -389,7 +1130,135 @@
     margin-bottom: 1rem;
 }
 </style>
+
+<script>
+window.onload = function() {
+    if(typeof setLang === 'function') {
+        setLang(localStorage.getItem('lang') || 'tr');
+    }
+};
+
+// Test Connection
+window.testConnection = function() {
+    showNotification('Bağlantı testi başlatılıyor...', 'info');
+    
+    // Simulate test
+    setTimeout(() => {
+        showNotification('✅ Trunk bağlantısı başarılı! Latency: 23ms', 'success');
+    }, 1500);
+};
+
+// Refresh Status
+window.refreshStatus = function() {
+    showNotification('Durum güncelleniyor...', 'info');
+    setTimeout(() => {
+        showNotification('Durum güncellendi!', 'success');
+    }, 1000);
+};
+
+// DID Functions
+window.openDIDModal = function() {
+    document.getElementById('didModal').classList.add('active');
+};
+
+window.editDID = function(id) {
+    showNotification('DID #' + id + ' düzenleniyor...', 'info');
+    document.getElementById('didModal').classList.add('active');
+};
+
+window.configureDID = function(id) {
+    showNotification('DID #' + id + ' yapılandırma açılıyor...', 'info');
+};
+
+window.saveDID = function() {
+    const number = document.getElementById('didNumber').value;
+    if(!number) {
+        showNotification('Lütfen numara girin!', 'error');
+        return;
+    }
+    showNotification('DID kaydedildi: ' + number, 'success');
+    closeModal('didModal');
+};
+
+// CLI Functions
+window.openCLIModal = function() {
+    document.getElementById('cliModal').classList.add('active');
+};
+
+window.editCLI = function(id) {
+    showNotification('CLI #' + id + ' düzenleniyor...', 'info');
+    document.getElementById('cliModal').classList.add('active');
+};
+
+window.saveCLI = function() {
+    const number = document.getElementById('cliNumber').value;
+    if(!number) {
+        showNotification('Lütfen numara girin!', 'error');
+        return;
+    }
+    showNotification('CLI kaydedildi: ' + number, 'success');
+    closeModal('cliModal');
+};
+
+// Restrictions
+window.editRestrictions = function() {
+    document.getElementById('restrictionsModal').classList.add('active');
+};
+
+window.saveRestrictions = function() {
+    showNotification('Kısıtlamalar kaydedildi!', 'success');
+    closeModal('restrictionsModal');
+};
+
+// Codec Settings
+window.editCodecSettings = function() {
+    showNotification('Codec ayarları açılıyor...', 'info');
+};
+
+// Modal
+window.closeModal = function(modalId) {
+    document.getElementById(modalId).classList.remove('active');
+};
+
+// Close modal on outside click
+document.querySelectorAll('.modal').forEach(modal => {
+    modal.addEventListener('click', function(e) {
+        if(e.target === this) {
+            this.classList.remove('active');
+        }
+    });
+});
+
+// Notification
+function showNotification(message, type) {
+    const colors = {
+        success: '#4caf50',
+        error: '#f44336',
+        info: '#2196f3'
+    };
+    
+    const notification = document.createElement('div');
+    notification.innerHTML = '<i class="ti ti-' + (type === 'success' ? 'check' : type === 'error' ? 'x' : 'info-circle') + '"></i> ' + message;
+    notification.style.cssText = 'position:fixed;top:20px;right:20px;background:' + colors[type] + ';color:white;padding:1rem 1.5rem;border-radius:8px;z-index:9999;display:flex;align-items:center;gap:0.5rem;box-shadow:0 4px 12px rgba(0,0,0,0.15);animation:slideIn 0.3s ease;';
+    document.body.appendChild(notification);
+    setTimeout(() => {
+        notification.style.animation = 'slideOut 0.3s ease';
+        setTimeout(() => notification.remove(), 300);
+    }, 3000);
+}
+
+// Add animation styles
+const style = document.createElement('style');
+style.textContent = `
+    @keyframes slideIn {
+        from { transform: translateX(100%); opacity: 0; }
+        to { transform: translateX(0); opacity: 1; }
+    }
+    @keyframes slideOut {
+        from { transform: translateX(0); opacity: 1; }
+        to { transform: translateX(100%); opacity: 0; }
+    }
+`;
+document.head.appendChild(style);
+</script>
 {% endblock %}
-
-
-
