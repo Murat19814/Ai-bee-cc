@@ -2,65 +2,705 @@
 
 {% block title %}QA Formları - AI BEE CC{% endblock %}
 
-{% block content %}
-<div class="page-header">
-    <div>
-        <h1 class="page-title">QA Formları</h1>
-        <p class="page-subtitle">Değerlendirme form şablonlarını yönetin</p>
-    </div>
-    <button class="btn btn-primary">
-        <i class="ti ti-plus"></i> Yeni Form
-    </button>
-</div>
+{% block extra_css %}
+<style>
+.qa-forms-page { padding: 1.5rem; }
 
-<div class="card">
-    <div class="card-body">
-        <div class="table-wrapper">
-            <table class="table">
-                <thead>
-                    <tr>
-                        <th>Form Adı</th>
-                        <th>Açıklama</th>
-                        <th>Max Puan</th>
-                        <th>Geçme Puanı</th>
-                        <th>Kriter Sayısı</th>
-                        <th>Durum</th>
-                        <th>İşlemler</th>
-                    </tr>
-                </thead>
-                <tbody>
+.form-card {
+    background: white;
+    border-radius: 16px;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.06);
+    overflow: hidden;
+}
+
+.form-table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.form-table th,
+.form-table td {
+    padding: 1rem 1.5rem;
+    text-align: left;
+    border-bottom: 1px solid #f0f0f0;
+}
+
+.form-table th {
+    font-size: 0.75rem;
+    font-weight: 700;
+    color: var(--primary);
+    text-transform: uppercase;
+    background: #fafafa;
+}
+
+.form-table tr:hover {
+    background: #f8f9fa;
+}
+
+.form-name {
+    font-weight: 700;
+    color: var(--text-primary);
+}
+
+.form-desc {
+    font-size: 0.85rem;
+    color: var(--text-muted);
+}
+
+.score-display {
+    font-family: var(--font-mono);
+    font-weight: 600;
+}
+
+.criteria-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.25rem;
+    padding: 0.35rem 0.75rem;
+    background: rgba(156, 39, 176, 0.1);
+    color: #9C27B0;
+    border-radius: 20px;
+    font-size: 0.8rem;
+    font-weight: 600;
+}
+
+.status-badge {
+    display: inline-block;
+    padding: 0.35rem 0.85rem;
+    border-radius: 20px;
+    font-size: 0.75rem;
+    font-weight: 600;
+}
+
+.status-badge.active { background: #E8F5E9; color: #2E7D32; }
+.status-badge.inactive { background: #FFF3E0; color: #E65100; }
+
+.action-btns {
+    display: flex;
+    gap: 0.5rem;
+}
+
+.action-btn {
+    width: 36px;
+    height: 36px;
+    border-radius: 8px;
+    border: none;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.1rem;
+    transition: all 0.2s;
+}
+
+.action-btn.criteria { background: rgba(156, 39, 176, 0.1); color: #9C27B0; }
+.action-btn.edit { background: rgba(33, 150, 243, 0.1); color: #2196F3; }
+.action-btn.delete { background: rgba(244, 67, 54, 0.1); color: #f44336; }
+.action-btn.toggle { background: rgba(76, 175, 80, 0.1); color: #4CAF50; }
+
+.action-btn:hover {
+    transform: scale(1.1);
+}
+
+/* Modal Styles */
+.modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0,0,0,0.5);
+    display: none;
+    align-items: center;
+    justify-content: center;
+    z-index: 1000;
+}
+
+.modal-overlay.show {
+    display: flex;
+}
+
+.modal-content {
+    background: white;
+    border-radius: 20px;
+    width: 600px;
+    max-width: 95%;
+    max-height: 90vh;
+    overflow-y: auto;
+    box-shadow: 0 20px 60px rgba(0,0,0,0.2);
+}
+
+.modal-header {
+    padding: 1.5rem;
+    border-bottom: 1px solid #eee;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.modal-title {
+    font-size: 1.25rem;
+    font-weight: 700;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.modal-title i {
+    color: var(--primary);
+}
+
+.modal-close {
+    background: none;
+    border: none;
+    font-size: 1.5rem;
+    cursor: pointer;
+    color: var(--text-muted);
+    transition: color 0.2s;
+}
+
+.modal-close:hover {
+    color: var(--text-primary);
+}
+
+.modal-body {
+    padding: 1.5rem;
+}
+
+.modal-footer {
+    padding: 1.5rem;
+    border-top: 1px solid #eee;
+    display: flex;
+    justify-content: flex-end;
+    gap: 1rem;
+}
+
+.form-group {
+    margin-bottom: 1.25rem;
+}
+
+.form-label {
+    display: block;
+    font-weight: 600;
+    margin-bottom: 0.5rem;
+    color: var(--text-primary);
+}
+
+.form-input,
+.form-select,
+.form-textarea {
+    width: 100%;
+    padding: 0.75rem 1rem;
+    border: 1px solid var(--border-color);
+    border-radius: 10px;
+    font-size: 0.95rem;
+    transition: all 0.2s;
+}
+
+.form-input:focus,
+.form-select:focus,
+.form-textarea:focus {
+    outline: none;
+    border-color: var(--primary);
+    box-shadow: 0 0 0 3px rgba(245, 166, 35, 0.1);
+}
+
+.form-textarea {
+    min-height: 100px;
+    resize: vertical;
+}
+
+.form-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1rem;
+}
+
+/* Criteria Section */
+.criteria-section {
+    background: #f8f9fa;
+    border-radius: 12px;
+    padding: 1rem;
+    margin-top: 1rem;
+}
+
+.criteria-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 1rem;
+}
+
+.criteria-list {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+}
+
+.criteria-item {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    background: white;
+    padding: 0.75rem;
+    border-radius: 8px;
+    border: 1px solid #eee;
+}
+
+.criteria-item input {
+    flex: 1;
+    border: none;
+    background: transparent;
+    font-size: 0.9rem;
+}
+
+.criteria-item input:focus {
+    outline: none;
+}
+
+.criteria-weight {
+    width: 60px;
+    padding: 0.5rem;
+    border: 1px solid #ddd;
+    border-radius: 6px;
+    text-align: center;
+    font-weight: 600;
+}
+
+.criteria-remove {
+    background: none;
+    border: none;
+    color: #f44336;
+    cursor: pointer;
+    font-size: 1.25rem;
+}
+
+.add-criteria-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    width: 100%;
+    padding: 0.75rem;
+    background: transparent;
+    border: 2px dashed #ddd;
+    border-radius: 8px;
+    color: var(--text-muted);
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.add-criteria-btn:hover {
+    border-color: var(--primary);
+    color: var(--primary);
+}
+
+.empty-state {
+    padding: 3rem;
+    text-align: center;
+    color: var(--text-muted);
+}
+
+.empty-state i {
+    font-size: 3rem;
+    margin-bottom: 1rem;
+    opacity: 0.3;
+}
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="qa-forms-page">
+    <div class="page-header">
+        <div>
+            <h1 class="page-title" data-tr="QA Formları" data-de="QA-Formulare">QA Formları</h1>
+            <p class="page-subtitle" data-tr="Değerlendirme form şablonlarını yönetin" data-de="Verwalten Sie Bewertungsformularvorlagen">Değerlendirme form şablonlarını yönetin</p>
+        </div>
+        <button class="btn btn-primary" onclick="openNewFormModal()">
+            <i class="ti ti-plus"></i> <span data-tr="Yeni Form" data-de="Neues Formular">Yeni Form</span>
+        </button>
+    </div>
+
+    <div class="form-card">
+        <table class="form-table">
+            <thead>
+                <tr>
+                    <th data-tr="Form Adı" data-de="Formularname">Form Adı</th>
+                    <th data-tr="Açıklama" data-de="Beschreibung">Açıklama</th>
+                    <th data-tr="Max Puan" data-de="Max. Punktzahl">Max Puan</th>
+                    <th data-tr="Geçme Puanı" data-de="Bestehensgrenze">Geçme Puanı</th>
+                    <th data-tr="Kriter Sayısı" data-de="Kriterienanzahl">Kriter Sayısı</th>
+                    <th data-tr="Durum" data-de="Status">Durum</th>
+                    <th data-tr="İşlemler" data-de="Aktionen">İşlemler</th>
+                </tr>
+            </thead>
+            <tbody id="formsTableBody">
+                {% if forms %}
                     {% for form in forms %}
-                    <tr>
-                        <td><strong>{{ form.name }}</strong></td>
-                        <td>{{ form.description or '-' }}</td>
-                        <td>{{ form.max_score }}</td>
-                        <td>{{ form.passing_score }}</td>
-                        <td>{{ form.criteria.count() }}</td>
+                    <tr data-form-id="{{ form.id }}">
+                        <td class="form-name">{{ form.name }}</td>
+                        <td class="form-desc">{{ form.description or '-' }}</td>
+                        <td class="score-display">{{ form.max_score }}</td>
+                        <td class="score-display">{{ form.passing_score }}%</td>
+                        <td><span class="criteria-badge"><i class="ti ti-list-check"></i> {{ form.criteria|length if form.criteria else 0 }}</span></td>
                         <td>
-                            <span class="badge badge-{{ 'success' if form.is_active else 'warning' }}">
+                            <span class="status-badge {{ 'active' if form.is_active else 'inactive' }}">
                                 {{ 'Aktif' if form.is_active else 'Pasif' }}
                             </span>
                         </td>
                         <td>
-                            <button class="btn btn-sm btn-ghost" title="Kriterleri Düzenle">
-                                <i class="ti ti-list-check"></i>
-                            </button>
-                            <button class="btn btn-sm btn-ghost" title="Düzenle">
-                                <i class="ti ti-edit"></i>
-                            </button>
+                            <div class="action-btns">
+                                <button class="action-btn criteria" title="Kriterleri Düzenle" onclick="editCriteria({{ form.id }})">
+                                    <i class="ti ti-list-check"></i>
+                                </button>
+                                <button class="action-btn edit" title="Düzenle" onclick="editForm({{ form.id }})">
+                                    <i class="ti ti-edit"></i>
+                                </button>
+                                <button class="action-btn toggle" title="Durumu Değiştir" onclick="toggleFormStatus({{ form.id }})">
+                                    <i class="ti ti-toggle-{{ 'right' if form.is_active else 'left' }}"></i>
+                                </button>
+                                <button class="action-btn delete" title="Sil" onclick="deleteForm({{ form.id }})">
+                                    <i class="ti ti-trash"></i>
+                                </button>
+                            </div>
                         </td>
                     </tr>
-                    {% else %}
-                    <tr>
-                        <td colspan="7" class="text-muted">Henüz QA formu oluşturulmamış</td>
-                    </tr>
                     {% endfor %}
-                </tbody>
-            </table>
+                {% else %}
+                    <!-- Demo Forms -->
+                    <tr data-form-id="1">
+                        <td class="form-name">Standart Satış Değerlendirme</td>
+                        <td class="form-desc" data-tr="Outbound satış çağrıları için" data-de="Für Outbound-Verkaufsgespräche">Outbound satış çağrıları için</td>
+                        <td class="score-display">100</td>
+                        <td class="score-display">70%</td>
+                        <td><span class="criteria-badge"><i class="ti ti-list-check"></i> 8</span></td>
+                        <td><span class="status-badge active" data-tr="Aktif" data-de="Aktiv">Aktif</span></td>
+                        <td>
+                            <div class="action-btns">
+                                <button class="action-btn criteria" title="Kriterleri Düzenle" onclick="editCriteria(1)">
+                                    <i class="ti ti-list-check"></i>
+                                </button>
+                                <button class="action-btn edit" title="Düzenle" onclick="editForm(1)">
+                                    <i class="ti ti-edit"></i>
+                                </button>
+                                <button class="action-btn toggle" title="Durumu Değiştir" onclick="toggleFormStatus(1)">
+                                    <i class="ti ti-toggle-right"></i>
+                                </button>
+                                <button class="action-btn delete" title="Sil" onclick="deleteForm(1)">
+                                    <i class="ti ti-trash"></i>
+                                </button>
+                            </div>
+                        </td>
+                    </tr>
+                    <tr data-form-id="2">
+                        <td class="form-name">Müşteri Hizmetleri QA</td>
+                        <td class="form-desc" data-tr="İnbound destek çağrıları" data-de="Inbound-Support-Anrufe">İnbound destek çağrıları</td>
+                        <td class="score-display">100</td>
+                        <td class="score-display">75%</td>
+                        <td><span class="criteria-badge"><i class="ti ti-list-check"></i> 10</span></td>
+                        <td><span class="status-badge active" data-tr="Aktif" data-de="Aktiv">Aktif</span></td>
+                        <td>
+                            <div class="action-btns">
+                                <button class="action-btn criteria" title="Kriterleri Düzenle" onclick="editCriteria(2)">
+                                    <i class="ti ti-list-check"></i>
+                                </button>
+                                <button class="action-btn edit" title="Düzenle" onclick="editForm(2)">
+                                    <i class="ti ti-edit"></i>
+                                </button>
+                                <button class="action-btn toggle" title="Durumu Değiştir" onclick="toggleFormStatus(2)">
+                                    <i class="ti ti-toggle-right"></i>
+                                </button>
+                                <button class="action-btn delete" title="Sil" onclick="deleteForm(2)">
+                                    <i class="ti ti-trash"></i>
+                                </button>
+                            </div>
+                        </td>
+                    </tr>
+                    <tr data-form-id="3">
+                        <td class="form-name">Termin Doğrulama</td>
+                        <td class="form-desc" data-tr="Randevu onay kontrolü" data-de="Terminbestätigungsprüfung">Randevu onay kontrolü</td>
+                        <td class="score-display">50</td>
+                        <td class="score-display">80%</td>
+                        <td><span class="criteria-badge"><i class="ti ti-list-check"></i> 5</span></td>
+                        <td><span class="status-badge inactive" data-tr="Pasif" data-de="Inaktiv">Pasif</span></td>
+                        <td>
+                            <div class="action-btns">
+                                <button class="action-btn criteria" title="Kriterleri Düzenle" onclick="editCriteria(3)">
+                                    <i class="ti ti-list-check"></i>
+                                </button>
+                                <button class="action-btn edit" title="Düzenle" onclick="editForm(3)">
+                                    <i class="ti ti-edit"></i>
+                                </button>
+                                <button class="action-btn toggle" title="Durumu Değiştir" onclick="toggleFormStatus(3)">
+                                    <i class="ti ti-toggle-left"></i>
+                                </button>
+                                <button class="action-btn delete" title="Sil" onclick="deleteForm(3)">
+                                    <i class="ti ti-trash"></i>
+                                </button>
+                            </div>
+                        </td>
+                    </tr>
+                {% endif %}
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<!-- New/Edit Form Modal -->
+<div class="modal-overlay" id="formModal">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h3 class="modal-title">
+                <i class="ti ti-forms"></i>
+                <span id="modalTitle" data-tr="Yeni QA Formu" data-de="Neues QA-Formular">Yeni QA Formu</span>
+            </h3>
+            <button class="modal-close" onclick="closeFormModal()">&times;</button>
+        </div>
+        <div class="modal-body">
+            <form id="qaFormForm">
+                <input type="hidden" id="formId" value="">
+                
+                <div class="form-group">
+                    <label class="form-label" data-tr="Form Adı *" data-de="Formularname *">Form Adı *</label>
+                    <input type="text" class="form-input" id="formName" required 
+                           placeholder="Örn: Satış Değerlendirme Formu" 
+                           data-tr-placeholder="Örn: Satış Değerlendirme Formu" 
+                           data-de-placeholder="z.B. Verkaufsbewertungsformular">
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label" data-tr="Açıklama" data-de="Beschreibung">Açıklama</label>
+                    <textarea class="form-textarea" id="formDesc" 
+                              placeholder="Bu form hakkında kısa bir açıklama..."
+                              data-tr-placeholder="Bu form hakkında kısa bir açıklama..."
+                              data-de-placeholder="Kurze Beschreibung zu diesem Formular..."></textarea>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label class="form-label" data-tr="Maksimum Puan" data-de="Maximale Punktzahl">Maksimum Puan</label>
+                        <input type="number" class="form-input" id="maxScore" value="100" min="10" max="1000">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label" data-tr="Geçme Puanı (%)" data-de="Bestehensgrenze (%)">Geçme Puanı (%)</label>
+                        <input type="number" class="form-input" id="passingScore" value="70" min="1" max="100">
+                    </div>
+                </div>
+
+                <div class="criteria-section">
+                    <div class="criteria-header">
+                        <label class="form-label" style="margin-bottom: 0;" data-tr="Değerlendirme Kriterleri" data-de="Bewertungskriterien">Değerlendirme Kriterleri</label>
+                        <small class="text-muted" data-tr="Ağırlık toplamı 100 olmalı" data-de="Gewichtssumme muss 100 sein">Ağırlık toplamı 100 olmalı</small>
+                    </div>
+                    <div class="criteria-list" id="criteriaList">
+                        <div class="criteria-item">
+                            <i class="ti ti-grip-vertical" style="color: #ccc;"></i>
+                            <input type="text" placeholder="Selamlama ve Tanıtım" data-tr-placeholder="Selamlama ve Tanıtım" data-de-placeholder="Begrüßung und Vorstellung">
+                            <input type="number" class="criteria-weight" value="15" min="1" max="100">
+                            <button type="button" class="criteria-remove" onclick="removeCriteria(this)"><i class="ti ti-x"></i></button>
+                        </div>
+                        <div class="criteria-item">
+                            <i class="ti ti-grip-vertical" style="color: #ccc;"></i>
+                            <input type="text" placeholder="İhtiyaç Analizi" data-tr-placeholder="İhtiyaç Analizi" data-de-placeholder="Bedarfsanalyse">
+                            <input type="number" class="criteria-weight" value="20" min="1" max="100">
+                            <button type="button" class="criteria-remove" onclick="removeCriteria(this)"><i class="ti ti-x"></i></button>
+                        </div>
+                        <div class="criteria-item">
+                            <i class="ti ti-grip-vertical" style="color: #ccc;"></i>
+                            <input type="text" placeholder="Ürün/Hizmet Sunumu" data-tr-placeholder="Ürün/Hizmet Sunumu" data-de-placeholder="Produkt-/Servicepräsentation">
+                            <input type="number" class="criteria-weight" value="25" min="1" max="100">
+                            <button type="button" class="criteria-remove" onclick="removeCriteria(this)"><i class="ti ti-x"></i></button>
+                        </div>
+                        <div class="criteria-item">
+                            <i class="ti ti-grip-vertical" style="color: #ccc;"></i>
+                            <input type="text" placeholder="İtiraz Yönetimi" data-tr-placeholder="İtiraz Yönetimi" data-de-placeholder="Einwandbehandlung">
+                            <input type="number" class="criteria-weight" value="20" min="1" max="100">
+                            <button type="button" class="criteria-remove" onclick="removeCriteria(this)"><i class="ti ti-x"></i></button>
+                        </div>
+                        <div class="criteria-item">
+                            <i class="ti ti-grip-vertical" style="color: #ccc;"></i>
+                            <input type="text" placeholder="Kapanış ve Satış" data-tr-placeholder="Kapanış ve Satış" data-de-placeholder="Abschluss und Verkauf">
+                            <input type="number" class="criteria-weight" value="20" min="1" max="100">
+                            <button type="button" class="criteria-remove" onclick="removeCriteria(this)"><i class="ti ti-x"></i></button>
+                        </div>
+                    </div>
+                    <button type="button" class="add-criteria-btn" onclick="addCriteria()">
+                        <i class="ti ti-plus"></i>
+                        <span data-tr="Kriter Ekle" data-de="Kriterium hinzufügen">Kriter Ekle</span>
+                    </button>
+                </div>
+            </form>
+        </div>
+        <div class="modal-footer">
+            <button class="btn btn-secondary" onclick="closeFormModal()" data-tr="İptal" data-de="Abbrechen">İptal</button>
+            <button class="btn btn-primary" onclick="saveForm()">
+                <i class="ti ti-check"></i>
+                <span data-tr="Kaydet" data-de="Speichern">Kaydet</span>
+            </button>
         </div>
     </div>
 </div>
 {% endblock %}
 
+{% block extra_js %}
+<script>
+// Open New Form Modal
+function openNewFormModal() {
+    document.getElementById('formId').value = '';
+    document.getElementById('formName').value = '';
+    document.getElementById('formDesc').value = '';
+    document.getElementById('maxScore').value = '100';
+    document.getElementById('passingScore').value = '70';
+    
+    const modalTitle = document.getElementById('modalTitle');
+    modalTitle.setAttribute('data-tr', 'Yeni QA Formu');
+    modalTitle.setAttribute('data-de', 'Neues QA-Formular');
+    modalTitle.textContent = document.documentElement.lang === 'de' ? 'Neues QA-Formular' : 'Yeni QA Formu';
+    
+    document.getElementById('formModal').classList.add('show');
+}
 
+// Close Modal
+function closeFormModal() {
+    document.getElementById('formModal').classList.remove('show');
+}
 
+// Add Criteria
+function addCriteria() {
+    const list = document.getElementById('criteriaList');
+    const item = document.createElement('div');
+    item.className = 'criteria-item';
+    item.innerHTML = `
+        <i class="ti ti-grip-vertical" style="color: #ccc;"></i>
+        <input type="text" placeholder="${document.documentElement.lang === 'de' ? 'Neues Kriterium' : 'Yeni Kriter'}">
+        <input type="number" class="criteria-weight" value="10" min="1" max="100">
+        <button type="button" class="criteria-remove" onclick="removeCriteria(this)"><i class="ti ti-x"></i></button>
+    `;
+    list.appendChild(item);
+}
+
+// Remove Criteria
+function removeCriteria(btn) {
+    btn.closest('.criteria-item').remove();
+}
+
+// Save Form
+function saveForm() {
+    const name = document.getElementById('formName').value.trim();
+    if (!name) {
+        alert(document.documentElement.lang === 'de' ? 'Bitte geben Sie einen Formularnamen ein' : 'Lütfen form adı girin');
+        return;
+    }
+
+    // Collect criteria
+    const criteriaItems = document.querySelectorAll('.criteria-item');
+    const criteria = [];
+    let totalWeight = 0;
+
+    criteriaItems.forEach(item => {
+        const input = item.querySelector('input[type="text"]');
+        const weight = item.querySelector('.criteria-weight');
+        if (input.value.trim()) {
+            criteria.push({
+                name: input.value.trim(),
+                weight: parseInt(weight.value)
+            });
+            totalWeight += parseInt(weight.value);
+        }
+    });
+
+    if (totalWeight !== 100) {
+        alert(document.documentElement.lang === 'de' 
+            ? `Gewichtssumme muss 100 sein (aktuell: ${totalWeight})` 
+            : `Ağırlık toplamı 100 olmalı (şu an: ${totalWeight})`);
+        return;
+    }
+
+    // Simulate save
+    const msg = document.documentElement.lang === 'de' 
+        ? `Formular "${name}" wurde gespeichert!` 
+        : `"${name}" formu kaydedildi!`;
+    alert(msg);
+    closeFormModal();
+    
+    // TODO: Actual API call to save form
+}
+
+// Edit Form
+function editForm(id) {
+    const modalTitle = document.getElementById('modalTitle');
+    modalTitle.setAttribute('data-tr', 'Formu Düzenle');
+    modalTitle.setAttribute('data-de', 'Formular bearbeiten');
+    modalTitle.textContent = document.documentElement.lang === 'de' ? 'Formular bearbeiten' : 'Formu Düzenle';
+    
+    document.getElementById('formId').value = id;
+    
+    // Load form data (demo)
+    if (id === 1) {
+        document.getElementById('formName').value = 'Standart Satış Değerlendirme';
+        document.getElementById('formDesc').value = 'Outbound satış çağrıları için';
+        document.getElementById('maxScore').value = '100';
+        document.getElementById('passingScore').value = '70';
+    }
+    
+    document.getElementById('formModal').classList.add('show');
+}
+
+// Edit Criteria
+function editCriteria(id) {
+    editForm(id);
+}
+
+// Toggle Form Status
+function toggleFormStatus(id) {
+    const row = document.querySelector(`tr[data-form-id="${id}"]`);
+    const badge = row.querySelector('.status-badge');
+    const toggleBtn = row.querySelector('.action-btn.toggle i');
+    
+    if (badge.classList.contains('active')) {
+        badge.classList.remove('active');
+        badge.classList.add('inactive');
+        badge.textContent = document.documentElement.lang === 'de' ? 'Inaktiv' : 'Pasif';
+        toggleBtn.className = 'ti ti-toggle-left';
+    } else {
+        badge.classList.remove('inactive');
+        badge.classList.add('active');
+        badge.textContent = document.documentElement.lang === 'de' ? 'Aktiv' : 'Aktif';
+        toggleBtn.className = 'ti ti-toggle-right';
+    }
+    
+    const msg = document.documentElement.lang === 'de' ? 'Status geändert' : 'Durum değiştirildi';
+    showToast(msg, 'success');
+}
+
+// Delete Form
+function deleteForm(id) {
+    const msg = document.documentElement.lang === 'de' 
+        ? 'Dieses Formular wirklich löschen?' 
+        : 'Bu formu silmek istediğinize emin misiniz?';
+    
+    if (confirm(msg)) {
+        const row = document.querySelector(`tr[data-form-id="${id}"]`);
+        row.style.opacity = '0';
+        setTimeout(() => row.remove(), 300);
+        
+        const successMsg = document.documentElement.lang === 'de' ? 'Formular gelöscht' : 'Form silindi';
+        showToast(successMsg, 'success');
+    }
+}
+
+// Close modal on escape
+document.addEventListener('keydown', function(e) {
+    if (e.key === 'Escape') {
+        closeFormModal();
+    }
+});
+
+// Close modal on overlay click
+document.getElementById('formModal').addEventListener('click', function(e) {
+    if (e.target === this) {
+        closeFormModal();
+    }
+});
+</script>
+{% endblock %}
