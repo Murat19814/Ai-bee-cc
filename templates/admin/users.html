@@ -105,6 +105,10 @@
     background: linear-gradient(135deg, #43a047, #2e7d32);
 }
 
+.user-avatar.qc_listener {
+    background: linear-gradient(135deg, #00acc1, #00838f);
+}
+
 .user-name {
     font-weight: 600;
     color: #1a1a2e;
@@ -140,6 +144,11 @@
 
 .role-badge.agent {
     background: linear-gradient(135deg, #43a047, #2e7d32);
+    color: white;
+}
+
+.role-badge.qc_listener {
+    background: linear-gradient(135deg, #00acc1, #00838f);
     color: white;
 }
 
@@ -708,6 +717,7 @@
             <option value="super_admin">Super Admin</option>
             <option value="admin">Admin</option>
             <option value="supervisor">Supervisor</option>
+            <option value="qc_listener" data-tr="QC Dinleme" data-de="QC-Prüfer">QC Dinleme</option>
             <option value="agent">Agent</option>
         </select>
         <select id="statusFilter" onchange="filterUsers()">
@@ -844,6 +854,7 @@
                         <label data-tr="Rol" data-de="Rolle">Rol</label>
                         <select id="role" name="role" required>
                             <option value="agent">Agent</option>
+                            <option value="qc_listener" data-tr="QC Dinleme" data-de="QC-Prüfer">QC Dinleme</option>
                             <option value="supervisor">Supervisor</option>
                             <option value="admin">Admin</option>
                             <option value="super_admin">Super Admin</option>
