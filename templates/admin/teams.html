@@ -2,65 +2,772 @@
 
 {% block title %}Takım Yönetimi - AI BEE CC{% endblock %}
 
+{% block extra_css %}
+<style>
+.teams-page {
+    padding: 1.5rem;
+}
+
+.stats-row {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 1rem;
+    margin-bottom: 1.5rem;
+}
+
+.stat-card {
+    background: white;
+    border-radius: 12px;
+    padding: 1.25rem;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+}
+
+.stat-icon {
+    width: 50px;
+    height: 50px;
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.5rem;
+    color: white;
+}
+
+.stat-icon.blue { background: linear-gradient(135deg, #2196F3, #1976D2); }
+.stat-icon.green { background: linear-gradient(135deg, #4CAF50, #388E3C); }
+.stat-icon.orange { background: linear-gradient(135deg, #FF9800, #F57C00); }
+.stat-icon.purple { background: linear-gradient(135deg, #9C27B0, #7B1FA2); }
+
+.stat-value { font-size: 1.5rem; font-weight: 700; color: #1a1a2e; }
+.stat-label { font-size: 0.8rem; color: #888; }
+
+.filter-bar {
+    background: white;
+    border-radius: 12px;
+    padding: 1rem;
+    margin-bottom: 1.5rem;
+    display: flex;
+    gap: 1rem;
+    flex-wrap: wrap;
+    align-items: center;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+}
+
+.filter-bar input, .filter-bar select {
+    padding: 0.5rem 0.75rem;
+    border: 1px solid #e0e0e0;
+    border-radius: 8px;
+    font-size: 0.85rem;
+}
+
+.filter-bar input { min-width: 200px; }
+
+.teams-table-container {
+    background: white;
+    border-radius: 16px;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.06);
+    overflow: hidden;
+}
+
+.teams-table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.teams-table th {
+    background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+    color: white;
+    padding: 1rem;
+    text-align: left;
+    font-size: 0.75rem;
+    text-transform: uppercase;
+}
+
+.teams-table td {
+    padding: 1rem;
+    border-bottom: 1px solid #f0f0f0;
+    font-size: 0.9rem;
+}
+
+.teams-table tr:hover { background: #f8f9fa; }
+
+.team-info {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+}
+
+.team-avatar {
+    width: 40px;
+    height: 40px;
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-weight: 600;
+    font-size: 0.9rem;
+}
+
+.team-avatar.sales { background: linear-gradient(135deg, #4CAF50, #388E3C); }
+.team-avatar.support { background: linear-gradient(135deg, #2196F3, #1976D2); }
+.team-avatar.qc { background: linear-gradient(135deg, #9C27B0, #7B1FA2); }
+.team-avatar.tech { background: linear-gradient(135deg, #FF9800, #F57C00); }
+.team-avatar.admin { background: linear-gradient(135deg, #607D8B, #455A64); }
+
+.team-name { font-weight: 600; color: #1a1a2e; }
+.team-code { font-size: 0.75rem; color: #888; }
+
+.dept-badge {
+    padding: 0.25rem 0.75rem;
+    border-radius: 20px;
+    font-size: 0.75rem;
+    font-weight: 600;
+}
+
+.dept-badge.sales { background: #e8f5e9; color: #2e7d32; }
+.dept-badge.support { background: #e3f2fd; color: #1565c0; }
+.dept-badge.qc { background: #f3e5f5; color: #7b1fa2; }
+.dept-badge.tech { background: #fff3e0; color: #ef6c00; }
+.dept-badge.admin { background: #eceff1; color: #546e7a; }
+
+.status-badge {
+    padding: 0.25rem 0.75rem;
+    border-radius: 20px;
+    font-size: 0.75rem;
+    font-weight: 600;
+}
+
+.status-badge.active { background: #e8f5e9; color: #2e7d32; }
+.status-badge.inactive { background: #ffebee; color: #c62828; }
+
+.member-count {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.member-avatars {
+    display: flex;
+}
+
+.member-avatar {
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    background: #F5A623;
+    border: 2px solid white;
+    margin-left: -8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-size: 0.65rem;
+    font-weight: 600;
+}
+
+.member-avatar:first-child { margin-left: 0; }
+.member-avatar.more { background: #e0e0e0; color: #666; }
+
+.action-buttons {
+    display: flex;
+    gap: 0.5rem;
+}
+
+.action-btn {
+    width: 32px;
+    height: 32px;
+    border-radius: 8px;
+    border: none;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s;
+}
+
+.action-btn.members { background: #e3f2fd; color: #1976D2; }
+.action-btn.edit { background: #fff3e0; color: #ef6c00; }
+.action-btn.delete { background: #ffebee; color: #c62828; }
+
+.action-btn:hover { transform: translateY(-2px); box-shadow: 0 4px 8px rgba(0,0,0,0.1); }
+
+/* Modal */
+.modal-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.6);
+    backdrop-filter: blur(4px);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 1000;
+    opacity: 0;
+    visibility: hidden;
+    transition: all 0.3s;
+}
+
+.modal-overlay.show { opacity: 1; visibility: visible; }
+
+.modal-content {
+    background: white;
+    border-radius: 20px;
+    width: 100%;
+    max-width: 600px;
+    max-height: 90vh;
+    overflow: hidden;
+}
+
+.modal-content.large { max-width: 800px; }
+
+.modal-header {
+    padding: 1.5rem;
+    background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+    color: white;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.modal-header h3 {
+    margin: 0;
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+}
+
+.modal-header h3 i { color: #F5A623; }
+
+.modal-close {
+    background: rgba(255,255,255,0.1);
+    border: none;
+    color: white;
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    cursor: pointer;
+}
+
+.modal-body {
+    padding: 1.5rem;
+    max-height: 60vh;
+    overflow-y: auto;
+}
+
+.modal-footer {
+    padding: 1rem 1.5rem;
+    background: #f8f9fa;
+    display: flex;
+    gap: 1rem;
+    justify-content: flex-end;
+}
+
+.form-group { margin-bottom: 1rem; }
+.form-group label { display: block; margin-bottom: 0.5rem; font-weight: 500; color: #333; font-size: 0.85rem; }
+.form-group input, .form-group select, .form-group textarea {
+    width: 100%;
+    padding: 0.75rem;
+    border: 1px solid #e0e0e0;
+    border-radius: 8px;
+    font-size: 0.9rem;
+}
+
+.form-group input:focus, .form-group select:focus {
+    outline: none;
+    border-color: #F5A623;
+    box-shadow: 0 0 0 3px rgba(245, 166, 35, 0.1);
+}
+
+.form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
+
+.member-list {
+    border: 1px solid #e0e0e0;
+    border-radius: 8px;
+    max-height: 300px;
+    overflow-y: auto;
+}
+
+.member-item {
+    display: flex;
+    align-items: center;
+    padding: 0.75rem;
+    border-bottom: 1px solid #f0f0f0;
+    gap: 0.75rem;
+}
+
+.member-item:last-child { border-bottom: none; }
+
+.member-item-avatar {
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #F5A623, #e09800);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-weight: 600;
+    font-size: 0.8rem;
+}
+
+.member-item-info { flex: 1; }
+.member-item-name { font-weight: 600; font-size: 0.85rem; }
+.member-item-role { font-size: 0.75rem; color: #888; }
+
+.member-item-action {
+    padding: 0.25rem 0.5rem;
+    border-radius: 4px;
+    border: none;
+    cursor: pointer;
+    font-size: 0.75rem;
+}
+
+.member-item-action.remove { background: #ffebee; color: #c62828; }
+</style>
+{% endblock %}
+
 {% block content %}
-<div class="page-header">
-    <div>
-        <h1 class="page-title">Takım Yönetimi</h1>
-        <p class="page-subtitle">Takımları ve üyelerini yönetin</p>
+<div class="teams-page">
+    <div class="page-header">
+        <div>
+            <h1 class="page-title">
+                <i class="ti ti-users-group" style="color: #F5A623;"></i>
+                <span data-tr="Takım Yönetimi" data-de="Teamverwaltung">Takım Yönetimi</span>
+            </h1>
+            <p class="page-subtitle" data-tr="Takımları ve üyelerini yönetin" data-de="Teams und Mitglieder verwalten">Takımları ve üyelerini yönetin</p>
+        </div>
+        <button class="btn btn-primary" onclick="openNewTeamModal()">
+            <i class="ti ti-plus"></i>
+            <span data-tr="Yeni Takım" data-de="Neues Team">Yeni Takım</span>
+        </button>
     </div>
-    <button class="btn btn-primary">
-        <i class="ti ti-plus"></i> Yeni Takım
-    </button>
+
+    <!-- Stats -->
+    <div class="stats-row">
+        <div class="stat-card">
+            <div class="stat-icon blue"><i class="ti ti-users-group"></i></div>
+            <div>
+                <div class="stat-value">12</div>
+                <div class="stat-label" data-tr="Toplam Takım" data-de="Gesamt Teams">Toplam Takım</div>
+            </div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-icon green"><i class="ti ti-user-check"></i></div>
+            <div>
+                <div class="stat-value">48</div>
+                <div class="stat-label" data-tr="Toplam Üye" data-de="Gesamt Mitglieder">Toplam Üye</div>
+            </div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-icon orange"><i class="ti ti-star"></i></div>
+            <div>
+                <div class="stat-value">8</div>
+                <div class="stat-label" data-tr="Supervisor" data-de="Supervisoren">Supervisor</div>
+            </div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-icon purple"><i class="ti ti-check"></i></div>
+            <div>
+                <div class="stat-value">12</div>
+                <div class="stat-label" data-tr="Aktif Takım" data-de="Aktive Teams">Aktif Takım</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Filter -->
+    <div class="filter-bar">
+        <input type="text" id="searchInput" onkeyup="filterTeams()" 
+               data-tr-placeholder="Takım ara..." data-de-placeholder="Team suchen..." placeholder="Takım ara...">
+        <select id="deptFilter" onchange="filterTeams()">
+            <option value="" data-tr="Tüm Departmanlar" data-de="Alle Abteilungen">Tüm Departmanlar</option>
+            <option value="sales" data-tr="Satış" data-de="Vertrieb">Satış</option>
+            <option value="support" data-tr="Destek" data-de="Support">Destek</option>
+            <option value="qc" data-tr="Kalite Kontrol" data-de="Qualitätskontrolle">Kalite Kontrol</option>
+            <option value="tech" data-tr="Teknik" data-de="Technik">Teknik</option>
+            <option value="admin" data-tr="İdari" data-de="Verwaltung">İdari</option>
+        </select>
+        <select id="statusFilter" onchange="filterTeams()">
+            <option value="" data-tr="Tüm Durumlar" data-de="Alle Status">Tüm Durumlar</option>
+            <option value="active" data-tr="Aktif" data-de="Aktiv">Aktif</option>
+            <option value="inactive" data-tr="Pasif" data-de="Inaktiv">Pasif</option>
+        </select>
+        <button class="btn btn-secondary btn-sm" onclick="resetFilters()"><i class="ti ti-refresh"></i></button>
+    </div>
+
+    <!-- Teams Table -->
+    <div class="teams-table-container">
+        <table class="teams-table" id="teamsTable">
+            <thead>
+                <tr>
+                    <th data-tr="Takım" data-de="Team">Takım</th>
+                    <th data-tr="Departman" data-de="Abteilung">Departman</th>
+                    <th data-tr="Üyeler" data-de="Mitglieder">Üyeler</th>
+                    <th data-tr="Supervisor" data-de="Supervisor">Supervisor</th>
+                    <th data-tr="Durum" data-de="Status">Durum</th>
+                    <th data-tr="İşlemler" data-de="Aktionen">İşlemler</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr data-dept="sales" data-status="active" data-search="outbound satış team-a">
+                    <td>
+                        <div class="team-info">
+                            <div class="team-avatar sales">OB</div>
+                            <div>
+                                <div class="team-name">Outbound Satış</div>
+                                <div class="team-code">TEAM-A</div>
+                            </div>
+                        </div>
+                    </td>
+                    <td><span class="dept-badge sales" data-tr="Satış" data-de="Vertrieb">Satış</span></td>
+                    <td>
+                        <div class="member-count">
+                            <div class="member-avatars">
+                                <div class="member-avatar">AY</div>
+                                <div class="member-avatar">MK</div>
+                                <div class="member-avatar">ZD</div>
+                                <div class="member-avatar more">+3</div>
+                            </div>
+                            <span>6</span>
+                        </div>
+                    </td>
+                    <td>Ahmet Yılmaz</td>
+                    <td><span class="status-badge active" data-tr="Aktif" data-de="Aktiv">Aktif</span></td>
+                    <td>
+                        <div class="action-buttons">
+                            <button class="action-btn members" onclick="viewMembers(1, 'Outbound Satış')" title="Üyeler"><i class="ti ti-users"></i></button>
+                            <button class="action-btn edit" onclick="editTeam(1)" title="Düzenle"><i class="ti ti-edit"></i></button>
+                            <button class="action-btn delete" onclick="deleteTeam(1)" title="Sil"><i class="ti ti-trash"></i></button>
+                        </div>
+                    </td>
+                </tr>
+                <tr data-dept="sales" data-status="active" data-search="inbound satış team-b">
+                    <td>
+                        <div class="team-info">
+                            <div class="team-avatar sales">IB</div>
+                            <div>
+                                <div class="team-name">Inbound Satış</div>
+                                <div class="team-code">TEAM-B</div>
+                            </div>
+                        </div>
+                    </td>
+                    <td><span class="dept-badge sales">Satış</span></td>
+                    <td>
+                        <div class="member-count">
+                            <div class="member-avatars">
+                                <div class="member-avatar">EK</div>
+                                <div class="member-avatar">BT</div>
+                                <div class="member-avatar more">+2</div>
+                            </div>
+                            <span>4</span>
+                        </div>
+                    </td>
+                    <td>Elif Kara</td>
+                    <td><span class="status-badge active">Aktif</span></td>
+                    <td>
+                        <div class="action-buttons">
+                            <button class="action-btn members" onclick="viewMembers(2, 'Inbound Satış')"><i class="ti ti-users"></i></button>
+                            <button class="action-btn edit" onclick="editTeam(2)"><i class="ti ti-edit"></i></button>
+                            <button class="action-btn delete" onclick="deleteTeam(2)"><i class="ti ti-trash"></i></button>
+                        </div>
+                    </td>
+                </tr>
+                <tr data-dept="support" data-status="active" data-search="teknik destek team-c">
+                    <td>
+                        <div class="team-info">
+                            <div class="team-avatar support">TD</div>
+                            <div>
+                                <div class="team-name" data-tr="Teknik Destek" data-de="Technischer Support">Teknik Destek</div>
+                                <div class="team-code">TEAM-C</div>
+                            </div>
+                        </div>
+                    </td>
+                    <td><span class="dept-badge support" data-tr="Destek" data-de="Support">Destek</span></td>
+                    <td>
+                        <div class="member-count">
+                            <div class="member-avatars">
+                                <div class="member-avatar">CA</div>
+                                <div class="member-avatar">HÖ</div>
+                                <div class="member-avatar more">+3</div>
+                            </div>
+                            <span>5</span>
+                        </div>
+                    </td>
+                    <td>Can Arslan</td>
+                    <td><span class="status-badge active">Aktif</span></td>
+                    <td>
+                        <div class="action-buttons">
+                            <button class="action-btn members" onclick="viewMembers(3, 'Teknik Destek')"><i class="ti ti-users"></i></button>
+                            <button class="action-btn edit" onclick="editTeam(3)"><i class="ti ti-edit"></i></button>
+                            <button class="action-btn delete" onclick="deleteTeam(3)"><i class="ti ti-trash"></i></button>
+                        </div>
+                    </td>
+                </tr>
+                <tr data-dept="qc" data-status="active" data-search="qc dinleme team-d">
+                    <td>
+                        <div class="team-info">
+                            <div class="team-avatar qc">QC</div>
+                            <div>
+                                <div class="team-name" data-tr="QC Dinleme" data-de="QC-Prüfer">QC Dinleme</div>
+                                <div class="team-code">TEAM-D</div>
+                            </div>
+                        </div>
+                    </td>
+                    <td><span class="dept-badge qc" data-tr="Kalite Kontrol" data-de="Qualitätskontrolle">Kalite Kontrol</span></td>
+                    <td>
+                        <div class="member-count">
+                            <div class="member-avatars">
+                                <div class="member-avatar">ZD</div>
+                                <div class="member-avatar">AS</div>
+                                <div class="member-avatar more">+2</div>
+                            </div>
+                            <span>4</span>
+                        </div>
+                    </td>
+                    <td>Zeynep Demir</td>
+                    <td><span class="status-badge active">Aktif</span></td>
+                    <td>
+                        <div class="action-buttons">
+                            <button class="action-btn members" onclick="viewMembers(4, 'QC Dinleme')"><i class="ti ti-users"></i></button>
+                            <button class="action-btn edit" onclick="editTeam(4)"><i class="ti ti-edit"></i></button>
+                            <button class="action-btn delete" onclick="deleteTeam(4)"><i class="ti ti-trash"></i></button>
+                        </div>
+                    </td>
+                </tr>
+                <tr data-dept="sales" data-status="active" data-search="vip satış team-e">
+                    <td>
+                        <div class="team-info">
+                            <div class="team-avatar sales">VP</div>
+                            <div>
+                                <div class="team-name">VIP Satış</div>
+                                <div class="team-code">TEAM-E</div>
+                            </div>
+                        </div>
+                    </td>
+                    <td><span class="dept-badge sales">Satış</span></td>
+                    <td>
+                        <div class="member-count">
+                            <div class="member-avatars">
+                                <div class="member-avatar">SÖ</div>
+                                <div class="member-avatar">FK</div>
+                            </div>
+                            <span>3</span>
+                        </div>
+                    </td>
+                    <td>Selin Öztürk</td>
+                    <td><span class="status-badge active">Aktif</span></td>
+                    <td>
+                        <div class="action-buttons">
+                            <button class="action-btn members" onclick="viewMembers(5, 'VIP Satış')"><i class="ti ti-users"></i></button>
+                            <button class="action-btn edit" onclick="editTeam(5)"><i class="ti ti-edit"></i></button>
+                            <button class="action-btn delete" onclick="deleteTeam(5)"><i class="ti ti-trash"></i></button>
+                        </div>
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
 </div>
 
-<div class="card">
-    <div class="card-body">
-        <div class="table-wrapper">
-            <table class="table">
-                <thead>
-                    <tr>
-                        <th>Kod</th>
-                        <th>Ad</th>
-                        <th>Departman</th>
-                        <th>Üye Sayısı</th>
-                        <th>Supervisor</th>
-                        <th>Durum</th>
-                        <th>İşlemler</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {% for team in teams %}
-                    <tr>
-                        <td><code>{{ team.code or '-' }}</code></td>
-                        <td><strong>{{ team.name }}</strong></td>
-                        <td>{{ team.department.name if team.department else '-' }}</td>
-                        <td>{{ team.members.count() }}</td>
-                        <td>{{ team.supervisor.full_name if team.supervisor else '-' }}</td>
-                        <td>
-                            <span class="badge badge-{{ 'success' if team.is_active else 'warning' }}">
-                                {{ 'Aktif' if team.is_active else 'Pasif' }}
-                            </span>
-                        </td>
-                        <td>
-                            <button class="btn btn-sm btn-ghost" title="Üyeler">
-                                <i class="ti ti-users"></i>
-                            </button>
-                            <button class="btn btn-sm btn-ghost" title="Düzenle">
-                                <i class="ti ti-edit"></i>
-                            </button>
-                        </td>
-                    </tr>
-                    {% else %}
-                    <tr>
-                        <td colspan="7" class="text-muted">Henüz takım tanımlanmamış</td>
-                    </tr>
-                    {% endfor %}
-                </tbody>
-            </table>
+<!-- New/Edit Team Modal -->
+<div class="modal-overlay" id="teamModal">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h3><i class="ti ti-users-plus"></i> <span id="modalTitle" data-tr="Yeni Takım" data-de="Neues Team">Yeni Takım</span></h3>
+            <button class="modal-close" onclick="closeModal()"><i class="ti ti-x"></i></button>
+        </div>
+        <form id="teamForm" onsubmit="saveTeam(event)">
+            <div class="modal-body">
+                <input type="hidden" id="teamId">
+                <div class="form-row">
+                    <div class="form-group">
+                        <label data-tr="Takım Adı" data-de="Teamname">Takım Adı</label>
+                        <input type="text" id="teamName" required data-tr-placeholder="Örn: Outbound Satış" data-de-placeholder="z.B. Outbound Vertrieb">
+                    </div>
+                    <div class="form-group">
+                        <label data-tr="Kod" data-de="Code">Kod</label>
+                        <input type="text" id="teamCode" required data-tr-placeholder="Örn: TEAM-A" data-de-placeholder="z.B. TEAM-A" style="text-transform: uppercase;">
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label data-tr="Departman" data-de="Abteilung">Departman</label>
+                        <select id="teamDept" required>
+                            <option value="" data-tr="-- Seçiniz --" data-de="-- Auswählen --">-- Seçiniz --</option>
+                            <option value="sales" data-tr="Satış Departmanı" data-de="Vertriebsabteilung">Satış Departmanı</option>
+                            <option value="support" data-tr="Destek Departmanı" data-de="Support-Abteilung">Destek Departmanı</option>
+                            <option value="qc" data-tr="Kalite Kontrol" data-de="Qualitätskontrolle">Kalite Kontrol</option>
+                            <option value="tech" data-tr="Teknik Departman" data-de="Technische Abteilung">Teknik Departman</option>
+                            <option value="admin" data-tr="İdari İşler" data-de="Verwaltung">İdari İşler</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label data-tr="Supervisor" data-de="Supervisor">Supervisor</label>
+                        <select id="teamSupervisor">
+                            <option value="" data-tr="-- Seçiniz --" data-de="-- Auswählen --">-- Seçiniz --</option>
+                            <option value="1">Ahmet Yılmaz</option>
+                            <option value="2">Elif Kara</option>
+                            <option value="3">Can Arslan</option>
+                            <option value="4">Zeynep Demir</option>
+                            <option value="5">Selin Öztürk</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label data-tr="Açıklama" data-de="Beschreibung">Açıklama</label>
+                    <textarea id="teamDesc" rows="2" data-tr-placeholder="Takım açıklaması" data-de-placeholder="Teambeschreibung"></textarea>
+                </div>
+                <div class="form-group">
+                    <label data-tr="Durum" data-de="Status">Durum</label>
+                    <select id="teamStatus">
+                        <option value="1" data-tr="Aktif" data-de="Aktiv">Aktif</option>
+                        <option value="0" data-tr="Pasif" data-de="Inaktiv">Pasif</option>
+                    </select>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" onclick="closeModal()" data-tr="İptal" data-de="Abbrechen">İptal</button>
+                <button type="submit" class="btn btn-primary"><i class="ti ti-device-floppy"></i> <span data-tr="Kaydet" data-de="Speichern">Kaydet</span></button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Members Modal -->
+<div class="modal-overlay" id="membersModal">
+    <div class="modal-content large">
+        <div class="modal-header">
+            <h3><i class="ti ti-users"></i> <span id="membersModalTitle">Takım Üyeleri</span></h3>
+            <button class="modal-close" onclick="closeMembersModal()"><i class="ti ti-x"></i></button>
+        </div>
+        <div class="modal-body">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+                <span id="memberCount" style="color: #888;">0 üye</span>
+                <button class="btn btn-primary btn-sm" onclick="addMemberModal()"><i class="ti ti-user-plus"></i> <span data-tr="Üye Ekle" data-de="Mitglied hinzufügen">Üye Ekle</span></button>
+            </div>
+            <div class="member-list" id="memberList">
+                <!-- Members will be loaded here -->
+            </div>
+        </div>
+        <div class="modal-footer">
+            <button class="btn btn-secondary" onclick="closeMembersModal()" data-tr="Kapat" data-de="Schließen">Kapat</button>
         </div>
     </div>
 </div>
 {% endblock %}
 
+{% block extra_js %}
+<script>
+(function() {
+    'use strict';
 
+    function getCurrentLang() { return localStorage.getItem('selectedLang') || 'tr'; }
 
+    function showNotification(message, type) {
+        const toast = document.createElement('div');
+        toast.style.cssText = 'position:fixed;top:20px;right:20px;padding:15px 25px;border-radius:10px;color:white;font-weight:500;z-index:9999;box-shadow:0 4px 20px rgba(0,0,0,0.2);animation:slideIn 0.3s ease;';
+        toast.style.background = type === 'success' ? 'linear-gradient(135deg, #4CAF50, #45a049)' : type === 'error' ? 'linear-gradient(135deg, #f44336, #d32f2f)' : 'linear-gradient(135deg, #2196F3, #1976D2)';
+        toast.textContent = message;
+        document.body.appendChild(toast);
+        setTimeout(function() { toast.remove(); }, 3000);
+    }
+
+    const teamMembers = {
+        1: [{ name: 'Ahmet Yılmaz', role: 'Supervisor', initials: 'AY' }, { name: 'Mehmet Kaya', role: 'Agent', initials: 'MK' }, { name: 'Zeynep Demir', role: 'Agent', initials: 'ZD' }, { name: 'Ali Veli', role: 'Agent', initials: 'AV' }, { name: 'Fatma Şen', role: 'Agent', initials: 'FŞ' }, { name: 'Hasan Çelik', role: 'Agent', initials: 'HÇ' }],
+        2: [{ name: 'Elif Kara', role: 'Supervisor', initials: 'EK' }, { name: 'Burak Tekin', role: 'Agent', initials: 'BT' }, { name: 'Ayşe Yurt', role: 'Agent', initials: 'AY' }, { name: 'Kemal Öz', role: 'Agent', initials: 'KÖ' }],
+        3: [{ name: 'Can Arslan', role: 'Supervisor', initials: 'CA' }, { name: 'Hülya Özcan', role: 'Agent', initials: 'HÖ' }, { name: 'Serkan Ak', role: 'Agent', initials: 'SA' }, { name: 'Deniz Kır', role: 'Agent', initials: 'DK' }, { name: 'Ece Bal', role: 'Agent', initials: 'EB' }],
+        4: [{ name: 'Zeynep Demir', role: 'QC Supervisor', initials: 'ZD' }, { name: 'Alper Soy', role: 'QC Listener', initials: 'AS' }, { name: 'Berna Koç', role: 'QC Listener', initials: 'BK' }, { name: 'Cem Tan', role: 'QC Listener', initials: 'CT' }],
+        5: [{ name: 'Selin Öztürk', role: 'Supervisor', initials: 'SÖ' }, { name: 'Furkan Kurt', role: 'Agent', initials: 'FK' }, { name: 'Gizem Ay', role: 'Agent', initials: 'GA' }]
+    };
+
+    window.filterTeams = function() {
+        const search = document.getElementById('searchInput').value.toLowerCase();
+        const dept = document.getElementById('deptFilter').value;
+        const status = document.getElementById('statusFilter').value;
+
+        document.querySelectorAll('#teamsTable tbody tr').forEach(function(row) {
+            const matchSearch = !search || row.dataset.search.includes(search);
+            const matchDept = !dept || row.dataset.dept === dept;
+            const matchStatus = !status || row.dataset.status === status;
+            row.style.display = matchSearch && matchDept && matchStatus ? '' : 'none';
+        });
+    };
+
+    window.resetFilters = function() {
+        document.getElementById('searchInput').value = '';
+        document.getElementById('deptFilter').value = '';
+        document.getElementById('statusFilter').value = '';
+        filterTeams();
+    };
+
+    window.openNewTeamModal = function() {
+        document.getElementById('modalTitle').textContent = getCurrentLang() === 'de' ? 'Neues Team' : 'Yeni Takım';
+        document.getElementById('teamForm').reset();
+        document.getElementById('teamId').value = '';
+        document.getElementById('teamModal').classList.add('show');
+    };
+
+    window.editTeam = function(id) {
+        document.getElementById('modalTitle').textContent = getCurrentLang() === 'de' ? 'Team bearbeiten' : 'Takım Düzenle';
+        document.getElementById('teamId').value = id;
+        document.getElementById('teamModal').classList.add('show');
+        showNotification(getCurrentLang() === 'de' ? 'Team wird geladen...' : 'Takım yükleniyor...', 'info');
+    };
+
+    window.closeModal = function() { document.getElementById('teamModal').classList.remove('show'); };
+
+    window.saveTeam = function(event) {
+        event.preventDefault();
+        const name = document.getElementById('teamName').value;
+        showNotification(getCurrentLang() === 'de' ? '"' + name + '" erfolgreich gespeichert' : '"' + name + '" başarıyla kaydedildi', 'success');
+        closeModal();
+    };
+
+    window.deleteTeam = function(id) {
+        const msg = getCurrentLang() === 'de' ? 'Sind Sie sicher, dass Sie dieses Team löschen möchten?' : 'Bu takımı silmek istediğinize emin misiniz?';
+        if (confirm(msg)) {
+            showNotification(getCurrentLang() === 'de' ? 'Team gelöscht' : 'Takım silindi', 'success');
+        }
+    };
+
+    window.viewMembers = function(id, teamName) {
+        document.getElementById('membersModalTitle').textContent = teamName + (getCurrentLang() === 'de' ? ' - Mitglieder' : ' - Üyeleri');
+        const members = teamMembers[id] || [];
+        document.getElementById('memberCount').textContent = members.length + (getCurrentLang() === 'de' ? ' Mitglieder' : ' üye');
+
+        let html = '';
+        members.forEach(function(m, i) {
+            html += '<div class="member-item">';
+            html += '<div class="member-item-avatar">' + m.initials + '</div>';
+            html += '<div class="member-item-info"><div class="member-item-name">' + m.name + '</div><div class="member-item-role">' + m.role + '</div></div>';
+            html += '<button class="member-item-action remove" onclick="removeMember(' + id + ', ' + i + ')"><i class="ti ti-x"></i></button>';
+            html += '</div>';
+        });
+
+        document.getElementById('memberList').innerHTML = html || '<p style="text-align:center;color:#888;padding:2rem;">' + (getCurrentLang() === 'de' ? 'Keine Mitglieder' : 'Üye yok') + '</p>';
+        document.getElementById('membersModal').classList.add('show');
+    };
+
+    window.closeMembersModal = function() { document.getElementById('membersModal').classList.remove('show'); };
+
+    window.addMemberModal = function() {
+        showNotification(getCurrentLang() === 'de' ? 'Mitglied hinzufügen wird vorbereitet...' : 'Üye ekleme hazırlanıyor...', 'info');
+    };
+
+    window.removeMember = function(teamId, memberIndex) {
+        const msg = getCurrentLang() === 'de' ? 'Dieses Mitglied entfernen?' : 'Bu üyeyi kaldırmak istiyor musunuz?';
+        if (confirm(msg)) {
+            showNotification(getCurrentLang() === 'de' ? 'Mitglied entfernt' : 'Üye kaldırıldı', 'success');
+        }
+    };
+
+    const style = document.createElement('style');
+    style.textContent = '@keyframes slideIn{from{transform:translateX(100%);opacity:0}to{transform:translateX(0);opacity:1}}';
+    document.head.appendChild(style);
+
+    console.log('Teams page initialized');
+})();
+</script>
+{% endblock %}
