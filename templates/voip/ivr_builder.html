@@ -357,25 +357,25 @@
     <div class="ivr-components">
         <div class="panel-header">
             <i class="ti ti-components"></i>
-            Bileşenler
+            <span data-tr="Bileşenler" data-de="Komponenten">Bileşenler</span>
         </div>
         
         <!-- IVR List -->
         <div class="ivr-list">
-            <div class="ivr-list-item active">
-                <span><i class="ti ti-sitemap"></i> Ana Menü IVR</span>
+            <div class="ivr-list-item active" onclick="loadIVR('main')" data-ivr="main">
+                <span><i class="ti ti-sitemap"></i> <span data-tr="Ana Menü IVR" data-de="Hauptmenü IVR">Ana Menü IVR</span></span>
                 <i class="ti ti-chevron-right"></i>
             </div>
-            <div class="ivr-list-item">
-                <span><i class="ti ti-sitemap"></i> Satış IVR</span>
+            <div class="ivr-list-item" onclick="loadIVR('sales')" data-ivr="sales">
+                <span><i class="ti ti-sitemap"></i> <span data-tr="Satış IVR" data-de="Verkauf IVR">Satış IVR</span></span>
                 <i class="ti ti-chevron-right"></i>
             </div>
-            <div class="ivr-list-item">
-                <span><i class="ti ti-sitemap"></i> Destek IVR</span>
+            <div class="ivr-list-item" onclick="loadIVR('support')" data-ivr="support">
+                <span><i class="ti ti-sitemap"></i> <span data-tr="Destek IVR" data-de="Support IVR">Destek IVR</span></span>
                 <i class="ti ti-chevron-right"></i>
             </div>
-            <button class="btn btn-sm btn-primary" style="width: 100%;">
-                <i class="ti ti-plus"></i> Yeni IVR
+            <button class="btn btn-sm btn-primary" style="width: 100%;" onclick="createNewIVR()">
+                <i class="ti ti-plus"></i> <span data-tr="Yeni IVR" data-de="Neues IVR">Yeni IVR</span>
             </button>
         </div>
 
@@ -383,32 +383,32 @@
             <div class="component-item" draggable="true" data-type="play">
                 <div class="component-icon play"><i class="ti ti-player-play"></i></div>
                 <div class="component-info">
-                    <h4>Ses Çal</h4>
-                    <span>Karşılama / Bilgi</span>
+                    <h4 data-tr="Ses Çal" data-de="Audio abspielen">Ses Çal</h4>
+                    <span data-tr="Karşılama / Bilgi" data-de="Begrüßung / Info">Karşılama / Bilgi</span>
                 </div>
             </div>
 
             <div class="component-item" draggable="true" data-type="menu">
                 <div class="component-icon menu"><i class="ti ti-list-numbers"></i></div>
                 <div class="component-info">
-                    <h4>Menü</h4>
-                    <span>Tuş seçenekleri</span>
+                    <h4 data-tr="Menü" data-de="Menü">Menü</h4>
+                    <span data-tr="Tuş seçenekleri" data-de="Tastenoptionen">Tuş seçenekleri</span>
                 </div>
             </div>
 
             <div class="component-item" draggable="true" data-type="queue">
                 <div class="component-icon queue"><i class="ti ti-users-group"></i></div>
                 <div class="component-info">
-                    <h4>Kuyruğa Aktar</h4>
-                    <span>Agent'a yönlendir</span>
+                    <h4 data-tr="Kuyruğa Aktar" data-de="An Warteschlange">Kuyruğa Aktar</h4>
+                    <span data-tr="Agent'a yönlendir" data-de="An Agent weiterleiten">Agent'a yönlendir</span>
                 </div>
             </div>
 
             <div class="component-item" draggable="true" data-type="time">
                 <div class="component-icon time"><i class="ti ti-clock-hour-4"></i></div>
                 <div class="component-info">
-                    <h4>Saat Kontrolü</h4>
-                    <span>Mesai saatleri</span>
+                    <h4 data-tr="Saat Kontrolü" data-de="Zeitkontrolle">Saat Kontrolü</h4>
+                    <span data-tr="Mesai saatleri" data-de="Geschäftszeiten">Mesai saatleri</span>
                 </div>
             </div>
 
@@ -416,31 +416,31 @@
                 <div class="component-icon transfer"><i class="ti ti-phone-outgoing"></i></div>
                 <div class="component-info">
                     <h4>Transfer</h4>
-                    <span>Extension / Harici</span>
+                    <span data-tr="Extension / Harici" data-de="Durchwahl / Extern">Extension / Harici</span>
                 </div>
             </div>
 
             <div class="component-item" draggable="true" data-type="voicemail">
                 <div class="component-icon voicemail"><i class="ti ti-mailbox"></i></div>
                 <div class="component-info">
-                    <h4>Sesli Mesaj</h4>
-                    <span>Voicemail bırak</span>
+                    <h4 data-tr="Sesli Mesaj" data-de="Voicemail">Sesli Mesaj</h4>
+                    <span data-tr="Voicemail bırak" data-de="Nachricht hinterlassen">Voicemail bırak</span>
                 </div>
             </div>
 
             <div class="component-item" draggable="true" data-type="condition">
                 <div class="component-icon condition"><i class="ti ti-git-branch"></i></div>
                 <div class="component-info">
-                    <h4>Koşul</h4>
-                    <span>If/Else dallanma</span>
+                    <h4 data-tr="Koşul" data-de="Bedingung">Koşul</h4>
+                    <span data-tr="If/Else dallanma" data-de="If/Else Verzweigung">If/Else dallanma</span>
                 </div>
             </div>
 
-            <div class="component-item" draggable="true" data-type="callback">
-                <div class="component-icon callback"><i class="ti ti-phone-call"></i></div>
+            <div class="component-item" draggable="true" data-type="hangup">
+                <div class="component-icon" style="background: linear-gradient(135deg, #f44336, #d32f2f);"><i class="ti ti-phone-off"></i></div>
                 <div class="component-info">
-                    <h4>Geri Arama</h4>
-                    <span>Callback kaydı</span>
+                    <h4 data-tr="Çağrı Kapat" data-de="Auflegen">Çağrı Kapat</h4>
+                    <span data-tr="Çağrıyı sonlandır" data-de="Anruf beenden">Çağrıyı sonlandır</span>
                 </div>
             </div>
         </div>
@@ -450,24 +450,24 @@
     <div class="ivr-canvas">
         <div class="canvas-toolbar">
             <div>
-                <strong>Ana Menü IVR</strong>
-                <span style="color: #888; margin-left: 0.5rem;">Son kayıt: 2 saat önce</span>
+                <strong id="currentIVRName" data-tr="Ana Menü IVR" data-de="Hauptmenü IVR">Ana Menü IVR</strong>
+                <span style="color: #888; margin-left: 0.5rem;" id="lastSaved" data-tr="Son kayıt: 2 saat önce" data-de="Zuletzt gespeichert: vor 2 Stunden">Son kayıt: 2 saat önce</span>
             </div>
             <div class="canvas-actions">
-                <button class="btn btn-sm btn-secondary">
+                <button class="btn btn-sm btn-secondary" onclick="zoomIn()" title="Zoom In">
                     <i class="ti ti-zoom-in"></i>
                 </button>
-                <button class="btn btn-sm btn-secondary">
+                <button class="btn btn-sm btn-secondary" onclick="zoomOut()" title="Zoom Out">
                     <i class="ti ti-zoom-out"></i>
                 </button>
-                <button class="btn btn-sm btn-secondary">
+                <button class="btn btn-sm btn-secondary" onclick="fitToScreen()" title="Fit to Screen">
                     <i class="ti ti-arrows-maximize"></i>
                 </button>
-                <button class="btn btn-sm btn-info">
-                    <i class="ti ti-player-play"></i> Test Et
+                <button class="btn btn-sm btn-info" onclick="testIVR()">
+                    <i class="ti ti-player-play"></i> <span data-tr="Test Et" data-de="Testen">Test Et</span>
                 </button>
-                <button class="btn btn-sm btn-primary">
-                    <i class="ti ti-device-floppy"></i> Kaydet
+                <button class="btn btn-sm btn-primary" onclick="saveIVR()">
+                    <i class="ti ti-device-floppy"></i> <span data-tr="Kaydet" data-de="Speichern">Kaydet</span>
                 </button>
             </div>
         </div>
@@ -557,98 +557,182 @@
     <div class="ivr-properties">
         <div class="panel-header">
             <i class="ti ti-settings"></i>
-            Özellikler
+            <span data-tr="Özellikler" data-de="Eigenschaften">Özellikler</span>
         </div>
-        <div class="properties-content">
+        <div class="properties-content" id="propertiesContent">
             <div class="property-group">
-                <div class="property-group-title">Seçili Düğüm: Ana Menü</div>
+                <div class="property-group-title"><span data-tr="Seçili Düğüm" data-de="Ausgewählter Knoten">Seçili Düğüm</span>: <span id="selectedNodeName">Ana Menü</span></div>
                 
                 <div class="property-row">
-                    <label>Düğüm Adı</label>
-                    <input type="text" value="Ana Menü">
+                    <label data-tr="Düğüm Adı" data-de="Knotenname">Düğüm Adı</label>
+                    <input type="text" id="nodeName" value="Ana Menü" onchange="updateNodeProperty('name', this.value)">
                 </div>
                 
                 <div class="property-row">
-                    <label>Timeout (sn)</label>
-                    <input type="number" value="10">
+                    <label>Timeout (<span data-tr="sn" data-de="Sek">sn</span>)</label>
+                    <input type="number" id="nodeTimeout" value="10" onchange="updateNodeProperty('timeout', this.value)">
                 </div>
                 
                 <div class="property-row">
-                    <label>Max Tekrar</label>
-                    <input type="number" value="3">
+                    <label data-tr="Max Tekrar" data-de="Max Wiederholungen">Max Tekrar</label>
+                    <input type="number" id="nodeMaxRetry" value="3" onchange="updateNodeProperty('maxRetry', this.value)">
                 </div>
             </div>
 
             <div class="property-group">
-                <div class="property-group-title">Ses Dosyası</div>
+                <div class="property-group-title" data-tr="Ses Dosyası" data-de="Audiodatei">Ses Dosyası</div>
                 
-                <div class="audio-upload">
+                <div class="audio-upload" onclick="uploadAudio()">
                     <i class="ti ti-music"></i>
-                    <p>Ses dosyası yükleyin</p>
+                    <p data-tr="Ses dosyası yükleyin" data-de="Audiodatei hochladen">Ses dosyası yükleyin</p>
                     <small>WAV, MP3 - Max 5MB</small>
                 </div>
+                <input type="file" id="audioFileInput" accept=".wav,.mp3" style="display:none" onchange="handleAudioUpload(this)">
                 
-                <div class="audio-preview">
-                    <button class="btn btn-sm btn-secondary">
+                <div class="audio-preview" id="audioPreview">
+                    <button class="btn btn-sm btn-secondary" onclick="playAudio()">
                         <i class="ti ti-player-play"></i>
                     </button>
-                    <span style="flex: 1; font-size: 0.8rem;">menu_karsilama.wav</span>
-                    <i class="ti ti-x" style="color: #f44336; cursor: pointer;"></i>
+                    <span style="flex: 1; font-size: 0.8rem;" id="audioFileName">menu_karsilama.wav</span>
+                    <i class="ti ti-x" style="color: #f44336; cursor: pointer;" onclick="removeAudio()"></i>
                 </div>
             </div>
 
-            <div class="property-group">
-                <div class="property-group-title">Menü Seçenekleri</div>
+            <div class="property-group" id="menuOptionsGroup">
+                <div class="property-group-title" data-tr="Menü Seçenekleri" data-de="Menüoptionen">Menü Seçenekleri</div>
                 
                 <div class="property-row">
-                    <label>Tuş 1 - Hedef</label>
-                    <select>
-                        <option>Satış Kuyruğu</option>
-                        <option>IVR: Satış Alt Menü</option>
+                    <label><span data-tr="Tuş" data-de="Taste">Tuş</span> 1 - <span data-tr="Hedef" data-de="Ziel">Hedef</span></label>
+                    <select id="key1Target" onchange="updateMenuOption(1, this.value)">
+                        <option value="sales_queue" data-tr="Satış Kuyruğu" data-de="Verkaufswarteschlange">Satış Kuyruğu</option>
+                        <option value="sales_ivr">IVR: Satış Alt Menü</option>
                     </select>
                 </div>
                 
                 <div class="property-row">
-                    <label>Tuş 2 - Hedef</label>
-                    <select>
-                        <option>Destek Kuyruğu</option>
-                        <option>IVR: Destek Alt Menü</option>
+                    <label><span data-tr="Tuş" data-de="Taste">Tuş</span> 2 - <span data-tr="Hedef" data-de="Ziel">Hedef</span></label>
+                    <select id="key2Target" onchange="updateMenuOption(2, this.value)">
+                        <option value="support_queue" data-tr="Destek Kuyruğu" data-de="Support-Warteschlange">Destek Kuyruğu</option>
+                        <option value="support_ivr">IVR: Destek Alt Menü</option>
                     </select>
                 </div>
                 
                 <div class="property-row">
-                    <label>Tuş 0 - Hedef</label>
-                    <select>
-                        <option>Operatör Kuyruğu</option>
-                        <option>Extension: 100</option>
+                    <label><span data-tr="Tuş" data-de="Taste">Tuş</span> 0 - <span data-tr="Hedef" data-de="Ziel">Hedef</span></label>
+                    <select id="key0Target" onchange="updateMenuOption(0, this.value)">
+                        <option value="operator_queue" data-tr="Operatör Kuyruğu" data-de="Operator-Warteschlange">Operatör Kuyruğu</option>
+                        <option value="ext_100">Extension: 100</option>
                     </select>
                 </div>
                 
-                <button class="btn btn-sm btn-secondary" style="width: 100%; margin-top: 0.5rem;">
-                    <i class="ti ti-plus"></i> Tuş Ekle
+                <button class="btn btn-sm btn-secondary" style="width: 100%; margin-top: 0.5rem;" onclick="addMenuKey()">
+                    <i class="ti ti-plus"></i> <span data-tr="Tuş Ekle" data-de="Taste hinzufügen">Tuş Ekle</span>
                 </button>
             </div>
 
             <div class="property-group">
-                <div class="property-group-title">Geçersiz Giriş</div>
+                <div class="property-group-title" data-tr="Geçersiz Giriş" data-de="Ungültige Eingabe">Geçersiz Giriş</div>
                 
                 <div class="property-row">
-                    <label>Geçersiz Giriş Mesajı</label>
-                    <select>
-                        <option>Varsayılan</option>
-                        <option>Özel ses dosyası</option>
+                    <label data-tr="Geçersiz Giriş Mesajı" data-de="Ungültige Eingabe Nachricht">Geçersiz Giriş Mesajı</label>
+                    <select id="invalidInputMsg">
+                        <option value="default" data-tr="Varsayılan" data-de="Standard">Varsayılan</option>
+                        <option value="custom" data-tr="Özel ses dosyası" data-de="Benutzerdefinierte Audiodatei">Özel ses dosyası</option>
                     </select>
                 </div>
                 
                 <div class="property-row">
-                    <label>Timeout Sonrası</label>
-                    <select>
-                        <option>Menüyü Tekrarla</option>
-                        <option>Operatöre Aktar</option>
-                        <option>Çağrıyı Kapat</option>
+                    <label data-tr="Timeout Sonrası" data-de="Nach Timeout">Timeout Sonrası</label>
+                    <select id="timeoutAction">
+                        <option value="repeat" data-tr="Menüyü Tekrarla" data-de="Menü wiederholen">Menüyü Tekrarla</option>
+                        <option value="operator" data-tr="Operatöre Aktar" data-de="An Operator weiterleiten">Operatöre Aktar</option>
+                        <option value="hangup" data-tr="Çağrıyı Kapat" data-de="Auflegen">Çağrıyı Kapat</option>
                     </select>
                 </div>
             </div>
+            
+            <div class="property-group">
+                <button class="btn btn-danger btn-sm" style="width: 100%;" onclick="deleteSelectedNode()">
+                    <i class="ti ti-trash"></i> <span data-tr="Düğümü Sil" data-de="Knoten löschen">Düğümü Sil</span>
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- New IVR Modal -->
+<div class="modal-overlay" id="newIVRModal">
+    <div class="modal-content" style="max-width: 500px;">
+        <div class="modal-header">
+            <h3><i class="ti ti-sitemap"></i> <span data-tr="Yeni IVR Oluştur" data-de="Neues IVR erstellen">Yeni IVR Oluştur</span></h3>
+            <button class="modal-close" onclick="closeNewIVRModal()">
+                <i class="ti ti-x"></i>
+            </button>
+        </div>
+        <div class="modal-body">
+            <div class="form-group">
+                <label data-tr="IVR Adı" data-de="IVR Name">IVR Adı</label>
+                <input type="text" class="form-control" id="newIVRName" placeholder="Örn: Satış Menüsü">
+            </div>
+            <div class="form-group">
+                <label data-tr="Açıklama" data-de="Beschreibung">Açıklama</label>
+                <textarea class="form-control" id="newIVRDesc" rows="3"></textarea>
+            </div>
+            <div class="form-group">
+                <label data-tr="Şablon" data-de="Vorlage">Şablon</label>
+                <select class="form-control" id="newIVRTemplate">
+                    <option value="blank" data-tr="Boş" data-de="Leer">Boş</option>
+                    <option value="basic" data-tr="Temel Menü" data-de="Basismenü">Temel Menü</option>
+                    <option value="sales" data-tr="Satış IVR" data-de="Verkauf IVR">Satış IVR</option>
+                    <option value="support" data-tr="Destek IVR" data-de="Support IVR">Destek IVR</option>
+                </select>
+            </div>
+        </div>
+        <div class="modal-footer">
+            <button class="btn btn-secondary" onclick="closeNewIVRModal()" data-tr="İptal" data-de="Abbrechen">İptal</button>
+            <button class="btn btn-primary" onclick="createIVR()">
+                <i class="ti ti-plus"></i> <span data-tr="Oluştur" data-de="Erstellen">Oluştur</span>
+            </button>
+        </div>
+    </div>
+</div>
+
+<!-- Test IVR Modal -->
+<div class="modal-overlay" id="testIVRModal">
+    <div class="modal-content" style="max-width: 400px;">
+        <div class="modal-header">
+            <h3><i class="ti ti-phone"></i> <span data-tr="IVR Test" data-de="IVR-Test">IVR Test</span></h3>
+            <button class="modal-close" onclick="closeTestModal()">
+                <i class="ti ti-x"></i>
+            </button>
+        </div>
+        <div class="modal-body" style="text-align: center; padding: 2rem;">
+            <div id="testStatus">
+                <i class="ti ti-phone-calling" style="font-size: 4rem; color: #4CAF50; animation: pulse 1s infinite;"></i>
+                <h3 style="margin: 1rem 0;" data-tr="Test çağrısı yapılıyor..." data-de="Testanruf wird durchgeführt...">Test çağrısı yapılıyor...</h3>
+                <p style="color: #888;" data-tr="IVR akışı simüle ediliyor" data-de="IVR-Ablauf wird simuliert">IVR akışı simüle ediliyor</p>
+            </div>
+            <div id="testKeypad" style="margin-top: 1.5rem;">
+                <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 0.5rem; max-width: 200px; margin: 0 auto;">
+                    <button class="btn btn-secondary" onclick="pressKey(1)">1</button>
+                    <button class="btn btn-secondary" onclick="pressKey(2)">2</button>
+                    <button class="btn btn-secondary" onclick="pressKey(3)">3</button>
+                    <button class="btn btn-secondary" onclick="pressKey(4)">4</button>
+                    <button class="btn btn-secondary" onclick="pressKey(5)">5</button>
+                    <button class="btn btn-secondary" onclick="pressKey(6)">6</button>
+                    <button class="btn btn-secondary" onclick="pressKey(7)">7</button>
+                    <button class="btn btn-secondary" onclick="pressKey(8)">8</button>
+                    <button class="btn btn-secondary" onclick="pressKey(9)">9</button>
+                    <button class="btn btn-secondary" onclick="pressKey('*')">*</button>
+                    <button class="btn btn-secondary" onclick="pressKey(0)">0</button>
+                    <button class="btn btn-secondary" onclick="pressKey('#')">#</button>
+                </div>
+            </div>
+        </div>
+        <div class="modal-footer">
+            <button class="btn btn-danger" onclick="endTestCall()">
+                <i class="ti ti-phone-off"></i> <span data-tr="Çağrıyı Bitir" data-de="Anruf beenden">Çağrıyı Bitir</span>
+            </button>
         </div>
     </div>
 </div>
@@ -656,108 +740,338 @@
 
 {% block extra_js %}
 <script>
-// Drag & Drop functionality
-document.querySelectorAll('.component-item').forEach(item => {
-    item.addEventListener('dragstart', function(e) {
-        e.dataTransfer.setData('type', this.dataset.type);
-    });
-});
-
-const canvas = document.getElementById('ivrCanvas');
-
-canvas.addEventListener('dragover', function(e) {
-    e.preventDefault();
-});
-
-canvas.addEventListener('drop', function(e) {
-    e.preventDefault();
-    const type = e.dataTransfer.getData('type');
-    const rect = canvas.getBoundingClientRect();
-    const x = e.clientX - rect.left;
-    const y = e.clientY - rect.top;
+(function() {
+    'use strict';
     
-    createNode(type, x, y);
-});
-
-function createNode(type, x, y) {
-    const node = document.createElement('div');
-    node.className = 'ivr-node';
-    node.style.left = x + 'px';
-    node.style.top = y + 'px';
+    let selectedNode = null;
+    let nodeCounter = 4;
+    let zoomLevel = 1;
     
-    const titles = {
-        'play': 'Ses Çal',
-        'menu': 'Menü',
-        'queue': 'Kuyruk',
-        'time': 'Saat Kontrolü',
-        'transfer': 'Transfer',
-        'voicemail': 'Sesli Mesaj',
-        'condition': 'Koşul',
-        'callback': 'Geri Arama'
+    // Language helper
+    function getCurrentLang() {
+        return localStorage.getItem('selectedLang') || 'tr';
+    }
+    
+    const translations = {
+        tr: {
+            saved: 'IVR başarıyla kaydedildi',
+            deleted: 'Düğüm silindi',
+            created: 'Yeni IVR oluşturuldu',
+            testStarted: 'Test çağrısı başlatıldı',
+            testEnded: 'Test çağrısı sonlandırıldı',
+            keyPressed: 'Tuş basıldı:',
+            configure: 'Yapılandır...',
+            nodeTypes: {
+                play: 'Ses Çal',
+                menu: 'Menü',
+                queue: 'Kuyruk',
+                time: 'Saat Kontrolü',
+                transfer: 'Transfer',
+                voicemail: 'Sesli Mesaj',
+                condition: 'Koşul',
+                hangup: 'Çağrı Kapat'
+            }
+        },
+        de: {
+            saved: 'IVR erfolgreich gespeichert',
+            deleted: 'Knoten gelöscht',
+            created: 'Neues IVR erstellt',
+            testStarted: 'Testanruf gestartet',
+            testEnded: 'Testanruf beendet',
+            keyPressed: 'Taste gedrückt:',
+            configure: 'Konfigurieren...',
+            nodeTypes: {
+                play: 'Audio abspielen',
+                menu: 'Menü',
+                queue: 'Warteschlange',
+                time: 'Zeitkontrolle',
+                transfer: 'Transfer',
+                voicemail: 'Voicemail',
+                condition: 'Bedingung',
+                hangup: 'Auflegen'
+            }
+        }
     };
     
-    const headerClass = type === 'queue' ? 'queue' : 
-                        type === 'menu' ? 'menu' : 
-                        type === 'time' ? 'time' : 'start';
-    
-    node.innerHTML = `
-        <div class="node-header ${headerClass}">
-            <i class="ti ti-${type === 'play' ? 'player-play' : type === 'menu' ? 'list-numbers' : 'sitemap'}"></i>
-            ${titles[type] || 'Düğüm'}
-        </div>
-        <div class="node-body">
-            <div class="node-option">
-                <span>Yapılandır...</span>
-            </div>
-        </div>
-        <div class="node-connector" style="top: 50%;"></div>
-    `;
-    
-    canvas.appendChild(node);
-    makeDraggable(node);
-}
+    function t(key) {
+        const lang = getCurrentLang();
+        const keys = key.split('.');
+        let result = translations[lang];
+        for (const k of keys) {
+            result = result ? result[k] : null;
+        }
+        return result || translations['tr'][key] || key;
+    }
 
-// Make nodes draggable
-function makeDraggable(element) {
-    let pos1 = 0, pos2 = 0, pos3 = 0, pos4 = 0;
-    
-    element.querySelector('.node-header').onmousedown = dragMouseDown;
-    
-    function dragMouseDown(e) {
-        e.preventDefault();
-        pos3 = e.clientX;
-        pos4 = e.clientY;
-        document.onmouseup = closeDragElement;
-        document.onmousemove = elementDrag;
-        element.classList.add('selected');
+    // Notification
+    function showNotification(message, type) {
+        const toast = document.createElement('div');
+        toast.style.cssText = 'position:fixed;top:20px;right:20px;padding:15px 25px;border-radius:10px;color:white;font-weight:500;z-index:9999;box-shadow:0 4px 20px rgba(0,0,0,0.2);animation:slideIn 0.3s ease;';
+        toast.style.background = type === 'success' ? 'linear-gradient(135deg, #4CAF50, #45a049)' : 
+                                  type === 'error' ? 'linear-gradient(135deg, #f44336, #d32f2f)' : 
+                                  'linear-gradient(135deg, #2196F3, #1976D2)';
+        toast.textContent = message;
+        document.body.appendChild(toast);
+        setTimeout(() => { toast.remove(); }, 3000);
     }
-    
-    function elementDrag(e) {
-        e.preventDefault();
-        pos1 = pos3 - e.clientX;
-        pos2 = pos4 - e.clientY;
-        pos3 = e.clientX;
-        pos4 = e.clientY;
-        element.style.top = (element.offsetTop - pos2) + "px";
-        element.style.left = (element.offsetLeft - pos1) + "px";
-    }
-    
-    function closeDragElement() {
-        document.onmouseup = null;
-        document.onmousemove = null;
-    }
-}
 
-// Initialize existing nodes
-document.querySelectorAll('.ivr-node').forEach(node => {
-    makeDraggable(node);
-    node.addEventListener('click', function() {
-        document.querySelectorAll('.ivr-node').forEach(n => n.classList.remove('selected'));
-        this.classList.add('selected');
+    // Drag & Drop functionality
+    document.querySelectorAll('.component-item').forEach(function(item) {
+        item.addEventListener('dragstart', function(e) {
+            e.dataTransfer.setData('type', this.dataset.type);
+        });
     });
-});
+
+    const canvas = document.getElementById('ivrCanvas');
+
+    canvas.addEventListener('dragover', function(e) {
+        e.preventDefault();
+    });
+
+    canvas.addEventListener('drop', function(e) {
+        e.preventDefault();
+        const type = e.dataTransfer.getData('type');
+        const rect = canvas.getBoundingClientRect();
+        const x = (e.clientX - rect.left) / zoomLevel;
+        const y = (e.clientY - rect.top) / zoomLevel;
+        createNode(type, x, y);
+    });
+
+    function createNode(type, x, y) {
+        const node = document.createElement('div');
+        node.className = 'ivr-node';
+        node.style.left = x + 'px';
+        node.style.top = y + 'px';
+        node.dataset.nodeId = 'node_' + (++nodeCounter);
+        node.dataset.type = type;
+        
+        const lang = getCurrentLang();
+        const title = translations[lang].nodeTypes[type] || type;
+        
+        const icons = {
+            play: 'player-play',
+            menu: 'list-numbers',
+            queue: 'users-group',
+            time: 'clock-hour-4',
+            transfer: 'phone-outgoing',
+            voicemail: 'mailbox',
+            condition: 'git-branch',
+            hangup: 'phone-off'
+        };
+        
+        const headerClass = type === 'queue' ? 'queue' : 
+                            type === 'menu' ? 'menu' : 
+                            type === 'time' ? 'time' : 
+                            type === 'hangup' ? 'end' : 'start';
+        
+        node.innerHTML = '<div class="node-header ' + headerClass + '">' +
+            '<i class="ti ti-' + (icons[type] || 'sitemap') + '"></i> ' + title +
+            '</div>' +
+            '<div class="node-body">' +
+            '<div class="node-option"><span>' + translations[lang].configure + '</span></div>' +
+            '</div>' +
+            '<div class="node-connector" style="top: 50%;"></div>';
+        
+        canvas.appendChild(node);
+        makeDraggable(node);
+        selectNode(node);
+    }
+
+    function makeDraggable(element) {
+        let pos1 = 0, pos2 = 0, pos3 = 0, pos4 = 0;
+        const header = element.querySelector('.node-header');
+        if (header) header.onmousedown = dragMouseDown;
+        
+        function dragMouseDown(e) {
+            e.preventDefault();
+            pos3 = e.clientX;
+            pos4 = e.clientY;
+            document.onmouseup = closeDragElement;
+            document.onmousemove = elementDrag;
+            selectNode(element);
+        }
+        
+        function elementDrag(e) {
+            e.preventDefault();
+            pos1 = pos3 - e.clientX;
+            pos2 = pos4 - e.clientY;
+            pos3 = e.clientX;
+            pos4 = e.clientY;
+            element.style.top = (element.offsetTop - pos2) + 'px';
+            element.style.left = (element.offsetLeft - pos1) + 'px';
+        }
+        
+        function closeDragElement() {
+            document.onmouseup = null;
+            document.onmousemove = null;
+        }
+    }
+
+    function selectNode(node) {
+        document.querySelectorAll('.ivr-node').forEach(function(n) { n.classList.remove('selected'); });
+        node.classList.add('selected');
+        selectedNode = node;
+        
+        const nameEl = document.getElementById('selectedNodeName');
+        const header = node.querySelector('.node-header');
+        if (nameEl && header) {
+            nameEl.textContent = header.textContent.trim();
+        }
+    }
+
+    // Initialize existing nodes
+    document.querySelectorAll('.ivr-node').forEach(function(node) {
+        makeDraggable(node);
+        node.addEventListener('click', function() { selectNode(this); });
+    });
+
+    // Global functions
+    window.loadIVR = function(ivrId) {
+        document.querySelectorAll('.ivr-list-item').forEach(function(item) {
+            item.classList.remove('active');
+            if (item.dataset.ivr === ivrId) item.classList.add('active');
+        });
+        
+        const names = { main: 'Ana Menü IVR', sales: 'Satış IVR', support: 'Destek IVR' };
+        const nameEl = document.getElementById('currentIVRName');
+        if (nameEl) nameEl.textContent = names[ivrId] || ivrId;
+        
+        showNotification('IVR yüklendi: ' + (names[ivrId] || ivrId), 'info');
+    };
+
+    window.createNewIVR = function() {
+        document.getElementById('newIVRModal').classList.add('show');
+    };
+
+    window.closeNewIVRModal = function() {
+        document.getElementById('newIVRModal').classList.remove('show');
+    };
+
+    window.createIVR = function() {
+        const name = document.getElementById('newIVRName').value;
+        if (!name) {
+            alert(getCurrentLang() === 'de' ? 'Bitte geben Sie einen Namen ein' : 'Lütfen bir ad girin');
+            return;
+        }
+        
+        // Add to list
+        const list = document.querySelector('.ivr-list');
+        const newItem = document.createElement('div');
+        newItem.className = 'ivr-list-item';
+        newItem.dataset.ivr = 'ivr_' + Date.now();
+        newItem.innerHTML = '<span><i class="ti ti-sitemap"></i> ' + name + '</span><i class="ti ti-chevron-right"></i>';
+        newItem.onclick = function() { loadIVR(this.dataset.ivr); };
+        list.insertBefore(newItem, list.querySelector('button'));
+        
+        closeNewIVRModal();
+        showNotification(t('created'), 'success');
+    };
+
+    window.saveIVR = function() {
+        showNotification(t('saved'), 'success');
+        const lastSaved = document.getElementById('lastSaved');
+        if (lastSaved) {
+            lastSaved.textContent = getCurrentLang() === 'de' ? 'Zuletzt gespeichert: gerade eben' : 'Son kayıt: şimdi';
+        }
+    };
+
+    window.testIVR = function() {
+        document.getElementById('testIVRModal').classList.add('show');
+        showNotification(t('testStarted'), 'info');
+    };
+
+    window.closeTestModal = function() {
+        document.getElementById('testIVRModal').classList.remove('show');
+    };
+
+    window.endTestCall = function() {
+        closeTestModal();
+        showNotification(t('testEnded'), 'info');
+    };
+
+    window.pressKey = function(key) {
+        showNotification(t('keyPressed') + ' ' + key, 'info');
+    };
+
+    window.zoomIn = function() {
+        zoomLevel = Math.min(2, zoomLevel + 0.1);
+        canvas.style.transform = 'scale(' + zoomLevel + ')';
+        canvas.style.transformOrigin = 'top left';
+    };
+
+    window.zoomOut = function() {
+        zoomLevel = Math.max(0.5, zoomLevel - 0.1);
+        canvas.style.transform = 'scale(' + zoomLevel + ')';
+        canvas.style.transformOrigin = 'top left';
+    };
+
+    window.fitToScreen = function() {
+        zoomLevel = 1;
+        canvas.style.transform = 'scale(1)';
+    };
+
+    window.deleteSelectedNode = function() {
+        if (selectedNode) {
+            selectedNode.remove();
+            selectedNode = null;
+            showNotification(t('deleted'), 'success');
+        }
+    };
+
+    window.updateNodeProperty = function(prop, value) {
+        if (selectedNode) {
+            selectedNode.dataset[prop] = value;
+            if (prop === 'name') {
+                const header = selectedNode.querySelector('.node-header');
+                if (header) {
+                    const icon = header.querySelector('i');
+                    header.innerHTML = '';
+                    if (icon) header.appendChild(icon);
+                    header.appendChild(document.createTextNode(' ' + value));
+                }
+            }
+        }
+    };
+
+    window.uploadAudio = function() {
+        document.getElementById('audioFileInput').click();
+    };
+
+    window.handleAudioUpload = function(input) {
+        if (input.files && input.files[0]) {
+            const fileName = input.files[0].name;
+            document.getElementById('audioFileName').textContent = fileName;
+            showNotification('Dosya yüklendi: ' + fileName, 'success');
+        }
+    };
+
+    window.playAudio = function() {
+        showNotification('Ses çalınıyor...', 'info');
+    };
+
+    window.removeAudio = function() {
+        document.getElementById('audioFileName').textContent = '';
+        showNotification('Ses dosyası kaldırıldı', 'info');
+    };
+
+    window.updateMenuOption = function(key, value) {
+        console.log('Menu option ' + key + ' updated to: ' + value);
+    };
+
+    window.addMenuKey = function() {
+        showNotification('Yeni tuş eklendi', 'success');
+    };
+
+    // Add animation styles
+    const style = document.createElement('style');
+    style.textContent = '@keyframes slideIn{from{transform:translateX(100%);opacity:0}to{transform:translateX(0);opacity:1}}@keyframes pulse{0%,100%{opacity:1}50%{opacity:0.5}}';
+    document.head.appendChild(style);
+
+    console.log('IVR Builder initialized');
+})();
 </script>
 {% endblock %}
+
 
 
 
