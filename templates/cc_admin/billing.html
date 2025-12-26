@@ -2,204 +2,60 @@
 
 {% block title %}Faturalama & Kullanım - AI BEE CC{% endblock %}
 
-{% block content %}
-<div class="page-header">
-    <h1><i class="ti ti-credit-card"></i> Faturalama & Kullanım</h1>
-    <p>Abonelik, bakiye ve kullanım bilgileriniz</p>
-</div>
-
-<!-- Bakiye ve Abonelik Kartları -->
-<div class="billing-summary">
-    <div class="billing-card balance-card">
-        <div class="billing-card-icon">
-            <i class="ti ti-wallet"></i>
-        </div>
-        <div class="billing-card-content">
-            <span class="billing-label">Mevcut Bakiye</span>
-            <span class="billing-value">₺{{ "%.2f"|format(subscription.balance|float) if subscription else '0.00' }}</span>
-            {% if subscription and subscription.payment_type == 'prepaid' %}
-            <span class="billing-note">Ön ödemeli hesap</span>
-            {% endif %}
-        </div>
-        <button class="btn btn-primary btn-sm">
-            <i class="ti ti-plus"></i> Bakiye Yükle
-        </button>
-    </div>
-
-    <div class="billing-card plan-card">
-        <div class="billing-card-icon">
-            <i class="ti ti-package"></i>
-        </div>
-        <div class="billing-card-content">
-            <span class="billing-label">Aktif Plan</span>
-            <span class="billing-value">{{ subscription.plan.name if subscription and subscription.plan else 'Tanımlanmamış' }}</span>
-            <span class="billing-note">{{ 'Aylık' if subscription and subscription.billing_cycle == 'monthly' else 'Yıllık' }}</span>
-        </div>
-        <button class="btn btn-outline btn-sm">
-            <i class="ti ti-refresh"></i> Plan Değiştir
-        </button>
-    </div>
-
-    <div class="billing-card usage-card">
-        <div class="billing-card-icon">
-            <i class="ti ti-phone-call"></i>
-        </div>
-        <div class="billing-card-content">
-            <span class="billing-label">Bu Ay VoIP</span>
-            {% set total_minutes = usage|sum(attribute='voip_outbound_minutes')|float if usage else 0 %}
-            <span class="billing-value">{{ "%.0f"|format(total_minutes) }} dk</span>
-            {% set total_amount = usage|sum(attribute='voip_outbound_amount')|float if usage else 0 %}
-            <span class="billing-note">₺{{ "%.2f"|format(total_amount) }}</span>
-        </div>
-        <a href="{{ url_for('cc_usage') }}" class="btn btn-outline btn-sm">
-            <i class="ti ti-chart-bar"></i> Detaylar
-        </a>
-    </div>
-
-    <div class="billing-card invoice-card">
-        <div class="billing-card-icon">
-            <i class="ti ti-file-invoice"></i>
-        </div>
-        <div class="billing-card-content">
-            <span class="billing-label">Son Fatura</span>
-            {% if invoices %}
-            <span class="billing-value">₺{{ "%.2f"|format(invoices[0].total_amount|float) }}</span>
-            <span class="billing-note">{{ invoices[0].issue_date.strftime('%d.%m.%Y') }}</span>
-            {% else %}
-            <span class="billing-value">-</span>
-            <span class="billing-note">Henüz fatura yok</span>
-            {% endif %}
-        </div>
-    </div>
-</div>
-
-<!-- Ücret Planı Özeti -->
-<div class="section-card">
-    <div class="section-header">
-        <h3><i class="ti ti-list-check"></i> Ücret Planı</h3>
-    </div>
-    <div class="tariff-info">
-        <table class="tariff-table">
-            <thead>
-                <tr>
-                    <th>Hizmet</th>
-                    <th>Dahil</th>
-                    <th>Birim Fiyat</th>
-                </tr>
-            </thead>
-            <tbody>
-                <tr>
-                    <td>Gelen Çağrı (Inbound)</td>
-                    <td>{{ subscription.plan.included_minutes_inbound if subscription and subscription.plan else 0 }} dk</td>
-                    <td>₺0.05/dk</td>
-                </tr>
-                <tr>
-                    <td>Giden Çağrı - TR Mobil</td>
-                    <td>{{ subscription.plan.included_minutes_outbound if subscription and subscription.plan else 0 }} dk</td>
-                    <td>₺0.15/dk</td>
-                </tr>
-                <tr>
-                    <td>Giden Çağrı - TR Sabit</td>
-                    <td>-</td>
-                    <td>₺0.08/dk</td>
-                </tr>
-                <tr>
-                    <td>AI Transkripsiyon</td>
-                    <td>{{ subscription.plan.included_ai_minutes if subscription and subscription.plan else 0 }} dk</td>
-                    <td>₺0.20/dk</td>
-                </tr>
-                <tr>
-                    <td>Kayıt Saklama</td>
-                    <td>{{ subscription.plan.storage_gb if subscription and subscription.plan else 50 }} GB</td>
-                    <td>₺0.50/GB aşım</td>
-                </tr>
-            </tbody>
-        </table>
-    </div>
-</div>
-
-<!-- Faturalar -->
-<div class="section-card">
-    <div class="section-header">
-        <h3><i class="ti ti-file-invoice"></i> Faturalar</h3>
-    </div>
-    
-    {% if invoices %}
-    <table class="data-table">
-        <thead>
-            <tr>
-                <th>Fatura No</th>
-                <th>Dönem</th>
-                <th>Tutar</th>
-                <th>Durum</th>
-                <th>İşlemler</th>
-            </tr>
-        </thead>
-        <tbody>
-            {% for invoice in invoices %}
-            <tr>
-                <td><strong>{{ invoice.invoice_number }}</strong></td>
-                <td>{{ invoice.period_start.strftime('%d.%m.%Y') }} - {{ invoice.period_end.strftime('%d.%m.%Y') }}</td>
-                <td>₺{{ "%.2f"|format(invoice.total_amount|float) }}</td>
-                <td>
-                    {% if invoice.status == 'paid' %}
-                    <span class="badge badge-success">Ödendi</span>
-                    {% elif invoice.status == 'pending' %}
-                    <span class="badge badge-warning">Bekliyor</span>
-                    {% elif invoice.status == 'overdue' %}
-                    <span class="badge badge-danger">Gecikmiş</span>
-                    {% else %}
-                    <span class="badge">{{ invoice.status }}</span>
-                    {% endif %}
-                </td>
-                <td>
-                    <div class="action-buttons">
-                        <button class="btn btn-icon" title="PDF İndir">
-                            <i class="ti ti-download"></i>
-                        </button>
-                        {% if invoice.status == 'pending' %}
-                        <button class="btn btn-primary btn-sm">Öde</button>
-                        {% endif %}
-                    </div>
-                </td>
-            </tr>
-            {% endfor %}
-        </tbody>
-    </table>
-    {% else %}
-    <div class="empty-state">
-        <i class="ti ti-file-off"></i>
-        <h4>Henüz fatura yok</h4>
-    </div>
-    {% endif %}
-</div>
-
+{% block extra_css %}
 <style>
+.billing-page {
+    padding: 1.5rem;
+}
+
+.page-header-billing {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 2rem;
+}
+
+.page-header-billing h1 {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    font-size: 1.5rem;
+    color: #1a1a2e;
+}
+
+.page-header-billing h1 i { color: #F5A623; }
+
+.page-header-billing p {
+    color: #888;
+    font-size: 0.9rem;
+    margin-top: 0.25rem;
+}
+
 .billing-summary {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    grid-template-columns: repeat(4, 1fr);
     gap: 1.5rem;
     margin-bottom: 2rem;
 }
 
 .billing-card {
     background: white;
-    border-radius: 12px;
+    border-radius: 16px;
     padding: 1.5rem;
     display: flex;
     flex-direction: column;
     gap: 1rem;
-    box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+    box-shadow: 0 4px 20px rgba(0,0,0,0.06);
 }
 
 .billing-card-icon {
-    width: 48px;
-    height: 48px;
+    width: 50px;
+    height: 50px;
     border-radius: 12px;
     display: flex;
     align-items: center;
     justify-content: center;
-    font-size: 24px;
+    font-size: 1.5rem;
 }
 
 .balance-card .billing-card-icon {
@@ -208,61 +64,92 @@
 }
 
 .plan-card .billing-card-icon {
-    background: linear-gradient(135deg, #e3f2fd, #bbdefb);
-    color: #1565c0;
+    background: linear-gradient(135deg, #fff8e1, #ffecb3);
+    color: #f57c00;
 }
 
 .usage-card .billing-card-icon {
-    background: linear-gradient(135deg, #fff3e0, #ffe0b2);
-    color: #e65100;
-}
-
-.invoice-card .billing-card-icon {
     background: linear-gradient(135deg, #f3e5f5, #e1bee7);
     color: #7b1fa2;
 }
 
-.billing-card-content {
-    display: flex;
-    flex-direction: column;
+.invoice-card .billing-card-icon {
+    background: linear-gradient(135deg, #e3f2fd, #bbdefb);
+    color: #1565c0;
 }
 
 .billing-label {
     font-size: 0.85rem;
-    color: var(--text-secondary);
+    color: #888;
 }
 
 .billing-value {
     font-size: 1.75rem;
     font-weight: 700;
-    color: var(--text-primary);
+    color: #1a1a2e;
 }
 
 .billing-note {
     font-size: 0.8rem;
-    color: var(--text-muted);
+    color: #aaa;
+}
+
+.billing-btn {
+    width: 100%;
+    padding: 0.75rem;
+    border-radius: 10px;
+    border: none;
+    cursor: pointer;
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    transition: all 0.3s;
+}
+
+.billing-btn.primary {
+    background: linear-gradient(135deg, #F5A623 0%, #e09800 100%);
+    color: white;
+}
+
+.billing-btn.outline {
+    background: white;
+    border: 2px solid #e0e0e0;
+    color: #666;
+}
+
+.billing-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 15px rgba(0,0,0,0.1);
 }
 
 .section-card {
     background: white;
-    border-radius: 12px;
+    border-radius: 16px;
     padding: 1.5rem;
     margin-bottom: 1.5rem;
-    box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+    box-shadow: 0 4px 20px rgba(0,0,0,0.06);
 }
 
 .section-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
     margin-bottom: 1.5rem;
     padding-bottom: 1rem;
-    border-bottom: 1px solid #eee;
+    border-bottom: 2px solid #f0f0f0;
 }
 
 .section-header h3 {
-    font-size: 1.1rem;
+    font-size: 1rem;
     display: flex;
     align-items: center;
     gap: 0.5rem;
+    margin: 0;
 }
+
+.section-header h3 i { color: #F5A623; }
 
 .tariff-table {
     width: 100%;
@@ -271,15 +158,54 @@
 
 .tariff-table th,
 .tariff-table td {
-    padding: 0.75rem;
+    padding: 1rem;
     text-align: left;
     border-bottom: 1px solid #f0f0f0;
 }
 
 .tariff-table th {
     font-weight: 600;
-    color: var(--text-secondary);
-    font-size: 0.85rem;
+    color: #888;
+    font-size: 0.8rem;
+    text-transform: uppercase;
+}
+
+.tariff-table tr:hover { background: #fafafa; }
+
+.service-name {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+}
+
+.service-icon {
+    width: 36px;
+    height: 36px;
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-size: 1rem;
+}
+
+.service-icon.inbound { background: linear-gradient(135deg, #4CAF50, #388E3C); }
+.service-icon.outbound { background: linear-gradient(135deg, #2196F3, #1976D2); }
+.service-icon.ai { background: linear-gradient(135deg, #9C27B0, #7B1FA2); }
+.service-icon.storage { background: linear-gradient(135deg, #FF9800, #F57C00); }
+
+.included-badge {
+    background: #e8f5e9;
+    color: #2e7d32;
+    padding: 0.25rem 0.75rem;
+    border-radius: 20px;
+    font-size: 0.8rem;
+    font-weight: 600;
+}
+
+.price-text {
+    font-weight: 600;
+    color: #1a1a2e;
 }
 
 .data-table {
@@ -296,49 +222,604 @@
 
 .data-table th {
     font-weight: 600;
-    color: var(--text-secondary);
-    font-size: 0.85rem;
+    color: #888;
+    font-size: 0.8rem;
+    text-transform: uppercase;
 }
 
-.badge {
+.data-table tr:hover { background: #fafafa; }
+
+.status-badge {
     padding: 0.25rem 0.75rem;
     border-radius: 20px;
     font-size: 0.75rem;
     font-weight: 600;
 }
 
-.badge-success {
-    background: #e8f5e9;
-    color: #2e7d32;
-}
+.status-badge.paid { background: #e8f5e9; color: #2e7d32; }
+.status-badge.pending { background: #fff3e0; color: #ef6c00; }
+.status-badge.overdue { background: #ffebee; color: #c62828; }
 
-.badge-warning {
-    background: #fff3e0;
-    color: #e65100;
-}
+.action-buttons { display: flex; gap: 0.5rem; }
 
-.badge-danger {
-    background: #ffebee;
-    color: #c62828;
-}
-
-.action-buttons {
+.action-btn {
+    width: 32px;
+    height: 32px;
+    border-radius: 8px;
+    border: none;
+    cursor: pointer;
     display: flex;
-    gap: 0.5rem;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s;
 }
+
+.action-btn.download { background: #e3f2fd; color: #1976D2; }
+.action-btn.pay { background: #e8f5e9; color: #2e7d32; }
+.action-btn.view { background: #fff3e0; color: #ef6c00; }
+
+.action-btn:hover { transform: translateY(-2px); }
 
 .empty-state {
     text-align: center;
     padding: 3rem;
-    color: var(--text-muted);
+    color: #888;
 }
 
 .empty-state i {
     font-size: 3rem;
     margin-bottom: 1rem;
+    opacity: 0.5;
+}
+
+/* Modal */
+.modal-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.6);
+    backdrop-filter: blur(4px);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 1000;
+    opacity: 0;
+    visibility: hidden;
+    transition: all 0.3s;
+}
+
+.modal-overlay.show { opacity: 1; visibility: visible; }
+
+.modal-content {
+    background: white;
+    border-radius: 20px;
+    width: 100%;
+    max-width: 500px;
+    overflow: hidden;
+}
+
+.modal-header {
+    padding: 1.5rem;
+    background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+    color: white;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.modal-header h3 { margin: 0; display: flex; align-items: center; gap: 0.75rem; }
+.modal-header h3 i { color: #F5A623; }
+
+.modal-close {
+    background: rgba(255,255,255,0.1);
+    border: none;
+    color: white;
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    cursor: pointer;
+}
+
+.modal-body { padding: 1.5rem; }
+
+.modal-footer {
+    padding: 1rem 1.5rem;
+    background: #f8f9fa;
+    display: flex;
+    gap: 1rem;
+    justify-content: flex-end;
+}
+
+.form-group { margin-bottom: 1rem; }
+.form-group label { display: block; margin-bottom: 0.5rem; font-weight: 500; }
+.form-group input, .form-group select {
+    width: 100%;
+    padding: 0.75rem;
+    border: 2px solid #e0e0e0;
+    border-radius: 10px;
+}
+
+.amount-options {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 0.5rem;
+    margin-bottom: 1rem;
+}
+
+.amount-option {
+    padding: 0.75rem;
+    border: 2px solid #e0e0e0;
+    border-radius: 10px;
+    text-align: center;
+    cursor: pointer;
+    transition: all 0.2s;
+    font-weight: 600;
+}
+
+.amount-option:hover { border-color: #F5A623; }
+.amount-option.selected { border-color: #F5A623; background: #fff8e7; }
+
+.plan-options {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+}
+
+.plan-option {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 1rem;
+    border: 2px solid #e0e0e0;
+    border-radius: 12px;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.plan-option:hover { border-color: #F5A623; }
+.plan-option.selected { border-color: #F5A623; background: #fff8e7; }
+.plan-option.current { border-color: #4CAF50; background: #e8f5e9; }
+
+.plan-info h4 { margin: 0 0 0.25rem 0; font-size: 1rem; }
+.plan-info p { margin: 0; font-size: 0.8rem; color: #888; }
+.plan-price { font-size: 1.25rem; font-weight: 700; color: #F5A623; }
+
+.usage-bar {
+    margin-top: 1rem;
+}
+
+.usage-bar-track {
+    height: 8px;
+    background: #f0f0f0;
+    border-radius: 4px;
+    overflow: hidden;
+}
+
+.usage-bar-fill {
+    height: 100%;
+    border-radius: 4px;
+    transition: width 0.5s;
+}
+
+.usage-bar-fill.low { background: linear-gradient(90deg, #4CAF50, #8BC34A); }
+.usage-bar-fill.medium { background: linear-gradient(90deg, #FF9800, #FFC107); }
+.usage-bar-fill.high { background: linear-gradient(90deg, #f44336, #E91E63); }
+
+.usage-info {
+    display: flex;
+    justify-content: space-between;
+    margin-top: 0.5rem;
+    font-size: 0.8rem;
+    color: #888;
 }
 </style>
 {% endblock %}
 
+{% block content %}
+<div class="billing-page">
+    <div class="page-header-billing">
+        <div>
+            <h1>
+                <i class="ti ti-credit-card"></i>
+                <span data-tr="Faturalama & Kullanım" data-de="Abrechnung & Nutzung">Faturalama & Kullanım</span>
+            </h1>
+            <p data-tr="Abonelik, bakiye ve kullanım bilgileriniz" data-de="Abonnement-, Guthaben- und Nutzungsinformationen">Abonelik, bakiye ve kullanım bilgileriniz</p>
+        </div>
+    </div>
 
+    <!-- Bakiye ve Abonelik Kartları -->
+    <div class="billing-summary">
+        <div class="billing-card balance-card">
+            <div class="billing-card-icon"><i class="ti ti-wallet"></i></div>
+            <div>
+                <span class="billing-label" data-tr="Mevcut Bakiye" data-de="Aktuelles Guthaben">Mevcut Bakiye</span>
+                <span class="billing-value">€1,250.00</span>
+                <span class="billing-note" data-tr="Ön ödemeli hesap" data-de="Prepaid-Konto">Ön ödemeli hesap</span>
+            </div>
+            <button class="billing-btn primary" onclick="openTopupModal()">
+                <i class="ti ti-plus"></i> <span data-tr="Bakiye Yükle" data-de="Guthaben aufladen">Bakiye Yükle</span>
+            </button>
+        </div>
 
+        <div class="billing-card plan-card">
+            <div class="billing-card-icon"><i class="ti ti-package"></i></div>
+            <div>
+                <span class="billing-label" data-tr="Aktif Plan" data-de="Aktiver Plan">Aktif Plan</span>
+                <span class="billing-value">Professional</span>
+                <span class="billing-note" data-tr="Aylık" data-de="Monatlich">Aylık</span>
+            </div>
+            <button class="billing-btn outline" onclick="openPlanModal()">
+                <i class="ti ti-refresh"></i> <span data-tr="Plan Değiştir" data-de="Plan ändern">Plan Değiştir</span>
+            </button>
+        </div>
+
+        <div class="billing-card usage-card">
+            <div class="billing-card-icon"><i class="ti ti-phone-call"></i></div>
+            <div>
+                <span class="billing-label" data-tr="Bu Ay VoIP" data-de="VoIP diesen Monat">Bu Ay VoIP</span>
+                <span class="billing-value">2,450 dk</span>
+                <span class="billing-note">€367.50</span>
+            </div>
+            <button class="billing-btn outline" onclick="openUsageModal()">
+                <i class="ti ti-chart-bar"></i> <span data-tr="Detaylar" data-de="Details">Detaylar</span>
+            </button>
+        </div>
+
+        <div class="billing-card invoice-card">
+            <div class="billing-card-icon"><i class="ti ti-file-invoice"></i></div>
+            <div>
+                <span class="billing-label" data-tr="Son Fatura" data-de="Letzte Rechnung">Son Fatura</span>
+                <span class="billing-value">€892.50</span>
+                <span class="billing-note">15.12.2024</span>
+            </div>
+            <button class="billing-btn outline" onclick="downloadInvoice('INV-2024-012')">
+                <i class="ti ti-download"></i> <span data-tr="İndir" data-de="Herunterladen">İndir</span>
+            </button>
+        </div>
+    </div>
+
+    <!-- Ücret Planı Özeti -->
+    <div class="section-card">
+        <div class="section-header">
+            <h3><i class="ti ti-list-check"></i> <span data-tr="Ücret Planı" data-de="Preisplan">Ücret Planı</span></h3>
+        </div>
+        <table class="tariff-table">
+            <thead>
+                <tr>
+                    <th data-tr="Hizmet" data-de="Dienst">Hizmet</th>
+                    <th data-tr="Dahil" data-de="Inklusiv">Dahil</th>
+                    <th data-tr="Kullanım" data-de="Nutzung">Kullanım</th>
+                    <th data-tr="Birim Fiyat" data-de="Einzelpreis">Birim Fiyat</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>
+                        <div class="service-name">
+                            <div class="service-icon inbound"><i class="ti ti-phone-incoming"></i></div>
+                            <span data-tr="Gelen Çağrı (Inbound)" data-de="Eingehende Anrufe (Inbound)">Gelen Çağrı (Inbound)</span>
+                        </div>
+                    </td>
+                    <td><span class="included-badge">1,000 dk</span></td>
+                    <td>
+                        <div class="usage-bar">
+                            <div class="usage-bar-track"><div class="usage-bar-fill low" style="width: 65%;"></div></div>
+                            <div class="usage-info"><span>650 dk</span><span>1,000 dk</span></div>
+                        </div>
+                    </td>
+                    <td><span class="price-text">€0.03/dk</span></td>
+                </tr>
+                <tr>
+                    <td>
+                        <div class="service-name">
+                            <div class="service-icon outbound"><i class="ti ti-phone-outgoing"></i></div>
+                            <span data-tr="Giden Çağrı - DE Mobil" data-de="Ausgehende Anrufe - DE Mobil">Giden Çağrı - DE Mobil</span>
+                        </div>
+                    </td>
+                    <td><span class="included-badge">500 dk</span></td>
+                    <td>
+                        <div class="usage-bar">
+                            <div class="usage-bar-track"><div class="usage-bar-fill high" style="width: 90%;"></div></div>
+                            <div class="usage-info"><span>450 dk</span><span>500 dk</span></div>
+                        </div>
+                    </td>
+                    <td><span class="price-text">€0.12/dk</span></td>
+                </tr>
+                <tr>
+                    <td>
+                        <div class="service-name">
+                            <div class="service-icon outbound"><i class="ti ti-phone"></i></div>
+                            <span data-tr="Giden Çağrı - DE Sabit" data-de="Ausgehende Anrufe - DE Festnetz">Giden Çağrı - DE Sabit</span>
+                        </div>
+                    </td>
+                    <td><span class="included-badge" data-tr="Sınırsız" data-de="Unbegrenzt">Sınırsız</span></td>
+                    <td>
+                        <div class="usage-bar">
+                            <div class="usage-bar-track"><div class="usage-bar-fill low" style="width: 40%;"></div></div>
+                            <div class="usage-info"><span>1,350 dk</span><span>∞</span></div>
+                        </div>
+                    </td>
+                    <td><span class="price-text">€0.02/dk</span></td>
+                </tr>
+                <tr>
+                    <td>
+                        <div class="service-name">
+                            <div class="service-icon ai"><i class="ti ti-brain"></i></div>
+                            <span data-tr="AI Transkripsiyon" data-de="AI-Transkription">AI Transkripsiyon</span>
+                        </div>
+                    </td>
+                    <td><span class="included-badge">200 dk</span></td>
+                    <td>
+                        <div class="usage-bar">
+                            <div class="usage-bar-track"><div class="usage-bar-fill medium" style="width: 75%;"></div></div>
+                            <div class="usage-info"><span>150 dk</span><span>200 dk</span></div>
+                        </div>
+                    </td>
+                    <td><span class="price-text">€0.15/dk</span></td>
+                </tr>
+                <tr>
+                    <td>
+                        <div class="service-name">
+                            <div class="service-icon storage"><i class="ti ti-database"></i></div>
+                            <span data-tr="Kayıt Saklama" data-de="Speicherung">Kayıt Saklama</span>
+                        </div>
+                    </td>
+                    <td><span class="included-badge">100 GB</span></td>
+                    <td>
+                        <div class="usage-bar">
+                            <div class="usage-bar-track"><div class="usage-bar-fill low" style="width: 35%;"></div></div>
+                            <div class="usage-info"><span>35 GB</span><span>100 GB</span></div>
+                        </div>
+                    </td>
+                    <td><span class="price-text">€0.30/GB</span></td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+
+    <!-- Faturalar -->
+    <div class="section-card">
+        <div class="section-header">
+            <h3><i class="ti ti-file-invoice"></i> <span data-tr="Faturalar" data-de="Rechnungen">Faturalar</span></h3>
+            <button class="billing-btn outline" style="width: auto; padding: 0.5rem 1rem;" onclick="downloadAllInvoices()">
+                <i class="ti ti-download"></i> <span data-tr="Tümünü İndir" data-de="Alle herunterladen">Tümünü İndir</span>
+            </button>
+        </div>
+        <table class="data-table">
+            <thead>
+                <tr>
+                    <th data-tr="Fatura No" data-de="Rechnungs-Nr.">Fatura No</th>
+                    <th data-tr="Dönem" data-de="Zeitraum">Dönem</th>
+                    <th data-tr="Tutar" data-de="Betrag">Tutar</th>
+                    <th data-tr="Durum" data-de="Status">Durum</th>
+                    <th data-tr="İşlemler" data-de="Aktionen">İşlemler</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td><strong>INV-2024-012</strong></td>
+                    <td>01.12.2024 - 31.12.2024</td>
+                    <td><strong>€892.50</strong></td>
+                    <td><span class="status-badge paid" data-tr="Ödendi" data-de="Bezahlt">Ödendi</span></td>
+                    <td>
+                        <div class="action-buttons">
+                            <button class="action-btn download" onclick="downloadInvoice('INV-2024-012')" title="PDF"><i class="ti ti-download"></i></button>
+                            <button class="action-btn view" onclick="viewInvoice('INV-2024-012')" title="Görüntüle"><i class="ti ti-eye"></i></button>
+                        </div>
+                    </td>
+                </tr>
+                <tr>
+                    <td><strong>INV-2024-011</strong></td>
+                    <td>01.11.2024 - 30.11.2024</td>
+                    <td><strong>€756.00</strong></td>
+                    <td><span class="status-badge paid">Ödendi</span></td>
+                    <td>
+                        <div class="action-buttons">
+                            <button class="action-btn download" onclick="downloadInvoice('INV-2024-011')"><i class="ti ti-download"></i></button>
+                            <button class="action-btn view" onclick="viewInvoice('INV-2024-011')"><i class="ti ti-eye"></i></button>
+                        </div>
+                    </td>
+                </tr>
+                <tr>
+                    <td><strong>INV-2024-010</strong></td>
+                    <td>01.10.2024 - 31.10.2024</td>
+                    <td><strong>€945.75</strong></td>
+                    <td><span class="status-badge paid">Ödendi</span></td>
+                    <td>
+                        <div class="action-buttons">
+                            <button class="action-btn download" onclick="downloadInvoice('INV-2024-010')"><i class="ti ti-download"></i></button>
+                            <button class="action-btn view" onclick="viewInvoice('INV-2024-010')"><i class="ti ti-eye"></i></button>
+                        </div>
+                    </td>
+                </tr>
+                <tr>
+                    <td><strong>INV-2024-009</strong></td>
+                    <td>01.09.2024 - 30.09.2024</td>
+                    <td><strong>€1,125.00</strong></td>
+                    <td><span class="status-badge paid">Ödendi</span></td>
+                    <td>
+                        <div class="action-buttons">
+                            <button class="action-btn download" onclick="downloadInvoice('INV-2024-009')"><i class="ti ti-download"></i></button>
+                            <button class="action-btn view" onclick="viewInvoice('INV-2024-009')"><i class="ti ti-eye"></i></button>
+                        </div>
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<!-- Topup Modal -->
+<div class="modal-overlay" id="topupModal">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h3><i class="ti ti-wallet"></i> <span data-tr="Bakiye Yükle" data-de="Guthaben aufladen">Bakiye Yükle</span></h3>
+            <button class="modal-close" onclick="closeTopupModal()"><i class="ti ti-x"></i></button>
+        </div>
+        <div class="modal-body">
+            <div class="form-group">
+                <label data-tr="Tutar Seçin" data-de="Betrag auswählen">Tutar Seçin</label>
+                <div class="amount-options">
+                    <div class="amount-option" onclick="selectAmount(100)">€100</div>
+                    <div class="amount-option selected" onclick="selectAmount(250)">€250</div>
+                    <div class="amount-option" onclick="selectAmount(500)">€500</div>
+                    <div class="amount-option" onclick="selectAmount(1000)">€1000</div>
+                </div>
+            </div>
+            <div class="form-group">
+                <label data-tr="veya Özel Tutar" data-de="oder individueller Betrag">veya Özel Tutar</label>
+                <input type="number" id="customAmount" placeholder="€" min="50">
+            </div>
+            <div class="form-group">
+                <label data-tr="Ödeme Yöntemi" data-de="Zahlungsmethode">Ödeme Yöntemi</label>
+                <select id="paymentMethod">
+                    <option value="card" data-tr="Kredi Kartı" data-de="Kreditkarte">Kredi Kartı</option>
+                    <option value="bank" data-tr="Banka Transferi" data-de="Banküberweisung">Banka Transferi</option>
+                    <option value="paypal">PayPal</option>
+                </select>
+            </div>
+        </div>
+        <div class="modal-footer">
+            <button class="btn btn-secondary" onclick="closeTopupModal()" data-tr="İptal" data-de="Abbrechen">İptal</button>
+            <button class="btn btn-primary" onclick="processTopup()"><i class="ti ti-credit-card"></i> <span data-tr="Ödeme Yap" data-de="Zahlen">Ödeme Yap</span></button>
+        </div>
+    </div>
+</div>
+
+<!-- Plan Modal -->
+<div class="modal-overlay" id="planModal">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h3><i class="ti ti-package"></i> <span data-tr="Plan Değiştir" data-de="Plan ändern">Plan Değiştir</span></h3>
+            <button class="modal-close" onclick="closePlanModal()"><i class="ti ti-x"></i></button>
+        </div>
+        <div class="modal-body">
+            <div class="plan-options">
+                <div class="plan-option" onclick="selectPlan('starter')">
+                    <div class="plan-info">
+                        <h4>Starter</h4>
+                        <p data-tr="5 agent, 500 dk dahil" data-de="5 Agenten, 500 Min inkl.">5 agent, 500 dk dahil</p>
+                    </div>
+                    <span class="plan-price">€99/ay</span>
+                </div>
+                <div class="plan-option current" onclick="selectPlan('professional')">
+                    <div class="plan-info">
+                        <h4>Professional <span style="background:#4CAF50;color:white;padding:2px 8px;border-radius:4px;font-size:0.7rem;margin-left:0.5rem;" data-tr="Mevcut" data-de="Aktuell">Mevcut</span></h4>
+                        <p data-tr="15 agent, 2000 dk dahil" data-de="15 Agenten, 2000 Min inkl.">15 agent, 2000 dk dahil</p>
+                    </div>
+                    <span class="plan-price">€249/ay</span>
+                </div>
+                <div class="plan-option" onclick="selectPlan('enterprise')">
+                    <div class="plan-info">
+                        <h4>Enterprise</h4>
+                        <p data-tr="Sınırsız agent, özel fiyat" data-de="Unbegrenzte Agenten, Sonderpreis">Sınırsız agent, özel fiyat</p>
+                    </div>
+                    <span class="plan-price" data-tr="Teklif Al" data-de="Angebot">Teklif Al</span>
+                </div>
+            </div>
+        </div>
+        <div class="modal-footer">
+            <button class="btn btn-secondary" onclick="closePlanModal()" data-tr="İptal" data-de="Abbrechen">İptal</button>
+            <button class="btn btn-primary" onclick="changePlan()"><i class="ti ti-check"></i> <span data-tr="Planı Değiştir" data-de="Plan ändern">Planı Değiştir</span></button>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+(function() {
+    'use strict';
+
+    let selectedAmount = 250;
+    let selectedPlan = 'professional';
+
+    function getCurrentLang() { return localStorage.getItem('selectedLang') || 'tr'; }
+
+    function showNotification(message, type) {
+        const toast = document.createElement('div');
+        toast.style.cssText = 'position:fixed;top:20px;right:20px;padding:15px 25px;border-radius:10px;color:white;font-weight:500;z-index:9999;box-shadow:0 4px 20px rgba(0,0,0,0.2);animation:slideIn 0.3s ease;';
+        toast.style.background = type === 'success' ? 'linear-gradient(135deg, #4CAF50, #45a049)' : type === 'error' ? 'linear-gradient(135deg, #f44336, #d32f2f)' : 'linear-gradient(135deg, #2196F3, #1976D2)';
+        toast.textContent = message;
+        document.body.appendChild(toast);
+        setTimeout(function() { toast.remove(); }, 3000);
+    }
+
+    window.openTopupModal = function() {
+        document.getElementById('topupModal').classList.add('show');
+    };
+
+    window.closeTopupModal = function() {
+        document.getElementById('topupModal').classList.remove('show');
+    };
+
+    window.selectAmount = function(amount) {
+        selectedAmount = amount;
+        document.querySelectorAll('.amount-option').forEach(function(el) {
+            el.classList.remove('selected');
+        });
+        event.target.classList.add('selected');
+    };
+
+    window.processTopup = function() {
+        const custom = document.getElementById('customAmount').value;
+        const amount = custom ? custom : selectedAmount;
+        showNotification(getCurrentLang() === 'de' ? '€' + amount + ' wird aufgeladen...' : '€' + amount + ' yükleniyor...', 'info');
+        setTimeout(function() {
+            showNotification(getCurrentLang() === 'de' ? 'Guthaben erfolgreich aufgeladen!' : 'Bakiye başarıyla yüklendi!', 'success');
+            closeTopupModal();
+        }, 1500);
+    };
+
+    window.openPlanModal = function() {
+        document.getElementById('planModal').classList.add('show');
+    };
+
+    window.closePlanModal = function() {
+        document.getElementById('planModal').classList.remove('show');
+    };
+
+    window.selectPlan = function(plan) {
+        selectedPlan = plan;
+        document.querySelectorAll('.plan-option').forEach(function(el) {
+            el.classList.remove('selected');
+        });
+        event.currentTarget.classList.add('selected');
+    };
+
+    window.changePlan = function() {
+        if (selectedPlan === 'professional') {
+            showNotification(getCurrentLang() === 'de' ? 'Das ist bereits Ihr aktueller Plan' : 'Bu zaten mevcut planınız', 'info');
+            return;
+        }
+        showNotification(getCurrentLang() === 'de' ? 'Plan wird geändert...' : 'Plan değiştiriliyor...', 'info');
+        setTimeout(function() {
+            showNotification(getCurrentLang() === 'de' ? 'Plan erfolgreich geändert!' : 'Plan başarıyla değiştirildi!', 'success');
+            closePlanModal();
+        }, 1500);
+    };
+
+    window.openUsageModal = function() {
+        showNotification(getCurrentLang() === 'de' ? 'Nutzungsdetails werden geladen...' : 'Kullanım detayları yükleniyor...', 'info');
+    };
+
+    window.downloadInvoice = function(invoiceNo) {
+        showNotification(getCurrentLang() === 'de' ? invoiceNo + ' wird heruntergeladen...' : invoiceNo + ' indiriliyor...', 'info');
+        setTimeout(function() {
+            showNotification(getCurrentLang() === 'de' ? 'Rechnung heruntergeladen!' : 'Fatura indirildi!', 'success');
+        }, 1000);
+    };
+
+    window.viewInvoice = function(invoiceNo) {
+        showNotification(getCurrentLang() === 'de' ? invoiceNo + ' wird geöffnet...' : invoiceNo + ' açılıyor...', 'info');
+    };
+
+    window.downloadAllInvoices = function() {
+        showNotification(getCurrentLang() === 'de' ? 'Alle Rechnungen werden heruntergeladen...' : 'Tüm faturalar indiriliyor...', 'info');
+    };
+
+    const style = document.createElement('style');
+    style.textContent = '@keyframes slideIn{from{transform:translateX(100%);opacity:0}to{transform:translateX(0);opacity:1}}';
+    document.head.appendChild(style);
+})();
+</script>
+{% endblock %}
