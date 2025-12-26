@@ -2,74 +2,450 @@
 
 {% block title %}{{ 'Proje Düzenle' if project else 'Yeni Proje' }} - AI BEE CC{% endblock %}
 
-{% block content %}
-<div class="page-header">
-    <div>
-        <h1 class="page-title">{{ 'Proje Düzenle' if project else 'Yeni Proje Oluştur' }}</h1>
-        <p class="page-subtitle">Proje bilgilerini {{ 'güncelleyin' if project else 'girin' }}</p>
-    </div>
-</div>
+{% block extra_css %}
+<style>
+.project-form-page {
+    padding: 1.5rem;
+}
 
-<div class="card" style="max-width: 800px;">
-    <div class="card-body">
-        <form method="POST">
-            <div class="grid grid-cols-2">
-                <div class="form-group">
-                    <label class="form-label">
-                        <i class="ti ti-hash"></i> Proje Kodu
-                    </label>
-                    <input type="text" name="code" class="form-control" 
-                           value="{{ project.code if project else '' }}" placeholder="Örn: PRJ001" required>
+.project-form-card {
+    background: white;
+    border-radius: 20px;
+    box-shadow: 0 4px 30px rgba(0,0,0,0.08);
+    max-width: 900px;
+    overflow: hidden;
+}
+
+.form-header {
+    background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+    padding: 1.5rem 2rem;
+    color: white;
+}
+
+.form-header h2 {
+    margin: 0;
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    font-size: 1.25rem;
+}
+
+.form-header h2 i { color: #F5A623; }
+
+.form-header p {
+    margin: 0.5rem 0 0 0;
+    opacity: 0.8;
+    font-size: 0.9rem;
+}
+
+.form-body {
+    padding: 2rem;
+}
+
+.form-section {
+    margin-bottom: 2rem;
+}
+
+.form-section-title {
+    font-weight: 600;
+    color: #1a1a2e;
+    margin-bottom: 1rem;
+    padding-bottom: 0.5rem;
+    border-bottom: 2px solid #f0f0f0;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.form-section-title i { color: #F5A623; }
+
+.form-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1.5rem;
+}
+
+.form-group {
+    margin-bottom: 1.25rem;
+}
+
+.form-group label {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    margin-bottom: 0.5rem;
+    font-weight: 500;
+    color: #333;
+    font-size: 0.9rem;
+}
+
+.form-group label i {
+    color: #F5A623;
+    font-size: 1rem;
+}
+
+.form-group input,
+.form-group select,
+.form-group textarea {
+    width: 100%;
+    padding: 0.85rem 1rem;
+    border: 2px solid #e8e8e8;
+    border-radius: 12px;
+    font-size: 0.95rem;
+    transition: all 0.3s;
+    background: #fafafa;
+}
+
+.form-group input:focus,
+.form-group select:focus,
+.form-group textarea:focus {
+    outline: none;
+    border-color: #F5A623;
+    background: white;
+    box-shadow: 0 0 0 4px rgba(245, 166, 35, 0.1);
+}
+
+.form-group input::placeholder,
+.form-group textarea::placeholder {
+    color: #999;
+}
+
+.form-group textarea {
+    resize: vertical;
+    min-height: 100px;
+}
+
+.form-footer {
+    display: flex;
+    gap: 1rem;
+    padding-top: 1.5rem;
+    border-top: 2px solid #f0f0f0;
+    margin-top: 1rem;
+}
+
+.btn-submit {
+    background: linear-gradient(135deg, #F5A623 0%, #e09800 100%);
+    color: white;
+    border: none;
+    padding: 0.9rem 2rem;
+    border-radius: 12px;
+    font-weight: 600;
+    font-size: 0.95rem;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    transition: all 0.3s;
+}
+
+.btn-submit:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(245, 166, 35, 0.4);
+}
+
+.btn-cancel {
+    background: #f0f0f0;
+    color: #666;
+    border: none;
+    padding: 0.9rem 2rem;
+    border-radius: 12px;
+    font-weight: 600;
+    font-size: 0.95rem;
+    cursor: pointer;
+    text-decoration: none;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    transition: all 0.3s;
+}
+
+.btn-cancel:hover {
+    background: #e0e0e0;
+}
+
+.campaign-type-options {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 1rem;
+    margin-top: 0.5rem;
+}
+
+.type-option {
+    position: relative;
+}
+
+.type-option input {
+    position: absolute;
+    opacity: 0;
+}
+
+.type-option label {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 1.25rem;
+    border: 2px solid #e8e8e8;
+    border-radius: 12px;
+    cursor: pointer;
+    transition: all 0.3s;
+    background: #fafafa;
+}
+
+.type-option input:checked + label {
+    border-color: #F5A623;
+    background: #fff8e7;
+}
+
+.type-option label i {
+    font-size: 1.5rem;
+    color: #888;
+    margin-bottom: 0.5rem;
+}
+
+.type-option input:checked + label i {
+    color: #F5A623;
+}
+
+.type-option label span {
+    font-weight: 600;
+    font-size: 0.85rem;
+    color: #333;
+}
+
+.type-option label small {
+    font-size: 0.75rem;
+    color: #888;
+    margin-top: 0.25rem;
+}
+
+.success-message {
+    background: #e8f5e9;
+    border: 1px solid #4CAF50;
+    color: #2e7d32;
+    padding: 1rem;
+    border-radius: 10px;
+    margin-bottom: 1.5rem;
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+}
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="project-form-page">
+    <div class="page-header">
+        <div>
+            <h1 class="page-title">
+                <i class="ti ti-folder-plus" style="color: #F5A623;"></i>
+                <span data-tr="{{ 'Proje Düzenle' if project else 'Yeni Proje Oluştur' }}" data-de="{{ 'Projekt bearbeiten' if project else 'Neues Projekt erstellen' }}">{{ 'Proje Düzenle' if project else 'Yeni Proje Oluştur' }}</span>
+            </h1>
+            <p class="page-subtitle" data-tr="Proje bilgilerini {{ 'güncelleyin' if project else 'girin' }}" data-de="Projektinformationen {{ 'aktualisieren' if project else 'eingeben' }}">Proje bilgilerini {{ 'güncelleyin' if project else 'girin' }}</p>
+        </div>
+        <a href="{{ url_for('projects') }}" class="btn btn-secondary">
+            <i class="ti ti-arrow-left"></i>
+            <span data-tr="Geri Dön" data-de="Zurück">Geri Dön</span>
+        </a>
+    </div>
+
+    <div class="project-form-card">
+        <div class="form-header">
+            <h2>
+                <i class="ti ti-clipboard-list"></i>
+                <span data-tr="Proje Bilgileri" data-de="Projektinformationen">Proje Bilgileri</span>
+            </h2>
+            <p data-tr="Gerekli alanları doldurun" data-de="Füllen Sie die erforderlichen Felder aus">Gerekli alanları doldurun</p>
+        </div>
+
+        <div class="form-body">
+            <form method="POST" id="projectForm" onsubmit="return submitForm(event)">
+                
+                <!-- Temel Bilgiler -->
+                <div class="form-section">
+                    <div class="form-section-title">
+                        <i class="ti ti-info-circle"></i>
+                        <span data-tr="Temel Bilgiler" data-de="Grundinformationen">Temel Bilgiler</span>
+                    </div>
+                    
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>
+                                <i class="ti ti-hash"></i>
+                                <span data-tr="Proje Kodu" data-de="Projektcode">Proje Kodu</span> *
+                            </label>
+                            <input type="text" name="code" id="projectCode"
+                                   value="{{ project.code if project else '' }}" 
+                                   data-tr-placeholder="Örn: PRJ001" data-de-placeholder="z.B. PRJ001"
+                                   placeholder="Örn: PRJ001" required style="text-transform: uppercase;">
+                        </div>
+                        
+                        <div class="form-group">
+                            <label>
+                                <i class="ti ti-folder"></i>
+                                <span data-tr="Proje Adı" data-de="Projektname">Proje Adı</span> *
+                            </label>
+                            <input type="text" name="name" id="projectName"
+                                   value="{{ project.name if project else '' }}" 
+                                   data-tr-placeholder="Proje adını girin" data-de-placeholder="Projektname eingeben"
+                                   placeholder="Proje adını girin" required>
+                        </div>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label>
+                            <i class="ti ti-file-text"></i>
+                            <span data-tr="Açıklama" data-de="Beschreibung">Açıklama</span>
+                        </label>
+                        <textarea name="description" id="projectDesc" rows="3" 
+                                  data-tr-placeholder="Proje hakkında detaylı bilgi" data-de-placeholder="Detaillierte Informationen zum Projekt"
+                                  placeholder="Proje hakkında detaylı bilgi">{{ project.description if project else '' }}</textarea>
+                    </div>
+                </div>
+
+                <!-- Detay Bilgileri -->
+                <div class="form-section">
+                    <div class="form-section-title">
+                        <i class="ti ti-settings"></i>
+                        <span data-tr="Detay Bilgileri" data-de="Detailinformationen">Detay Bilgileri</span>
+                    </div>
+                    
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>
+                                <i class="ti ti-building"></i>
+                                <span data-tr="Sektör" data-de="Sektor">Sektör</span>
+                            </label>
+                            <select name="sector" id="projectSector">
+                                <option value="" data-tr="-- Sektör Seçin --" data-de="-- Sektor auswählen --">-- Sektör Seçin --</option>
+                                <option value="finans" data-tr="Finans" data-de="Finanzen" {{ 'selected' if project and project.sector == 'finans' else '' }}>Finans</option>
+                                <option value="telekom" data-tr="Telekom" data-de="Telekommunikation" {{ 'selected' if project and project.sector == 'telekom' else '' }}>Telekom</option>
+                                <option value="enerji" data-tr="Enerji" data-de="Energie" {{ 'selected' if project and project.sector == 'enerji' else '' }}>Enerji</option>
+                                <option value="sigorta" data-tr="Sigorta" data-de="Versicherung" {{ 'selected' if project and project.sector == 'sigorta' else '' }}>Sigorta</option>
+                                <option value="eticaret" data-tr="E-Ticaret" data-de="E-Commerce" {{ 'selected' if project and project.sector == 'eticaret' else '' }}>E-Ticaret</option>
+                                <option value="saglik" data-tr="Sağlık" data-de="Gesundheit" {{ 'selected' if project and project.sector == 'saglik' else '' }}>Sağlık</option>
+                                <option value="diger" data-tr="Diğer" data-de="Sonstige" {{ 'selected' if project and project.sector == 'diger' else '' }}>Diğer</option>
+                            </select>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label>
+                                <i class="ti ti-user-circle"></i>
+                                <span data-tr="Müşteri / Şirket" data-de="Kunde / Firma">Müşteri / Şirket</span>
+                            </label>
+                            <input type="text" name="client" id="projectClient"
+                                   value="{{ project.client if project else '' }}" 
+                                   data-tr-placeholder="Müşteri veya şirket adı" data-de-placeholder="Kunden- oder Firmenname"
+                                   placeholder="Müşteri veya şirket adı">
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Kampanya Türü -->
+                <div class="form-section">
+                    <div class="form-section-title">
+                        <i class="ti ti-phone"></i>
+                        <span data-tr="Kampanya Türü" data-de="Kampagnentyp">Kampanya Türü</span>
+                    </div>
+                    
+                    <div class="campaign-type-options">
+                        <div class="type-option">
+                            <input type="radio" name="campaign_type" id="typeOutbound" value="outbound" {{ 'checked' if project and project.campaign_type == 'outbound' else '' }}>
+                            <label for="typeOutbound">
+                                <i class="ti ti-phone-outgoing"></i>
+                                <span>Outbound</span>
+                                <small data-tr="Dış Arama" data-de="Ausgehende Anrufe">Dış Arama</small>
+                            </label>
+                        </div>
+                        <div class="type-option">
+                            <input type="radio" name="campaign_type" id="typeInbound" value="inbound" {{ 'checked' if project and project.campaign_type == 'inbound' else '' }}>
+                            <label for="typeInbound">
+                                <i class="ti ti-phone-incoming"></i>
+                                <span>Inbound</span>
+                                <small data-tr="Gelen Çağrı" data-de="Eingehende Anrufe">Gelen Çağrı</small>
+                            </label>
+                        </div>
+                        <div class="type-option">
+                            <input type="radio" name="campaign_type" id="typeBlended" value="blended" {{ 'checked' if not project or project.campaign_type == 'blended' else 'checked' }}>
+                            <label for="typeBlended">
+                                <i class="ti ti-arrows-left-right"></i>
+                                <span>Blended</span>
+                                <small data-tr="Karma" data-de="Gemischt">Karma</small>
+                            </label>
+                        </div>
+                    </div>
                 </div>
                 
-                <div class="form-group">
-                    <label class="form-label">
-                        <i class="ti ti-folder"></i> Proje Adı
-                    </label>
-                    <input type="text" name="name" class="form-control" 
-                           value="{{ project.name if project else '' }}" placeholder="Proje adı" required>
+                <div class="form-footer">
+                    <button type="submit" class="btn-submit">
+                        <i class="ti ti-check"></i>
+                        <span data-tr="{{ 'Güncelle' if project else 'Proje Oluştur' }}" data-de="{{ 'Aktualisieren' if project else 'Projekt erstellen' }}">{{ 'Güncelle' if project else 'Proje Oluştur' }}</span>
+                    </button>
+                    <a href="{{ url_for('projects') }}" class="btn-cancel">
+                        <i class="ti ti-x"></i>
+                        <span data-tr="İptal" data-de="Abbrechen">İptal</span>
+                    </a>
                 </div>
-            </div>
-            
-            <div class="form-group">
-                <label class="form-label">
-                    <i class="ti ti-file-text"></i> Açıklama
-                </label>
-                <textarea name="description" class="form-control" rows="3" 
-                          placeholder="Proje açıklaması">{{ project.description if project else '' }}</textarea>
-            </div>
-            
-            <div class="grid grid-cols-2">
-                <div class="form-group">
-                    <label class="form-label">
-                        <i class="ti ti-building"></i> Sektör
-                    </label>
-                    <input type="text" name="sector" class="form-control" 
-                           value="{{ project.sector if project else '' }}" placeholder="Örn: Finans, Telekom">
-                </div>
-                
-                <div class="form-group">
-                    <label class="form-label">
-                        <i class="ti ti-phone"></i> Kampanya Türü
-                    </label>
-                    <select name="campaign_type" class="form-control">
-                        <option value="outbound" {{ 'selected' if project and project.campaign_type == 'outbound' else '' }}>Outbound (Dış Arama)</option>
-                        <option value="inbound" {{ 'selected' if project and project.campaign_type == 'inbound' else '' }}>Inbound (Gelen Çağrı)</option>
-                        <option value="blended" {{ 'selected' if not project or project.campaign_type == 'blended' else '' }}>Blended (Karma)</option>
-                    </select>
-                </div>
-            </div>
-            
-            <div class="d-flex gap-2" style="margin-top: 2rem;">
-                <button type="submit" class="btn btn-primary">
-                    <i class="ti ti-check"></i> {{ 'Güncelle' if project else 'Oluştur' }}
-                </button>
-                <a href="{{ url_for('projects') }}" class="btn btn-secondary">İptal</a>
-            </div>
-        </form>
+            </form>
+        </div>
     </div>
 </div>
 {% endblock %}
 
+{% block extra_js %}
+<script>
+(function() {
+    'use strict';
 
+    function getCurrentLang() { return localStorage.getItem('selectedLang') || 'tr'; }
 
+    function showNotification(message, type) {
+        const toast = document.createElement('div');
+        toast.style.cssText = 'position:fixed;top:20px;right:20px;padding:15px 25px;border-radius:10px;color:white;font-weight:500;z-index:9999;box-shadow:0 4px 20px rgba(0,0,0,0.2);animation:slideIn 0.3s ease;';
+        toast.style.background = type === 'success' ? 'linear-gradient(135deg, #4CAF50, #45a049)' : type === 'error' ? 'linear-gradient(135deg, #f44336, #d32f2f)' : 'linear-gradient(135deg, #2196F3, #1976D2)';
+        toast.textContent = message;
+        document.body.appendChild(toast);
+        setTimeout(function() { toast.remove(); }, 3000);
+    }
+
+    window.submitForm = function(event) {
+        event.preventDefault();
+        
+        const code = document.getElementById('projectCode').value;
+        const name = document.getElementById('projectName').value;
+        
+        if (!code || !name) {
+            showNotification(getCurrentLang() === 'de' ? 'Bitte füllen Sie alle Pflichtfelder aus' : 'Lütfen zorunlu alanları doldurun', 'error');
+            return false;
+        }
+        
+        // Show loading
+        const submitBtn = document.querySelector('.btn-submit');
+        const originalText = submitBtn.innerHTML;
+        submitBtn.innerHTML = '<i class="ti ti-loader-2" style="animation: spin 1s linear infinite;"></i> ' + (getCurrentLang() === 'de' ? 'Speichern...' : 'Kaydediliyor...');
+        submitBtn.disabled = true;
+        
+        // Simulate save (in real app, submit form)
+        setTimeout(function() {
+            showNotification(getCurrentLang() === 'de' ? 'Projekt erfolgreich erstellt!' : 'Proje başarıyla oluşturuldu!', 'success');
+            
+            // Actually submit the form
+            document.getElementById('projectForm').submit();
+        }, 1000);
+        
+        return false;
+    };
+
+    // Auto-uppercase project code
+    document.getElementById('projectCode').addEventListener('input', function(e) {
+        e.target.value = e.target.value.toUpperCase();
+    });
+
+    // Add animation
+    const style = document.createElement('style');
+    style.textContent = '@keyframes slideIn{from{transform:translateX(100%);opacity:0}to{transform:translateX(0);opacity:1}}@keyframes spin{from{transform:rotate(0deg)}to{transform:rotate(360deg)}}';
+    document.head.appendChild(style);
+
+    console.log('Project form initialized');
+})();
+</script>
+{% endblock %}
