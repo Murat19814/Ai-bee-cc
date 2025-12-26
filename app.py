@@ -2778,11 +2778,23 @@ def cc_usage():
 @admin_required
 def cc_support():
     """CC Destek Talepleri"""
-    tickets = SupportTicket.query.filter_by(tenant_id=current_user.tenant_id).order_by(SupportTicket.created_at.desc()).all()
-    announcements = SystemAnnouncement.query.filter(
-        SystemAnnouncement.is_public == True,
-        (SystemAnnouncement.expires_at == None) | (SystemAnnouncement.expires_at > datetime.utcnow())
-    ).order_by(SystemAnnouncement.publish_at.desc()).limit(5).all()
+    try:
+        # Super admin tüm ticketları görebilir
+        if current_user.is_super_admin:
+            tickets = SupportTicket.query.order_by(SupportTicket.created_at.desc()).limit(50).all()
+        elif current_user.tenant_id:
+            tickets = SupportTicket.query.filter_by(tenant_id=current_user.tenant_id).order_by(SupportTicket.created_at.desc()).all()
+        else:
+            tickets = []
+        
+        announcements = SystemAnnouncement.query.filter(
+            SystemAnnouncement.is_public == True,
+            (SystemAnnouncement.expires_at == None) | (SystemAnnouncement.expires_at > datetime.utcnow())
+        ).order_by(SystemAnnouncement.publish_at.desc()).limit(5).all()
+    except Exception as e:
+        app.logger.error(f"Support page error: {str(e)}")
+        tickets = []
+        announcements = []
     
     return render_template('cc_admin/support.html',
                           tickets=tickets,

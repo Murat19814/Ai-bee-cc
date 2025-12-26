@@ -4,18 +4,58 @@
 
 {% block content %}
 <div class="page-header">
-    <h1><i class="ti ti-help"></i> Destek Merkezi</h1>
+    <h1><i class="ti ti-help"></i> <span data-tr="Destek Merkezi" data-de="Support Center">Destek Merkezi</span></h1>
     <div class="page-actions">
         <a href="{{ url_for('cc_support_new') }}" class="btn btn-primary">
-            <i class="ti ti-plus"></i> Yeni Talep
+            <i class="ti ti-plus"></i> <span data-tr="Yeni Talep" data-de="Neues Ticket">Yeni Talep</span>
         </a>
+    </div>
+</div>
+
+<!-- İstatistik Kartları -->
+<div class="stats-grid">
+    <div class="stat-card">
+        <div class="stat-icon blue">
+            <i class="ti ti-ticket"></i>
+        </div>
+        <div class="stat-content">
+            <span class="stat-value">{{ tickets|length }}</span>
+            <span class="stat-label" data-tr="Toplam Talep" data-de="Gesamt Tickets">Toplam Talep</span>
+        </div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-icon green">
+            <i class="ti ti-circle-check"></i>
+        </div>
+        <div class="stat-content">
+            <span class="stat-value">{{ tickets|selectattr('status', 'equalto', 'resolved')|list|length }}</span>
+            <span class="stat-label" data-tr="Çözümlenen" data-de="Gelöst">Çözümlenen</span>
+        </div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-icon orange">
+            <i class="ti ti-clock"></i>
+        </div>
+        <div class="stat-content">
+            <span class="stat-value">{{ tickets|selectattr('status', 'equalto', 'open')|list|length }}</span>
+            <span class="stat-label" data-tr="Bekleyen" data-de="Wartend">Bekleyen</span>
+        </div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-icon purple">
+            <i class="ti ti-speakerphone"></i>
+        </div>
+        <div class="stat-content">
+            <span class="stat-value">{{ announcements|length }}</span>
+            <span class="stat-label" data-tr="Duyuru" data-de="Ankündigungen">Duyuru</span>
+        </div>
     </div>
 </div>
 
 <!-- Duyurular -->
 {% if announcements %}
 <div class="announcements-section">
-    <h3><i class="ti ti-speakerphone"></i> Platform Duyuruları</h3>
+    <h3><i class="ti ti-speakerphone"></i> <span data-tr="Platform Duyuruları" data-de="Plattform Ankündigungen">Platform Duyuruları</span></h3>
     <div class="announcements-list">
         {% for announcement in announcements %}
         <div class="announcement-card {{ 'announcement-' + announcement.announcement_type }}">
@@ -44,30 +84,30 @@
 <!-- Destek Talepleri -->
 <div class="section-card">
     <div class="section-header">
-        <h3><i class="ti ti-ticket"></i> Destek Taleplerim</h3>
+        <h3><i class="ti ti-ticket"></i> <span data-tr="Destek Taleplerim" data-de="Meine Support-Tickets">Destek Taleplerim</span></h3>
         <div class="ticket-filters">
-            <button class="filter-btn active">Tümü</button>
-            <button class="filter-btn">Açık</button>
-            <button class="filter-btn">Bekleyen</button>
-            <button class="filter-btn">Çözümlendi</button>
+            <button class="filter-btn active" onclick="window.filterTickets('all')" data-tr="Tümü" data-de="Alle">Tümü</button>
+            <button class="filter-btn" onclick="window.filterTickets('open')" data-tr="Açık" data-de="Offen">Açık</button>
+            <button class="filter-btn" onclick="window.filterTickets('in_progress')" data-tr="İşleniyor" data-de="In Bearbeitung">İşleniyor</button>
+            <button class="filter-btn" onclick="window.filterTickets('resolved')" data-tr="Çözümlendi" data-de="Gelöst">Çözümlendi</button>
         </div>
     </div>
 
     {% if tickets %}
-    <div class="tickets-list">
+    <div class="tickets-list" id="ticketsList">
         {% for ticket in tickets %}
-        <div class="ticket-card">
+        <div class="ticket-card" data-status="{{ ticket.status }}">
             <div class="ticket-header">
                 <div class="ticket-id">
                     <span class="ticket-number">#{{ ticket.ticket_number }}</span>
                     <span class="ticket-category badge">{{ ticket.category or 'Genel' }}</span>
                 </div>
                 <span class="ticket-status status-{{ ticket.status }}">
-                    {% if ticket.status == 'open' %}Açık
-                    {% elif ticket.status == 'in_progress' %}İşleniyor
-                    {% elif ticket.status == 'waiting_customer' %}Yanıt Bekleniyor
-                    {% elif ticket.status == 'resolved' %}Çözümlendi
-                    {% elif ticket.status == 'closed' %}Kapatıldı
+                    {% if ticket.status == 'open' %}<span data-tr="Açık" data-de="Offen">Açık</span>
+                    {% elif ticket.status == 'in_progress' %}<span data-tr="İşleniyor" data-de="In Bearbeitung">İşleniyor</span>
+                    {% elif ticket.status == 'waiting_customer' %}<span data-tr="Yanıt Bekleniyor" data-de="Wartet auf Antwort">Yanıt Bekleniyor</span>
+                    {% elif ticket.status == 'resolved' %}<span data-tr="Çözümlendi" data-de="Gelöst">Çözümlendi</span>
+                    {% elif ticket.status == 'closed' %}<span data-tr="Kapatıldı" data-de="Geschlossen">Kapatıldı</span>
                     {% else %}{{ ticket.status }}{% endif %}
                 </span>
             </div>
@@ -77,10 +117,14 @@
                 <div class="ticket-meta">
                     <span><i class="ti ti-clock"></i> {{ ticket.created_at.strftime('%d.%m.%Y %H:%M') }}</span>
                     <span class="priority-{{ ticket.priority }}">
-                        <i class="ti ti-flag"></i> {{ ticket.priority|capitalize }}
+                        <i class="ti ti-flag"></i> 
+                        {% if ticket.priority == 'high' %}<span data-tr="Yüksek" data-de="Hoch">Yüksek</span>
+                        {% elif ticket.priority == 'urgent' %}<span data-tr="Acil" data-de="Dringend">Acil</span>
+                        {% elif ticket.priority == 'low' %}<span data-tr="Düşük" data-de="Niedrig">Düşük</span>
+                        {% else %}<span data-tr="Normal" data-de="Normal">Normal</span>{% endif %}
                     </span>
                 </div>
-                <button class="btn btn-outline btn-sm">Detay</button>
+                <button class="btn btn-outline btn-sm" onclick="window.viewTicket('{{ ticket.id }}')" data-tr="Detay" data-de="Details">Detay</button>
             </div>
         </div>
         {% endfor %}
@@ -88,10 +132,10 @@
     {% else %}
     <div class="empty-state">
         <i class="ti ti-ticket-off"></i>
-        <h4>Henüz destek talebi yok</h4>
-        <p>Yardıma ihtiyacınız varsa yeni bir talep oluşturabilirsiniz.</p>
+        <h4 data-tr="Henüz destek talebi yok" data-de="Noch keine Support-Tickets">Henüz destek talebi yok</h4>
+        <p data-tr="Yardıma ihtiyacınız varsa yeni bir talep oluşturabilirsiniz." data-de="Wenn Sie Hilfe benötigen, können Sie ein neues Ticket erstellen.">Yardıma ihtiyacınız varsa yeni bir talep oluşturabilirsiniz.</p>
         <a href="{{ url_for('cc_support_new') }}" class="btn btn-primary">
-            <i class="ti ti-plus"></i> Yeni Talep Oluştur
+            <i class="ti ti-plus"></i> <span data-tr="Yeni Talep Oluştur" data-de="Neues Ticket erstellen">Yeni Talep Oluştur</span>
         </a>
     </div>
     {% endif %}
@@ -99,29 +143,163 @@
 
 <!-- Hızlı Bağlantılar -->
 <div class="quick-links">
-    <a href="#" class="quick-link-card">
+    <a href="#" class="quick-link-card" onclick="window.showNotification('Dokümantasyon yakında eklenecek', 'info')">
         <i class="ti ti-book"></i>
-        <h4>Dokümantasyon</h4>
-        <p>Kullanım kılavuzları ve rehberler</p>
+        <h4 data-tr="Dokümantasyon" data-de="Dokumentation">Dokümantasyon</h4>
+        <p data-tr="Kullanım kılavuzları ve rehberler" data-de="Anleitungen und Handbücher">Kullanım kılavuzları ve rehberler</p>
     </a>
-    <a href="#" class="quick-link-card">
+    <a href="#" class="quick-link-card" onclick="window.showNotification('Video eğitimler yakında eklenecek', 'info')">
         <i class="ti ti-video"></i>
-        <h4>Video Eğitimler</h4>
-        <p>Adım adım video anlatımlar</p>
+        <h4 data-tr="Video Eğitimler" data-de="Video-Tutorials">Video Eğitimler</h4>
+        <p data-tr="Adım adım video anlatımlar" data-de="Schritt-für-Schritt Videoanleitungen">Adım adım video anlatımlar</p>
     </a>
-    <a href="#" class="quick-link-card">
+    <a href="#" class="quick-link-card" onclick="window.openFAQ()">
         <i class="ti ti-messages"></i>
-        <h4>SSS</h4>
-        <p>Sık sorulan sorular</p>
+        <h4 data-tr="SSS" data-de="FAQ">SSS</h4>
+        <p data-tr="Sık sorulan sorular" data-de="Häufig gestellte Fragen">Sık sorulan sorular</p>
     </a>
-    <a href="#" class="quick-link-card">
+    <a href="#" class="quick-link-card" onclick="window.showContactInfo()">
         <i class="ti ti-phone"></i>
-        <h4>Acil Destek</h4>
-        <p>7/24 teknik destek hattı</p>
+        <h4 data-tr="Acil Destek" data-de="Notfall-Support">Acil Destek</h4>
+        <p data-tr="7/24 teknik destek hattı" data-de="24/7 technischer Support">7/24 teknik destek hattı</p>
     </a>
 </div>
 
+<!-- Ticket Detay Modalı -->
+<div id="ticketDetailModal" class="modal">
+    <div class="modal-content modal-lg">
+        <div class="modal-header">
+            <h3><i class="ti ti-ticket"></i> <span data-tr="Ticket Detayı" data-de="Ticket-Details">Ticket Detayı</span></h3>
+            <button class="modal-close" onclick="window.closeModal('ticketDetailModal')">&times;</button>
+        </div>
+        <div class="modal-body">
+            <div class="ticket-detail-content">
+                <p data-tr="Ticket detayları yükleniyor..." data-de="Ticket-Details werden geladen...">Ticket detayları yükleniyor...</p>
+            </div>
+        </div>
+        <div class="modal-footer">
+            <button class="btn btn-outline" onclick="window.closeModal('ticketDetailModal')" data-tr="Kapat" data-de="Schließen">Kapat</button>
+            <button class="btn btn-primary" onclick="window.replyTicket()">
+                <i class="ti ti-send"></i> <span data-tr="Yanıtla" data-de="Antworten">Yanıtla</span>
+            </button>
+        </div>
+    </div>
+</div>
+
+<!-- FAQ Modalı -->
+<div id="faqModal" class="modal">
+    <div class="modal-content modal-lg">
+        <div class="modal-header">
+            <h3><i class="ti ti-messages"></i> <span data-tr="Sık Sorulan Sorular" data-de="Häufig gestellte Fragen">Sık Sorulan Sorular</span></h3>
+            <button class="modal-close" onclick="window.closeModal('faqModal')">&times;</button>
+        </div>
+        <div class="modal-body">
+            <div class="faq-list">
+                <div class="faq-item">
+                    <div class="faq-question" onclick="this.parentElement.classList.toggle('open')">
+                        <span data-tr="Agent nasıl eklenir?" data-de="Wie füge ich einen Agenten hinzu?">Agent nasıl eklenir?</span>
+                        <i class="ti ti-chevron-down"></i>
+                    </div>
+                    <div class="faq-answer" data-tr="Yönetim > Kullanıcı Yönetimi menüsünden 'Yeni Kullanıcı' butonuna tıklayarak agent ekleyebilirsiniz." data-de="Sie können einen Agenten hinzufügen, indem Sie im Menü Verwaltung > Benutzerverwaltung auf 'Neuer Benutzer' klicken.">Yönetim > Kullanıcı Yönetimi menüsünden 'Yeni Kullanıcı' butonuna tıklayarak agent ekleyebilirsiniz.</div>
+                </div>
+                <div class="faq-item">
+                    <div class="faq-question" onclick="this.parentElement.classList.toggle('open')">
+                        <span data-tr="Kampanya nasıl oluşturulur?" data-de="Wie erstelle ich eine Kampagne?">Kampanya nasıl oluşturulur?</span>
+                        <i class="ti ti-chevron-down"></i>
+                    </div>
+                    <div class="faq-answer" data-tr="Kampanyalar menüsünden 'Yeni Kampanya' butonuna tıklayarak kampanya oluşturabilirsiniz." data-de="Sie können eine Kampagne erstellen, indem Sie im Menü Kampagnen auf 'Neue Kampagne' klicken.">Kampanyalar menüsünden 'Yeni Kampanya' butonuna tıklayarak kampanya oluşturabilirsiniz.</div>
+                </div>
+                <div class="faq-item">
+                    <div class="faq-question" onclick="this.parentElement.classList.toggle('open')">
+                        <span data-tr="VoIP ayarları nasıl yapılır?" data-de="Wie konfiguriere ich VoIP-Einstellungen?">VoIP ayarları nasıl yapılır?</span>
+                        <i class="ti ti-chevron-down"></i>
+                    </div>
+                    <div class="faq-answer" data-tr="VoIP > SIP Trunk menüsünden trunk ekleyebilir ve yapılandırabilirsiniz." data-de="Sie können Trunks im Menü VoIP > SIP Trunk hinzufügen und konfigurieren.">VoIP > SIP Trunk menüsünden trunk ekleyebilir ve yapılandırabilirsiniz.</div>
+                </div>
+                <div class="faq-item">
+                    <div class="faq-question" onclick="this.parentElement.classList.toggle('open')">
+                        <span data-tr="Raporlar nasıl indirilir?" data-de="Wie lade ich Berichte herunter?">Raporlar nasıl indirilir?</span>
+                        <i class="ti ti-chevron-down"></i>
+                    </div>
+                    <div class="faq-answer" data-tr="Raporlar menüsünden istediğiniz raporu seçip Excel veya PDF olarak indirebilirsiniz." data-de="Sie können im Menü Berichte den gewünschten Bericht auswählen und als Excel oder PDF herunterladen.">Raporlar menüsünden istediğiniz raporu seçip Excel veya PDF olarak indirebilirsiniz.</div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- İletişim Modalı -->
+<div id="contactModal" class="modal">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h3><i class="ti ti-phone"></i> <span data-tr="Acil Destek İletişim" data-de="Notfall-Support Kontakt">Acil Destek İletişim</span></h3>
+            <button class="modal-close" onclick="window.closeModal('contactModal')">&times;</button>
+        </div>
+        <div class="modal-body">
+            <div class="contact-info">
+                <div class="contact-item">
+                    <i class="ti ti-phone"></i>
+                    <div>
+                        <strong data-tr="Telefon" data-de="Telefon">Telefon</strong>
+                        <p>+49 30 1234567</p>
+                    </div>
+                </div>
+                <div class="contact-item">
+                    <i class="ti ti-mail"></i>
+                    <div>
+                        <strong>E-Mail</strong>
+                        <p>support@ai-bee-cc.com</p>
+                    </div>
+                </div>
+                <div class="contact-item">
+                    <i class="ti ti-clock"></i>
+                    <div>
+                        <strong data-tr="Çalışma Saatleri" data-de="Öffnungszeiten">Çalışma Saatleri</strong>
+                        <p data-tr="7/24 Hizmet" data-de="24/7 Service">7/24 Hizmet</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
 <style>
+.stats-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 1rem;
+    margin-bottom: 2rem;
+}
+
+.stat-card {
+    background: white;
+    border-radius: 12px;
+    padding: 1.25rem;
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+}
+
+.stat-icon {
+    width: 50px;
+    height: 50px;
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.5rem;
+}
+
+.stat-icon.blue { background: #e3f2fd; color: #1565c0; }
+.stat-icon.green { background: #e8f5e9; color: #2e7d32; }
+.stat-icon.orange { background: #fff3e0; color: #e65100; }
+.stat-icon.purple { background: #f3e5f5; color: #7b1fa2; }
+
+.stat-content { display: flex; flex-direction: column; }
+.stat-value { font-size: 1.5rem; font-weight: 700; }
+.stat-label { font-size: 0.85rem; color: var(--text-muted); }
+
 .announcements-section {
     margin-bottom: 2rem;
 }
@@ -149,20 +327,9 @@
     border-left: 4px solid #ddd;
 }
 
-.announcement-maintenance {
-    border-left-color: #ff9800;
-    background: linear-gradient(90deg, #fff8e1, white);
-}
-
-.announcement-incident {
-    border-left-color: #f44336;
-    background: linear-gradient(90deg, #ffebee, white);
-}
-
-.announcement-feature {
-    border-left-color: #4caf50;
-    background: linear-gradient(90deg, #e8f5e9, white);
-}
+.announcement-maintenance { border-left-color: #ff9800; background: linear-gradient(90deg, #fff8e1, white); }
+.announcement-incident { border-left-color: #f44336; background: linear-gradient(90deg, #ffebee, white); }
+.announcement-feature { border-left-color: #4caf50; background: linear-gradient(90deg, #e8f5e9, white); }
 
 .announcement-icon {
     width: 40px;
@@ -175,20 +342,9 @@
     background: rgba(0,0,0,0.05);
 }
 
-.announcement-content h4 {
-    margin-bottom: 0.5rem;
-}
-
-.announcement-content p {
-    color: var(--text-secondary);
-    font-size: 0.9rem;
-    margin-bottom: 0.5rem;
-}
-
-.announcement-date {
-    font-size: 0.8rem;
-    color: var(--text-muted);
-}
+.announcement-content h4 { margin-bottom: 0.5rem; }
+.announcement-content p { color: var(--text-secondary); font-size: 0.9rem; margin-bottom: 0.5rem; }
+.announcement-date { font-size: 0.8rem; color: var(--text-muted); }
 
 .section-card {
     background: white;
@@ -205,18 +361,13 @@
     margin-bottom: 1.5rem;
     padding-bottom: 1rem;
     border-bottom: 1px solid #eee;
+    flex-wrap: wrap;
+    gap: 1rem;
 }
 
-.section-header h3 {
-    display: flex;
-    align-items: center;
-    gap: 0.5rem;
-}
+.section-header h3 { display: flex; align-items: center; gap: 0.5rem; }
 
-.ticket-filters {
-    display: flex;
-    gap: 0.5rem;
-}
+.ticket-filters { display: flex; gap: 0.5rem; flex-wrap: wrap; }
 
 .filter-btn {
     padding: 0.5rem 1rem;
@@ -228,21 +379,10 @@
     transition: all 0.2s;
 }
 
-.filter-btn:hover {
-    border-color: var(--primary-color);
-}
+.filter-btn:hover { border-color: var(--primary-color); }
+.filter-btn.active { background: var(--primary-color); color: white; border-color: var(--primary-color); }
 
-.filter-btn.active {
-    background: var(--primary-color);
-    color: white;
-    border-color: var(--primary-color);
-}
-
-.tickets-list {
-    display: flex;
-    flex-direction: column;
-    gap: 1rem;
-}
+.tickets-list { display: flex; flex-direction: column; gap: 1rem; }
 
 .ticket-card {
     border: 1px solid #eee;
@@ -256,23 +396,19 @@
     box-shadow: 0 2px 8px rgba(0,0,0,0.05);
 }
 
+.ticket-card.hidden { display: none; }
+
 .ticket-header {
     display: flex;
     justify-content: space-between;
     align-items: center;
     margin-bottom: 0.75rem;
-}
-
-.ticket-id {
-    display: flex;
-    align-items: center;
+    flex-wrap: wrap;
     gap: 0.5rem;
 }
 
-.ticket-number {
-    font-weight: 600;
-    color: var(--text-primary);
-}
+.ticket-id { display: flex; align-items: center; gap: 0.5rem; }
+.ticket-number { font-weight: 600; color: var(--text-primary); }
 
 .ticket-status {
     padding: 0.25rem 0.75rem;
@@ -281,69 +417,22 @@
     font-weight: 600;
 }
 
-.status-open {
-    background: #e3f2fd;
-    color: #1565c0;
-}
+.status-open { background: #e3f2fd; color: #1565c0; }
+.status-in_progress { background: #fff3e0; color: #e65100; }
+.status-waiting_customer { background: #f3e5f5; color: #7b1fa2; }
+.status-resolved { background: #e8f5e9; color: #2e7d32; }
+.status-closed { background: #f5f5f5; color: #757575; }
 
-.status-in_progress {
-    background: #fff3e0;
-    color: #e65100;
-}
+.ticket-subject { margin-bottom: 0.5rem; }
+.ticket-preview { color: var(--text-secondary); font-size: 0.9rem; margin-bottom: 1rem; }
 
-.status-waiting_customer {
-    background: #f3e5f5;
-    color: #7b1fa2;
-}
+.ticket-footer { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 0.5rem; }
+.ticket-meta { display: flex; gap: 1rem; font-size: 0.85rem; color: var(--text-muted); }
+.ticket-meta span { display: flex; align-items: center; gap: 0.25rem; }
 
-.status-resolved {
-    background: #e8f5e9;
-    color: #2e7d32;
-}
+.priority-high, .priority-urgent { color: #f44336; }
 
-.status-closed {
-    background: #f5f5f5;
-    color: #757575;
-}
-
-.ticket-subject {
-    margin-bottom: 0.5rem;
-}
-
-.ticket-preview {
-    color: var(--text-secondary);
-    font-size: 0.9rem;
-    margin-bottom: 1rem;
-}
-
-.ticket-footer {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-}
-
-.ticket-meta {
-    display: flex;
-    gap: 1rem;
-    font-size: 0.85rem;
-    color: var(--text-muted);
-}
-
-.ticket-meta span {
-    display: flex;
-    align-items: center;
-    gap: 0.25rem;
-}
-
-.priority-high, .priority-urgent {
-    color: #f44336;
-}
-
-.quick-links {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-    gap: 1rem;
-}
+.quick-links { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem; }
 
 .quick-link-card {
     background: white;
@@ -354,6 +443,7 @@
     color: inherit;
     box-shadow: 0 2px 8px rgba(0,0,0,0.05);
     transition: all 0.2s;
+    cursor: pointer;
 }
 
 .quick-link-card:hover {
@@ -361,20 +451,9 @@
     box-shadow: 0 4px 16px rgba(0,0,0,0.1);
 }
 
-.quick-link-card i {
-    font-size: 2.5rem;
-    color: var(--primary-color);
-    margin-bottom: 1rem;
-}
-
-.quick-link-card h4 {
-    margin-bottom: 0.5rem;
-}
-
-.quick-link-card p {
-    font-size: 0.85rem;
-    color: var(--text-muted);
-}
+.quick-link-card i { font-size: 2.5rem; color: var(--primary-color); margin-bottom: 1rem; }
+.quick-link-card h4 { margin-bottom: 0.5rem; }
+.quick-link-card p { font-size: 0.85rem; color: var(--text-muted); }
 
 .badge {
     padding: 0.2rem 0.5rem;
@@ -383,27 +462,219 @@
     background: #f0f0f0;
 }
 
-.empty-state {
-    text-align: center;
-    padding: 3rem;
+.empty-state { text-align: center; padding: 3rem; }
+.empty-state i { font-size: 4rem; color: var(--text-muted); margin-bottom: 1rem; }
+.empty-state h4 { margin-bottom: 0.5rem; }
+.empty-state p { color: var(--text-muted); margin-bottom: 1.5rem; }
+
+/* Modal */
+.modal {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0,0,0,0.5);
+    z-index: 1000;
+    align-items: center;
+    justify-content: center;
 }
 
-.empty-state i {
-    font-size: 4rem;
-    color: var(--text-muted);
-    margin-bottom: 1rem;
+.modal.active { display: flex; }
+
+.modal-content {
+    background: white;
+    border-radius: 16px;
+    width: 90%;
+    max-width: 500px;
+    max-height: 90vh;
+    overflow-y: auto;
 }
 
-.empty-state h4 {
-    margin-bottom: 0.5rem;
+.modal-content.modal-lg { max-width: 700px; }
+
+.modal-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 1.25rem 1.5rem;
+    border-bottom: 1px solid #eee;
 }
 
-.empty-state p {
-    color: var(--text-muted);
-    margin-bottom: 1.5rem;
+.modal-header h3 { display: flex; align-items: center; gap: 0.5rem; }
+
+.modal-close {
+    width: 32px;
+    height: 32px;
+    border: none;
+    background: #f0f0f0;
+    border-radius: 8px;
+    font-size: 1.25rem;
+    cursor: pointer;
 }
+
+.modal-body { padding: 1.5rem; }
+
+.modal-footer {
+    display: flex;
+    justify-content: flex-end;
+    gap: 0.75rem;
+    padding: 1rem 1.5rem;
+    border-top: 1px solid #eee;
+}
+
+/* FAQ */
+.faq-list { display: flex; flex-direction: column; gap: 0.5rem; }
+
+.faq-item {
+    border: 1px solid #eee;
+    border-radius: 8px;
+    overflow: hidden;
+}
+
+.faq-question {
+    padding: 1rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    cursor: pointer;
+    font-weight: 500;
+    background: #f8f9fa;
+}
+
+.faq-question i { transition: transform 0.2s; }
+.faq-item.open .faq-question i { transform: rotate(180deg); }
+
+.faq-answer {
+    padding: 0 1rem;
+    max-height: 0;
+    overflow: hidden;
+    transition: all 0.3s;
+    color: var(--text-secondary);
+}
+
+.faq-item.open .faq-answer {
+    padding: 1rem;
+    max-height: 200px;
+}
+
+/* Contact */
+.contact-info { display: flex; flex-direction: column; gap: 1rem; }
+
+.contact-item {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    padding: 1rem;
+    background: #f8f9fa;
+    border-radius: 8px;
+}
+
+.contact-item i { font-size: 1.5rem; color: var(--primary-color); }
+.contact-item strong { display: block; margin-bottom: 0.25rem; }
+.contact-item p { color: var(--text-secondary); margin: 0; }
+
+/* Buttons */
+.btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.5rem 1rem;
+    border: none;
+    border-radius: 8px;
+    font-size: 0.9rem;
+    cursor: pointer;
+    transition: all 0.2s;
+    text-decoration: none;
+}
+
+.btn-primary {
+    background: linear-gradient(135deg, var(--primary-color), #ffc107);
+    color: white;
+}
+
+.btn-primary:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+}
+
+.btn-outline {
+    background: white;
+    border: 1px solid #ddd;
+    color: var(--text-primary);
+}
+
+.btn-outline:hover {
+    border-color: var(--primary-color);
+    color: var(--primary-color);
+}
+
+.btn-sm { padding: 0.4rem 0.75rem; font-size: 0.85rem; }
 </style>
+
+<script>
+window.onload = function() {
+    if(typeof setLang === 'function') {
+        setLang(localStorage.getItem('lang') || 'tr');
+    }
+};
+
+// Filter tickets
+window.filterTickets = function(status) {
+    document.querySelectorAll('.filter-btn').forEach(btn => btn.classList.remove('active'));
+    event.target.classList.add('active');
+    
+    document.querySelectorAll('.ticket-card').forEach(card => {
+        if(status === 'all' || card.dataset.status === status) {
+            card.classList.remove('hidden');
+        } else {
+            card.classList.add('hidden');
+        }
+    });
+};
+
+// View ticket detail
+window.viewTicket = function(id) {
+    document.getElementById('ticketDetailModal').classList.add('active');
+    showNotification('Ticket detayları yükleniyor...', 'info');
+};
+
+// Reply to ticket
+window.replyTicket = function() {
+    showNotification('Yanıt gönderme yakında eklenecek', 'info');
+};
+
+// Open FAQ
+window.openFAQ = function() {
+    document.getElementById('faqModal').classList.add('active');
+};
+
+// Show contact info
+window.showContactInfo = function() {
+    document.getElementById('contactModal').classList.add('active');
+};
+
+// Close modal
+window.closeModal = function(modalId) {
+    document.getElementById(modalId).classList.remove('active');
+};
+
+// Notification
+window.showNotification = function(message, type) {
+    const colors = { success: '#4caf50', error: '#f44336', info: '#2196f3' };
+    const notification = document.createElement('div');
+    notification.innerHTML = '<i class="ti ti-' + (type === 'success' ? 'check' : type === 'error' ? 'x' : 'info-circle') + '"></i> ' + message;
+    notification.style.cssText = 'position:fixed;top:20px;right:20px;background:' + colors[type] + ';color:white;padding:1rem 1.5rem;border-radius:8px;z-index:9999;display:flex;align-items:center;gap:0.5rem;box-shadow:0 4px 12px rgba(0,0,0,0.15);';
+    document.body.appendChild(notification);
+    setTimeout(() => notification.remove(), 3000);
+};
+
+// Close modals on outside click
+document.querySelectorAll('.modal').forEach(modal => {
+    modal.addEventListener('click', function(e) {
+        if(e.target === this) this.classList.remove('active');
+    });
+});
+</script>
 {% endblock %}
-
-
-
