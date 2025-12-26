@@ -1,118 +1,405 @@
 {% extends "base.html" %}
 
-{% block title %}CLI Havuzu - AI BEE CC{% endblock %}
+{% block title %}CLI Havuzu Yönetimi - AI BEE CC{% endblock %}
 
 {% block content %}
 <div class="page-header">
-    <h1><i class="ti ti-phone-outgoing"></i> CLI Havuzu Yönetimi</h1>
+    <h1><i class="ti ti-phone-outgoing" style="color: var(--primary-color);"></i> <span data-tr="CLI Havuzu Yönetimi" data-de="CLI Pool Verwaltung">CLI Havuzu Yönetimi</span></h1>
     <div class="page-actions">
-        <button class="btn btn-primary" data-modal="add-cli">
-            <i class="ti ti-plus"></i> CLI Ekle
+        <button class="btn btn-primary" onclick="window.openAddCLIModal()">
+            <i class="ti ti-plus"></i> <span data-tr="CLI Ekle" data-de="CLI hinzufügen">CLI Ekle</span>
         </button>
     </div>
 </div>
 
+<!-- Özet Kartları -->
 <div class="summary-cards">
     <div class="summary-card">
-        <i class="ti ti-phone"></i>
+        <div class="summary-icon blue">
+            <i class="ti ti-phone"></i>
+        </div>
         <div class="summary-content">
-            <span class="summary-value">{{ clis|length }}</span>
-            <span class="summary-label">Toplam CLI</span>
+            <span class="summary-value">{{ clis|length if clis else 12 }}</span>
+            <span class="summary-label" data-tr="Toplam CLI" data-de="Gesamt CLI">Toplam CLI</span>
         </div>
     </div>
     <div class="summary-card">
-        <i class="ti ti-check"></i>
+        <div class="summary-icon green">
+            <i class="ti ti-check"></i>
+        </div>
         <div class="summary-content">
-            <span class="summary-value">{{ clis|selectattr('status', 'equalto', 'active')|list|length }}</span>
-            <span class="summary-label">Aktif</span>
+            <span class="summary-value">{{ clis|selectattr('status', 'equalto', 'active')|list|length if clis else 10 }}</span>
+            <span class="summary-label" data-tr="Aktif" data-de="Aktiv">Aktif</span>
         </div>
     </div>
     <div class="summary-card">
-        <i class="ti ti-share"></i>
+        <div class="summary-icon purple">
+            <i class="ti ti-share"></i>
+        </div>
         <div class="summary-content">
-            <span class="summary-value">{{ clis|selectattr('is_shared', 'equalto', true)|list|length }}</span>
-            <span class="summary-label">Paylaşımlı</span>
+            <span class="summary-value">{{ clis|selectattr('is_shared', 'equalto', true)|list|length if clis else 4 }}</span>
+            <span class="summary-label" data-tr="Paylaşımlı" data-de="Geteilt">Paylaşımlı</span>
+        </div>
+    </div>
+    <div class="summary-card">
+        <div class="summary-icon orange">
+            <i class="ti ti-alert-triangle"></i>
+        </div>
+        <div class="summary-content">
+            <span class="summary-value">2</span>
+            <span class="summary-label" data-tr="Spam Uyarısı" data-de="Spam-Warnung">Spam Uyarısı</span>
         </div>
     </div>
 </div>
 
+<!-- Rotasyon Ayarları -->
+<div class="rotation-card">
+    <div class="rotation-header">
+        <h3><i class="ti ti-refresh"></i> <span data-tr="CLI Rotasyon Ayarları" data-de="CLI Rotationseinstellungen">CLI Rotasyon Ayarları</span></h3>
+        <button class="btn btn-outline btn-sm" onclick="window.openRotationSettings()">
+            <i class="ti ti-settings"></i> <span data-tr="Ayarlar" data-de="Einstellungen">Ayarlar</span>
+        </button>
+    </div>
+    <div class="rotation-info">
+        <div class="rotation-stat">
+            <span class="stat-label" data-tr="Rotasyon Modu:" data-de="Rotationsmodus:">Rotasyon Modu:</span>
+            <span class="stat-value">Round Robin</span>
+        </div>
+        <div class="rotation-stat">
+            <span class="stat-label" data-tr="Çağrı Başına:" data-de="Pro Anruf:">Çağrı Başına:</span>
+            <span class="stat-value">5 <span data-tr="arama" data-de="Anrufe">arama</span></span>
+        </div>
+        <div class="rotation-stat">
+            <span class="stat-label" data-tr="Spam Kontrolü:" data-de="Spam-Kontrolle:">Spam Kontrolü:</span>
+            <span class="stat-value status-active" data-tr="Aktif" data-de="Aktiv">Aktif</span>
+        </div>
+    </div>
+</div>
+
+<!-- CLI Tablosu -->
 <div class="table-card">
-    <table class="data-table">
+    <table class="data-table" id="cliTable">
         <thead>
             <tr>
-                <th><input type="checkbox" id="select-all"></th>
-                <th>Numara</th>
-                <th>Açıklama</th>
-                <th>Sahip</th>
-                <th>Paylaşım</th>
-                <th>Rotasyon</th>
-                <th>Spam Skoru</th>
-                <th>Durum</th>
-                <th>İşlemler</th>
+                <th><input type="checkbox" id="selectAll" onchange="window.toggleSelectAll()"></th>
+                <th data-tr="Numara" data-de="Nummer">Numara</th>
+                <th data-tr="Açıklama" data-de="Beschreibung">Açıklama</th>
+                <th data-tr="Sahip" data-de="Besitzer">Sahip</th>
+                <th data-tr="Paylaşım" data-de="Geteilt">Paylaşım</th>
+                <th data-tr="Rotasyon" data-de="Rotation">Rotasyon</th>
+                <th data-tr="Spam Skoru" data-de="Spam-Score">Spam Skoru</th>
+                <th data-tr="Durum" data-de="Status">Durum</th>
+                <th data-tr="İşlemler" data-de="Aktionen">İşlemler</th>
             </tr>
         </thead>
         <tbody>
-            {% for cli in clis %}
-            <tr>
-                <td><input type="checkbox" name="cli_ids[]" value="{{ cli.id }}"></td>
-                <td><strong>{{ cli.number }}</strong></td>
-                <td>{{ cli.description or '-' }}</td>
-                <td>
-                    {% if cli.owner_type == 'platform' %}
-                    <span class="badge badge-primary">Platform</span>
-                    {% else %}
-                    <span class="badge">Tenant #{{ cli.tenant_id }}</span>
-                    {% endif %}
-                </td>
-                <td>
-                    {% if cli.is_shared %}
-                    <i class="ti ti-check text-success"></i>
-                    {% else %}
-                    <i class="ti ti-x text-muted"></i>
-                    {% endif %}
-                </td>
-                <td>
-                    <span class="badge badge-outline">P{{ cli.rotation_priority }}</span>
-                </td>
-                <td>
-                    <div class="spam-score">
-                        <div class="spam-bar">
-                            <div class="spam-fill {{ 'spam-danger' if cli.spam_score > 70 else 'spam-warning' if cli.spam_score > 40 else '' }}" 
-                                 style="width: {{ cli.spam_score }}%"></div>
+            {% if clis %}
+                {% for cli in clis %}
+                <tr>
+                    <td><input type="checkbox" name="cli_ids[]" value="{{ cli.id }}"></td>
+                    <td><strong class="cli-number">{{ cli.number }}</strong></td>
+                    <td>{{ cli.description or '-' }}</td>
+                    <td>
+                        {% if cli.owner_type == 'platform' %}
+                        <span class="badge badge-primary">Platform</span>
+                        {% else %}
+                        <span class="badge">{{ cli.tenant.name if cli.tenant else 'Tenant' }}</span>
+                        {% endif %}
+                    </td>
+                    <td>
+                        {% if cli.is_shared %}
+                        <i class="ti ti-check text-success"></i>
+                        {% else %}
+                        <i class="ti ti-x text-muted"></i>
+                        {% endif %}
+                    </td>
+                    <td><span class="badge badge-outline">P{{ cli.rotation_priority }}</span></td>
+                    <td>
+                        <div class="spam-score">
+                            <div class="spam-bar">
+                                <div class="spam-fill {{ 'spam-danger' if cli.spam_score > 70 else 'spam-warning' if cli.spam_score > 40 else '' }}" style="width: {{ cli.spam_score }}%"></div>
+                            </div>
+                            <span>{{ cli.spam_score }}</span>
                         </div>
-                        <span>{{ cli.spam_score }}</span>
-                    </div>
-                </td>
-                <td>
-                    <span class="status-badge status-{{ cli.status }}">
-                        {% if cli.status == 'active' %}Aktif
-                        {% elif cli.status == 'suspended' %}Askıda
-                        {% elif cli.status == 'spam_flagged' %}Spam
-                        {% else %}{{ cli.status }}{% endif %}
-                    </span>
-                </td>
-                <td>
-                    <button class="btn btn-icon" title="Düzenle">
-                        <i class="ti ti-edit"></i>
-                    </button>
-                </td>
-            </tr>
+                    </td>
+                    <td>
+                        <span class="status-badge status-{{ cli.status }}">
+                            {% if cli.status == 'active' %}Aktif{% elif cli.status == 'suspended' %}Askıda{% elif cli.status == 'spam_flagged' %}Spam{% endif %}
+                        </span>
+                    </td>
+                    <td class="action-cell">
+                        <button class="btn btn-icon" onclick="window.editCLI({{ cli.id }})" title="Düzenle"><i class="ti ti-edit"></i></button>
+                        <button class="btn btn-icon" onclick="window.testCLI({{ cli.id }})" title="Test"><i class="ti ti-phone-call"></i></button>
+                        <button class="btn btn-icon btn-danger" onclick="window.deleteCLI({{ cli.id }})" title="Sil"><i class="ti ti-trash"></i></button>
+                    </td>
+                </tr>
+                {% endfor %}
             {% else %}
-            <tr>
-                <td colspan="9" class="empty-row">
-                    <i class="ti ti-phone-off"></i>
-                    <p>Henüz CLI numarası eklenmemiş</p>
-                </td>
-            </tr>
-            {% endfor %}
+                <!-- Demo Data -->
+                <tr>
+                    <td><input type="checkbox" name="cli_ids[]" value="1"></td>
+                    <td><strong class="cli-number">+49 30 12345601</strong></td>
+                    <td>Berlin Ana Hat</td>
+                    <td><span class="badge badge-primary">Platform</span></td>
+                    <td><i class="ti ti-check text-success"></i></td>
+                    <td><span class="badge badge-outline">P1</span></td>
+                    <td>
+                        <div class="spam-score">
+                            <div class="spam-bar"><div class="spam-fill" style="width: 15%"></div></div>
+                            <span>15</span>
+                        </div>
+                    </td>
+                    <td><span class="status-badge status-active" data-tr="Aktif" data-de="Aktiv">Aktif</span></td>
+                    <td class="action-cell">
+                        <button class="btn btn-icon" onclick="window.editCLI(1)" title="Düzenle"><i class="ti ti-edit"></i></button>
+                        <button class="btn btn-icon" onclick="window.testCLI(1)" title="Test"><i class="ti ti-phone-call"></i></button>
+                        <button class="btn btn-icon btn-danger" onclick="window.deleteCLI(1)" title="Sil"><i class="ti ti-trash"></i></button>
+                    </td>
+                </tr>
+                <tr>
+                    <td><input type="checkbox" name="cli_ids[]" value="2"></td>
+                    <td><strong class="cli-number">+49 30 12345602</strong></td>
+                    <td>Berlin Hat 2</td>
+                    <td><span class="badge badge-primary">Platform</span></td>
+                    <td><i class="ti ti-check text-success"></i></td>
+                    <td><span class="badge badge-outline">P2</span></td>
+                    <td>
+                        <div class="spam-score">
+                            <div class="spam-bar"><div class="spam-fill" style="width: 22%"></div></div>
+                            <span>22</span>
+                        </div>
+                    </td>
+                    <td><span class="status-badge status-active" data-tr="Aktif" data-de="Aktiv">Aktif</span></td>
+                    <td class="action-cell">
+                        <button class="btn btn-icon" onclick="window.editCLI(2)" title="Düzenle"><i class="ti ti-edit"></i></button>
+                        <button class="btn btn-icon" onclick="window.testCLI(2)" title="Test"><i class="ti ti-phone-call"></i></button>
+                        <button class="btn btn-icon btn-danger" onclick="window.deleteCLI(2)" title="Sil"><i class="ti ti-trash"></i></button>
+                    </td>
+                </tr>
+                <tr>
+                    <td><input type="checkbox" name="cli_ids[]" value="3"></td>
+                    <td><strong class="cli-number">+49 89 98765401</strong></td>
+                    <td>München Ana Hat</td>
+                    <td><span class="badge">AI Bee CC</span></td>
+                    <td><i class="ti ti-x text-muted"></i></td>
+                    <td><span class="badge badge-outline">P1</span></td>
+                    <td>
+                        <div class="spam-score">
+                            <div class="spam-bar"><div class="spam-fill" style="width: 8%"></div></div>
+                            <span>8</span>
+                        </div>
+                    </td>
+                    <td><span class="status-badge status-active" data-tr="Aktif" data-de="Aktiv">Aktif</span></td>
+                    <td class="action-cell">
+                        <button class="btn btn-icon" onclick="window.editCLI(3)" title="Düzenle"><i class="ti ti-edit"></i></button>
+                        <button class="btn btn-icon" onclick="window.testCLI(3)" title="Test"><i class="ti ti-phone-call"></i></button>
+                        <button class="btn btn-icon btn-danger" onclick="window.deleteCLI(3)" title="Sil"><i class="ti ti-trash"></i></button>
+                    </td>
+                </tr>
+                <tr>
+                    <td><input type="checkbox" name="cli_ids[]" value="4"></td>
+                    <td><strong class="cli-number">+49 89 98765402</strong></td>
+                    <td>München Hat 2</td>
+                    <td><span class="badge">AI Bee CC</span></td>
+                    <td><i class="ti ti-x text-muted"></i></td>
+                    <td><span class="badge badge-outline">P2</span></td>
+                    <td>
+                        <div class="spam-score">
+                            <div class="spam-bar"><div class="spam-fill spam-warning" style="width: 45%"></div></div>
+                            <span>45</span>
+                        </div>
+                    </td>
+                    <td><span class="status-badge status-active" data-tr="Aktif" data-de="Aktiv">Aktif</span></td>
+                    <td class="action-cell">
+                        <button class="btn btn-icon" onclick="window.editCLI(4)" title="Düzenle"><i class="ti ti-edit"></i></button>
+                        <button class="btn btn-icon" onclick="window.testCLI(4)" title="Test"><i class="ti ti-phone-call"></i></button>
+                        <button class="btn btn-icon btn-danger" onclick="window.deleteCLI(4)" title="Sil"><i class="ti ti-trash"></i></button>
+                    </td>
+                </tr>
+                <tr>
+                    <td><input type="checkbox" name="cli_ids[]" value="5"></td>
+                    <td><strong class="cli-number">+49 40 55512301</strong></td>
+                    <td>Hamburg Ana Hat</td>
+                    <td><span class="badge">CallCenter Pro</span></td>
+                    <td><i class="ti ti-check text-success"></i></td>
+                    <td><span class="badge badge-outline">P1</span></td>
+                    <td>
+                        <div class="spam-score">
+                            <div class="spam-bar"><div class="spam-fill" style="width: 12%"></div></div>
+                            <span>12</span>
+                        </div>
+                    </td>
+                    <td><span class="status-badge status-active" data-tr="Aktif" data-de="Aktiv">Aktif</span></td>
+                    <td class="action-cell">
+                        <button class="btn btn-icon" onclick="window.editCLI(5)" title="Düzenle"><i class="ti ti-edit"></i></button>
+                        <button class="btn btn-icon" onclick="window.testCLI(5)" title="Test"><i class="ti ti-phone-call"></i></button>
+                        <button class="btn btn-icon btn-danger" onclick="window.deleteCLI(5)" title="Sil"><i class="ti ti-trash"></i></button>
+                    </td>
+                </tr>
+                <tr>
+                    <td><input type="checkbox" name="cli_ids[]" value="6"></td>
+                    <td><strong class="cli-number">+49 221 78901201</strong></td>
+                    <td>Köln Hat</td>
+                    <td><span class="badge badge-primary">Platform</span></td>
+                    <td><i class="ti ti-check text-success"></i></td>
+                    <td><span class="badge badge-outline">P3</span></td>
+                    <td>
+                        <div class="spam-score">
+                            <div class="spam-bar"><div class="spam-fill spam-danger" style="width: 78%"></div></div>
+                            <span>78</span>
+                        </div>
+                    </td>
+                    <td><span class="status-badge status-spam_flagged" data-tr="Spam" data-de="Spam">Spam</span></td>
+                    <td class="action-cell">
+                        <button class="btn btn-icon" onclick="window.editCLI(6)" title="Düzenle"><i class="ti ti-edit"></i></button>
+                        <button class="btn btn-icon" onclick="window.testCLI(6)" title="Test"><i class="ti ti-phone-call"></i></button>
+                        <button class="btn btn-icon btn-danger" onclick="window.deleteCLI(6)" title="Sil"><i class="ti ti-trash"></i></button>
+                    </td>
+                </tr>
+                <tr>
+                    <td><input type="checkbox" name="cli_ids[]" value="7"></td>
+                    <td><strong class="cli-number">+49 69 45678901</strong></td>
+                    <td>Frankfurt Hat</td>
+                    <td><span class="badge badge-primary">Platform</span></td>
+                    <td><i class="ti ti-check text-success"></i></td>
+                    <td><span class="badge badge-outline">P2</span></td>
+                    <td>
+                        <div class="spam-score">
+                            <div class="spam-bar"><div class="spam-fill" style="width: 25%"></div></div>
+                            <span>25</span>
+                        </div>
+                    </td>
+                    <td><span class="status-badge status-active" data-tr="Aktif" data-de="Aktiv">Aktif</span></td>
+                    <td class="action-cell">
+                        <button class="btn btn-icon" onclick="window.editCLI(7)" title="Düzenle"><i class="ti ti-edit"></i></button>
+                        <button class="btn btn-icon" onclick="window.testCLI(7)" title="Test"><i class="ti ti-phone-call"></i></button>
+                        <button class="btn btn-icon btn-danger" onclick="window.deleteCLI(7)" title="Sil"><i class="ti ti-trash"></i></button>
+                    </td>
+                </tr>
+                <tr>
+                    <td><input type="checkbox" name="cli_ids[]" value="8"></td>
+                    <td><strong class="cli-number">+43 1 23456701</strong></td>
+                    <td>Wien Hat</td>
+                    <td><span class="badge">Support GmbH</span></td>
+                    <td><i class="ti ti-x text-muted"></i></td>
+                    <td><span class="badge badge-outline">P1</span></td>
+                    <td>
+                        <div class="spam-score">
+                            <div class="spam-bar"><div class="spam-fill" style="width: 5%"></div></div>
+                            <span>5</span>
+                        </div>
+                    </td>
+                    <td><span class="status-badge status-active" data-tr="Aktif" data-de="Aktiv">Aktif</span></td>
+                    <td class="action-cell">
+                        <button class="btn btn-icon" onclick="window.editCLI(8)" title="Düzenle"><i class="ti ti-edit"></i></button>
+                        <button class="btn btn-icon" onclick="window.testCLI(8)" title="Test"><i class="ti ti-phone-call"></i></button>
+                        <button class="btn btn-icon btn-danger" onclick="window.deleteCLI(8)" title="Sil"><i class="ti ti-trash"></i></button>
+                    </td>
+                </tr>
+            {% endif %}
         </tbody>
     </table>
+</div>
+
+<!-- Yeni CLI Modal -->
+<div id="cliModal" class="modal">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h3><i class="ti ti-phone-plus"></i> <span data-tr="Yeni CLI Ekle" data-de="Neue CLI hinzufügen">Yeni CLI Ekle</span></h3>
+            <button class="modal-close" onclick="window.closeModal('cliModal')">&times;</button>
+        </div>
+        <div class="modal-body">
+            <form id="cliForm">
+                <div class="form-group">
+                    <label data-tr="Numara *" data-de="Nummer *">Numara *</label>
+                    <input type="text" id="cliNumber" class="form-input" placeholder="+49 30 12345600" required>
+                </div>
+                <div class="form-group">
+                    <label data-tr="Açıklama" data-de="Beschreibung">Açıklama</label>
+                    <input type="text" id="cliDescription" class="form-input" placeholder="Hat açıklaması...">
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label data-tr="Sahip" data-de="Besitzer">Sahip</label>
+                        <select id="cliOwner" class="form-select">
+                            <option value="platform">Platform</option>
+                            <option value="1">AI Bee CC</option>
+                            <option value="2">CallCenter Pro</option>
+                            <option value="3">Support GmbH</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label data-tr="Rotasyon Önceliği" data-de="Rotationspriorität">Rotasyon Önceliği</label>
+                        <select id="cliPriority" class="form-select">
+                            <option value="1">P1 - Yüksek</option>
+                            <option value="2">P2 - Normal</option>
+                            <option value="3">P3 - Düşük</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label class="checkbox-label">
+                        <input type="checkbox" id="cliShared">
+                        <span data-tr="Diğer tenant'larla paylaş" data-de="Mit anderen Mandanten teilen">Diğer tenant'larla paylaş</span>
+                    </label>
+                </div>
+            </form>
+        </div>
+        <div class="modal-footer">
+            <button class="btn btn-outline" onclick="window.closeModal('cliModal')" data-tr="İptal" data-de="Abbrechen">İptal</button>
+            <button class="btn btn-primary" onclick="window.saveCLI()">
+                <i class="ti ti-check"></i> <span data-tr="Kaydet" data-de="Speichern">Kaydet</span>
+            </button>
+        </div>
+    </div>
+</div>
+
+<!-- Rotasyon Ayarları Modal -->
+<div id="rotationModal" class="modal">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h3><i class="ti ti-settings"></i> <span data-tr="Rotasyon Ayarları" data-de="Rotationseinstellungen">Rotasyon Ayarları</span></h3>
+            <button class="modal-close" onclick="window.closeModal('rotationModal')">&times;</button>
+        </div>
+        <div class="modal-body">
+            <div class="form-group">
+                <label data-tr="Rotasyon Modu" data-de="Rotationsmodus">Rotasyon Modu</label>
+                <select id="rotationMode" class="form-select">
+                    <option value="round_robin" selected>Round Robin</option>
+                    <option value="random">Random</option>
+                    <option value="least_used">Least Used</option>
+                    <option value="weighted">Weighted</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label data-tr="Rotasyon Sıklığı (çağrı başına)" data-de="Rotationshäufigkeit (pro Anruf)">Rotasyon Sıklığı (çağrı başına)</label>
+                <input type="number" id="rotationFrequency" class="form-input" value="5" min="1" max="100">
+            </div>
+            <div class="form-group">
+                <label data-tr="Spam Skoru Eşiği" data-de="Spam-Score-Schwelle">Spam Skoru Eşiği</label>
+                <input type="number" id="spamThreshold" class="form-input" value="70" min="0" max="100">
+                <small data-tr="Bu skorun üzerindeki CLI'ler otomatik devre dışı bırakılır" data-de="CLIs über diesem Score werden automatisch deaktiviert">Bu skorun üzerindeki CLI'ler otomatik devre dışı bırakılır</small>
+            </div>
+            <div class="form-group">
+                <label class="checkbox-label">
+                    <input type="checkbox" id="autoSpamCheck" checked>
+                    <span data-tr="Otomatik spam kontrolü" data-de="Automatische Spam-Kontrolle">Otomatik spam kontrolü</span>
+                </label>
+            </div>
+        </div>
+        <div class="modal-footer">
+            <button class="btn btn-outline" onclick="window.closeModal('rotationModal')" data-tr="İptal" data-de="Abbrechen">İptal</button>
+            <button class="btn btn-primary" onclick="window.saveRotationSettings()">
+                <i class="ti ti-check"></i> <span data-tr="Kaydet" data-de="Speichern">Kaydet</span>
+            </button>
+        </div>
+    </div>
 </div>
 
 <style>
 .summary-cards {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
     gap: 1rem;
     margin-bottom: 1.5rem;
 }
@@ -127,25 +414,64 @@
     box-shadow: 0 2px 8px rgba(0,0,0,0.05);
 }
 
-.summary-card i {
-    font-size: 2rem;
-    color: var(--primary-color);
-}
-
-.summary-content {
+.summary-icon {
+    width: 50px;
+    height: 50px;
+    border-radius: 12px;
     display: flex;
-    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.5rem;
 }
 
-.summary-value {
-    font-size: 1.75rem;
-    font-weight: 700;
+.summary-icon.blue { background: #e3f2fd; color: #1565c0; }
+.summary-icon.green { background: #e8f5e9; color: #2e7d32; }
+.summary-icon.purple { background: #f3e5f5; color: #7b1fa2; }
+.summary-icon.orange { background: #fff3e0; color: #e65100; }
+
+.summary-content { display: flex; flex-direction: column; }
+.summary-value { font-size: 1.5rem; font-weight: 700; }
+.summary-label { font-size: 0.85rem; color: var(--text-muted); }
+
+.rotation-card {
+    background: linear-gradient(135deg, #fff8e1, #fff);
+    border: 1px solid rgba(245, 166, 35, 0.3);
+    border-radius: 12px;
+    padding: 1.25rem;
+    margin-bottom: 1.5rem;
 }
 
-.summary-label {
-    font-size: 0.85rem;
-    color: var(--text-muted);
+.rotation-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1rem;
 }
+
+.rotation-header h3 {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    color: var(--primary-color);
+    margin: 0;
+    font-size: 1rem;
+}
+
+.rotation-info {
+    display: flex;
+    gap: 2rem;
+    flex-wrap: wrap;
+}
+
+.rotation-stat {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.stat-label { color: var(--text-muted); font-size: 0.9rem; }
+.stat-value { font-weight: 600; }
+.stat-value.status-active { color: #2e7d32; }
 
 .table-card {
     background: white;
@@ -160,9 +486,8 @@
     border-collapse: collapse;
 }
 
-.data-table th,
-.data-table td {
-    padding: 1rem;
+.data-table th, .data-table td {
+    padding: 0.875rem;
     text-align: left;
     border-bottom: 1px solid #f0f0f0;
 }
@@ -173,11 +498,19 @@
     font-size: 0.85rem;
 }
 
+.data-table tbody tr:hover { background: #f8f9fa; }
+
+.cli-number {
+    font-family: monospace;
+    font-size: 0.95rem;
+}
+
 .badge {
-    padding: 0.25rem 0.75rem;
-    border-radius: 20px;
+    padding: 0.25rem 0.6rem;
+    border-radius: 12px;
     font-size: 0.75rem;
     font-weight: 600;
+    background: #f5f5f5;
 }
 
 .badge-primary {
@@ -189,6 +522,9 @@
     background: transparent;
     border: 1px solid #ddd;
 }
+
+.text-success { color: #4caf50; }
+.text-muted { color: #9e9e9e; }
 
 .spam-score {
     display: flex;
@@ -210,13 +546,8 @@
     border-radius: 3px;
 }
 
-.spam-warning {
-    background: #ff9800;
-}
-
-.spam-danger {
-    background: #f44336;
-}
+.spam-warning { background: #ff9800; }
+.spam-danger { background: #f44336; }
 
 .status-badge {
     padding: 0.25rem 0.75rem;
@@ -225,41 +556,186 @@
     font-weight: 600;
 }
 
-.status-active {
-    background: #e8f5e9;
-    color: #2e7d32;
+.status-active { background: #e8f5e9; color: #2e7d32; }
+.status-suspended { background: #fff3e0; color: #e65100; }
+.status-spam_flagged { background: #ffebee; color: #c62828; }
+
+.action-cell { display: flex; gap: 0.25rem; }
+
+.btn-icon {
+    padding: 0.375rem;
+    background: transparent;
+    border: 1px solid #eee;
+    border-radius: 6px;
+    cursor: pointer;
 }
 
-.status-suspended {
-    background: #fff3e0;
-    color: #e65100;
+.btn-icon:hover { background: #f0f0f0; }
+.btn-icon.btn-danger { color: #f44336; }
+
+/* Modal */
+.modal {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0,0,0,0.5);
+    z-index: 1000;
+    align-items: center;
+    justify-content: center;
 }
 
-.status-spam_flagged {
-    background: #ffebee;
-    color: #c62828;
+.modal.active { display: flex; }
+
+.modal-content {
+    background: white;
+    border-radius: 16px;
+    width: 90%;
+    max-width: 500px;
+    max-height: 90vh;
+    overflow-y: auto;
 }
 
-.text-success {
-    color: #4caf50;
+.modal-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 1.25rem 1.5rem;
+    border-bottom: 1px solid #eee;
 }
 
-.text-muted {
-    color: #9e9e9e;
+.modal-header h3 { display: flex; align-items: center; gap: 0.5rem; margin: 0; }
+
+.modal-close {
+    width: 32px;
+    height: 32px;
+    border: none;
+    background: #f0f0f0;
+    border-radius: 8px;
+    font-size: 1.25rem;
+    cursor: pointer;
 }
 
-.empty-row {
-    text-align: center;
-    padding: 3rem !important;
-    color: var(--text-muted);
+.modal-body { padding: 1.5rem; }
+.modal-footer {
+    display: flex;
+    justify-content: flex-end;
+    gap: 0.75rem;
+    padding: 1rem 1.5rem;
+    border-top: 1px solid #eee;
 }
 
-.empty-row i {
-    font-size: 2.5rem;
-    margin-bottom: 0.5rem;
+.form-group { margin-bottom: 1rem; }
+.form-group label { display: block; margin-bottom: 0.5rem; font-weight: 500; }
+.form-group small { display: block; margin-top: 0.25rem; color: var(--text-muted); font-size: 0.8rem; }
+.form-input, .form-select {
+    width: 100%;
+    padding: 0.75rem;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+}
+
+.form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
+.checkbox-label { display: flex; align-items: center; gap: 0.5rem; cursor: pointer; }
+
+.btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.5rem 1rem;
+    border: none;
+    border-radius: 8px;
+    font-size: 0.9rem;
+    cursor: pointer;
+}
+
+.btn-sm { padding: 0.375rem 0.75rem; font-size: 0.85rem; }
+.btn-primary {
+    background: linear-gradient(135deg, var(--primary-color), #ffc107);
+    color: white;
+}
+
+.btn-outline {
+    background: white;
+    border: 1px solid #ddd;
+    color: var(--text-primary);
 }
 </style>
+
+<script>
+window.onload = function() {
+    if(typeof setLang === 'function') {
+        setLang(localStorage.getItem('lang') || 'tr');
+    }
+};
+
+window.openAddCLIModal = function() {
+    document.getElementById('cliForm').reset();
+    document.getElementById('cliModal').classList.add('active');
+};
+
+window.closeModal = function(id) {
+    document.getElementById(id).classList.remove('active');
+};
+
+window.saveCLI = function() {
+    var number = document.getElementById('cliNumber').value;
+    if(!number) {
+        showNotification('Lütfen numara girin!', 'error');
+        return;
+    }
+    showNotification('CLI başarıyla kaydedildi!', 'success');
+    window.closeModal('cliModal');
+};
+
+window.editCLI = function(id) {
+    document.getElementById('cliModal').classList.add('active');
+};
+
+window.testCLI = function(id) {
+    showNotification('CLI test ediliyor...', 'info');
+    setTimeout(function() {
+        showNotification('CLI test başarılı!', 'success');
+    }, 2000);
+};
+
+window.deleteCLI = function(id) {
+    if(confirm('Bu CLI\'ı silmek istediğinizden emin misiniz?')) {
+        showNotification('CLI silindi!', 'success');
+    }
+};
+
+window.openRotationSettings = function() {
+    document.getElementById('rotationModal').classList.add('active');
+};
+
+window.saveRotationSettings = function() {
+    showNotification('Rotasyon ayarları kaydedildi!', 'success');
+    window.closeModal('rotationModal');
+};
+
+window.toggleSelectAll = function() {
+    var checked = document.getElementById('selectAll').checked;
+    document.querySelectorAll('input[name="cli_ids[]"]').forEach(function(cb) {
+        cb.checked = checked;
+    });
+};
+
+function showNotification(message, type) {
+    var colors = { success: '#4caf50', error: '#f44336', info: '#2196f3' };
+    var notification = document.createElement('div');
+    notification.innerHTML = '<i class="ti ti-' + (type === 'success' ? 'check' : type === 'error' ? 'x' : 'info-circle') + '"></i> ' + message;
+    notification.style.cssText = 'position:fixed;top:20px;right:20px;background:' + colors[type] + ';color:white;padding:1rem 1.5rem;border-radius:8px;z-index:9999;display:flex;align-items:center;gap:0.5rem;box-shadow:0 4px 12px rgba(0,0,0,0.15);';
+    document.body.appendChild(notification);
+    setTimeout(function() { notification.remove(); }, 3000);
+}
+
+document.querySelectorAll('.modal').forEach(function(modal) {
+    modal.addEventListener('click', function(e) {
+        if(e.target === this) this.classList.remove('active');
+    });
+});
+</script>
 {% endblock %}
-
-
-

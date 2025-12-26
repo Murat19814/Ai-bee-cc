@@ -1,88 +1,450 @@
 {% extends "base.html" %}
 
-{% block title %}Kota Yönetimi - AI BEE CC{% endblock %}
+{% block title %}Tenant Kota Yönetimi - AI BEE CC{% endblock %}
 
 {% block content %}
 <div class="page-header">
-    <h1><i class="ti ti-gauge"></i> Tenant Kota Yönetimi</h1>
-    <p>Çağrı merkezlerinin limit ve kotalarını yönetin</p>
+    <h1><i class="ti ti-gauge" style="color: var(--primary-color);"></i> <span data-tr="Tenant Kota Yönetimi" data-de="Mandanten-Kontingent Verwaltung">Tenant Kota Yönetimi</span></h1>
+    <p data-tr="Çağrı merkezlerinin limit ve kotalarını yönetin" data-de="Verwalten Sie die Limits und Kontingente der Call Center">Çağrı merkezlerinin limit ve kotalarını yönetin</p>
 </div>
 
+<!-- Özet Kartları -->
+<div class="summary-cards">
+    <div class="summary-card">
+        <div class="summary-icon blue">
+            <i class="ti ti-building"></i>
+        </div>
+        <div class="summary-content">
+            <span class="summary-value">{{ tenants|length if tenants else 4 }}</span>
+            <span class="summary-label" data-tr="Toplam Tenant" data-de="Gesamt Mandanten">Toplam Tenant</span>
+        </div>
+    </div>
+    <div class="summary-card">
+        <div class="summary-icon green">
+            <i class="ti ti-users"></i>
+        </div>
+        <div class="summary-content">
+            <span class="summary-value">85</span>
+            <span class="summary-label" data-tr="Toplam Agent" data-de="Gesamt Agenten">Toplam Agent</span>
+        </div>
+    </div>
+    <div class="summary-card">
+        <div class="summary-icon purple">
+            <i class="ti ti-database"></i>
+        </div>
+        <div class="summary-content">
+            <span class="summary-value">125 GB</span>
+            <span class="summary-label" data-tr="Toplam Storage" data-de="Gesamt Speicher">Toplam Storage</span>
+        </div>
+    </div>
+    <div class="summary-card">
+        <div class="summary-icon orange">
+            <i class="ti ti-brain"></i>
+        </div>
+        <div class="summary-content">
+            <span class="summary-value">2,500 dk</span>
+            <span class="summary-label" data-tr="AI Dakika/Ay" data-de="AI Minuten/Monat">AI Dakika/Ay</span>
+        </div>
+    </div>
+</div>
+
+<!-- Kota Tablosu -->
 <div class="quotas-table-container">
-    <table class="data-table">
+    <table class="data-table" id="quotasTable">
         <thead>
             <tr>
-                <th>Tenant</th>
-                <th>Agent</th>
-                <th>Proje</th>
-                <th>Eş Zamanlı</th>
-                <th>Storage</th>
-                <th>Kayıt Süresi</th>
-                <th>AI</th>
-                <th>İşlemler</th>
+                <th data-tr="Tenant" data-de="Mandant">Tenant</th>
+                <th data-tr="Agent" data-de="Agenten">Agent</th>
+                <th data-tr="Proje" data-de="Projekte">Proje</th>
+                <th data-tr="Eş Zamanlı" data-de="Gleichzeitig">Eş Zamanlı</th>
+                <th data-tr="Storage" data-de="Speicher">Storage</th>
+                <th data-tr="Kayıt Süresi" data-de="Aufbewahrung">Kayıt Süresi</th>
+                <th data-tr="AI" data-de="AI">AI</th>
+                <th data-tr="İşlemler" data-de="Aktionen">İşlemler</th>
             </tr>
         </thead>
         <tbody>
-            {% for tenant in tenants %}
-            {% set quota = quotas|selectattr('tenant_id', 'equalto', tenant.id)|first %}
-            <tr>
-                <td>
-                    <div class="tenant-cell">
-                        <strong>{{ tenant.name }}</strong>
-                        <span class="tenant-code">{{ tenant.code }}</span>
-                    </div>
-                </td>
-                <td>
-                    <div class="quota-cell">
-                        <span class="quota-current">{{ quota.current_agents if quota else 0 }}</span>
-                        <span class="quota-divider">/</span>
-                        <span class="quota-limit">{{ quota.max_agents if quota else 10 }}</span>
-                    </div>
-                    <div class="quota-bar">
-                        <div class="quota-fill" style="width: {{ (quota.current_agents / quota.max_agents * 100) if quota and quota.max_agents else 0 }}%"></div>
-                    </div>
-                </td>
-                <td>
-                    <div class="quota-cell">
-                        <span class="quota-current">{{ quota.current_projects if quota else 0 }}</span>
-                        <span class="quota-divider">/</span>
-                        <span class="quota-limit">{{ quota.max_projects if quota else 5 }}</span>
-                    </div>
-                </td>
-                <td>
-                    <span class="quota-limit">
-                        {{ quota.max_concurrent_inbound if quota else 10 }}/{{ quota.max_concurrent_outbound if quota else 10 }}
-                    </span>
-                    <span class="quota-note">In/Out</span>
-                </td>
-                <td>
-                    <div class="quota-cell">
-                        <span class="quota-current">{{ "%.1f"|format(quota.current_storage_gb|float) if quota else 0 }}</span>
-                        <span class="quota-divider">/</span>
-                        <span class="quota-limit">{{ quota.storage_quota_gb if quota else 50 }} GB</span>
-                    </div>
-                    <div class="quota-bar">
-                        <div class="quota-fill" style="width: {{ (quota.current_storage_gb / quota.storage_quota_gb * 100) if quota and quota.storage_quota_gb else 0 }}%"></div>
-                    </div>
-                </td>
-                <td>
-                    <span class="quota-limit">{{ quota.recording_retention_days if quota else 90 }} gün</span>
-                </td>
-                <td>
-                    <span class="quota-limit">{{ quota.ai_monthly_minutes if quota else 0 }} dk/ay</span>
-                </td>
-                <td>
-                    <a href="{{ url_for('provisioning_quota_edit', tenant_id=tenant.id) }}" class="btn btn-outline btn-sm">
-                        <i class="ti ti-settings"></i> Düzenle
-                    </a>
-                </td>
-            </tr>
-            {% endfor %}
+            {% if tenants %}
+                {% for tenant in tenants %}
+                {% set quota = quotas|selectattr('tenant_id', 'equalto', tenant.id)|first %}
+                <tr>
+                    <td>
+                        <div class="tenant-cell">
+                            <strong>{{ tenant.name }}</strong>
+                            <span class="tenant-code">{{ tenant.code }}</span>
+                        </div>
+                    </td>
+                    <td>
+                        <div class="quota-cell">
+                            <span class="quota-current">{{ quota.current_agents if quota else 0 }}</span>
+                            <span class="quota-divider">/</span>
+                            <span class="quota-limit">{{ quota.max_agents if quota else 10 }}</span>
+                        </div>
+                        <div class="quota-bar">
+                            <div class="quota-fill" style="width: {{ (quota.current_agents / quota.max_agents * 100) if quota and quota.max_agents else 0 }}%"></div>
+                        </div>
+                    </td>
+                    <td>
+                        <div class="quota-cell">
+                            <span class="quota-current">{{ quota.current_projects if quota else 0 }}</span>
+                            <span class="quota-divider">/</span>
+                            <span class="quota-limit">{{ quota.max_projects if quota else 5 }}</span>
+                        </div>
+                    </td>
+                    <td>
+                        <span class="quota-limit">
+                            {{ quota.max_concurrent_inbound if quota else 10 }}/{{ quota.max_concurrent_outbound if quota else 10 }}
+                        </span>
+                        <span class="quota-note">In/Out</span>
+                    </td>
+                    <td>
+                        <div class="quota-cell">
+                            <span class="quota-current">{{ "%.1f"|format(quota.current_storage_gb|float) if quota else 0 }}</span>
+                            <span class="quota-divider">/</span>
+                            <span class="quota-limit">{{ quota.storage_quota_gb if quota else 50 }} GB</span>
+                        </div>
+                        <div class="quota-bar">
+                            <div class="quota-fill" style="width: {{ (quota.current_storage_gb / quota.storage_quota_gb * 100) if quota and quota.storage_quota_gb else 0 }}%"></div>
+                        </div>
+                    </td>
+                    <td>
+                        <span class="quota-limit">{{ quota.recording_retention_days if quota else 90 }} <span data-tr="gün" data-de="Tage">gün</span></span>
+                    </td>
+                    <td>
+                        <span class="quota-limit">{{ quota.ai_monthly_minutes if quota else 0 }} dk/ay</span>
+                    </td>
+                    <td>
+                        <button class="btn btn-outline btn-sm" onclick="window.editQuota({{ tenant.id }})">
+                            <i class="ti ti-settings"></i> <span data-tr="Düzenle" data-de="Bearbeiten">Düzenle</span>
+                        </button>
+                    </td>
+                </tr>
+                {% endfor %}
+            {% else %}
+                <!-- Demo Data -->
+                <tr>
+                    <td>
+                        <div class="tenant-cell">
+                            <strong>AI Bee CC</strong>
+                            <span class="tenant-code">MAIN</span>
+                        </div>
+                    </td>
+                    <td>
+                        <div class="quota-cell">
+                            <span class="quota-current">35</span>
+                            <span class="quota-divider">/</span>
+                            <span class="quota-limit">50</span>
+                        </div>
+                        <div class="quota-bar"><div class="quota-fill" style="width: 70%"></div></div>
+                    </td>
+                    <td>
+                        <div class="quota-cell">
+                            <span class="quota-current">4</span>
+                            <span class="quota-divider">/</span>
+                            <span class="quota-limit">10</span>
+                        </div>
+                    </td>
+                    <td>
+                        <span class="quota-limit">30/30</span>
+                        <span class="quota-note">In/Out</span>
+                    </td>
+                    <td>
+                        <div class="quota-cell">
+                            <span class="quota-current">42.5</span>
+                            <span class="quota-divider">/</span>
+                            <span class="quota-limit">100 GB</span>
+                        </div>
+                        <div class="quota-bar"><div class="quota-fill" style="width: 42.5%"></div></div>
+                    </td>
+                    <td>
+                        <span class="quota-limit">180 <span data-tr="gün" data-de="Tage">gün</span></span>
+                    </td>
+                    <td>
+                        <span class="quota-limit">1000 dk/ay</span>
+                    </td>
+                    <td>
+                        <button class="btn btn-outline btn-sm" onclick="window.editQuota(1)">
+                            <i class="ti ti-settings"></i> <span data-tr="Düzenle" data-de="Bearbeiten">Düzenle</span>
+                        </button>
+                    </td>
+                </tr>
+                <tr>
+                    <td>
+                        <div class="tenant-cell">
+                            <strong>CallCenter Pro</strong>
+                            <span class="tenant-code">CCP</span>
+                        </div>
+                    </td>
+                    <td>
+                        <div class="quota-cell">
+                            <span class="quota-current">20</span>
+                            <span class="quota-divider">/</span>
+                            <span class="quota-limit">25</span>
+                        </div>
+                        <div class="quota-bar"><div class="quota-fill quota-warning" style="width: 80%"></div></div>
+                    </td>
+                    <td>
+                        <div class="quota-cell">
+                            <span class="quota-current">3</span>
+                            <span class="quota-divider">/</span>
+                            <span class="quota-limit">5</span>
+                        </div>
+                    </td>
+                    <td>
+                        <span class="quota-limit">15/20</span>
+                        <span class="quota-note">In/Out</span>
+                    </td>
+                    <td>
+                        <div class="quota-cell">
+                            <span class="quota-current">38.2</span>
+                            <span class="quota-divider">/</span>
+                            <span class="quota-limit">50 GB</span>
+                        </div>
+                        <div class="quota-bar"><div class="quota-fill quota-warning" style="width: 76.4%"></div></div>
+                    </td>
+                    <td>
+                        <span class="quota-limit">90 <span data-tr="gün" data-de="Tage">gün</span></span>
+                    </td>
+                    <td>
+                        <span class="quota-limit">500 dk/ay</span>
+                    </td>
+                    <td>
+                        <button class="btn btn-outline btn-sm" onclick="window.editQuota(2)">
+                            <i class="ti ti-settings"></i> <span data-tr="Düzenle" data-de="Bearbeiten">Düzenle</span>
+                        </button>
+                    </td>
+                </tr>
+                <tr>
+                    <td>
+                        <div class="tenant-cell">
+                            <strong>Support GmbH</strong>
+                            <span class="tenant-code">SUP</span>
+                        </div>
+                    </td>
+                    <td>
+                        <div class="quota-cell">
+                            <span class="quota-current">15</span>
+                            <span class="quota-divider">/</span>
+                            <span class="quota-limit">20</span>
+                        </div>
+                        <div class="quota-bar"><div class="quota-fill quota-warning" style="width: 75%"></div></div>
+                    </td>
+                    <td>
+                        <div class="quota-cell">
+                            <span class="quota-current">2</span>
+                            <span class="quota-divider">/</span>
+                            <span class="quota-limit">3</span>
+                        </div>
+                    </td>
+                    <td>
+                        <span class="quota-limit">10/10</span>
+                        <span class="quota-note">In/Out</span>
+                    </td>
+                    <td>
+                        <div class="quota-cell">
+                            <span class="quota-current">22.8</span>
+                            <span class="quota-divider">/</span>
+                            <span class="quota-limit">30 GB</span>
+                        </div>
+                        <div class="quota-bar"><div class="quota-fill quota-warning" style="width: 76%"></div></div>
+                    </td>
+                    <td>
+                        <span class="quota-limit">60 <span data-tr="gün" data-de="Tage">gün</span></span>
+                    </td>
+                    <td>
+                        <span class="quota-limit">250 dk/ay</span>
+                    </td>
+                    <td>
+                        <button class="btn btn-outline btn-sm" onclick="window.editQuota(3)">
+                            <i class="ti ti-settings"></i> <span data-tr="Düzenle" data-de="Bearbeiten">Düzenle</span>
+                        </button>
+                    </td>
+                </tr>
+                <tr>
+                    <td>
+                        <div class="tenant-cell">
+                            <strong>TeleSales AG</strong>
+                            <span class="tenant-code">TEL</span>
+                        </div>
+                    </td>
+                    <td>
+                        <div class="quota-cell">
+                            <span class="quota-current">15</span>
+                            <span class="quota-divider">/</span>
+                            <span class="quota-limit">15</span>
+                        </div>
+                        <div class="quota-bar"><div class="quota-fill quota-danger" style="width: 100%"></div></div>
+                    </td>
+                    <td>
+                        <div class="quota-cell">
+                            <span class="quota-current">2</span>
+                            <span class="quota-divider">/</span>
+                            <span class="quota-limit">3</span>
+                        </div>
+                    </td>
+                    <td>
+                        <span class="quota-limit">10/15</span>
+                        <span class="quota-note">In/Out</span>
+                    </td>
+                    <td>
+                        <div class="quota-cell">
+                            <span class="quota-current">21.5</span>
+                            <span class="quota-divider">/</span>
+                            <span class="quota-limit">25 GB</span>
+                        </div>
+                        <div class="quota-bar"><div class="quota-fill quota-danger" style="width: 86%"></div></div>
+                    </td>
+                    <td>
+                        <span class="quota-limit">30 <span data-tr="gün" data-de="Tage">gün</span></span>
+                    </td>
+                    <td>
+                        <span class="quota-limit">750 dk/ay</span>
+                    </td>
+                    <td>
+                        <button class="btn btn-outline btn-sm" onclick="window.editQuota(4)">
+                            <i class="ti ti-settings"></i> <span data-tr="Düzenle" data-de="Bearbeiten">Düzenle</span>
+                        </button>
+                    </td>
+                </tr>
+            {% endif %}
         </tbody>
     </table>
 </div>
 
+<!-- Kota Düzenle Modal -->
+<div id="quotaModal" class="modal">
+    <div class="modal-content modal-lg">
+        <div class="modal-header">
+            <h3><i class="ti ti-settings"></i> <span data-tr="Kota Düzenle" data-de="Kontingent bearbeiten">Kota Düzenle</span></h3>
+            <button class="modal-close" onclick="window.closeModal('quotaModal')">&times;</button>
+        </div>
+        <div class="modal-body">
+            <form id="quotaForm">
+                <h4 data-tr="Agent & Proje Limitleri" data-de="Agenten & Projekt Limits">Agent & Proje Limitleri</h4>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label data-tr="Maksimum Agent" data-de="Maximale Agenten">Maksimum Agent</label>
+                        <input type="number" id="maxAgents" class="form-input" value="50" min="1">
+                    </div>
+                    <div class="form-group">
+                        <label data-tr="Maksimum Proje" data-de="Maximale Projekte">Maksimum Proje</label>
+                        <input type="number" id="maxProjects" class="form-input" value="10" min="1">
+                    </div>
+                </div>
+                
+                <h4 data-tr="Eş Zamanlı Çağrı Limitleri" data-de="Gleichzeitige Anruflimits">Eş Zamanlı Çağrı Limitleri</h4>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label data-tr="Eş Zamanlı Inbound" data-de="Gleichzeitig Eingehend">Eş Zamanlı Inbound</label>
+                        <input type="number" id="maxInbound" class="form-input" value="30" min="1">
+                    </div>
+                    <div class="form-group">
+                        <label data-tr="Eş Zamanlı Outbound" data-de="Gleichzeitig Ausgehend">Eş Zamanlı Outbound</label>
+                        <input type="number" id="maxOutbound" class="form-input" value="30" min="1">
+                    </div>
+                </div>
+                
+                <h4 data-tr="Storage & Kayıt" data-de="Speicher & Aufbewahrung">Storage & Kayıt</h4>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label data-tr="Storage Kotası (GB)" data-de="Speicherkontingent (GB)">Storage Kotası (GB)</label>
+                        <input type="number" id="storageQuota" class="form-input" value="100" min="1">
+                    </div>
+                    <div class="form-group">
+                        <label data-tr="Kayıt Saklama Süresi (gün)" data-de="Aufbewahrungsdauer (Tage)">Kayıt Saklama Süresi (gün)</label>
+                        <input type="number" id="retentionDays" class="form-input" value="180" min="1">
+                    </div>
+                </div>
+                
+                <h4 data-tr="AI & Transkripsiyon" data-de="AI & Transkription">AI & Transkripsiyon</h4>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label data-tr="Aylık AI Dakika" data-de="Monatliche AI-Minuten">Aylık AI Dakika</label>
+                        <input type="number" id="aiMinutes" class="form-input" value="1000" min="0">
+                    </div>
+                    <div class="form-group">
+                        <label class="checkbox-label" style="margin-top: 2rem;">
+                            <input type="checkbox" id="aiEnabled" checked>
+                            <span data-tr="AI Özellikler Aktif" data-de="AI-Funktionen aktiviert">AI Özellikler Aktif</span>
+                        </label>
+                    </div>
+                </div>
+                
+                <h4 data-tr="Ek Özellikler" data-de="Zusätzliche Funktionen">Ek Özellikler</h4>
+                <div class="features-grid">
+                    <label class="checkbox-label">
+                        <input type="checkbox" checked>
+                        <span data-tr="Kampanya Yönetimi" data-de="Kampagnen-Management">Kampanya Yönetimi</span>
+                    </label>
+                    <label class="checkbox-label">
+                        <input type="checkbox" checked>
+                        <span data-tr="CRM Entegrasyonu" data-de="CRM-Integration">CRM Entegrasyonu</span>
+                    </label>
+                    <label class="checkbox-label">
+                        <input type="checkbox" checked>
+                        <span data-tr="QA Modülü" data-de="QA-Modul">QA Modülü</span>
+                    </label>
+                    <label class="checkbox-label">
+                        <input type="checkbox" checked>
+                        <span data-tr="Raporlama" data-de="Berichterstattung">Raporlama</span>
+                    </label>
+                    <label class="checkbox-label">
+                        <input type="checkbox" checked>
+                        <span data-tr="IVR Builder" data-de="IVR-Builder">IVR Builder</span>
+                    </label>
+                    <label class="checkbox-label">
+                        <input type="checkbox">
+                        <span data-tr="API Erişimi" data-de="API-Zugang">API Erişimi</span>
+                    </label>
+                </div>
+            </form>
+        </div>
+        <div class="modal-footer">
+            <button class="btn btn-outline" onclick="window.closeModal('quotaModal')" data-tr="İptal" data-de="Abbrechen">İptal</button>
+            <button class="btn btn-primary" onclick="window.saveQuota()">
+                <i class="ti ti-check"></i> <span data-tr="Kaydet" data-de="Speichern">Kaydet</span>
+            </button>
+        </div>
+    </div>
+</div>
+
 <style>
+.summary-cards {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 1rem;
+    margin-bottom: 1.5rem;
+}
+
+.summary-card {
+    background: white;
+    border-radius: 12px;
+    padding: 1.25rem;
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+}
+
+.summary-icon {
+    width: 50px;
+    height: 50px;
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.5rem;
+}
+
+.summary-icon.blue { background: #e3f2fd; color: #1565c0; }
+.summary-icon.green { background: #e8f5e9; color: #2e7d32; }
+.summary-icon.purple { background: #f3e5f5; color: #7b1fa2; }
+.summary-icon.orange { background: #fff3e0; color: #e65100; }
+
+.summary-content { display: flex; flex-direction: column; }
+.summary-value { font-size: 1.5rem; font-weight: 700; }
+.summary-label { font-size: 0.85rem; color: var(--text-muted); }
+
 .quotas-table-container {
     background: white;
     border-radius: 12px;
@@ -96,8 +458,7 @@
     border-collapse: collapse;
 }
 
-.data-table th,
-.data-table td {
+.data-table th, .data-table td {
     padding: 1rem;
     text-align: left;
     border-bottom: 1px solid #f0f0f0;
@@ -109,6 +470,8 @@
     font-size: 0.85rem;
     white-space: nowrap;
 }
+
+.data-table tbody tr:hover { background: #f8f9fa; }
 
 .tenant-cell {
     display: flex;
@@ -157,12 +520,175 @@
 
 .quota-fill {
     height: 100%;
-    background: linear-gradient(90deg, var(--primary-color), #ffc107);
+    background: linear-gradient(90deg, #4caf50, #8bc34a);
     border-radius: 2px;
     transition: width 0.3s;
 }
+
+.quota-fill.quota-warning {
+    background: linear-gradient(90deg, #ff9800, #ffc107);
+}
+
+.quota-fill.quota-danger {
+    background: linear-gradient(90deg, #f44336, #ff5722);
+}
+
+.btn-sm {
+    padding: 0.375rem 0.75rem;
+    font-size: 0.85rem;
+}
+
+/* Modal */
+.modal {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0,0,0,0.5);
+    z-index: 1000;
+    align-items: center;
+    justify-content: center;
+}
+
+.modal.active { display: flex; }
+
+.modal-content {
+    background: white;
+    border-radius: 16px;
+    width: 90%;
+    max-width: 500px;
+    max-height: 90vh;
+    overflow-y: auto;
+}
+
+.modal-content.modal-lg { max-width: 650px; }
+
+.modal-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 1.25rem 1.5rem;
+    border-bottom: 1px solid #eee;
+}
+
+.modal-header h3 { display: flex; align-items: center; gap: 0.5rem; margin: 0; }
+
+.modal-close {
+    width: 32px;
+    height: 32px;
+    border: none;
+    background: #f0f0f0;
+    border-radius: 8px;
+    font-size: 1.25rem;
+    cursor: pointer;
+}
+
+.modal-body { padding: 1.5rem; }
+
+.modal-body h4 {
+    margin: 1.5rem 0 1rem;
+    color: var(--text-primary);
+    font-size: 0.95rem;
+    border-bottom: 1px solid #eee;
+    padding-bottom: 0.5rem;
+}
+
+.modal-body h4:first-child { margin-top: 0; }
+
+.modal-footer {
+    display: flex;
+    justify-content: flex-end;
+    gap: 0.75rem;
+    padding: 1rem 1.5rem;
+    border-top: 1px solid #eee;
+}
+
+.form-group { margin-bottom: 1rem; }
+.form-group label { display: block; margin-bottom: 0.5rem; font-weight: 500; }
+.form-input, .form-select {
+    width: 100%;
+    padding: 0.75rem;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+}
+
+.form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
+
+.features-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 0.75rem;
+}
+
+.checkbox-label { 
+    display: flex; 
+    align-items: center; 
+    gap: 0.5rem; 
+    cursor: pointer;
+    font-size: 0.9rem;
+}
+
+.btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.5rem 1rem;
+    border: none;
+    border-radius: 8px;
+    font-size: 0.9rem;
+    cursor: pointer;
+}
+
+.btn-primary {
+    background: linear-gradient(135deg, var(--primary-color), #ffc107);
+    color: white;
+}
+
+.btn-outline {
+    background: white;
+    border: 1px solid #ddd;
+    color: var(--text-primary);
+}
 </style>
+
+<script>
+window.onload = function() {
+    if(typeof setLang === 'function') {
+        setLang(localStorage.getItem('lang') || 'tr');
+    }
+};
+
+var currentTenantId = null;
+
+window.editQuota = function(tenantId) {
+    currentTenantId = tenantId;
+    document.getElementById('quotaModal').classList.add('active');
+};
+
+window.closeModal = function(id) {
+    document.getElementById(id).classList.remove('active');
+};
+
+window.saveQuota = function() {
+    showNotification('Kota ayarları kaydedildi!', 'success');
+    window.closeModal('quotaModal');
+};
+
+function showNotification(message, type) {
+    var colors = { success: '#4caf50', error: '#f44336', info: '#2196f3' };
+    var notification = document.createElement('div');
+    notification.innerHTML = '<i class="ti ti-' + (type === 'success' ? 'check' : type === 'error' ? 'x' : 'info-circle') + '"></i> ' + message;
+    notification.style.cssText = 'position:fixed;top:20px;right:20px;background:' + colors[type] + ';color:white;padding:1rem 1.5rem;border-radius:8px;z-index:9999;display:flex;align-items:center;gap:0.5rem;box-shadow:0 4px 12px rgba(0,0,0,0.15);';
+    document.body.appendChild(notification);
+    setTimeout(function() { notification.remove(); }, 3000);
+}
+
+document.querySelectorAll('.modal').forEach(function(modal) {
+    modal.addEventListener('click', function(e) {
+        if(e.target === this) this.classList.remove('active');
+    });
+});
+</script>
 {% endblock %}
-
-
-

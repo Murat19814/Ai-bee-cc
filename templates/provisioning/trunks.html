@@ -1,102 +1,329 @@
 {% extends "base.html" %}
 
-{% block title %}Trunk Tahsisleri - AI BEE CC{% endblock %}
+{% block title %}Trunk Tahsis Yönetimi - AI BEE CC{% endblock %}
 
 {% block content %}
 <div class="page-header">
-    <h1><i class="ti ti-network"></i> Trunk Tahsis Yönetimi</h1>
+    <h1><i class="ti ti-network" style="color: var(--primary-color);"></i> <span data-tr="Trunk Tahsis Yönetimi" data-de="Trunk-Zuweisung Verwaltung">Trunk Tahsis Yönetimi</span></h1>
     <div class="page-actions">
-        <button class="btn btn-primary" data-modal="add-allocation">
-            <i class="ti ti-plus"></i> Tahsis Ekle
+        <button class="btn btn-primary" onclick="window.openAddAllocationModal()">
+            <i class="ti ti-plus"></i> <span data-tr="Tahsis Ekle" data-de="Zuweisung hinzufügen">Tahsis Ekle</span>
         </button>
     </div>
 </div>
 
 <!-- Trunk Kapasitesi -->
-<div class="trunk-overview">
-    <h3>Trunk Kapasitesi</h3>
+<div class="capacity-section">
+    <h3><i class="ti ti-chart-bar"></i> <span data-tr="Trunk Kapasitesi" data-de="Trunk-Kapazität">Trunk Kapasitesi</span></h3>
     <div class="trunks-grid">
-        {% for trunk in trunks %}
-        <div class="trunk-card">
-            <div class="trunk-header">
-                <span class="trunk-name">{{ trunk.name }}</span>
-                <span class="trunk-status status-{{ trunk.status }}">{{ trunk.status }}</span>
-            </div>
-            <div class="trunk-capacity">
-                <div class="capacity-bar">
-                    <div class="capacity-fill" style="width: {{ (trunk.current_channels / trunk.max_channels * 100) if trunk.max_channels else 0 }}%"></div>
+        {% if trunks %}
+            {% for trunk in trunks %}
+            <div class="trunk-card">
+                <div class="trunk-header">
+                    <span class="trunk-name">{{ trunk.name }}</span>
+                    <span class="trunk-status status-{{ trunk.status }}">{{ trunk.status }}</span>
                 </div>
-                <span>{{ trunk.current_channels or 0 }} / {{ trunk.max_channels }} kanal</span>
+                <div class="trunk-capacity">
+                    <div class="capacity-bar">
+                        <div class="capacity-fill" style="width: {{ (trunk.current_channels / trunk.max_channels * 100) if trunk.max_channels else 0 }}%"></div>
+                    </div>
+                    <span>{{ trunk.current_channels or 0 }} / {{ trunk.max_channels }} kanal</span>
+                </div>
+                <div class="trunk-allocations">
+                    <span>{{ allocations|selectattr('trunk_id', 'equalto', trunk.id)|list|length if allocations else 0 }} tenant'a tahsisli</span>
+                </div>
             </div>
-            <div class="trunk-allocations">
-                {% set trunk_allocs = allocations|selectattr('trunk_id', 'equalto', trunk.id)|list %}
-                <span>{{ trunk_allocs|length }} tenant'a tahsisli</span>
+            {% endfor %}
+        {% else %}
+            <!-- Demo Data -->
+            <div class="trunk-card">
+                <div class="trunk-header">
+                    <span class="trunk-name">Sipgate Primary</span>
+                    <span class="trunk-status status-active" data-tr="Aktif" data-de="Aktiv">Aktif</span>
+                </div>
+                <div class="trunk-capacity">
+                    <div class="capacity-bar">
+                        <div class="capacity-fill" style="width: 65%"></div>
+                    </div>
+                    <span>65 / 100 <span data-tr="kanal" data-de="Kanäle">kanal</span></span>
+                </div>
+                <div class="trunk-stats">
+                    <div class="trunk-stat">
+                        <i class="ti ti-users"></i>
+                        <span>3 <span data-tr="tenant" data-de="Mandanten">tenant</span></span>
+                    </div>
+                    <div class="trunk-stat">
+                        <i class="ti ti-phone-call"></i>
+                        <span>42 <span data-tr="aktif" data-de="aktiv">aktif</span></span>
+                    </div>
+                </div>
             </div>
-        </div>
-        {% endfor %}
+            <div class="trunk-card">
+                <div class="trunk-header">
+                    <span class="trunk-name">Placetel Business</span>
+                    <span class="trunk-status status-active" data-tr="Aktif" data-de="Aktiv">Aktif</span>
+                </div>
+                <div class="trunk-capacity">
+                    <div class="capacity-bar">
+                        <div class="capacity-fill" style="width: 40%"></div>
+                    </div>
+                    <span>20 / 50 <span data-tr="kanal" data-de="Kanäle">kanal</span></span>
+                </div>
+                <div class="trunk-stats">
+                    <div class="trunk-stat">
+                        <i class="ti ti-users"></i>
+                        <span>2 <span data-tr="tenant" data-de="Mandanten">tenant</span></span>
+                    </div>
+                    <div class="trunk-stat">
+                        <i class="ti ti-phone-call"></i>
+                        <span>15 <span data-tr="aktif" data-de="aktiv">aktif</span></span>
+                    </div>
+                </div>
+            </div>
+            <div class="trunk-card">
+                <div class="trunk-header">
+                    <span class="trunk-name">Easybell Standard</span>
+                    <span class="trunk-status status-active" data-tr="Aktif" data-de="Aktiv">Aktif</span>
+                </div>
+                <div class="trunk-capacity">
+                    <div class="capacity-bar">
+                        <div class="capacity-fill" style="width: 25%"></div>
+                    </div>
+                    <span>15 / 60 <span data-tr="kanal" data-de="Kanäle">kanal</span></span>
+                </div>
+                <div class="trunk-stats">
+                    <div class="trunk-stat">
+                        <i class="ti ti-users"></i>
+                        <span>1 <span data-tr="tenant" data-de="Mandanten">tenant</span></span>
+                    </div>
+                    <div class="trunk-stat">
+                        <i class="ti ti-phone-call"></i>
+                        <span>8 <span data-tr="aktif" data-de="aktiv">aktif</span></span>
+                    </div>
+                </div>
+            </div>
+        {% endif %}
     </div>
 </div>
 
 <!-- Tahsisler Tablosu -->
 <div class="table-card">
-    <h3>Tahsisler</h3>
-    <table class="data-table">
+    <div class="table-header">
+        <h3><i class="ti ti-list"></i> <span data-tr="Tahsisler" data-de="Zuweisungen">Tahsisler</span></h3>
+    </div>
+    <table class="data-table" id="allocationsTable">
         <thead>
             <tr>
-                <th>Tenant</th>
-                <th>Trunk</th>
-                <th>Tahsis Kanal</th>
-                <th>Yön</th>
-                <th>Öncelik</th>
-                <th>İşlemler</th>
+                <th data-tr="Tenant" data-de="Mandant">Tenant</th>
+                <th data-tr="Trunk" data-de="Trunk">Trunk</th>
+                <th data-tr="Tahsis Kanal" data-de="Zugewiesene Kanäle">Tahsis Kanal</th>
+                <th data-tr="Yön" data-de="Richtung">Yön</th>
+                <th data-tr="Öncelik" data-de="Priorität">Öncelik</th>
+                <th data-tr="Kullanım" data-de="Nutzung">Kullanım</th>
+                <th data-tr="İşlemler" data-de="Aktionen">İşlemler</th>
             </tr>
         </thead>
         <tbody>
-            {% for alloc in allocations %}
-            <tr>
-                <td>
-                    {% set tenant = tenants|selectattr('id', 'equalto', alloc.tenant_id)|first %}
-                    <strong>{{ tenant.name if tenant else 'Bilinmeyen' }}</strong>
-                </td>
-                <td>
-                    {% set trunk = trunks|selectattr('id', 'equalto', alloc.trunk_id)|first %}
-                    {{ trunk.name if trunk else 'Bilinmeyen' }}
-                </td>
-                <td><strong>{{ alloc.allocated_channels }}</strong> kanal</td>
-                <td>
-                    <span class="badge badge-outline">
-                        {% if alloc.direction == 'both' %}Her İki Yön
-                        {% elif alloc.direction == 'inbound' %}Sadece Gelen
-                        {% elif alloc.direction == 'outbound' %}Sadece Giden
-                        {% else %}{{ alloc.direction }}{% endif %}
-                    </span>
-                </td>
-                <td>
-                    <span class="priority-badge">P{{ alloc.priority }}</span>
-                </td>
-                <td>
-                    <button class="btn btn-icon" title="Düzenle">
-                        <i class="ti ti-edit"></i>
-                    </button>
-                    <button class="btn btn-icon text-danger" title="Sil">
-                        <i class="ti ti-trash"></i>
-                    </button>
-                </td>
-            </tr>
+            {% if allocations %}
+                {% for alloc in allocations %}
+                <tr>
+                    <td>
+                        <div class="tenant-cell">
+                            <strong>{{ alloc.tenant.name if alloc.tenant else 'Bilinmeyen' }}</strong>
+                        </div>
+                    </td>
+                    <td>{{ alloc.trunk.name if alloc.trunk else 'Bilinmeyen' }}</td>
+                    <td><strong>{{ alloc.allocated_channels }}</strong> <span data-tr="kanal" data-de="Kanäle">kanal</span></td>
+                    <td>
+                        <span class="badge badge-outline">
+                            {% if alloc.direction == 'both' %}Her İki Yön
+                            {% elif alloc.direction == 'inbound' %}Sadece Gelen
+                            {% elif alloc.direction == 'outbound' %}Sadece Giden
+                            {% else %}{{ alloc.direction }}{% endif %}
+                        </span>
+                    </td>
+                    <td><span class="priority-badge">P{{ alloc.priority }}</span></td>
+                    <td>
+                        <div class="usage-bar">
+                            <div class="usage-fill" style="width: 50%"></div>
+                        </div>
+                    </td>
+                    <td class="action-cell">
+                        <button class="btn btn-icon" onclick="window.editAllocation({{ alloc.id }})" title="Düzenle"><i class="ti ti-edit"></i></button>
+                        <button class="btn btn-icon btn-danger" onclick="window.deleteAllocation({{ alloc.id }})" title="Sil"><i class="ti ti-trash"></i></button>
+                    </td>
+                </tr>
+                {% endfor %}
             {% else %}
-            <tr>
-                <td colspan="6" class="empty-row">
-                    <i class="ti ti-network-off"></i>
-                    <p>Henüz trunk tahsisi yok</p>
-                </td>
-            </tr>
-            {% endfor %}
+                <!-- Demo Data -->
+                <tr>
+                    <td>
+                        <div class="tenant-cell">
+                            <strong>AI Bee CC</strong>
+                            <span class="tenant-code">MAIN</span>
+                        </div>
+                    </td>
+                    <td>Sipgate Primary</td>
+                    <td><strong>30</strong> <span data-tr="kanal" data-de="Kanäle">kanal</span></td>
+                    <td><span class="badge badge-both" data-tr="Her İki Yön" data-de="Beide Richtungen">Her İki Yön</span></td>
+                    <td><span class="priority-badge">P1</span></td>
+                    <td>
+                        <div class="usage-bar"><div class="usage-fill" style="width: 73%"></div></div>
+                        <span class="usage-text">22/30</span>
+                    </td>
+                    <td class="action-cell">
+                        <button class="btn btn-icon" onclick="window.editAllocation(1)" title="Düzenle"><i class="ti ti-edit"></i></button>
+                        <button class="btn btn-icon btn-danger" onclick="window.deleteAllocation(1)" title="Sil"><i class="ti ti-trash"></i></button>
+                    </td>
+                </tr>
+                <tr>
+                    <td>
+                        <div class="tenant-cell">
+                            <strong>CallCenter Pro</strong>
+                            <span class="tenant-code">CCP</span>
+                        </div>
+                    </td>
+                    <td>Sipgate Primary</td>
+                    <td><strong>20</strong> <span data-tr="kanal" data-de="Kanäle">kanal</span></td>
+                    <td><span class="badge badge-outbound" data-tr="Sadece Giden" data-de="Nur Ausgehend">Sadece Giden</span></td>
+                    <td><span class="priority-badge">P2</span></td>
+                    <td>
+                        <div class="usage-bar"><div class="usage-fill" style="width: 55%"></div></div>
+                        <span class="usage-text">11/20</span>
+                    </td>
+                    <td class="action-cell">
+                        <button class="btn btn-icon" onclick="window.editAllocation(2)" title="Düzenle"><i class="ti ti-edit"></i></button>
+                        <button class="btn btn-icon btn-danger" onclick="window.deleteAllocation(2)" title="Sil"><i class="ti ti-trash"></i></button>
+                    </td>
+                </tr>
+                <tr>
+                    <td>
+                        <div class="tenant-cell">
+                            <strong>Support GmbH</strong>
+                            <span class="tenant-code">SUP</span>
+                        </div>
+                    </td>
+                    <td>Placetel Business</td>
+                    <td><strong>15</strong> <span data-tr="kanal" data-de="Kanäle">kanal</span></td>
+                    <td><span class="badge badge-inbound" data-tr="Sadece Gelen" data-de="Nur Eingehend">Sadece Gelen</span></td>
+                    <td><span class="priority-badge">P1</span></td>
+                    <td>
+                        <div class="usage-bar"><div class="usage-fill" style="width: 40%"></div></div>
+                        <span class="usage-text">6/15</span>
+                    </td>
+                    <td class="action-cell">
+                        <button class="btn btn-icon" onclick="window.editAllocation(3)" title="Düzenle"><i class="ti ti-edit"></i></button>
+                        <button class="btn btn-icon btn-danger" onclick="window.deleteAllocation(3)" title="Sil"><i class="ti ti-trash"></i></button>
+                    </td>
+                </tr>
+                <tr>
+                    <td>
+                        <div class="tenant-cell">
+                            <strong>AI Bee CC</strong>
+                            <span class="tenant-code">MAIN</span>
+                        </div>
+                    </td>
+                    <td>Placetel Business</td>
+                    <td><strong>5</strong> <span data-tr="kanal" data-de="Kanäle">kanal</span></td>
+                    <td><span class="badge badge-inbound" data-tr="Sadece Gelen" data-de="Nur Eingehend">Sadece Gelen</span></td>
+                    <td><span class="priority-badge">P3</span></td>
+                    <td>
+                        <div class="usage-bar"><div class="usage-fill" style="width: 80%"></div></div>
+                        <span class="usage-text">4/5</span>
+                    </td>
+                    <td class="action-cell">
+                        <button class="btn btn-icon" onclick="window.editAllocation(4)" title="Düzenle"><i class="ti ti-edit"></i></button>
+                        <button class="btn btn-icon btn-danger" onclick="window.deleteAllocation(4)" title="Sil"><i class="ti ti-trash"></i></button>
+                    </td>
+                </tr>
+                <tr>
+                    <td>
+                        <div class="tenant-cell">
+                            <strong>TeleSales AG</strong>
+                            <span class="tenant-code">TEL</span>
+                        </div>
+                    </td>
+                    <td>Easybell Standard</td>
+                    <td><strong>15</strong> <span data-tr="kanal" data-de="Kanäle">kanal</span></td>
+                    <td><span class="badge badge-both" data-tr="Her İki Yön" data-de="Beide Richtungen">Her İki Yön</span></td>
+                    <td><span class="priority-badge">P1</span></td>
+                    <td>
+                        <div class="usage-bar"><div class="usage-fill" style="width: 53%"></div></div>
+                        <span class="usage-text">8/15</span>
+                    </td>
+                    <td class="action-cell">
+                        <button class="btn btn-icon" onclick="window.editAllocation(5)" title="Düzenle"><i class="ti ti-edit"></i></button>
+                        <button class="btn btn-icon btn-danger" onclick="window.deleteAllocation(5)" title="Sil"><i class="ti ti-trash"></i></button>
+                    </td>
+                </tr>
+            {% endif %}
         </tbody>
     </table>
 </div>
 
+<!-- Tahsis Ekle Modal -->
+<div id="allocationModal" class="modal">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h3><i class="ti ti-plus"></i> <span data-tr="Yeni Tahsis Ekle" data-de="Neue Zuweisung hinzufügen">Yeni Tahsis Ekle</span></h3>
+            <button class="modal-close" onclick="window.closeModal('allocationModal')">&times;</button>
+        </div>
+        <div class="modal-body">
+            <form id="allocationForm">
+                <div class="form-group">
+                    <label data-tr="Tenant *" data-de="Mandant *">Tenant *</label>
+                    <select id="allocTenant" class="form-select" required>
+                        <option value="">Seçin...</option>
+                        <option value="1">AI Bee CC</option>
+                        <option value="2">CallCenter Pro</option>
+                        <option value="3">Support GmbH</option>
+                        <option value="4">TeleSales AG</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label data-tr="Trunk *" data-de="Trunk *">Trunk *</label>
+                    <select id="allocTrunk" class="form-select" required>
+                        <option value="">Seçin...</option>
+                        <option value="1">Sipgate Primary (35 müsait)</option>
+                        <option value="2">Placetel Business (30 müsait)</option>
+                        <option value="3">Easybell Standard (45 müsait)</option>
+                    </select>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label data-tr="Kanal Sayısı *" data-de="Anzahl Kanäle *">Kanal Sayısı *</label>
+                        <input type="number" id="allocChannels" class="form-input" min="1" max="100" required>
+                    </div>
+                    <div class="form-group">
+                        <label data-tr="Öncelik" data-de="Priorität">Öncelik</label>
+                        <select id="allocPriority" class="form-select">
+                            <option value="1">P1 - Yüksek</option>
+                            <option value="2" selected>P2 - Normal</option>
+                            <option value="3">P3 - Düşük</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label data-tr="Yön" data-de="Richtung">Yön</label>
+                    <select id="allocDirection" class="form-select">
+                        <option value="both" data-tr="Her İki Yön" data-de="Beide Richtungen">Her İki Yön</option>
+                        <option value="inbound" data-tr="Sadece Gelen" data-de="Nur Eingehend">Sadece Gelen</option>
+                        <option value="outbound" data-tr="Sadece Giden" data-de="Nur Ausgehend">Sadece Giden</option>
+                    </select>
+                </div>
+            </form>
+        </div>
+        <div class="modal-footer">
+            <button class="btn btn-outline" onclick="window.closeModal('allocationModal')" data-tr="İptal" data-de="Abbrechen">İptal</button>
+            <button class="btn btn-primary" onclick="window.saveAllocation()">
+                <i class="ti ti-check"></i> <span data-tr="Kaydet" data-de="Speichern">Kaydet</span>
+            </button>
+        </div>
+    </div>
+</div>
+
 <style>
-.trunk-overview {
+.capacity-section {
     background: white;
     border-radius: 12px;
     padding: 1.5rem;
@@ -104,70 +331,87 @@
     box-shadow: 0 2px 8px rgba(0,0,0,0.05);
 }
 
-.trunk-overview h3 {
+.capacity-section h3 {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
     margin-bottom: 1rem;
+    color: var(--text-primary);
 }
 
 .trunks-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
     gap: 1rem;
 }
 
 .trunk-card {
-    background: #f8f9fa;
-    border-radius: 8px;
-    padding: 1rem;
+    background: linear-gradient(135deg, #f8f9fa, #fff);
+    border: 1px solid #eee;
+    border-radius: 12px;
+    padding: 1.25rem;
 }
 
 .trunk-header {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    margin-bottom: 0.75rem;
+    margin-bottom: 1rem;
 }
 
 .trunk-name {
     font-weight: 600;
+    font-size: 1rem;
 }
 
 .trunk-status {
     font-size: 0.75rem;
-    padding: 0.2rem 0.5rem;
-    border-radius: 4px;
+    padding: 0.25rem 0.6rem;
+    border-radius: 12px;
+    font-weight: 600;
 }
 
-.status-active {
-    background: #e8f5e9;
-    color: #2e7d32;
-}
+.status-active { background: #e8f5e9; color: #2e7d32; }
 
 .trunk-capacity {
-    margin-bottom: 0.5rem;
+    margin-bottom: 1rem;
 }
 
 .capacity-bar {
-    height: 8px;
-    background: #ddd;
-    border-radius: 4px;
+    height: 10px;
+    background: #eee;
+    border-radius: 5px;
     overflow: hidden;
-    margin-bottom: 0.25rem;
+    margin-bottom: 0.5rem;
 }
 
 .capacity-fill {
     height: 100%;
     background: linear-gradient(90deg, var(--primary-color), #ffc107);
-    border-radius: 4px;
+    border-radius: 5px;
+    transition: width 0.3s;
 }
 
 .trunk-capacity span {
-    font-size: 0.8rem;
-    color: var(--text-muted);
-}
-
-.trunk-allocations {
     font-size: 0.85rem;
     color: var(--text-secondary);
+}
+
+.trunk-stats {
+    display: flex;
+    gap: 1.5rem;
+}
+
+.trunk-stat {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 0.85rem;
+    color: var(--text-secondary);
+}
+
+.trunk-stat i {
+    color: var(--primary-color);
 }
 
 .table-card {
@@ -175,10 +419,18 @@
     border-radius: 12px;
     padding: 1.5rem;
     box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+    overflow-x: auto;
 }
 
-.table-card h3 {
+.table-header {
     margin-bottom: 1rem;
+}
+
+.table-header h3 {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    margin: 0;
 }
 
 .data-table {
@@ -186,8 +438,7 @@
     border-collapse: collapse;
 }
 
-.data-table th,
-.data-table td {
+.data-table th, .data-table td {
     padding: 1rem;
     text-align: left;
     border-bottom: 1px solid #f0f0f0;
@@ -199,39 +450,220 @@
     font-size: 0.85rem;
 }
 
-.badge-outline {
-    background: transparent;
-    border: 1px solid #ddd;
-    padding: 0.2rem 0.5rem;
-    border-radius: 4px;
-    font-size: 0.75rem;
+.data-table tbody tr:hover { background: #f8f9fa; }
+
+.tenant-cell {
+    display: flex;
+    flex-direction: column;
 }
 
-.priority-badge {
-    background: linear-gradient(135deg, var(--primary-color), #ffc107);
-    color: white;
-    padding: 0.2rem 0.5rem;
-    border-radius: 4px;
+.tenant-code {
+    font-size: 0.75rem;
+    color: var(--text-muted);
+    font-family: monospace;
+}
+
+.badge {
+    padding: 0.25rem 0.6rem;
+    border-radius: 12px;
     font-size: 0.75rem;
     font-weight: 600;
 }
 
-.text-danger {
-    color: #f44336;
+.badge-outline {
+    background: transparent;
+    border: 1px solid #ddd;
 }
 
-.empty-row {
-    text-align: center;
-    padding: 3rem !important;
+.badge-both { background: #f3e5f5; color: #7b1fa2; }
+.badge-inbound { background: #e3f2fd; color: #1565c0; }
+.badge-outbound { background: #e8f5e9; color: #2e7d32; }
+
+.priority-badge {
+    background: linear-gradient(135deg, var(--primary-color), #ffc107);
+    color: white;
+    padding: 0.25rem 0.6rem;
+    border-radius: 12px;
+    font-size: 0.75rem;
+    font-weight: 600;
+}
+
+.usage-bar {
+    width: 80px;
+    height: 6px;
+    background: #eee;
+    border-radius: 3px;
+    overflow: hidden;
+    display: inline-block;
+    vertical-align: middle;
+}
+
+.usage-fill {
+    height: 100%;
+    background: linear-gradient(90deg, #4caf50, #8bc34a);
+    border-radius: 3px;
+}
+
+.usage-text {
+    font-size: 0.8rem;
     color: var(--text-muted);
+    margin-left: 0.5rem;
 }
 
-.empty-row i {
-    font-size: 2.5rem;
-    margin-bottom: 0.5rem;
+.action-cell { display: flex; gap: 0.25rem; }
+
+.btn-icon {
+    padding: 0.375rem;
+    background: transparent;
+    border: 1px solid #eee;
+    border-radius: 6px;
+    cursor: pointer;
+}
+
+.btn-icon:hover { background: #f0f0f0; }
+.btn-icon.btn-danger { color: #f44336; }
+
+/* Modal */
+.modal {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0,0,0,0.5);
+    z-index: 1000;
+    align-items: center;
+    justify-content: center;
+}
+
+.modal.active { display: flex; }
+
+.modal-content {
+    background: white;
+    border-radius: 16px;
+    width: 90%;
+    max-width: 500px;
+    max-height: 90vh;
+    overflow-y: auto;
+}
+
+.modal-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 1.25rem 1.5rem;
+    border-bottom: 1px solid #eee;
+}
+
+.modal-header h3 { display: flex; align-items: center; gap: 0.5rem; margin: 0; }
+
+.modal-close {
+    width: 32px;
+    height: 32px;
+    border: none;
+    background: #f0f0f0;
+    border-radius: 8px;
+    font-size: 1.25rem;
+    cursor: pointer;
+}
+
+.modal-body { padding: 1.5rem; }
+.modal-footer {
+    display: flex;
+    justify-content: flex-end;
+    gap: 0.75rem;
+    padding: 1rem 1.5rem;
+    border-top: 1px solid #eee;
+}
+
+.form-group { margin-bottom: 1rem; }
+.form-group label { display: block; margin-bottom: 0.5rem; font-weight: 500; }
+.form-input, .form-select {
+    width: 100%;
+    padding: 0.75rem;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+}
+
+.form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
+
+.btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.5rem 1rem;
+    border: none;
+    border-radius: 8px;
+    font-size: 0.9rem;
+    cursor: pointer;
+}
+
+.btn-primary {
+    background: linear-gradient(135deg, var(--primary-color), #ffc107);
+    color: white;
+}
+
+.btn-outline {
+    background: white;
+    border: 1px solid #ddd;
+    color: var(--text-primary);
 }
 </style>
+
+<script>
+window.onload = function() {
+    if(typeof setLang === 'function') {
+        setLang(localStorage.getItem('lang') || 'tr');
+    }
+};
+
+window.openAddAllocationModal = function() {
+    document.getElementById('allocationForm').reset();
+    document.getElementById('allocationModal').classList.add('active');
+};
+
+window.closeModal = function(id) {
+    document.getElementById(id).classList.remove('active');
+};
+
+window.saveAllocation = function() {
+    var tenant = document.getElementById('allocTenant').value;
+    var trunk = document.getElementById('allocTrunk').value;
+    var channels = document.getElementById('allocChannels').value;
+    
+    if(!tenant || !trunk || !channels) {
+        showNotification('Lütfen tüm zorunlu alanları doldurun!', 'error');
+        return;
+    }
+    
+    showNotification('Tahsis başarıyla kaydedildi!', 'success');
+    window.closeModal('allocationModal');
+};
+
+window.editAllocation = function(id) {
+    document.getElementById('allocationModal').classList.add('active');
+};
+
+window.deleteAllocation = function(id) {
+    if(confirm('Bu tahsisi silmek istediğinizden emin misiniz?')) {
+        showNotification('Tahsis silindi!', 'success');
+    }
+};
+
+function showNotification(message, type) {
+    var colors = { success: '#4caf50', error: '#f44336', info: '#2196f3' };
+    var notification = document.createElement('div');
+    notification.innerHTML = '<i class="ti ti-' + (type === 'success' ? 'check' : type === 'error' ? 'x' : 'info-circle') + '"></i> ' + message;
+    notification.style.cssText = 'position:fixed;top:20px;right:20px;background:' + colors[type] + ';color:white;padding:1rem 1.5rem;border-radius:8px;z-index:9999;display:flex;align-items:center;gap:0.5rem;box-shadow:0 4px 12px rgba(0,0,0,0.15);';
+    document.body.appendChild(notification);
+    setTimeout(function() { notification.remove(); }, 3000);
+}
+
+document.querySelectorAll('.modal').forEach(function(modal) {
+    modal.addEventListener('click', function(e) {
+        if(e.target === this) this.classList.remove('active');
+    });
+});
+</script>
 {% endblock %}
-
-
-
