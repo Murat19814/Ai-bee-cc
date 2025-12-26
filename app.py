@@ -165,14 +165,28 @@ def format_phone(number):
 
 @app.context_processor
 def inject_globals():
-    """Tüm template'lere global değişkenler ekle"""
+    # Global variables for templates
     notifications = []
     if current_user.is_authenticated:
-        notifications = Notification.query.filter_by(
-            user_id=current_user.id, 
-            is_read=False
-        ).order_by(Notification.created_at.desc()).limit(10).all()
-    
+        try:
+            # Defensive rollback: clear any failed transaction state in this request
+            try:
+                db.session.rollback()
+            except Exception:
+                pass
+
+            notifications = Notification.query.filter_by(
+                user_id=current_user.id,
+                is_read=False
+            ).order_by(Notification.created_at.desc()).limit(10).all()
+        except Exception as e:
+            app.logger.error(f"Notifications inject error: {str(e)}")
+            try:
+                db.session.rollback()
+            except Exception:
+                pass
+            notifications = []
+
     return {
         'app_name': app.config.get('APP_NAME', 'AI BEE CC'),
         'version': app.config.get('VERSION', '2.0'),
@@ -195,8 +209,23 @@ def not_found(e):
 
 @app.errorhandler(500)
 def server_error(e):
+    # Ensure DB session is not left in a failed transaction state
+    try:
+        db.session.rollback()
+    except Exception:
+        pass
     return render_template('errors/500.html'), 500
 
+
+# ==================== DB SESSION SAFETY ====================
+@app.teardown_request
+def teardown_request(exception=None):
+    # Rollback DB session on unhandled exceptions to keep future requests healthy
+    if exception is not None:
+        try:
+            db.session.rollback()
+        except Exception:
+            pass
 
 # ==================== AUTH ROUTES ====================
 
