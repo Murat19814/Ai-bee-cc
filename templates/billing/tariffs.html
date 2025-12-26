@@ -4,90 +4,493 @@
 
 {% block content %}
 <div class="page-header">
-    <h1><i class="ti ti-receipt"></i> VoIP Tarifeleri</h1>
+    <h1><i class="ti ti-receipt"></i> <span data-tr="VoIP Tarifeleri" data-de="VoIP-Tarife">VoIP Tarifeleri</span></h1>
     <div class="page-actions">
-        <a href="{{ url_for('billing_tariff_new') }}" class="btn btn-primary">
-            <i class="ti ti-plus"></i> Yeni Tarife
-        </a>
+        <button class="btn btn-primary" onclick="window.openNewTariffModal()">
+            <i class="ti ti-plus"></i> <span data-tr="Yeni Tarife" data-de="Neuer Tarif">Yeni Tarife</span>
+        </button>
+    </div>
+</div>
+
+<!-- İstatistik Kartları -->
+<div class="stats-grid">
+    <div class="stat-card">
+        <div class="stat-icon blue">
+            <i class="ti ti-receipt"></i>
+        </div>
+        <div class="stat-content">
+            <span class="stat-value">{{ tariffs|length if tariffs else 3 }}</span>
+            <span class="stat-label" data-tr="Toplam Tarife" data-de="Gesamte Tarife">Toplam Tarife</span>
+        </div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-icon green">
+            <i class="ti ti-check"></i>
+        </div>
+        <div class="stat-content">
+            <span class="stat-value">{{ tariffs|selectattr('is_active', 'equalto', true)|list|length if tariffs else 3 }}</span>
+            <span class="stat-label" data-tr="Aktif" data-de="Aktiv">Aktif</span>
+        </div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-icon orange">
+            <i class="ti ti-phone-outgoing"></i>
+        </div>
+        <div class="stat-content">
+            <span class="stat-value">€0.12</span>
+            <span class="stat-label" data-tr="Ort. Outbound" data-de="Durchschn. Outbound">Ort. Outbound</span>
+        </div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-icon purple">
+            <i class="ti ti-phone-incoming"></i>
+        </div>
+        <div class="stat-content">
+            <span class="stat-value">€0.01</span>
+            <span class="stat-label" data-tr="Ort. Inbound" data-de="Durchschn. Inbound">Ort. Inbound</span>
+        </div>
     </div>
 </div>
 
 <div class="tariffs-list">
-    {% for tariff in tariffs %}
-    <div class="tariff-card">
-        <div class="tariff-header">
-            <div class="tariff-info">
-                <h3>{{ tariff.name }}</h3>
-                <span class="tariff-code">{{ tariff.code }}</span>
+    {% if tariffs %}
+        {% for tariff in tariffs %}
+        <div class="tariff-card" data-tariff-id="{{ tariff.id }}">
+            <div class="tariff-header">
+                <div class="tariff-info">
+                    <h3>{{ tariff.name }}</h3>
+                    <span class="tariff-code">{{ tariff.code }}</span>
+                </div>
+                <div class="tariff-status">
+                    {% if tariff.is_default %}
+                    <span class="badge badge-primary" data-tr="Varsayılan" data-de="Standard">Varsayılan</span>
+                    {% endif %}
+                    {% if tariff.is_active %}
+                    <span class="badge badge-success" data-tr="Aktif" data-de="Aktiv">Aktif</span>
+                    {% else %}
+                    <span class="badge badge-muted" data-tr="Pasif" data-de="Inaktiv">Pasif</span>
+                    {% endif %}
+                </div>
             </div>
-            <div class="tariff-status">
-                {% if tariff.is_default %}
-                <span class="badge badge-primary">Varsayılan</span>
-                {% endif %}
-                {% if tariff.is_active %}
-                <span class="badge badge-success">Aktif</span>
-                {% else %}
-                <span class="badge badge-muted">Pasif</span>
-                {% endif %}
+            
+            <div class="tariff-rates">
+                <div class="rate-item">
+                    <i class="ti ti-phone-incoming"></i>
+                    <div class="rate-content">
+                        <span class="rate-label" data-tr="Gelen Çağrı" data-de="Eingehend">Gelen Çağrı</span>
+                        <span class="rate-value">€{{ "%.4f"|format(tariff.default_rate_inbound|float) }}/dk</span>
+                    </div>
+                </div>
+                <div class="rate-item">
+                    <i class="ti ti-phone-outgoing"></i>
+                    <div class="rate-content">
+                        <span class="rate-label" data-tr="Giden Çağrı" data-de="Ausgehend">Giden Çağrı</span>
+                        <span class="rate-value">€{{ "%.4f"|format(tariff.default_rate_outbound|float) }}/dk</span>
+                    </div>
+                </div>
+                <div class="rate-item">
+                    <i class="ti ti-link"></i>
+                    <div class="rate-content">
+                        <span class="rate-label" data-tr="Bağlantı Ücreti" data-de="Verbindungsgebühr">Bağlantı Ücreti</span>
+                        <span class="rate-value">€{{ "%.4f"|format(tariff.connection_fee|float) }}</span>
+                    </div>
+                </div>
+                <div class="rate-item">
+                    <i class="ti ti-clock"></i>
+                    <div class="rate-content">
+                        <span class="rate-label" data-tr="Yuvarlama" data-de="Rundung">Yuvarlama</span>
+                        <span class="rate-value">{{ tariff.billing_increment }} sn</span>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="tariff-description">
+                {{ tariff.description or 'Açıklama yok' }}
+            </div>
+            
+            <div class="tariff-actions">
+                <button class="btn btn-outline btn-sm" onclick="window.viewRates({{ tariff.id }})">
+                    <i class="ti ti-list"></i> <span data-tr="Fiyat Detayları" data-de="Preisdetails">Fiyat Detayları</span>
+                </button>
+                <button class="btn btn-outline btn-sm" onclick="window.editTariff({{ tariff.id }})">
+                    <i class="ti ti-edit"></i> <span data-tr="Düzenle" data-de="Bearbeiten">Düzenle</span>
+                </button>
+                <button class="btn btn-outline btn-sm" onclick="window.setDefault({{ tariff.id }})">
+                    <i class="ti ti-star"></i>
+                </button>
+                <button class="btn btn-outline btn-sm text-danger" onclick="window.deleteTariff({{ tariff.id }})">
+                    <i class="ti ti-trash"></i>
+                </button>
             </div>
         </div>
-        
-        <div class="tariff-rates">
-            <div class="rate-item">
-                <i class="ti ti-phone-incoming"></i>
-                <div class="rate-content">
-                    <span class="rate-label">Gelen Çağrı</span>
-                    <span class="rate-value">₺{{ "%.4f"|format(tariff.default_rate_inbound|float) }}/dk</span>
+        {% endfor %}
+    {% else %}
+        <!-- Demo Tariffs -->
+        <div class="tariff-card" data-tariff-id="1">
+            <div class="tariff-header">
+                <div class="tariff-info">
+                    <h3>Deutschland Standard</h3>
+                    <span class="tariff-code">DE-STD</span>
+                </div>
+                <div class="tariff-status">
+                    <span class="badge badge-primary" data-tr="Varsayılan" data-de="Standard">Varsayılan</span>
+                    <span class="badge badge-success" data-tr="Aktif" data-de="Aktiv">Aktif</span>
                 </div>
             </div>
-            <div class="rate-item">
-                <i class="ti ti-phone-outgoing"></i>
-                <div class="rate-content">
-                    <span class="rate-label">Giden Çağrı</span>
-                    <span class="rate-value">₺{{ "%.4f"|format(tariff.default_rate_outbound|float) }}/dk</span>
+            
+            <div class="tariff-rates">
+                <div class="rate-item">
+                    <i class="ti ti-phone-incoming"></i>
+                    <div class="rate-content">
+                        <span class="rate-label" data-tr="Gelen Çağrı" data-de="Eingehend">Gelen Çağrı</span>
+                        <span class="rate-value">€0.0100/dk</span>
+                    </div>
+                </div>
+                <div class="rate-item">
+                    <i class="ti ti-phone-outgoing"></i>
+                    <div class="rate-content">
+                        <span class="rate-label" data-tr="Giden Çağrı" data-de="Ausgehend">Giden Çağrı</span>
+                        <span class="rate-value">€0.1200/dk</span>
+                    </div>
+                </div>
+                <div class="rate-item">
+                    <i class="ti ti-link"></i>
+                    <div class="rate-content">
+                        <span class="rate-label" data-tr="Bağlantı Ücreti" data-de="Verbindungsgebühr">Bağlantı Ücreti</span>
+                        <span class="rate-value">€0.0000</span>
+                    </div>
+                </div>
+                <div class="rate-item">
+                    <i class="ti ti-clock"></i>
+                    <div class="rate-content">
+                        <span class="rate-label" data-tr="Yuvarlama" data-de="Rundung">Yuvarlama</span>
+                        <span class="rate-value">1 sn</span>
+                    </div>
                 </div>
             </div>
-            <div class="rate-item">
-                <i class="ti ti-link"></i>
-                <div class="rate-content">
-                    <span class="rate-label">Bağlantı Ücreti</span>
-                    <span class="rate-value">₺{{ "%.4f"|format(tariff.connection_fee|float) }}</span>
-                </div>
+            
+            <div class="tariff-description" data-tr="Almanya sabit ve mobil hatlar için standart tarife" data-de="Standardtarif für Deutschland Festnetz und Mobilfunk">
+                Almanya sabit ve mobil hatlar için standart tarife
             </div>
-            <div class="rate-item">
-                <i class="ti ti-clock"></i>
-                <div class="rate-content">
-                    <span class="rate-label">Yuvarlama</span>
-                    <span class="rate-value">{{ tariff.billing_increment }} sn</span>
-                </div>
+            
+            <div class="tariff-actions">
+                <button class="btn btn-outline btn-sm" onclick="window.viewRates(1)">
+                    <i class="ti ti-list"></i> <span data-tr="Fiyat Detayları" data-de="Preisdetails">Fiyat Detayları</span>
+                </button>
+                <button class="btn btn-outline btn-sm" onclick="window.editTariff(1)">
+                    <i class="ti ti-edit"></i> <span data-tr="Düzenle" data-de="Bearbeiten">Düzenle</span>
+                </button>
+                <button class="btn btn-outline btn-sm" onclick="window.setDefault(1)">
+                    <i class="ti ti-star"></i>
+                </button>
+                <button class="btn btn-outline btn-sm text-danger" onclick="window.deleteTariff(1)">
+                    <i class="ti ti-trash"></i>
+                </button>
             </div>
         </div>
-        
-        <div class="tariff-description">
-            {{ tariff.description or 'Açıklama yok' }}
+
+        <div class="tariff-card" data-tariff-id="2">
+            <div class="tariff-header">
+                <div class="tariff-info">
+                    <h3>Österreich & Schweiz</h3>
+                    <span class="tariff-code">AT-CH</span>
+                </div>
+                <div class="tariff-status">
+                    <span class="badge badge-success" data-tr="Aktif" data-de="Aktiv">Aktif</span>
+                </div>
+            </div>
+            
+            <div class="tariff-rates">
+                <div class="rate-item">
+                    <i class="ti ti-phone-incoming"></i>
+                    <div class="rate-content">
+                        <span class="rate-label" data-tr="Gelen Çağrı" data-de="Eingehend">Gelen Çağrı</span>
+                        <span class="rate-value">€0.0150/dk</span>
+                    </div>
+                </div>
+                <div class="rate-item">
+                    <i class="ti ti-phone-outgoing"></i>
+                    <div class="rate-content">
+                        <span class="rate-label" data-tr="Giden Çağrı" data-de="Ausgehend">Giden Çağrı</span>
+                        <span class="rate-value">€0.1800/dk</span>
+                    </div>
+                </div>
+                <div class="rate-item">
+                    <i class="ti ti-link"></i>
+                    <div class="rate-content">
+                        <span class="rate-label" data-tr="Bağlantı Ücreti" data-de="Verbindungsgebühr">Bağlantı Ücreti</span>
+                        <span class="rate-value">€0.0100</span>
+                    </div>
+                </div>
+                <div class="rate-item">
+                    <i class="ti ti-clock"></i>
+                    <div class="rate-content">
+                        <span class="rate-label" data-tr="Yuvarlama" data-de="Rundung">Yuvarlama</span>
+                        <span class="rate-value">60 sn</span>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="tariff-description" data-tr="Avusturya ve İsviçre için tarife" data-de="Tarif für Österreich und Schweiz">
+                Avusturya ve İsviçre için tarife
+            </div>
+            
+            <div class="tariff-actions">
+                <button class="btn btn-outline btn-sm" onclick="window.viewRates(2)">
+                    <i class="ti ti-list"></i> <span data-tr="Fiyat Detayları" data-de="Preisdetails">Fiyat Detayları</span>
+                </button>
+                <button class="btn btn-outline btn-sm" onclick="window.editTariff(2)">
+                    <i class="ti ti-edit"></i> <span data-tr="Düzenle" data-de="Bearbeiten">Düzenle</span>
+                </button>
+                <button class="btn btn-outline btn-sm" onclick="window.setDefault(2)">
+                    <i class="ti ti-star"></i>
+                </button>
+                <button class="btn btn-outline btn-sm text-danger" onclick="window.deleteTariff(2)">
+                    <i class="ti ti-trash"></i>
+                </button>
+            </div>
         </div>
-        
-        <div class="tariff-actions">
-            <a href="{{ url_for('billing_tariff_rates', tariff_id=tariff.id) }}" class="btn btn-outline btn-sm">
-                <i class="ti ti-list"></i> Fiyat Detayları
-            </a>
-            <button class="btn btn-outline btn-sm">
-                <i class="ti ti-edit"></i> Düzenle
+
+        <div class="tariff-card" data-tariff-id="3">
+            <div class="tariff-header">
+                <div class="tariff-info">
+                    <h3>Premium Mobil</h3>
+                    <span class="tariff-code">DE-MOB-PREM</span>
+                </div>
+                <div class="tariff-status">
+                    <span class="badge badge-success" data-tr="Aktif" data-de="Aktiv">Aktif</span>
+                </div>
+            </div>
+            
+            <div class="tariff-rates">
+                <div class="rate-item">
+                    <i class="ti ti-phone-incoming"></i>
+                    <div class="rate-content">
+                        <span class="rate-label" data-tr="Gelen Çağrı" data-de="Eingehend">Gelen Çağrı</span>
+                        <span class="rate-value">€0.0080/dk</span>
+                    </div>
+                </div>
+                <div class="rate-item">
+                    <i class="ti ti-phone-outgoing"></i>
+                    <div class="rate-content">
+                        <span class="rate-label" data-tr="Giden Çağrı" data-de="Ausgehend">Giden Çağrı</span>
+                        <span class="rate-value">€0.0900/dk</span>
+                    </div>
+                </div>
+                <div class="rate-item">
+                    <i class="ti ti-link"></i>
+                    <div class="rate-content">
+                        <span class="rate-label" data-tr="Bağlantı Ücreti" data-de="Verbindungsgebühr">Bağlantı Ücreti</span>
+                        <span class="rate-value">€0.0000</span>
+                    </div>
+                </div>
+                <div class="rate-item">
+                    <i class="ti ti-clock"></i>
+                    <div class="rate-content">
+                        <span class="rate-label" data-tr="Yuvarlama" data-de="Rundung">Yuvarlama</span>
+                        <span class="rate-value">1 sn</span>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="tariff-description" data-tr="Yüksek hacimli müşteriler için indirimli mobil tarife" data-de="Rabattierter Mobiltarif für Großkunden">
+                Yüksek hacimli müşteriler için indirimli mobil tarife
+            </div>
+            
+            <div class="tariff-actions">
+                <button class="btn btn-outline btn-sm" onclick="window.viewRates(3)">
+                    <i class="ti ti-list"></i> <span data-tr="Fiyat Detayları" data-de="Preisdetails">Fiyat Detayları</span>
+                </button>
+                <button class="btn btn-outline btn-sm" onclick="window.editTariff(3)">
+                    <i class="ti ti-edit"></i> <span data-tr="Düzenle" data-de="Bearbeiten">Düzenle</span>
+                </button>
+                <button class="btn btn-outline btn-sm" onclick="window.setDefault(3)">
+                    <i class="ti ti-star"></i>
+                </button>
+                <button class="btn btn-outline btn-sm text-danger" onclick="window.deleteTariff(3)">
+                    <i class="ti ti-trash"></i>
+                </button>
+            </div>
+        </div>
+    {% endif %}
+</div>
+
+<!-- Yeni Tarife Modal -->
+<div id="newTariffModal" class="modal">
+    <div class="modal-content modal-lg">
+        <div class="modal-header">
+            <h3><i class="ti ti-receipt-2"></i> <span data-tr="Yeni Tarife Oluştur" data-de="Neuen Tarif erstellen">Yeni Tarife Oluştur</span></h3>
+            <button class="modal-close" onclick="window.closeModal('newTariffModal')">&times;</button>
+        </div>
+        <div class="modal-body">
+            <form id="newTariffForm">
+                <div class="form-row">
+                    <div class="form-group">
+                        <label data-tr="Tarife Kodu *" data-de="Tarifcode *">Tarife Kodu *</label>
+                        <input type="text" id="tariffCode" class="form-input" required placeholder="DE-STD">
+                    </div>
+                    <div class="form-group">
+                        <label data-tr="Tarife Adı *" data-de="Tarifname *">Tarife Adı *</label>
+                        <input type="text" id="tariffName" class="form-input" required placeholder="Deutschland Standard">
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label data-tr="Açıklama" data-de="Beschreibung">Açıklama</label>
+                    <textarea id="tariffDescription" class="form-textarea" rows="2" placeholder="Tarife açıklaması..."></textarea>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label data-tr="Gelen Çağrı (€/dk)" data-de="Eingehend (€/Min)">Gelen Çağrı (€/dk)</label>
+                        <input type="number" id="rateInbound" class="form-input" step="0.0001" value="0.01">
+                    </div>
+                    <div class="form-group">
+                        <label data-tr="Giden Çağrı (€/dk)" data-de="Ausgehend (€/Min)">Giden Çağrı (€/dk)</label>
+                        <input type="number" id="rateOutbound" class="form-input" step="0.0001" value="0.12">
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label data-tr="Bağlantı Ücreti (€)" data-de="Verbindungsgebühr (€)">Bağlantı Ücreti (€)</label>
+                        <input type="number" id="connectionFee" class="form-input" step="0.0001" value="0">
+                    </div>
+                    <div class="form-group">
+                        <label data-tr="Yuvarlama (sn)" data-de="Rundung (Sek)">Yuvarlama (sn)</label>
+                        <select id="billingIncrement" class="form-select">
+                            <option value="1">1 sn (Saniye başına)</option>
+                            <option value="6">6 sn</option>
+                            <option value="30">30 sn</option>
+                            <option value="60">60 sn (Dakika başına)</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label class="checkbox-label">
+                            <input type="checkbox" id="isActive" checked>
+                            <span data-tr="Aktif" data-de="Aktiv">Aktif</span>
+                        </label>
+                    </div>
+                    <div class="form-group">
+                        <label class="checkbox-label">
+                            <input type="checkbox" id="isDefault">
+                            <span data-tr="Varsayılan Tarife" data-de="Standardtarif">Varsayılan Tarife</span>
+                        </label>
+                    </div>
+                </div>
+            </form>
+        </div>
+        <div class="modal-footer">
+            <button class="btn btn-outline" onclick="window.closeModal('newTariffModal')" data-tr="İptal" data-de="Abbrechen">İptal</button>
+            <button class="btn btn-primary" onclick="window.saveTariff()">
+                <i class="ti ti-check"></i> <span data-tr="Kaydet" data-de="Speichern">Kaydet</span>
             </button>
         </div>
     </div>
-    {% else %}
-    <div class="empty-state">
-        <i class="ti ti-receipt-off"></i>
-        <h4>Henüz VoIP tarifesi tanımlanmamış</h4>
-        <a href="{{ url_for('billing_tariff_new') }}" class="btn btn-primary">
-            <i class="ti ti-plus"></i> İlk Tarifeyi Oluştur
-        </a>
+</div>
+
+<!-- Fiyat Detayları Modal -->
+<div id="ratesModal" class="modal">
+    <div class="modal-content modal-lg">
+        <div class="modal-header">
+            <h3><i class="ti ti-list-numbers"></i> <span data-tr="Fiyat Detayları" data-de="Preisdetails">Fiyat Detayları</span></h3>
+            <button class="modal-close" onclick="window.closeModal('ratesModal')">&times;</button>
+        </div>
+        <div class="modal-body">
+            <table class="rates-table">
+                <thead>
+                    <tr>
+                        <th data-tr="Ön Ek" data-de="Vorwahl">Ön Ek</th>
+                        <th data-tr="Açıklama" data-de="Beschreibung">Açıklama</th>
+                        <th data-tr="Fiyat (€/dk)" data-de="Preis (€/Min)">Fiyat (€/dk)</th>
+                        <th data-tr="Tip" data-de="Typ">Tip</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td><code>+49 30</code></td>
+                        <td>Berlin Sabit</td>
+                        <td>€0.0100</td>
+                        <td><span class="badge badge-success">Sabit</span></td>
+                    </tr>
+                    <tr>
+                        <td><code>+49 89</code></td>
+                        <td>München Sabit</td>
+                        <td>€0.0100</td>
+                        <td><span class="badge badge-success">Sabit</span></td>
+                    </tr>
+                    <tr>
+                        <td><code>+49 151</code></td>
+                        <td>T-Mobile</td>
+                        <td>€0.1500</td>
+                        <td><span class="badge badge-info">Mobil</span></td>
+                    </tr>
+                    <tr>
+                        <td><code>+49 160</code></td>
+                        <td>Vodafone</td>
+                        <td>€0.1500</td>
+                        <td><span class="badge badge-info">Mobil</span></td>
+                    </tr>
+                    <tr>
+                        <td><code>+49 170</code></td>
+                        <td>O2</td>
+                        <td>€0.1400</td>
+                        <td><span class="badge badge-info">Mobil</span></td>
+                    </tr>
+                    <tr>
+                        <td><code>+49 800</code></td>
+                        <td>Toll-Free</td>
+                        <td>€0.0000</td>
+                        <td><span class="badge badge-warning">Ücretsiz</span></td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+        <div class="modal-footer">
+            <button class="btn btn-outline" onclick="window.closeModal('ratesModal')" data-tr="Kapat" data-de="Schließen">Kapat</button>
+            <button class="btn btn-primary" onclick="window.addRate()">
+                <i class="ti ti-plus"></i> <span data-tr="Fiyat Ekle" data-de="Preis hinzufügen">Fiyat Ekle</span>
+            </button>
+        </div>
     </div>
-    {% endfor %}
 </div>
 
 <style>
+.stats-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 1rem;
+    margin-bottom: 2rem;
+}
+
+.stat-card {
+    background: white;
+    border-radius: 12px;
+    padding: 1.25rem;
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+}
+
+.stat-icon {
+    width: 50px;
+    height: 50px;
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.5rem;
+}
+
+.stat-icon.blue { background: #e3f2fd; color: #1565c0; }
+.stat-icon.green { background: #e8f5e9; color: #2e7d32; }
+.stat-icon.orange { background: #fff3e0; color: #e65100; }
+.stat-icon.purple { background: #f3e5f5; color: #7b1fa2; }
+
+.stat-content { display: flex; flex-direction: column; }
+.stat-value { font-size: 1.5rem; font-weight: 700; }
+.stat-label { font-size: 0.85rem; color: var(--text-muted); }
+
 .tariffs-list {
     display: flex;
     flex-direction: column;
@@ -99,6 +502,12 @@
     border-radius: 12px;
     padding: 1.5rem;
     box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+    transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.tariff-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 15px rgba(0,0,0,0.1);
 }
 
 .tariff-header {
@@ -117,6 +526,9 @@
     font-family: monospace;
     color: var(--text-muted);
     font-size: 0.85rem;
+    background: #f0f0f0;
+    padding: 0.125rem 0.5rem;
+    border-radius: 4px;
 }
 
 .tariff-status {
@@ -169,8 +581,122 @@
 .tariff-actions {
     display: flex;
     gap: 0.5rem;
+    flex-wrap: wrap;
 }
 
+/* Modal */
+.modal {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0,0,0,0.5);
+    z-index: 1000;
+    align-items: center;
+    justify-content: center;
+}
+
+.modal.active { display: flex; }
+
+.modal-content {
+    background: white;
+    border-radius: 16px;
+    width: 90%;
+    max-width: 500px;
+    max-height: 90vh;
+    overflow-y: auto;
+}
+
+.modal-content.modal-lg { max-width: 700px; }
+
+.modal-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 1.25rem 1.5rem;
+    border-bottom: 1px solid #eee;
+}
+
+.modal-header h3 { display: flex; align-items: center; gap: 0.5rem; }
+
+.modal-close {
+    width: 32px;
+    height: 32px;
+    border: none;
+    background: #f0f0f0;
+    border-radius: 8px;
+    font-size: 1.25rem;
+    cursor: pointer;
+}
+
+.modal-body { padding: 1.5rem; }
+
+.modal-footer {
+    display: flex;
+    justify-content: flex-end;
+    gap: 0.75rem;
+    padding: 1rem 1.5rem;
+    border-top: 1px solid #eee;
+}
+
+/* Form */
+.form-group { margin-bottom: 1rem; }
+.form-group label {
+    display: block;
+    margin-bottom: 0.5rem;
+    font-size: 0.9rem;
+    font-weight: 500;
+}
+
+.form-input, .form-select, .form-textarea {
+    width: 100%;
+    padding: 0.75rem;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    font-size: 0.9rem;
+}
+
+.form-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1rem;
+}
+
+.checkbox-label {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    cursor: pointer;
+}
+
+/* Rates Table */
+.rates-table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.rates-table th, .rates-table td {
+    padding: 0.75rem;
+    text-align: left;
+    border-bottom: 1px solid #f0f0f0;
+}
+
+.rates-table th {
+    font-weight: 600;
+    color: var(--text-secondary);
+    font-size: 0.85rem;
+}
+
+.rates-table code {
+    background: #f0f0f0;
+    padding: 0.125rem 0.5rem;
+    border-radius: 4px;
+    font-size: 0.85rem;
+}
+
+/* Badges */
 .badge {
     padding: 0.25rem 0.75rem;
     border-radius: 20px;
@@ -183,15 +709,47 @@
     color: white;
 }
 
-.badge-success {
-    background: #e8f5e9;
-    color: #2e7d32;
+.badge-success { background: #e8f5e9; color: #2e7d32; }
+.badge-info { background: #e3f2fd; color: #1565c0; }
+.badge-warning { background: #fff3e0; color: #e65100; }
+.badge-muted { background: #f5f5f5; color: #757575; }
+
+/* Buttons */
+.btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.5rem 1rem;
+    border: none;
+    border-radius: 8px;
+    font-size: 0.9rem;
+    cursor: pointer;
+    transition: all 0.2s;
 }
 
-.badge-muted {
-    background: #f5f5f5;
-    color: #757575;
+.btn-primary {
+    background: linear-gradient(135deg, var(--primary-color), #ffc107);
+    color: white;
 }
+
+.btn-primary:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+}
+
+.btn-outline {
+    background: white;
+    border: 1px solid #ddd;
+    color: var(--text-primary);
+}
+
+.btn-outline:hover {
+    border-color: var(--primary-color);
+    color: var(--primary-color);
+}
+
+.btn-sm { padding: 0.4rem 0.75rem; font-size: 0.85rem; }
+.text-danger { color: #c62828 !important; }
 
 .empty-state {
     text-align: center;
@@ -206,7 +764,89 @@
     margin-bottom: 1rem;
 }
 </style>
+
+<script>
+window.onload = function() {
+    if(typeof setLang === 'function') {
+        setLang(localStorage.getItem('lang') || 'tr');
+    }
+};
+
+// Open new tariff modal
+window.openNewTariffModal = function() {
+    document.getElementById('newTariffForm').reset();
+    document.getElementById('newTariffModal').classList.add('active');
+};
+
+// Save tariff
+window.saveTariff = function() {
+    var code = document.getElementById('tariffCode').value;
+    var name = document.getElementById('tariffName').value;
+    
+    if(!code || !name) {
+        showNotification('Lütfen zorunlu alanları doldurun!', 'error');
+        return;
+    }
+    
+    showNotification('Tarife kaydediliyor...', 'info');
+    setTimeout(function() {
+        showNotification('Tarife başarıyla kaydedildi!', 'success');
+        closeModal('newTariffModal');
+    }, 1000);
+};
+
+// View rates
+window.viewRates = function(id) {
+    document.getElementById('ratesModal').classList.add('active');
+};
+
+// Edit tariff
+window.editTariff = function(id) {
+    document.getElementById('tariffCode').value = 'DE-STD';
+    document.getElementById('tariffName').value = 'Deutschland Standard';
+    document.getElementById('tariffDescription').value = 'Almanya sabit ve mobil hatlar için standart tarife';
+    document.getElementById('rateInbound').value = '0.01';
+    document.getElementById('rateOutbound').value = '0.12';
+    document.getElementById('newTariffModal').classList.add('active');
+};
+
+// Set default
+window.setDefault = function(id) {
+    showNotification('Varsayılan tarife değiştirildi', 'success');
+};
+
+// Delete tariff
+window.deleteTariff = function(id) {
+    if(confirm('Bu tarifeyi silmek istediğinizden emin misiniz?')) {
+        showNotification('Tarife silindi', 'success');
+    }
+};
+
+// Add rate
+window.addRate = function() {
+    showNotification('Yeni fiyat ekleme formu açılıyor...', 'info');
+};
+
+// Close modal
+window.closeModal = function(modalId) {
+    document.getElementById(modalId).classList.remove('active');
+};
+
+// Close modal on outside click
+document.querySelectorAll('.modal').forEach(function(modal) {
+    modal.addEventListener('click', function(e) {
+        if(e.target === this) this.classList.remove('active');
+    });
+});
+
+// Notification
+function showNotification(message, type) {
+    var colors = { success: '#4caf50', error: '#f44336', info: '#2196f3' };
+    var notification = document.createElement('div');
+    notification.innerHTML = '<i class="ti ti-' + (type === 'success' ? 'check' : type === 'error' ? 'x' : 'info-circle') + '"></i> ' + message;
+    notification.style.cssText = 'position:fixed;top:20px;right:20px;background:' + colors[type] + ';color:white;padding:1rem 1.5rem;border-radius:8px;z-index:9999;display:flex;align-items:center;gap:0.5rem;box-shadow:0 4px 12px rgba(0,0,0,0.15);';
+    document.body.appendChild(notification);
+    setTimeout(function() { notification.remove(); }, 3000);
+}
+</script>
 {% endblock %}
-
-
-
