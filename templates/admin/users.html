@@ -83,16 +83,20 @@
     font-size: 0.9rem;
 }
 
-.user-avatar.admin {
+.user-avatar.super_admin {
     background: linear-gradient(135deg, #e53935, #c62828);
 }
 
-.user-avatar.supervisor {
+.user-avatar.admin {
     background: linear-gradient(135deg, #8e24aa, #6a1b9a);
 }
 
-.user-avatar.agent {
+.user-avatar.supervisor {
     background: linear-gradient(135deg, #1e88e5, #1565c0);
+}
+
+.user-avatar.agent {
+    background: linear-gradient(135deg, #43a047, #2e7d32);
 }
 
 .user-name {
@@ -119,17 +123,17 @@
 }
 
 .role-badge.admin {
-    background: linear-gradient(135deg, #e53935, #c62828);
-    color: white;
-}
-
-.role-badge.supervisor {
     background: linear-gradient(135deg, #8e24aa, #6a1b9a);
     color: white;
 }
 
-.role-badge.agent {
+.role-badge.supervisor {
     background: linear-gradient(135deg, #1e88e5, #1565c0);
+    color: white;
+}
+
+.role-badge.agent {
+    background: linear-gradient(135deg, #43a047, #2e7d32);
     color: white;
 }
 
@@ -170,6 +174,11 @@
 .action-btn.edit {
     background: #e3f2fd;
     color: #1976D2;
+}
+
+.action-btn.permissions {
+    background: #f3e5f5;
+    color: #7b1fa2;
 }
 
 .action-btn.delete {
@@ -216,6 +225,14 @@
     overflow: hidden;
 }
 
+.modal-content.large {
+    max-width: 900px;
+}
+
+.modal-content.xlarge {
+    max-width: 1200px;
+}
+
 .modal-header {
     padding: 1.5rem;
     background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
@@ -229,6 +246,7 @@
     display: flex;
     align-items: center;
     gap: 0.75rem;
+    margin: 0;
 }
 
 .modal-header h3 i {
@@ -247,7 +265,7 @@
 
 .modal-body {
     padding: 1.5rem;
-    max-height: 60vh;
+    max-height: 70vh;
     overflow-y: auto;
 }
 
@@ -336,6 +354,292 @@
     font-size: 0.8rem;
     color: #888;
 }
+
+/* Permissions Styles */
+.permissions-container {
+    display: grid;
+    grid-template-columns: 250px 1fr;
+    gap: 1.5rem;
+    min-height: 500px;
+}
+
+.permissions-sidebar {
+    background: #f8f9fa;
+    border-radius: 12px;
+    padding: 1rem;
+}
+
+.permissions-sidebar h4 {
+    font-size: 0.85rem;
+    color: #666;
+    text-transform: uppercase;
+    margin-bottom: 1rem;
+    padding-bottom: 0.5rem;
+    border-bottom: 1px solid #e0e0e0;
+}
+
+.permission-module {
+    padding: 0.75rem 1rem;
+    border-radius: 8px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    margin-bottom: 0.5rem;
+    transition: all 0.2s;
+}
+
+.permission-module:hover {
+    background: #e8e8e8;
+}
+
+.permission-module.active {
+    background: linear-gradient(135deg, #F5A623, #f4a623);
+    color: white;
+}
+
+.permission-module i {
+    font-size: 1.1rem;
+}
+
+.permission-module-name {
+    flex: 1;
+    font-weight: 500;
+}
+
+.permission-count {
+    background: rgba(0,0,0,0.1);
+    padding: 0.15rem 0.5rem;
+    border-radius: 10px;
+    font-size: 0.75rem;
+}
+
+.permissions-content {
+    background: white;
+    border-radius: 12px;
+    border: 1px solid #e0e0e0;
+}
+
+.permissions-content-header {
+    padding: 1rem 1.5rem;
+    border-bottom: 1px solid #e0e0e0;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.permissions-content-header h4 {
+    margin: 0;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.bulk-actions {
+    display: flex;
+    gap: 0.5rem;
+}
+
+.bulk-btn {
+    padding: 0.4rem 0.75rem;
+    border-radius: 6px;
+    border: 1px solid #e0e0e0;
+    background: white;
+    cursor: pointer;
+    font-size: 0.8rem;
+    transition: all 0.2s;
+}
+
+.bulk-btn:hover {
+    background: #f0f0f0;
+}
+
+.bulk-btn.grant-all {
+    background: #e8f5e9;
+    border-color: #4CAF50;
+    color: #2e7d32;
+}
+
+.bulk-btn.revoke-all {
+    background: #ffebee;
+    border-color: #f44336;
+    color: #c62828;
+}
+
+.permissions-list {
+    padding: 1rem;
+}
+
+.permission-category {
+    margin-bottom: 1.5rem;
+}
+
+.permission-category-header {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.5rem;
+    background: #f8f9fa;
+    border-radius: 8px;
+    margin-bottom: 0.75rem;
+    font-weight: 600;
+    color: #333;
+}
+
+.permission-category-header i {
+    color: #F5A623;
+}
+
+.permission-items {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 0.75rem;
+    padding-left: 1rem;
+}
+
+.permission-item {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 0.75rem;
+    background: #fafafa;
+    border-radius: 8px;
+    border: 1px solid #e8e8e8;
+    transition: all 0.2s;
+}
+
+.permission-item:hover {
+    background: #f0f0f0;
+    border-color: #d0d0d0;
+}
+
+.permission-item.granted {
+    background: #e8f5e9;
+    border-color: #a5d6a7;
+}
+
+.permission-checkbox {
+    width: 20px;
+    height: 20px;
+    cursor: pointer;
+    accent-color: #4CAF50;
+}
+
+.permission-info {
+    flex: 1;
+}
+
+.permission-name {
+    font-weight: 500;
+    font-size: 0.85rem;
+    color: #333;
+}
+
+.permission-desc {
+    font-size: 0.75rem;
+    color: #888;
+    margin-top: 0.15rem;
+}
+
+.permission-badge {
+    padding: 0.2rem 0.5rem;
+    border-radius: 4px;
+    font-size: 0.7rem;
+    font-weight: 600;
+}
+
+.permission-badge.read {
+    background: #e3f2fd;
+    color: #1565c0;
+}
+
+.permission-badge.write {
+    background: #fff3e0;
+    color: #ef6c00;
+}
+
+.permission-badge.delete {
+    background: #ffebee;
+    color: #c62828;
+}
+
+.permission-badge.admin {
+    background: #f3e5f5;
+    color: #7b1fa2;
+}
+
+/* User Info in Permissions Modal */
+.user-info-card {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    padding: 1.25rem;
+    border-radius: 12px;
+    margin-bottom: 1.5rem;
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+}
+
+.user-info-card .avatar {
+    width: 60px;
+    height: 60px;
+    border-radius: 50%;
+    background: rgba(255,255,255,0.2);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.5rem;
+    font-weight: 700;
+}
+
+.user-info-card .details h4 {
+    margin: 0 0 0.25rem 0;
+    font-size: 1.1rem;
+}
+
+.user-info-card .details p {
+    margin: 0;
+    opacity: 0.8;
+    font-size: 0.85rem;
+}
+
+.user-info-card .role-tag {
+    margin-left: auto;
+    background: rgba(255,255,255,0.2);
+    padding: 0.5rem 1rem;
+    border-radius: 20px;
+    font-weight: 600;
+}
+
+/* Quick Stats */
+.permission-stats {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 1rem;
+    margin-bottom: 1.5rem;
+}
+
+.perm-stat {
+    background: #f8f9fa;
+    padding: 1rem;
+    border-radius: 10px;
+    text-align: center;
+}
+
+.perm-stat-value {
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: #1a1a2e;
+}
+
+.perm-stat-label {
+    font-size: 0.75rem;
+    color: #888;
+}
+
+.perm-stat.granted .perm-stat-value { color: #2e7d32; }
+.perm-stat.denied .perm-stat-value { color: #c62828; }
+.perm-stat.partial .perm-stat-value { color: #f57c00; }
 </style>
 {% endblock %}
 
@@ -381,7 +685,7 @@
         <div class="stat-card">
             <div class="stat-icon purple"><i class="ti ti-shield"></i></div>
             <div>
-                <div class="stat-value">{{ users|selectattr('role', 'equalto', 'admin')|list|length if users else 0 }}</div>
+                <div class="stat-value">{{ users|selectattr('role', 'in', ['admin', 'super_admin'])|list|length if users else 0 }}</div>
                 <div class="stat-label" data-tr="Admin" data-de="Admin">Admin</div>
             </div>
         </div>
@@ -389,7 +693,7 @@
 
     <!-- Filters -->
     <div class="user-filters">
-        <input type="text" id="searchInput" onkeyup="filterUsers()" 
+        <input type="text" id="searchInput" onkeyup="filterUsers()" placeholder="Benutzer suchen..."
                data-tr-placeholder="Kullanıcı ara..." data-de-placeholder="Benutzer suchen...">
         <select id="roleFilter" onchange="filterUsers()">
             <option value="" data-tr="Tüm Roller" data-de="Alle Rollen">Tüm Roller</option>
@@ -430,7 +734,7 @@
                             <div class="user-avatar {{ user.role }}">{{ user.username[:2]|upper }}</div>
                             <div>
                                 <div class="user-name">{{ user.username }}</div>
-                                <div class="user-email">{{ user.full_name or 'İsim belirtilmemiş' }}</div>
+                                <div class="user-email" data-tr="İsim belirtilmemiş" data-de="Name nicht angegeben">{{ user.full_name or 'İsim belirtilmemiş' }}</div>
                             </div>
                         </div>
                     </td>
@@ -447,10 +751,13 @@
                     <td>{{ user.last_login.strftime('%d.%m.%Y %H:%M') if user.last_login else '-' }}</td>
                     <td>
                         <div class="action-buttons">
-                            <button class="action-btn edit" onclick="editUser({{ user.id }})" title="Düzenle">
+                            <button class="action-btn edit" onclick="editUser({{ user.id }}, '{{ user.username }}', '{{ user.email }}', '{{ user.role }}', '{{ user.extension or '' }}', {{ 'true' if user.is_active else 'false' }}, '{{ user.full_name or '' }}')" title="Düzenle">
                                 <i class="ti ti-edit"></i>
                             </button>
-                            <button class="action-btn password" onclick="changePassword({{ user.id }})" title="Şifre Değiştir">
+                            <button class="action-btn permissions" onclick="openPermissions({{ user.id }}, '{{ user.username }}', '{{ user.email }}', '{{ user.role }}')" title="Yetkiler">
+                                <i class="ti ti-shield-lock"></i>
+                            </button>
+                            <button class="action-btn password" onclick="changePassword({{ user.id }}, '{{ user.username }}')" title="Şifre Değiştir">
                                 <i class="ti ti-key"></i>
                             </button>
                             <button class="action-btn delete" onclick="deleteUser({{ user.id }}, '{{ user.username }}')" title="Sil">
@@ -571,6 +878,7 @@
         <form id="passwordForm" onsubmit="savePassword(event)">
             <div class="modal-body">
                 <input type="hidden" id="passwordUserId">
+                <p id="passwordUserName" style="text-align:center; margin-bottom:1rem; font-weight:600;"></p>
                 <div class="form-group">
                     <label data-tr="Yeni Şifre" data-de="Neues Passwort">Yeni Şifre</label>
                     <input type="password" id="newPassword" required>
@@ -589,6 +897,122 @@
         </form>
     </div>
 </div>
+
+<!-- Permissions Modal -->
+<div class="modal-overlay" id="permissionsModal">
+    <div class="modal-content xlarge">
+        <div class="modal-header">
+            <h3><i class="ti ti-shield-lock"></i> <span data-tr="Yetkilendirme" data-de="Berechtigungen">Yetkilendirme</span></h3>
+            <button class="modal-close" onclick="closePermissionsModal()">
+                <i class="ti ti-x"></i>
+            </button>
+        </div>
+        <div class="modal-body">
+            <!-- User Info -->
+            <div class="user-info-card">
+                <div class="avatar" id="permUserAvatar">MU</div>
+                <div class="details">
+                    <h4 id="permUserName">Kullanıcı Adı</h4>
+                    <p id="permUserEmail">email@example.com</p>
+                </div>
+                <div class="role-tag" id="permUserRole">SUPER_ADMIN</div>
+            </div>
+
+            <!-- Permission Stats -->
+            <div class="permission-stats">
+                <div class="perm-stat granted">
+                    <div class="perm-stat-value" id="grantedCount">0</div>
+                    <div class="perm-stat-label" data-tr="Verilen" data-de="Gewährt">Verilen</div>
+                </div>
+                <div class="perm-stat denied">
+                    <div class="perm-stat-value" id="deniedCount">0</div>
+                    <div class="perm-stat-label" data-tr="Reddedilen" data-de="Verweigert">Reddedilen</div>
+                </div>
+                <div class="perm-stat partial">
+                    <div class="perm-stat-value" id="totalModules">0</div>
+                    <div class="perm-stat-label" data-tr="Toplam Modül" data-de="Gesamt Module">Toplam Modül</div>
+                </div>
+                <div class="perm-stat">
+                    <div class="perm-stat-value" id="totalPerms">0</div>
+                    <div class="perm-stat-label" data-tr="Toplam Yetki" data-de="Gesamt Rechte">Toplam Yetki</div>
+                </div>
+            </div>
+
+            <!-- Permissions Container -->
+            <div class="permissions-container">
+                <!-- Sidebar - Modules -->
+                <div class="permissions-sidebar">
+                    <h4 data-tr="Modüller" data-de="Module">Modüller</h4>
+                    <div class="permission-module active" data-module="dashboard" onclick="selectModule('dashboard')">
+                        <i class="ti ti-dashboard"></i>
+                        <span class="permission-module-name" data-tr="Dashboard" data-de="Dashboard">Dashboard</span>
+                        <span class="permission-count">4</span>
+                    </div>
+                    <div class="permission-module" data-module="crm" onclick="selectModule('crm')">
+                        <i class="ti ti-address-book"></i>
+                        <span class="permission-module-name" data-tr="CRM" data-de="CRM">CRM</span>
+                        <span class="permission-count">12</span>
+                    </div>
+                    <div class="permission-module" data-module="campaigns" onclick="selectModule('campaigns')">
+                        <i class="ti ti-speakerphone"></i>
+                        <span class="permission-module-name" data-tr="Kampanyalar" data-de="Kampagnen">Kampanyalar</span>
+                        <span class="permission-count">10</span>
+                    </div>
+                    <div class="permission-module" data-module="voip" onclick="selectModule('voip')">
+                        <i class="ti ti-phone"></i>
+                        <span class="permission-module-name" data-tr="VoIP" data-de="VoIP">VoIP</span>
+                        <span class="permission-count">14</span>
+                    </div>
+                    <div class="permission-module" data-module="qa" onclick="selectModule('qa')">
+                        <i class="ti ti-certificate"></i>
+                        <span class="permission-module-name" data-tr="Kalite (QA)" data-de="Qualität (QA)">Kalite (QA)</span>
+                        <span class="permission-count">8</span>
+                    </div>
+                    <div class="permission-module" data-module="reports" onclick="selectModule('reports')">
+                        <i class="ti ti-chart-bar"></i>
+                        <span class="permission-module-name" data-tr="Raporlar" data-de="Berichte">Raporlar</span>
+                        <span class="permission-count">6</span>
+                    </div>
+                    <div class="permission-module" data-module="ai" onclick="selectModule('ai')">
+                        <i class="ti ti-brain"></i>
+                        <span class="permission-module-name" data-tr="Yapay Zeka" data-de="Künstliche Intelligenz">Yapay Zeka</span>
+                        <span class="permission-count">8</span>
+                    </div>
+                    <div class="permission-module" data-module="admin" onclick="selectModule('admin')">
+                        <i class="ti ti-settings"></i>
+                        <span class="permission-module-name" data-tr="Yönetim" data-de="Verwaltung">Yönetim</span>
+                        <span class="permission-count">16</span>
+                    </div>
+                    <div class="permission-module" data-module="platform" onclick="selectModule('platform')">
+                        <i class="ti ti-building"></i>
+                        <span class="permission-module-name" data-tr="Platform" data-de="Plattform">Platform</span>
+                        <span class="permission-count">10</span>
+                    </div>
+                </div>
+
+                <!-- Content - Permissions -->
+                <div class="permissions-content">
+                    <div class="permissions-content-header">
+                        <h4><i class="ti ti-dashboard" id="moduleIcon"></i> <span id="moduleName" data-tr="Dashboard" data-de="Dashboard">Dashboard</span></h4>
+                        <div class="bulk-actions">
+                            <button class="bulk-btn grant-all" onclick="grantAllModule()" data-tr="Tümünü Ver" data-de="Alle gewähren">Tümünü Ver</button>
+                            <button class="bulk-btn revoke-all" onclick="revokeAllModule()" data-tr="Tümünü Kaldır" data-de="Alle entfernen">Tümünü Kaldır</button>
+                        </div>
+                    </div>
+                    <div class="permissions-list" id="permissionsList">
+                        <!-- Permissions will be loaded here -->
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" onclick="closePermissionsModal()" data-tr="İptal" data-de="Abbrechen">İptal</button>
+            <button type="button" class="btn btn-primary" onclick="savePermissions()">
+                <i class="ti ti-device-floppy"></i> <span data-tr="Yetkileri Kaydet" data-de="Berechtigungen speichern">Yetkileri Kaydet</span>
+            </button>
+        </div>
+    </div>
+</div>
 {% endblock %}
 
 {% block extra_js %}
@@ -596,8 +1020,313 @@
 (function() {
     'use strict';
     
+    // Current state
+    let currentUserId = null;
+    let currentModule = 'dashboard';
+    let userPermissions = {};
+    
+    // All permissions data
+    const allPermissions = {
+        dashboard: {
+            icon: 'ti-dashboard',
+            name: { tr: 'Dashboard', de: 'Dashboard' },
+            categories: [
+                {
+                    name: { tr: 'Görüntüleme', de: 'Ansicht' },
+                    icon: 'ti-eye',
+                    permissions: [
+                        { id: 'dashboard.view', name: { tr: 'Dashboard Görüntüle', de: 'Dashboard anzeigen' }, desc: { tr: 'Ana paneli görüntüleme', de: 'Hauptpanel anzeigen' }, type: 'read' },
+                        { id: 'dashboard.stats', name: { tr: 'İstatistikleri Gör', de: 'Statistiken anzeigen' }, desc: { tr: 'Özet istatistikleri görme', de: 'Zusammenfassungsstatistiken anzeigen' }, type: 'read' },
+                        { id: 'dashboard.live', name: { tr: 'Canlı Veri', de: 'Live-Daten' }, desc: { tr: 'Gerçek zamanlı verileri görme', de: 'Echtzeitdaten anzeigen' }, type: 'read' },
+                        { id: 'dashboard.export', name: { tr: 'Dışa Aktar', de: 'Exportieren' }, desc: { tr: 'Dashboard verilerini dışa aktarma', de: 'Dashboard-Daten exportieren' }, type: 'write' }
+                    ]
+                }
+            ]
+        },
+        crm: {
+            icon: 'ti-address-book',
+            name: { tr: 'CRM', de: 'CRM' },
+            categories: [
+                {
+                    name: { tr: 'Müşteriler', de: 'Kunden' },
+                    icon: 'ti-users',
+                    permissions: [
+                        { id: 'crm.customers.view', name: { tr: 'Müşteri Listesi', de: 'Kundenliste' }, desc: { tr: 'Müşteri listesini görüntüleme', de: 'Kundenliste anzeigen' }, type: 'read' },
+                        { id: 'crm.customers.create', name: { tr: 'Müşteri Ekle', de: 'Kunde hinzufügen' }, desc: { tr: 'Yeni müşteri oluşturma', de: 'Neuen Kunden erstellen' }, type: 'write' },
+                        { id: 'crm.customers.edit', name: { tr: 'Müşteri Düzenle', de: 'Kunde bearbeiten' }, desc: { tr: 'Müşteri bilgilerini düzenleme', de: 'Kundeninformationen bearbeiten' }, type: 'write' },
+                        { id: 'crm.customers.delete', name: { tr: 'Müşteri Sil', de: 'Kunde löschen' }, desc: { tr: 'Müşteri kaydını silme', de: 'Kundendatensatz löschen' }, type: 'delete' }
+                    ]
+                },
+                {
+                    name: { tr: 'Ticketlar', de: 'Tickets' },
+                    icon: 'ti-ticket',
+                    permissions: [
+                        { id: 'crm.tickets.view', name: { tr: 'Ticket Listesi', de: 'Ticketliste' }, desc: { tr: 'Destek ticketlarını görüntüleme', de: 'Support-Tickets anzeigen' }, type: 'read' },
+                        { id: 'crm.tickets.create', name: { tr: 'Ticket Oluştur', de: 'Ticket erstellen' }, desc: { tr: 'Yeni ticket açma', de: 'Neues Ticket öffnen' }, type: 'write' },
+                        { id: 'crm.tickets.edit', name: { tr: 'Ticket Düzenle', de: 'Ticket bearbeiten' }, desc: { tr: 'Ticket bilgilerini güncelleme', de: 'Ticketinformationen aktualisieren' }, type: 'write' },
+                        { id: 'crm.tickets.close', name: { tr: 'Ticket Kapat', de: 'Ticket schließen' }, desc: { tr: 'Ticketı kapatma', de: 'Ticket schließen' }, type: 'write' }
+                    ]
+                },
+                {
+                    name: { tr: 'Çağrılar', de: 'Anrufe' },
+                    icon: 'ti-phone-call',
+                    permissions: [
+                        { id: 'crm.calls.view', name: { tr: 'Çağrı Geçmişi', de: 'Anrufverlauf' }, desc: { tr: 'Çağrı kayıtlarını görüntüleme', de: 'Anrufaufzeichnungen anzeigen' }, type: 'read' },
+                        { id: 'crm.calls.listen', name: { tr: 'Kayıt Dinle', de: 'Aufnahme anhören' }, desc: { tr: 'Ses kayıtlarını dinleme', de: 'Tonaufnahmen anhören' }, type: 'read' },
+                        { id: 'crm.calls.download', name: { tr: 'Kayıt İndir', de: 'Aufnahme herunterladen' }, desc: { tr: 'Ses kayıtlarını indirme', de: 'Tonaufnahmen herunterladen' }, type: 'write' },
+                        { id: 'crm.calls.delete', name: { tr: 'Kayıt Sil', de: 'Aufnahme löschen' }, desc: { tr: 'Çağrı kayıtlarını silme', de: 'Anrufaufzeichnungen löschen' }, type: 'delete' }
+                    ]
+                }
+            ]
+        },
+        campaigns: {
+            icon: 'ti-speakerphone',
+            name: { tr: 'Kampanyalar', de: 'Kampagnen' },
+            categories: [
+                {
+                    name: { tr: 'Kampanya Yönetimi', de: 'Kampagnenverwaltung' },
+                    icon: 'ti-speakerphone',
+                    permissions: [
+                        { id: 'campaigns.view', name: { tr: 'Kampanya Listesi', de: 'Kampagnenliste' }, desc: { tr: 'Kampanyaları görüntüleme', de: 'Kampagnen anzeigen' }, type: 'read' },
+                        { id: 'campaigns.create', name: { tr: 'Kampanya Oluştur', de: 'Kampagne erstellen' }, desc: { tr: 'Yeni kampanya oluşturma', de: 'Neue Kampagne erstellen' }, type: 'write' },
+                        { id: 'campaigns.edit', name: { tr: 'Kampanya Düzenle', de: 'Kampagne bearbeiten' }, desc: { tr: 'Kampanya ayarlarını değiştirme', de: 'Kampagneneinstellungen ändern' }, type: 'write' },
+                        { id: 'campaigns.delete', name: { tr: 'Kampanya Sil', de: 'Kampagne löschen' }, desc: { tr: 'Kampanyayı silme', de: 'Kampagne löschen' }, type: 'delete' },
+                        { id: 'campaigns.start_stop', name: { tr: 'Başlat/Durdur', de: 'Starten/Stoppen' }, desc: { tr: 'Kampanyayı başlatma ve durdurma', de: 'Kampagne starten und stoppen' }, type: 'admin' }
+                    ]
+                },
+                {
+                    name: { tr: 'Arama Listeleri', de: 'Anruflisten' },
+                    icon: 'ti-list',
+                    permissions: [
+                        { id: 'campaigns.lists.view', name: { tr: 'Liste Görüntüle', de: 'Liste anzeigen' }, desc: { tr: 'Arama listelerini görüntüleme', de: 'Anruflisten anzeigen' }, type: 'read' },
+                        { id: 'campaigns.lists.upload', name: { tr: 'Liste Yükle', de: 'Liste hochladen' }, desc: { tr: 'Yeni veri yükleme', de: 'Neue Daten hochladen' }, type: 'write' },
+                        { id: 'campaigns.lists.export', name: { tr: 'Liste İndir', de: 'Liste herunterladen' }, desc: { tr: 'Listeyi dışa aktarma', de: 'Liste exportieren' }, type: 'write' },
+                        { id: 'campaigns.lists.delete', name: { tr: 'Liste Sil', de: 'Liste löschen' }, desc: { tr: 'Arama listesini silme', de: 'Anrufliste löschen' }, type: 'delete' }
+                    ]
+                }
+            ]
+        },
+        voip: {
+            icon: 'ti-phone',
+            name: { tr: 'VoIP', de: 'VoIP' },
+            categories: [
+                {
+                    name: { tr: 'VoIP Dashboard', de: 'VoIP-Dashboard' },
+                    icon: 'ti-dashboard',
+                    permissions: [
+                        { id: 'voip.dashboard.view', name: { tr: 'Dashboard Görüntüle', de: 'Dashboard anzeigen' }, desc: { tr: 'VoIP panelini görüntüleme', de: 'VoIP-Panel anzeigen' }, type: 'read' },
+                        { id: 'voip.dashboard.monitor', name: { tr: 'Canlı İzleme', de: 'Live-Überwachung' }, desc: { tr: 'Aktif çağrıları izleme', de: 'Aktive Anrufe überwachen' }, type: 'read' }
+                    ]
+                },
+                {
+                    name: { tr: 'SIP Trunk', de: 'SIP-Trunk' },
+                    icon: 'ti-router',
+                    permissions: [
+                        { id: 'voip.trunks.view', name: { tr: 'Trunk Listesi', de: 'Trunk-Liste' }, desc: { tr: 'SIP trunk listesi', de: 'SIP-Trunk-Liste' }, type: 'read' },
+                        { id: 'voip.trunks.create', name: { tr: 'Trunk Ekle', de: 'Trunk hinzufügen' }, desc: { tr: 'Yeni trunk ekleme', de: 'Neuen Trunk hinzufügen' }, type: 'write' },
+                        { id: 'voip.trunks.edit', name: { tr: 'Trunk Düzenle', de: 'Trunk bearbeiten' }, desc: { tr: 'Trunk ayarlarını düzenleme', de: 'Trunk-Einstellungen bearbeiten' }, type: 'write' },
+                        { id: 'voip.trunks.delete', name: { tr: 'Trunk Sil', de: 'Trunk löschen' }, desc: { tr: 'Trunk silme', de: 'Trunk löschen' }, type: 'delete' }
+                    ]
+                },
+                {
+                    name: { tr: 'IVR Builder', de: 'IVR-Builder' },
+                    icon: 'ti-sitemap',
+                    permissions: [
+                        { id: 'voip.ivr.view', name: { tr: 'IVR Görüntüle', de: 'IVR anzeigen' }, desc: { tr: 'IVR menülerini görüntüleme', de: 'IVR-Menüs anzeigen' }, type: 'read' },
+                        { id: 'voip.ivr.create', name: { tr: 'IVR Oluştur', de: 'IVR erstellen' }, desc: { tr: 'Yeni IVR oluşturma', de: 'Neue IVR erstellen' }, type: 'write' },
+                        { id: 'voip.ivr.edit', name: { tr: 'IVR Düzenle', de: 'IVR bearbeiten' }, desc: { tr: 'IVR düzenleme', de: 'IVR bearbeiten' }, type: 'write' },
+                        { id: 'voip.ivr.delete', name: { tr: 'IVR Sil', de: 'IVR löschen' }, desc: { tr: 'IVR silme', de: 'IVR löschen' }, type: 'delete' }
+                    ]
+                },
+                {
+                    name: { tr: 'Ses Kayıtları', de: 'Aufnahmen' },
+                    icon: 'ti-microphone',
+                    permissions: [
+                        { id: 'voip.recordings.view', name: { tr: 'Kayıt Listesi', de: 'Aufnahmeliste' }, desc: { tr: 'Ses kayıtlarını görüntüleme', de: 'Tonaufnahmen anzeigen' }, type: 'read' },
+                        { id: 'voip.recordings.listen', name: { tr: 'Dinle', de: 'Anhören' }, desc: { tr: 'Kayıtları dinleme', de: 'Aufnahmen anhören' }, type: 'read' },
+                        { id: 'voip.recordings.download', name: { tr: 'İndir', de: 'Herunterladen' }, desc: { tr: 'Kayıtları indirme', de: 'Aufnahmen herunterladen' }, type: 'write' },
+                        { id: 'voip.recordings.delete', name: { tr: 'Sil', de: 'Löschen' }, desc: { tr: 'Kayıtları silme', de: 'Aufnahmen löschen' }, type: 'delete' }
+                    ]
+                }
+            ]
+        },
+        qa: {
+            icon: 'ti-certificate',
+            name: { tr: 'Kalite (QA)', de: 'Qualität (QA)' },
+            categories: [
+                {
+                    name: { tr: 'QA Dashboard', de: 'QA-Dashboard' },
+                    icon: 'ti-chart-pie',
+                    permissions: [
+                        { id: 'qa.dashboard.view', name: { tr: 'QA Dashboard', de: 'QA-Dashboard' }, desc: { tr: 'QA panelini görüntüleme', de: 'QA-Panel anzeigen' }, type: 'read' },
+                        { id: 'qa.evaluate', name: { tr: 'Değerlendirme Yap', de: 'Bewertung durchführen' }, desc: { tr: 'Çağrı değerlendirmesi yapma', de: 'Anrufbewertung durchführen' }, type: 'write' }
+                    ]
+                },
+                {
+                    name: { tr: 'QA Formları', de: 'QA-Formulare' },
+                    icon: 'ti-forms',
+                    permissions: [
+                        { id: 'qa.forms.view', name: { tr: 'Form Listesi', de: 'Formularliste' }, desc: { tr: 'QA formlarını görüntüleme', de: 'QA-Formulare anzeigen' }, type: 'read' },
+                        { id: 'qa.forms.create', name: { tr: 'Form Oluştur', de: 'Formular erstellen' }, desc: { tr: 'Yeni form oluşturma', de: 'Neues Formular erstellen' }, type: 'write' },
+                        { id: 'qa.forms.edit', name: { tr: 'Form Düzenle', de: 'Formular bearbeiten' }, desc: { tr: 'Form düzenleme', de: 'Formular bearbeiten' }, type: 'write' },
+                        { id: 'qa.forms.delete', name: { tr: 'Form Sil', de: 'Formular löschen' }, desc: { tr: 'Form silme', de: 'Formular löschen' }, type: 'delete' }
+                    ]
+                },
+                {
+                    name: { tr: 'Değerlendirmeler', de: 'Bewertungen' },
+                    icon: 'ti-star',
+                    permissions: [
+                        { id: 'qa.evaluations.view', name: { tr: 'Değerlendirme Geçmişi', de: 'Bewertungsverlauf' }, desc: { tr: 'Değerlendirmeleri görüntüleme', de: 'Bewertungen anzeigen' }, type: 'read' },
+                        { id: 'qa.evaluations.export', name: { tr: 'Dışa Aktar', de: 'Exportieren' }, desc: { tr: 'Değerlendirmeleri dışa aktarma', de: 'Bewertungen exportieren' }, type: 'write' }
+                    ]
+                }
+            ]
+        },
+        reports: {
+            icon: 'ti-chart-bar',
+            name: { tr: 'Raporlar', de: 'Berichte' },
+            categories: [
+                {
+                    name: { tr: 'Rapor Görüntüleme', de: 'Berichtsansicht' },
+                    icon: 'ti-file-analytics',
+                    permissions: [
+                        { id: 'reports.general.view', name: { tr: 'Genel Raporlar', de: 'Allgemeine Berichte' }, desc: { tr: 'Genel raporları görüntüleme', de: 'Allgemeine Berichte anzeigen' }, type: 'read' },
+                        { id: 'reports.agent.view', name: { tr: 'Agent Performans', de: 'Agenten-Leistung' }, desc: { tr: 'Agent performans raporları', de: 'Agenten-Leistungsberichte' }, type: 'read' },
+                        { id: 'reports.campaign.view', name: { tr: 'Kampanya Raporu', de: 'Kampagnenbericht' }, desc: { tr: 'Kampanya raporları', de: 'Kampagnenberichte' }, type: 'read' }
+                    ]
+                },
+                {
+                    name: { tr: 'Dışa Aktarma', de: 'Export' },
+                    icon: 'ti-download',
+                    permissions: [
+                        { id: 'reports.export.pdf', name: { tr: 'PDF Dışa Aktar', de: 'PDF exportieren' }, desc: { tr: 'PDF olarak dışa aktarma', de: 'Als PDF exportieren' }, type: 'write' },
+                        { id: 'reports.export.excel', name: { tr: 'Excel Dışa Aktar', de: 'Excel exportieren' }, desc: { tr: 'Excel olarak dışa aktarma', de: 'Als Excel exportieren' }, type: 'write' },
+                        { id: 'reports.schedule', name: { tr: 'Zamanlanmış Rapor', de: 'Geplanter Bericht' }, desc: { tr: 'Otomatik rapor zamanlama', de: 'Automatische Berichtsplanung' }, type: 'admin' }
+                    ]
+                }
+            ]
+        },
+        ai: {
+            icon: 'ti-brain',
+            name: { tr: 'Yapay Zeka', de: 'Künstliche Intelligenz' },
+            categories: [
+                {
+                    name: { tr: 'AI Dashboard', de: 'KI-Dashboard' },
+                    icon: 'ti-robot',
+                    permissions: [
+                        { id: 'ai.dashboard.view', name: { tr: 'AI Dashboard', de: 'KI-Dashboard' }, desc: { tr: 'AI panelini görüntüleme', de: 'KI-Panel anzeigen' }, type: 'read' },
+                        { id: 'ai.settings.view', name: { tr: 'AI Ayarları Gör', de: 'KI-Einstellungen anzeigen' }, desc: { tr: 'AI ayarlarını görüntüleme', de: 'KI-Einstellungen anzeigen' }, type: 'read' },
+                        { id: 'ai.settings.edit', name: { tr: 'AI Ayarları Düzenle', de: 'KI-Einstellungen bearbeiten' }, desc: { tr: 'AI ayarlarını değiştirme', de: 'KI-Einstellungen ändern' }, type: 'admin' }
+                    ]
+                },
+                {
+                    name: { tr: 'Voice Bot', de: 'Voice Bot' },
+                    icon: 'ti-microphone',
+                    permissions: [
+                        { id: 'ai.voicebot.view', name: { tr: 'Voice Bot Gör', de: 'Voice Bot anzeigen' }, desc: { tr: 'Voice bot ayarlarını görme', de: 'Voice Bot Einstellungen anzeigen' }, type: 'read' },
+                        { id: 'ai.voicebot.edit', name: { tr: 'Voice Bot Düzenle', de: 'Voice Bot bearbeiten' }, desc: { tr: 'Voice bot yapılandırma', de: 'Voice Bot konfigurieren' }, type: 'write' }
+                    ]
+                },
+                {
+                    name: { tr: 'Bilgi Bankası (RAG)', de: 'Wissensdatenbank (RAG)' },
+                    icon: 'ti-database',
+                    permissions: [
+                        { id: 'ai.rag.view', name: { tr: 'Bilgi Bankası Gör', de: 'Wissensdatenbank anzeigen' }, desc: { tr: 'RAG içeriklerini görme', de: 'RAG-Inhalte anzeigen' }, type: 'read' },
+                        { id: 'ai.rag.upload', name: { tr: 'Döküman Yükle', de: 'Dokument hochladen' }, desc: { tr: 'Yeni döküman yükleme', de: 'Neues Dokument hochladen' }, type: 'write' },
+                        { id: 'ai.rag.delete', name: { tr: 'Döküman Sil', de: 'Dokument löschen' }, desc: { tr: 'Döküman silme', de: 'Dokument löschen' }, type: 'delete' }
+                    ]
+                }
+            ]
+        },
+        admin: {
+            icon: 'ti-settings',
+            name: { tr: 'Yönetim', de: 'Verwaltung' },
+            categories: [
+                {
+                    name: { tr: 'Kullanıcı Yönetimi', de: 'Benutzerverwaltung' },
+                    icon: 'ti-users',
+                    permissions: [
+                        { id: 'admin.users.view', name: { tr: 'Kullanıcı Listesi', de: 'Benutzerliste' }, desc: { tr: 'Kullanıcıları görüntüleme', de: 'Benutzer anzeigen' }, type: 'read' },
+                        { id: 'admin.users.create', name: { tr: 'Kullanıcı Ekle', de: 'Benutzer hinzufügen' }, desc: { tr: 'Yeni kullanıcı oluşturma', de: 'Neuen Benutzer erstellen' }, type: 'write' },
+                        { id: 'admin.users.edit', name: { tr: 'Kullanıcı Düzenle', de: 'Benutzer bearbeiten' }, desc: { tr: 'Kullanıcı bilgilerini düzenleme', de: 'Benutzerinformationen bearbeiten' }, type: 'write' },
+                        { id: 'admin.users.delete', name: { tr: 'Kullanıcı Sil', de: 'Benutzer löschen' }, desc: { tr: 'Kullanıcı silme', de: 'Benutzer löschen' }, type: 'delete' },
+                        { id: 'admin.users.permissions', name: { tr: 'Yetki Yönetimi', de: 'Berechtigungsverwaltung' }, desc: { tr: 'Kullanıcı yetkilerini yönetme', de: 'Benutzerberechtigungen verwalten' }, type: 'admin' }
+                    ]
+                },
+                {
+                    name: { tr: 'Roller', de: 'Rollen' },
+                    icon: 'ti-shield',
+                    permissions: [
+                        { id: 'admin.roles.view', name: { tr: 'Rol Listesi', de: 'Rollenliste' }, desc: { tr: 'Rolleri görüntüleme', de: 'Rollen anzeigen' }, type: 'read' },
+                        { id: 'admin.roles.create', name: { tr: 'Rol Oluştur', de: 'Rolle erstellen' }, desc: { tr: 'Yeni rol oluşturma', de: 'Neue Rolle erstellen' }, type: 'write' },
+                        { id: 'admin.roles.edit', name: { tr: 'Rol Düzenle', de: 'Rolle bearbeiten' }, desc: { tr: 'Rol yetkilerini düzenleme', de: 'Rollenberechtigungen bearbeiten' }, type: 'write' },
+                        { id: 'admin.roles.delete', name: { tr: 'Rol Sil', de: 'Rolle löschen' }, desc: { tr: 'Rol silme', de: 'Rolle löschen' }, type: 'delete' }
+                    ]
+                },
+                {
+                    name: { tr: 'Departmanlar & Takımlar', de: 'Abteilungen & Teams' },
+                    icon: 'ti-building',
+                    permissions: [
+                        { id: 'admin.departments.view', name: { tr: 'Departman Listesi', de: 'Abteilungsliste' }, desc: { tr: 'Departmanları görüntüleme', de: 'Abteilungen anzeigen' }, type: 'read' },
+                        { id: 'admin.departments.manage', name: { tr: 'Departman Yönet', de: 'Abteilung verwalten' }, desc: { tr: 'Departman ekleme/düzenleme', de: 'Abteilung hinzufügen/bearbeiten' }, type: 'write' },
+                        { id: 'admin.teams.view', name: { tr: 'Takım Listesi', de: 'Teamliste' }, desc: { tr: 'Takımları görüntüleme', de: 'Teams anzeigen' }, type: 'read' },
+                        { id: 'admin.teams.manage', name: { tr: 'Takım Yönet', de: 'Team verwalten' }, desc: { tr: 'Takım ekleme/düzenleme', de: 'Team hinzufügen/bearbeiten' }, type: 'write' }
+                    ]
+                },
+                {
+                    name: { tr: 'Sistem Ayarları', de: 'Systemeinstellungen' },
+                    icon: 'ti-settings',
+                    permissions: [
+                        { id: 'admin.settings.view', name: { tr: 'Ayarları Gör', de: 'Einstellungen anzeigen' }, desc: { tr: 'Sistem ayarlarını görüntüleme', de: 'Systemeinstellungen anzeigen' }, type: 'read' },
+                        { id: 'admin.settings.edit', name: { tr: 'Ayarları Düzenle', de: 'Einstellungen bearbeiten' }, desc: { tr: 'Sistem ayarlarını değiştirme', de: 'Systemeinstellungen ändern' }, type: 'admin' },
+                        { id: 'admin.integrations', name: { tr: 'Entegrasyonlar', de: 'Integrationen' }, desc: { tr: 'API ve entegrasyon yönetimi', de: 'API- und Integrationsverwaltung' }, type: 'admin' }
+                    ]
+                }
+            ]
+        },
+        platform: {
+            icon: 'ti-building',
+            name: { tr: 'Platform', de: 'Plattform' },
+            categories: [
+                {
+                    name: { tr: 'Tenant Yönetimi', de: 'Mandantenverwaltung' },
+                    icon: 'ti-building-store',
+                    permissions: [
+                        { id: 'platform.tenants.view', name: { tr: 'Tenant Listesi', de: 'Mandantenliste' }, desc: { tr: 'CC tenant listesi', de: 'CC-Mandantenliste' }, type: 'read' },
+                        { id: 'platform.tenants.create', name: { tr: 'Tenant Oluştur', de: 'Mandant erstellen' }, desc: { tr: 'Yeni tenant oluşturma', de: 'Neuen Mandanten erstellen' }, type: 'write' },
+                        { id: 'platform.tenants.edit', name: { tr: 'Tenant Düzenle', de: 'Mandant bearbeiten' }, desc: { tr: 'Tenant ayarlarını düzenleme', de: 'Mandanteneinstellungen bearbeiten' }, type: 'write' },
+                        { id: 'platform.tenants.delete', name: { tr: 'Tenant Sil', de: 'Mandant löschen' }, desc: { tr: 'Tenant silme', de: 'Mandant löschen' }, type: 'delete' }
+                    ]
+                },
+                {
+                    name: { tr: 'Faturalandırma', de: 'Abrechnung' },
+                    icon: 'ti-receipt',
+                    permissions: [
+                        { id: 'platform.billing.view', name: { tr: 'Fatura Görüntüle', de: 'Rechnung anzeigen' }, desc: { tr: 'Faturaları görüntüleme', de: 'Rechnungen anzeigen' }, type: 'read' },
+                        { id: 'platform.billing.manage', name: { tr: 'Fatura Yönet', de: 'Rechnung verwalten' }, desc: { tr: 'Fatura oluşturma/düzenleme', de: 'Rechnung erstellen/bearbeiten' }, type: 'admin' },
+                        { id: 'platform.pricing', name: { tr: 'Fiyatlandırma', de: 'Preisgestaltung' }, desc: { tr: 'Fiyat planlarını yönetme', de: 'Preispläne verwalten' }, type: 'admin' }
+                    ]
+                },
+                {
+                    name: { tr: 'Platform Ayarları', de: 'Plattformeinstellungen' },
+                    icon: 'ti-adjustments',
+                    permissions: [
+                        { id: 'platform.settings', name: { tr: 'Platform Ayarları', de: 'Plattformeinstellungen' }, desc: { tr: 'Genel platform ayarları', de: 'Allgemeine Plattformeinstellungen' }, type: 'admin' },
+                        { id: 'platform.audit', name: { tr: 'Audit Logları', de: 'Audit-Protokolle' }, desc: { tr: 'Sistem loglarını görüntüleme', de: 'Systemprotokolle anzeigen' }, type: 'read' },
+                        { id: 'platform.maintenance', name: { tr: 'Bakım Modu', de: 'Wartungsmodus' }, desc: { tr: 'Bakım modu yönetimi', de: 'Wartungsmodus-Verwaltung' }, type: 'admin' }
+                    ]
+                }
+            ]
+        }
+    };
+
     function getCurrentLang() {
         return localStorage.getItem('selectedLang') || 'tr';
+    }
+    
+    function t(obj) {
+        const lang = getCurrentLang();
+        return obj[lang] || obj['tr'];
     }
     
     function showNotification(message, type) {
@@ -609,32 +1338,6 @@
         toast.textContent = message;
         document.body.appendChild(toast);
         setTimeout(function() { toast.remove(); }, 3000);
-    }
-
-    const translations = {
-        tr: {
-            newUser: 'Yeni Kullanıcı',
-            editUser: 'Kullanıcı Düzenle',
-            saved: 'Kullanıcı kaydedildi',
-            deleted: 'Kullanıcı silindi',
-            passwordChanged: 'Şifre değiştirildi',
-            deleteConfirm: 'Bu kullanıcıyı silmek istediğinize emin misiniz?',
-            passwordMismatch: 'Şifreler eşleşmiyor'
-        },
-        de: {
-            newUser: 'Neuer Benutzer',
-            editUser: 'Benutzer bearbeiten',
-            saved: 'Benutzer gespeichert',
-            deleted: 'Benutzer gelöscht',
-            passwordChanged: 'Passwort geändert',
-            deleteConfirm: 'Sind Sie sicher, dass Sie diesen Benutzer löschen möchten?',
-            passwordMismatch: 'Passwörter stimmen nicht überein'
-        }
-    };
-
-    function t(key) {
-        const lang = getCurrentLang();
-        return translations[lang][key] || translations['tr'][key];
     }
 
     // Filter users
@@ -661,9 +1364,9 @@
         filterUsers();
     };
 
-    // Modal functions
+    // User Modal
     window.openNewUserModal = function() {
-        document.getElementById('modalTitle').textContent = t('newUser');
+        document.getElementById('modalTitle').textContent = getCurrentLang() === 'de' ? 'Neuer Benutzer' : 'Yeni Kullanıcı';
         document.getElementById('userForm').reset();
         document.getElementById('userId').value = '';
         document.getElementById('passwordRow').style.display = 'grid';
@@ -671,16 +1374,24 @@
         document.getElementById('userModal').classList.add('show');
     };
 
-    window.editUser = function(userId) {
-        document.getElementById('modalTitle').textContent = t('editUser');
+    window.editUser = function(userId, username, email, role, extension, isActive, fullName) {
+        document.getElementById('modalTitle').textContent = getCurrentLang() === 'de' ? 'Benutzer bearbeiten' : 'Kullanıcı Düzenle';
         document.getElementById('userId').value = userId;
+        document.getElementById('username').value = username;
+        document.getElementById('email').value = email;
+        document.getElementById('role').value = role;
+        document.getElementById('extension').value = extension;
+        document.getElementById('isActive').value = isActive ? '1' : '0';
+        
+        if (fullName) {
+            const names = fullName.split(' ');
+            document.getElementById('firstName').value = names[0] || '';
+            document.getElementById('lastName').value = names.slice(1).join(' ') || '';
+        }
+        
         document.getElementById('passwordRow').style.display = 'none';
         document.getElementById('password').required = false;
-        
-        // In a real app, fetch user data here
-        // For demo, just open modal
         document.getElementById('userModal').classList.add('show');
-        showNotification(getCurrentLang() === 'de' ? 'Benutzer wird geladen...' : 'Kullanıcı yükleniyor...', 'info');
     };
 
     window.closeModal = function() {
@@ -694,24 +1405,29 @@
         const passwordConfirm = document.getElementById('passwordConfirm').value;
         
         if (password && password !== passwordConfirm) {
-            showNotification(t('passwordMismatch'), 'error');
+            showNotification(getCurrentLang() === 'de' ? 'Passwörter stimmen nicht überein' : 'Şifreler eşleşmiyor', 'error');
             return;
         }
         
-        showNotification(t('saved'), 'success');
+        showNotification(getCurrentLang() === 'de' ? 'Benutzer gespeichert' : 'Kullanıcı kaydedildi', 'success');
         closeModal();
         setTimeout(function() { location.reload(); }, 1000);
     };
 
     window.deleteUser = function(userId, username) {
-        if (confirm(t('deleteConfirm') + '\n\n' + username)) {
-            showNotification(t('deleted'), 'success');
+        const msg = getCurrentLang() === 'de' ? 
+            'Sind Sie sicher, dass Sie diesen Benutzer löschen möchten?' : 
+            'Bu kullanıcıyı silmek istediğinize emin misiniz?';
+        if (confirm(msg + '\n\n' + username)) {
+            showNotification(getCurrentLang() === 'de' ? 'Benutzer gelöscht' : 'Kullanıcı silindi', 'success');
             setTimeout(function() { location.reload(); }, 1000);
         }
     };
 
-    window.changePassword = function(userId) {
+    // Password Modal
+    window.changePassword = function(userId, username) {
         document.getElementById('passwordUserId').value = userId;
+        document.getElementById('passwordUserName').textContent = username;
         document.getElementById('passwordForm').reset();
         document.getElementById('passwordModal').classList.add('show');
     };
@@ -727,12 +1443,203 @@
         const confirmPassword = document.getElementById('newPasswordConfirm').value;
         
         if (newPassword !== confirmPassword) {
-            showNotification(t('passwordMismatch'), 'error');
+            showNotification(getCurrentLang() === 'de' ? 'Passwörter stimmen nicht überein' : 'Şifreler eşleşmiyor', 'error');
             return;
         }
         
-        showNotification(t('passwordChanged'), 'success');
+        showNotification(getCurrentLang() === 'de' ? 'Passwort geändert' : 'Şifre değiştirildi', 'success');
         closePasswordModal();
+    };
+
+    // Permissions Modal
+    window.openPermissions = function(userId, username, email, role) {
+        currentUserId = userId;
+        userPermissions = {};
+        
+        // Set user info
+        document.getElementById('permUserAvatar').textContent = username.substring(0, 2).toUpperCase();
+        document.getElementById('permUserName').textContent = username;
+        document.getElementById('permUserEmail').textContent = email;
+        document.getElementById('permUserRole').textContent = role.replace('_', ' ').toUpperCase();
+        
+        // Initialize permissions based on role (demo data)
+        initializePermissionsForRole(role);
+        
+        // Load first module
+        selectModule('dashboard');
+        updatePermissionStats();
+        
+        document.getElementById('permissionsModal').classList.add('show');
+    };
+
+    function initializePermissionsForRole(role) {
+        // Default permissions based on role
+        Object.keys(allPermissions).forEach(function(module) {
+            allPermissions[module].categories.forEach(function(category) {
+                category.permissions.forEach(function(perm) {
+                    // Super admin has all permissions
+                    if (role === 'super_admin') {
+                        userPermissions[perm.id] = true;
+                    }
+                    // Admin has most permissions except platform
+                    else if (role === 'admin') {
+                        userPermissions[perm.id] = !perm.id.startsWith('platform.');
+                    }
+                    // Supervisor has read and some write permissions
+                    else if (role === 'supervisor') {
+                        userPermissions[perm.id] = perm.type === 'read' || 
+                            (perm.type === 'write' && !perm.id.includes('admin.'));
+                    }
+                    // Agent has limited permissions
+                    else {
+                        userPermissions[perm.id] = perm.type === 'read' && 
+                            (perm.id.startsWith('dashboard.') || 
+                             perm.id.startsWith('crm.customers.view') ||
+                             perm.id.startsWith('crm.calls.'));
+                    }
+                });
+            });
+        });
+    }
+
+    window.selectModule = function(module) {
+        currentModule = module;
+        
+        // Update sidebar active state
+        document.querySelectorAll('.permission-module').forEach(function(el) {
+            el.classList.remove('active');
+        });
+        document.querySelector('[data-module="' + module + '"]').classList.add('active');
+        
+        // Update header
+        const moduleData = allPermissions[module];
+        document.getElementById('moduleIcon').className = 'ti ' + moduleData.icon;
+        document.getElementById('moduleName').textContent = t(moduleData.name);
+        
+        // Render permissions
+        renderPermissions(module);
+    };
+
+    function renderPermissions(module) {
+        const moduleData = allPermissions[module];
+        const container = document.getElementById('permissionsList');
+        const lang = getCurrentLang();
+        
+        let html = '';
+        
+        moduleData.categories.forEach(function(category) {
+            html += '<div class="permission-category">';
+            html += '<div class="permission-category-header">';
+            html += '<i class="ti ' + category.icon + '"></i> ' + t(category.name);
+            html += '</div>';
+            html += '<div class="permission-items">';
+            
+            category.permissions.forEach(function(perm) {
+                const isGranted = userPermissions[perm.id] === true;
+                html += '<div class="permission-item ' + (isGranted ? 'granted' : '') + '">';
+                html += '<input type="checkbox" class="permission-checkbox" id="perm_' + perm.id + '" ' + 
+                        (isGranted ? 'checked' : '') + ' onchange="togglePermission(\'' + perm.id + '\')">';
+                html += '<div class="permission-info">';
+                html += '<div class="permission-name">' + t(perm.name) + '</div>';
+                html += '<div class="permission-desc">' + t(perm.desc) + '</div>';
+                html += '</div>';
+                html += '<span class="permission-badge ' + perm.type + '">' + getTypeLabel(perm.type) + '</span>';
+                html += '</div>';
+            });
+            
+            html += '</div>';
+            html += '</div>';
+        });
+        
+        container.innerHTML = html;
+    }
+
+    function getTypeLabel(type) {
+        const lang = getCurrentLang();
+        const labels = {
+            read: { tr: 'GÖRÜNTÜLE', de: 'ANSEHEN' },
+            write: { tr: 'DÜZENLE', de: 'BEARBEITEN' },
+            delete: { tr: 'SİL', de: 'LÖSCHEN' },
+            admin: { tr: 'YÖNETİCİ', de: 'ADMIN' }
+        };
+        return labels[type] ? labels[type][lang] : type.toUpperCase();
+    }
+
+    window.togglePermission = function(permId) {
+        userPermissions[permId] = !userPermissions[permId];
+        
+        // Update UI
+        const checkbox = document.getElementById('perm_' + permId);
+        const item = checkbox.closest('.permission-item');
+        
+        if (userPermissions[permId]) {
+            item.classList.add('granted');
+        } else {
+            item.classList.remove('granted');
+        }
+        
+        updatePermissionStats();
+    };
+
+    window.grantAllModule = function() {
+        const moduleData = allPermissions[currentModule];
+        moduleData.categories.forEach(function(category) {
+            category.permissions.forEach(function(perm) {
+                userPermissions[perm.id] = true;
+            });
+        });
+        renderPermissions(currentModule);
+        updatePermissionStats();
+    };
+
+    window.revokeAllModule = function() {
+        const moduleData = allPermissions[currentModule];
+        moduleData.categories.forEach(function(category) {
+            category.permissions.forEach(function(perm) {
+                userPermissions[perm.id] = false;
+            });
+        });
+        renderPermissions(currentModule);
+        updatePermissionStats();
+    };
+
+    function updatePermissionStats() {
+        let granted = 0;
+        let denied = 0;
+        let total = 0;
+        
+        Object.keys(allPermissions).forEach(function(module) {
+            allPermissions[module].categories.forEach(function(category) {
+                category.permissions.forEach(function(perm) {
+                    total++;
+                    if (userPermissions[perm.id]) {
+                        granted++;
+                    } else {
+                        denied++;
+                    }
+                });
+            });
+        });
+        
+        document.getElementById('grantedCount').textContent = granted;
+        document.getElementById('deniedCount').textContent = denied;
+        document.getElementById('totalModules').textContent = Object.keys(allPermissions).length;
+        document.getElementById('totalPerms').textContent = total;
+    }
+
+    window.closePermissionsModal = function() {
+        document.getElementById('permissionsModal').classList.remove('show');
+    };
+
+    window.savePermissions = function() {
+        // In production, send to server
+        console.log('Saving permissions for user:', currentUserId, userPermissions);
+        
+        showNotification(
+            getCurrentLang() === 'de' ? 'Berechtigungen gespeichert' : 'Yetkiler kaydedildi', 
+            'success'
+        );
+        closePermissionsModal();
     };
 
     // Add animation styles
@@ -740,14 +1647,14 @@
     style.textContent = '@keyframes slideIn{from{transform:translateX(100%);opacity:0}to{transform:translateX(0);opacity:1}}';
     document.head.appendChild(style);
 
-    // Set placeholder for search input
+    // Set placeholder for search input on load
     const searchInput = document.getElementById('searchInput');
     if (searchInput) {
         const lang = getCurrentLang();
         searchInput.placeholder = lang === 'de' ? 'Benutzer suchen...' : 'Kullanıcı ara...';
     }
 
-    console.log('Users page initialized');
+    console.log('Users page with permissions initialized');
 })();
 </script>
 {% endblock %}
