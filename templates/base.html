@@ -87,7 +87,7 @@
                 
                 {% if current_user.role == 'supervisor' or current_user.role == 'admin' or current_user.is_super_admin %}
                 <!-- Supervisor -->
-                <a href="{{ url_for('supervisor_panel') }}" class="nav-item {{ 'active' if 'supervisor' in request.endpoint else '' }}">
+                <a href="{{ url_for('supervisor_panel') }}" class="nav-item {{ 'active' if request.endpoint and 'supervisor' in request.endpoint else '' }}">
                     <i class="ti ti-eye"></i>
                     <span data-tr="Canlı İzleme" data-de="Live-Überwachung">Canlı İzleme</span>
                 </a>
@@ -397,7 +397,7 @@
                 
                 {% if current_user.role == 'client' %}
                 <!-- Müşteri Portal -->
-                <a href="{{ url_for('client_portal') }}" class="nav-item {{ 'active' if 'portal' in request.endpoint else '' }}">
+                <a href="{{ url_for('client_portal') }}" class="nav-item {{ 'active' if request.endpoint and 'portal' in request.endpoint else '' }}">
                     <i class="ti ti-home"></i>
                     <span data-tr="Portal" data-de="Portal">Portal</span>
                 </a>
