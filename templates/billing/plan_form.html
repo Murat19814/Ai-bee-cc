@@ -4,128 +4,274 @@
 
 {% block content %}
 <div class="page-header">
-    <h1><i class="ti ti-package"></i> {% if plan %}Plan Düzenle{% else %}Yeni Fiyat Planı{% endif %}</h1>
+    <h1><i class="ti ti-package"></i> <span data-tr="{% if plan %}Plan Düzenle{% else %}Yeni Fiyat Planı{% endif %}" data-de="{% if plan %}Plan bearbeiten{% else %}Neuer Preisplan{% endif %}">{% if plan %}Plan Düzenle{% else %}Yeni Fiyat Planı{% endif %}</span></h1>
 </div>
 
-<form action="{{ url_for('billing_plan_new') }}" method="POST" class="plan-form">
+<form id="planForm" action="{{ url_for('billing_plan_new') }}" method="POST" class="plan-form">
     <div class="form-grid">
         <!-- Temel Bilgiler -->
         <div class="form-section">
-            <h3><i class="ti ti-info-circle"></i> Temel Bilgiler</h3>
+            <h3><i class="ti ti-info-circle"></i> <span data-tr="Temel Bilgiler" data-de="Grundinformationen">Temel Bilgiler</span></h3>
             <div class="form-group">
-                <label>Plan Kodu <span class="required">*</span></label>
-                <input type="text" name="code" class="form-control" required
-                       value="{{ plan.code if plan else '' }}" placeholder="starter, professional, enterprise">
+                <label data-tr="Plan Kodu" data-de="Plancode">Plan Kodu <span class="required">*</span></label>
+                <input type="text" name="code" id="planCode" class="form-control" required
+                       value="{{ plan.code if plan else '' }}" placeholder="starter, professional, enterprise"
+                       data-tr-placeholder="starter, professional, enterprise" data-de-placeholder="starter, professional, enterprise">
             </div>
             <div class="form-group">
-                <label>Plan Adı <span class="required">*</span></label>
-                <input type="text" name="name" class="form-control" required
-                       value="{{ plan.name if plan else '' }}" placeholder="Starter Plan">
+                <label data-tr="Plan Adı" data-de="Planname">Plan Adı <span class="required">*</span></label>
+                <input type="text" name="name" id="planName" class="form-control" required
+                       value="{{ plan.name if plan else '' }}" placeholder="Starter Plan"
+                       data-tr-placeholder="Starter Plan" data-de-placeholder="Starter Plan">
             </div>
             <div class="form-group">
-                <label>Açıklama</label>
-                <textarea name="description" class="form-control" rows="3"
-                          placeholder="Plan açıklaması...">{{ plan.description if plan else '' }}</textarea>
+                <label data-tr="Açıklama" data-de="Beschreibung">Açıklama</label>
+                <textarea name="description" id="planDescription" class="form-control" rows="3"
+                          placeholder="Plan açıklaması..." data-tr-placeholder="Plan açıklaması..." data-de-placeholder="Planbeschreibung...">{{ plan.description if plan else '' }}</textarea>
+            </div>
+            <div class="form-group">
+                <label data-tr="Plan Tipi" data-de="Plantyp">Plan Tipi</label>
+                <select name="plan_type" id="planType" class="form-control">
+                    <option value="starter" data-tr="Starter" data-de="Starter">Starter</option>
+                    <option value="professional" data-tr="Professional" data-de="Professional">Professional</option>
+                    <option value="enterprise" data-tr="Enterprise" data-de="Enterprise">Enterprise</option>
+                    <option value="custom" data-tr="Özel" data-de="Benutzerdefiniert">Özel</option>
+                </select>
             </div>
         </div>
 
         <!-- Fiyatlandırma -->
         <div class="form-section">
-            <h3><i class="ti ti-currency-lira"></i> Fiyatlandırma</h3>
+            <h3><i class="ti ti-currency-euro"></i> <span data-tr="Fiyatlandırma" data-de="Preisgestaltung">Fiyatlandırma</span></h3>
             <div class="form-row">
                 <div class="form-group">
-                    <label>Aylık Fiyat (₺)</label>
-                    <input type="number" name="price_monthly" class="form-control" step="0.01"
+                    <label data-tr="Aylık Fiyat (€)" data-de="Monatspreis (€)">Aylık Fiyat (€)</label>
+                    <input type="number" name="price_monthly" id="priceMonthly" class="form-control" step="0.01"
                            value="{{ plan.price_monthly if plan else 0 }}">
                 </div>
                 <div class="form-group">
-                    <label>Yıllık Fiyat (₺)</label>
-                    <input type="number" name="price_yearly" class="form-control" step="0.01"
+                    <label data-tr="Yıllık Fiyat (€)" data-de="Jahrespreis (€)">Yıllık Fiyat (€)</label>
+                    <input type="number" name="price_yearly" id="priceYearly" class="form-control" step="0.01"
                            value="{{ plan.price_yearly if plan else 0 }}">
                 </div>
             </div>
             <div class="form-row">
                 <div class="form-group">
-                    <label>Agent Başına Ücret (₺)</label>
-                    <input type="number" name="price_per_agent" class="form-control" step="0.01"
+                    <label data-tr="Agent Başına Ücret (€)" data-de="Preis pro Agent (€)">Agent Başına Ücret (€)</label>
+                    <input type="number" name="price_per_agent" id="pricePerAgent" class="form-control" step="0.01"
                            value="{{ plan.price_per_agent if plan else 0 }}">
                 </div>
                 <div class="form-group">
-                    <label>Dahil Agent Sayısı</label>
-                    <input type="number" name="included_agents" class="form-control"
+                    <label data-tr="Dahil Agent Sayısı" data-de="Enthaltene Agenten">Dahil Agent Sayısı</label>
+                    <input type="number" name="included_agents" id="includedAgents" class="form-control"
                            value="{{ plan.included_agents if plan else 5 }}">
+                </div>
+            </div>
+            <div class="pricing-preview">
+                <div class="preview-label" data-tr="Önizleme:" data-de="Vorschau:">Önizleme:</div>
+                <div class="preview-card">
+                    <span class="preview-price" id="previewPrice">€0</span>
+                    <span class="preview-period" data-tr="/ ay" data-de="/ Monat">/ ay</span>
                 </div>
             </div>
         </div>
 
         <!-- Limitler -->
         <div class="form-section">
-            <h3><i class="ti ti-adjustments"></i> Limitler</h3>
+            <h3><i class="ti ti-adjustments"></i> <span data-tr="Limitler" data-de="Limits">Limitler</span></h3>
             <div class="form-row">
                 <div class="form-group">
-                    <label>Max Agent</label>
-                    <input type="number" name="max_agents" class="form-control"
+                    <label data-tr="Max Agent" data-de="Max Agenten">Max Agent</label>
+                    <input type="number" name="max_agents" id="maxAgents" class="form-control"
                            value="{{ plan.max_agents if plan else 10 }}">
                 </div>
                 <div class="form-group">
-                    <label>Max Eş Zamanlı Çağrı</label>
-                    <input type="number" name="max_concurrent_calls" class="form-control"
+                    <label data-tr="Max Eş Zamanlı Çağrı" data-de="Max gleichzeitige Anrufe">Max Eş Zamanlı Çağrı</label>
+                    <input type="number" name="max_concurrent_calls" id="maxConcurrentCalls" class="form-control"
                            value="{{ plan.max_concurrent_calls if plan else 20 }}">
                 </div>
             </div>
             <div class="form-row">
                 <div class="form-group">
-                    <label>Storage (GB)</label>
-                    <input type="number" name="storage_gb" class="form-control"
+                    <label data-tr="Storage (GB)" data-de="Speicher (GB)">Storage (GB)</label>
+                    <input type="number" name="storage_gb" id="storageGb" class="form-control"
                            value="{{ plan.storage_gb if plan else 50 }}">
                 </div>
                 <div class="form-group">
-                    <label>Kayıt Saklama (gün)</label>
-                    <input type="number" name="recording_retention_days" class="form-control"
+                    <label data-tr="Kayıt Saklama (gün)" data-de="Aufbewahrung (Tage)">Kayıt Saklama (gün)</label>
+                    <input type="number" name="recording_retention_days" id="recordingRetention" class="form-control"
                            value="{{ plan.recording_retention_days if plan else 90 }}">
+                </div>
+            </div>
+            <div class="form-row">
+                <div class="form-group">
+                    <label data-tr="Max Proje" data-de="Max Projekte">Max Proje</label>
+                    <input type="number" name="max_projects" id="maxProjects" class="form-control"
+                           value="{{ plan.max_projects if plan else 5 }}">
+                </div>
+                <div class="form-group">
+                    <label data-tr="Max Kampanya" data-de="Max Kampagnen">Max Kampanya</label>
+                    <input type="number" name="max_campaigns" id="maxCampaigns" class="form-control"
+                           value="{{ plan.max_campaigns if plan else 10 }}">
                 </div>
             </div>
         </div>
 
         <!-- VoIP ve AI -->
         <div class="form-section">
-            <h3><i class="ti ti-phone"></i> VoIP & AI</h3>
+            <h3><i class="ti ti-phone"></i> <span data-tr="VoIP & AI" data-de="VoIP & KI">VoIP & AI</span></h3>
             <div class="form-row">
                 <div class="form-group">
-                    <label>Dahil Inbound (dk)</label>
-                    <input type="number" name="included_minutes_inbound" class="form-control"
+                    <label data-tr="Dahil Inbound (dk)" data-de="Inkl. Inbound (Min)">Dahil Inbound (dk)</label>
+                    <input type="number" name="included_minutes_inbound" id="includedInbound" class="form-control"
                            value="{{ plan.included_minutes_inbound if plan else 0 }}">
                 </div>
                 <div class="form-group">
-                    <label>Dahil Outbound (dk)</label>
-                    <input type="number" name="included_minutes_outbound" class="form-control"
+                    <label data-tr="Dahil Outbound (dk)" data-de="Inkl. Outbound (Min)">Dahil Outbound (dk)</label>
+                    <input type="number" name="included_minutes_outbound" id="includedOutbound" class="form-control"
                            value="{{ plan.included_minutes_outbound if plan else 0 }}">
                 </div>
             </div>
             <div class="form-group">
-                <label>Dahil AI Dakika</label>
-                <input type="number" name="included_ai_minutes" class="form-control"
+                <label data-tr="Dahil AI Dakika" data-de="Inkl. KI-Minuten">Dahil AI Dakika</label>
+                <input type="number" name="included_ai_minutes" id="includedAI" class="form-control"
                        value="{{ plan.included_ai_minutes if plan else 0 }}">
+            </div>
+            <div class="form-row">
+                <div class="form-group">
+                    <label data-tr="Inbound Fiyat (€/dk)" data-de="Inbound-Preis (€/Min)">Inbound Fiyat (€/dk)</label>
+                    <input type="number" name="inbound_rate" id="inboundRate" class="form-control" step="0.001"
+                           value="{{ plan.inbound_rate if plan else 0.01 }}">
+                </div>
+                <div class="form-group">
+                    <label data-tr="Outbound Fiyat (€/dk)" data-de="Outbound-Preis (€/Min)">Outbound Fiyat (€/dk)</label>
+                    <input type="number" name="outbound_rate" id="outboundRate" class="form-control" step="0.001"
+                           value="{{ plan.outbound_rate if plan else 0.12 }}">
+                </div>
+            </div>
+        </div>
+
+        <!-- Modüller -->
+        <div class="form-section full-width">
+            <h3><i class="ti ti-apps"></i> <span data-tr="Dahil Modüller" data-de="Enthaltene Module">Dahil Modüller</span></h3>
+            <div class="modules-grid">
+                <label class="module-checkbox">
+                    <input type="checkbox" name="modules" value="crm" checked>
+                    <span class="module-icon"><i class="ti ti-address-book"></i></span>
+                    <span>CRM</span>
+                </label>
+                <label class="module-checkbox">
+                    <input type="checkbox" name="modules" value="campaigns" checked>
+                    <span class="module-icon"><i class="ti ti-speakerphone"></i></span>
+                    <span data-tr="Kampanyalar" data-de="Kampagnen">Kampanyalar</span>
+                </label>
+                <label class="module-checkbox">
+                    <input type="checkbox" name="modules" value="voip" checked>
+                    <span class="module-icon"><i class="ti ti-phone"></i></span>
+                    <span>VoIP</span>
+                </label>
+                <label class="module-checkbox">
+                    <input type="checkbox" name="modules" value="qa">
+                    <span class="module-icon"><i class="ti ti-certificate"></i></span>
+                    <span data-tr="Kalite Kontrol" data-de="Qualitätskontrolle">Kalite Kontrol</span>
+                </label>
+                <label class="module-checkbox">
+                    <input type="checkbox" name="modules" value="ai">
+                    <span class="module-icon"><i class="ti ti-brain"></i></span>
+                    <span>AI</span>
+                </label>
+                <label class="module-checkbox">
+                    <input type="checkbox" name="modules" value="reports" checked>
+                    <span class="module-icon"><i class="ti ti-report-analytics"></i></span>
+                    <span data-tr="Raporlar" data-de="Berichte">Raporlar</span>
+                </label>
+                <label class="module-checkbox">
+                    <input type="checkbox" name="modules" value="ivr">
+                    <span class="module-icon"><i class="ti ti-sitemap"></i></span>
+                    <span>IVR Builder</span>
+                </label>
+                <label class="module-checkbox">
+                    <input type="checkbox" name="modules" value="api">
+                    <span class="module-icon"><i class="ti ti-api"></i></span>
+                    <span>API Access</span>
+                </label>
+            </div>
+        </div>
+
+        <!-- Özellikler -->
+        <div class="form-section full-width">
+            <h3><i class="ti ti-list-check"></i> <span data-tr="Plan Özellikleri" data-de="Planmerkmale">Plan Özellikleri</span></h3>
+            <div class="features-container">
+                <div id="featuresList" class="features-list">
+                    <div class="feature-item">
+                        <input type="text" name="features[]" class="form-control" placeholder="Özellik ekle..." value="7/24 Teknik Destek">
+                        <button type="button" class="btn btn-xs btn-danger" onclick="this.parentElement.remove()"><i class="ti ti-x"></i></button>
+                    </div>
+                    <div class="feature-item">
+                        <input type="text" name="features[]" class="form-control" placeholder="Özellik ekle..." value="Sınırsız Çağrı Kaydı">
+                        <button type="button" class="btn btn-xs btn-danger" onclick="this.parentElement.remove()"><i class="ti ti-x"></i></button>
+                    </div>
+                </div>
+                <button type="button" class="btn btn-outline btn-sm" onclick="window.addFeature()">
+                    <i class="ti ti-plus"></i> <span data-tr="Özellik Ekle" data-de="Merkmal hinzufügen">Özellik Ekle</span>
+                </button>
             </div>
         </div>
     </div>
 
     <div class="form-actions">
-        <a href="{{ url_for('billing_plans') }}" class="btn btn-outline">İptal</a>
-        <button type="submit" class="btn btn-primary">
-            <i class="ti ti-check"></i> Kaydet
+        <a href="{{ url_for('billing_plans') }}" class="btn btn-outline" data-tr="İptal" data-de="Abbrechen">İptal</a>
+        <button type="button" class="btn btn-secondary" onclick="window.previewPlan()">
+            <i class="ti ti-eye"></i> <span data-tr="Önizle" data-de="Vorschau">Önizle</span>
+        </button>
+        <button type="submit" class="btn btn-primary" onclick="window.savePlan(event)">
+            <i class="ti ti-check"></i> <span data-tr="Kaydet" data-de="Speichern">Kaydet</span>
         </button>
     </div>
 </form>
 
+<!-- Preview Modal -->
+<div id="previewModal" class="modal">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h3><i class="ti ti-eye"></i> <span data-tr="Plan Önizleme" data-de="Planvorschau">Plan Önizleme</span></h3>
+            <button class="modal-close" onclick="window.closeModal('previewModal')">&times;</button>
+        </div>
+        <div class="modal-body">
+            <div class="plan-preview-card">
+                <div class="plan-header">
+                    <h4 id="previewPlanName">Starter Plan</h4>
+                    <div class="plan-price">
+                        <span class="price" id="previewPlanPrice">€0</span>
+                        <span class="period" data-tr="/ ay" data-de="/ Monat">/ ay</span>
+                    </div>
+                </div>
+                <div class="plan-features" id="previewPlanFeatures">
+                    <div class="feature"><i class="ti ti-check"></i> <span>10 Agent</span></div>
+                    <div class="feature"><i class="ti ti-check"></i> <span>20 Eş Zamanlı Çağrı</span></div>
+                    <div class="feature"><i class="ti ti-check"></i> <span>50 GB Storage</span></div>
+                </div>
+                <div class="plan-modules" id="previewPlanModules">
+                    <span class="module-badge">CRM</span>
+                    <span class="module-badge">VoIP</span>
+                    <span class="module-badge">Raporlar</span>
+                </div>
+            </div>
+        </div>
+        <div class="modal-footer">
+            <button class="btn btn-outline" onclick="window.closeModal('previewModal')" data-tr="Kapat" data-de="Schließen">Kapat</button>
+        </div>
+    </div>
+</div>
+
 <style>
 .plan-form {
-    max-width: 900px;
+    max-width: 1200px;
 }
 
 .form-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+    grid-template-columns: repeat(2, 1fr);
     gap: 1.5rem;
 }
 
@@ -134,6 +280,10 @@
     border-radius: 12px;
     padding: 1.5rem;
     box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+}
+
+.form-section.full-width {
+    grid-column: span 2;
 }
 
 .form-section h3 {
@@ -160,20 +310,393 @@
     display: block;
     font-weight: 600;
     margin-bottom: 0.5rem;
+    font-size: 0.9rem;
+}
+
+.form-control {
+    width: 100%;
+    padding: 0.75rem;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    font-size: 0.9rem;
+    transition: border-color 0.2s;
+}
+
+.form-control:focus {
+    outline: none;
+    border-color: var(--primary-color);
 }
 
 .required {
     color: #f44336;
 }
 
+.pricing-preview {
+    margin-top: 1rem;
+    padding: 1rem;
+    background: linear-gradient(135deg, #fff8e1, #fff);
+    border-radius: 8px;
+    border: 1px dashed var(--primary-color);
+}
+
+.preview-label {
+    font-size: 0.8rem;
+    color: var(--text-muted);
+    margin-bottom: 0.5rem;
+}
+
+.preview-card {
+    display: flex;
+    align-items: baseline;
+    gap: 0.25rem;
+}
+
+.preview-price {
+    font-size: 2rem;
+    font-weight: 700;
+    color: var(--primary-color);
+}
+
+.preview-period {
+    color: var(--text-muted);
+}
+
+/* Modules Grid */
+.modules-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 0.75rem;
+}
+
+.module-checkbox {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.75rem;
+    background: #f8f9fa;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.2s;
+    border: 2px solid transparent;
+}
+
+.module-checkbox:hover {
+    background: #f0f0f0;
+}
+
+.module-checkbox:has(input:checked) {
+    background: #e8f5e9;
+    border-color: #4caf50;
+}
+
+.module-checkbox input {
+    display: none;
+}
+
+.module-icon {
+    width: 32px;
+    height: 32px;
+    background: white;
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1rem;
+    color: var(--primary-color);
+}
+
+/* Features */
+.features-container {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+}
+
+.features-list {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.feature-item {
+    display: flex;
+    gap: 0.5rem;
+}
+
+.feature-item .form-control {
+    flex: 1;
+}
+
+/* Form Actions */
 .form-actions {
     display: flex;
     justify-content: flex-end;
     gap: 1rem;
     margin-top: 2rem;
+    padding-top: 1.5rem;
+    border-top: 1px solid #eee;
+}
+
+/* Modal */
+.modal {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0,0,0,0.5);
+    z-index: 1000;
+    align-items: center;
+    justify-content: center;
+}
+
+.modal.active { display: flex; }
+
+.modal-content {
+    background: white;
+    border-radius: 16px;
+    width: 90%;
+    max-width: 450px;
+    overflow: hidden;
+}
+
+.modal-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 1.25rem 1.5rem;
+    border-bottom: 1px solid #eee;
+}
+
+.modal-header h3 { display: flex; align-items: center; gap: 0.5rem; }
+
+.modal-close {
+    width: 32px;
+    height: 32px;
+    border: none;
+    background: #f0f0f0;
+    border-radius: 8px;
+    font-size: 1.25rem;
+    cursor: pointer;
+}
+
+.modal-body { padding: 1.5rem; }
+.modal-footer {
+    display: flex;
+    justify-content: flex-end;
+    padding: 1rem 1.5rem;
+    border-top: 1px solid #eee;
+}
+
+/* Plan Preview Card */
+.plan-preview-card {
+    background: linear-gradient(135deg, #f8f9fa, #fff);
+    border-radius: 12px;
+    padding: 1.5rem;
+    border: 1px solid #eee;
+}
+
+.plan-header {
+    text-align: center;
+    margin-bottom: 1.5rem;
+}
+
+.plan-header h4 {
+    margin-bottom: 0.5rem;
+}
+
+.plan-price .price {
+    font-size: 2.5rem;
+    font-weight: 700;
+    color: var(--primary-color);
+}
+
+.plan-features {
+    margin-bottom: 1.5rem;
+}
+
+.plan-features .feature {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.5rem 0;
+    border-bottom: 1px solid #f0f0f0;
+}
+
+.plan-features .feature i {
+    color: #4caf50;
+}
+
+.plan-modules {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+}
+
+.module-badge {
+    padding: 0.25rem 0.75rem;
+    background: #e3f2fd;
+    color: #1565c0;
+    border-radius: 20px;
+    font-size: 0.75rem;
+    font-weight: 600;
+}
+
+/* Buttons */
+.btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.625rem 1.25rem;
+    border: none;
+    border-radius: 8px;
+    font-size: 0.9rem;
+    cursor: pointer;
+    transition: all 0.2s;
+    text-decoration: none;
+}
+
+.btn-primary {
+    background: linear-gradient(135deg, var(--primary-color), #ffc107);
+    color: white;
+}
+
+.btn-primary:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+}
+
+.btn-secondary {
+    background: #6c757d;
+    color: white;
+}
+
+.btn-outline {
+    background: white;
+    border: 1px solid #ddd;
+    color: var(--text-primary);
+}
+
+.btn-outline:hover {
+    border-color: var(--primary-color);
+    color: var(--primary-color);
+}
+
+.btn-danger {
+    background: #f44336;
+    color: white;
+}
+
+.btn-sm { padding: 0.4rem 0.75rem; font-size: 0.85rem; }
+.btn-xs { padding: 0.25rem 0.5rem; font-size: 0.8rem; }
+
+@media (max-width: 768px) {
+    .form-grid {
+        grid-template-columns: 1fr;
+    }
+    .form-section.full-width {
+        grid-column: span 1;
+    }
+    .modules-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
 }
 </style>
+
+<script>
+window.onload = function() {
+    if(typeof setLang === 'function') {
+        setLang(localStorage.getItem('lang') || 'tr');
+    }
+    updatePreviewPrice();
+};
+
+// Update preview price
+function updatePreviewPrice() {
+    var price = document.getElementById('priceMonthly').value || 0;
+    document.getElementById('previewPrice').textContent = '€' + parseFloat(price).toFixed(2);
+}
+
+document.getElementById('priceMonthly').addEventListener('input', updatePreviewPrice);
+
+// Add feature
+window.addFeature = function() {
+    var list = document.getElementById('featuresList');
+    var item = document.createElement('div');
+    item.className = 'feature-item';
+    item.innerHTML = '<input type="text" name="features[]" class="form-control" placeholder="Özellik ekle...">' +
+                     '<button type="button" class="btn btn-xs btn-danger" onclick="this.parentElement.remove()"><i class="ti ti-x"></i></button>';
+    list.appendChild(item);
+    item.querySelector('input').focus();
+};
+
+// Preview plan
+window.previewPlan = function() {
+    var name = document.getElementById('planName').value || 'Yeni Plan';
+    var price = document.getElementById('priceMonthly').value || 0;
+    var maxAgents = document.getElementById('maxAgents').value || 0;
+    var maxCalls = document.getElementById('maxConcurrentCalls').value || 0;
+    var storage = document.getElementById('storageGb').value || 0;
+    
+    document.getElementById('previewPlanName').textContent = name;
+    document.getElementById('previewPlanPrice').textContent = '€' + parseFloat(price).toFixed(2);
+    
+    // Features
+    var featuresHtml = '<div class="feature"><i class="ti ti-check"></i> <span>' + maxAgents + ' Agent</span></div>' +
+                       '<div class="feature"><i class="ti ti-check"></i> <span>' + maxCalls + ' Eş Zamanlı Çağrı</span></div>' +
+                       '<div class="feature"><i class="ti ti-check"></i> <span>' + storage + ' GB Storage</span></div>';
+    document.getElementById('previewPlanFeatures').innerHTML = featuresHtml;
+    
+    // Modules
+    var modulesHtml = '';
+    document.querySelectorAll('.module-checkbox input:checked').forEach(function(cb) {
+        modulesHtml += '<span class="module-badge">' + cb.parentElement.querySelector('span:last-child').textContent + '</span>';
+    });
+    document.getElementById('previewPlanModules').innerHTML = modulesHtml;
+    
+    document.getElementById('previewModal').classList.add('active');
+};
+
+// Save plan
+window.savePlan = function(e) {
+    e.preventDefault();
+    
+    var code = document.getElementById('planCode').value;
+    var name = document.getElementById('planName').value;
+    
+    if(!code || !name) {
+        showNotification('Lütfen zorunlu alanları doldurun!', 'error');
+        return;
+    }
+    
+    showNotification('Plan kaydediliyor...', 'info');
+    
+    // Simulate save
+    setTimeout(function() {
+        showNotification('Plan başarıyla kaydedildi!', 'success');
+        // In real implementation, would submit the form or redirect
+    }, 1500);
+};
+
+// Close modal
+window.closeModal = function(modalId) {
+    document.getElementById(modalId).classList.remove('active');
+};
+
+// Notification
+function showNotification(message, type) {
+    var colors = { success: '#4caf50', error: '#f44336', info: '#2196f3' };
+    var notification = document.createElement('div');
+    notification.innerHTML = '<i class="ti ti-' + (type === 'success' ? 'check' : type === 'error' ? 'x' : 'info-circle') + '"></i> ' + message;
+    notification.style.cssText = 'position:fixed;top:20px;right:20px;background:' + colors[type] + ';color:white;padding:1rem 1.5rem;border-radius:8px;z-index:9999;display:flex;align-items:center;gap:0.5rem;box-shadow:0 4px 12px rgba(0,0,0,0.15);';
+    document.body.appendChild(notification);
+    setTimeout(function() { notification.remove(); }, 3000);
+}
+
+// Close modal on outside click
+document.getElementById('previewModal').addEventListener('click', function(e) {
+    if(e.target === this) this.classList.remove('active');
+});
+</script>
 {% endblock %}
-
-
-
