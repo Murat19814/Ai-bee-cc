@@ -4,68 +4,782 @@
 
 {% block content %}
 <div class="page-header">
-    <div>
-        <h1 class="page-title">Tenant Yönetimi</h1>
-        <p class="page-subtitle">Çağrı merkezlerini yönetin</p>
-    </div>
-    <a href="{{ url_for('platform_tenant_new') }}" class="btn btn-primary">
-        <i class="ti ti-plus"></i> Yeni Tenant
-    </a>
+    <h1><i class="ti ti-building"></i> <span data-tr="Tenant Yönetimi" data-de="Mandantenverwaltung">Tenant Yönetimi</span></h1>
+    <button class="btn btn-primary" onclick="window.openNewTenantModal()">
+        <i class="ti ti-plus"></i> <span data-tr="Yeni Tenant" data-de="Neuer Mandant">Yeni Tenant</span>
+    </button>
 </div>
 
-<div class="card">
-    <div class="card-body">
-        <div class="table-wrapper">
-            <table class="table">
-                <thead>
-                    <tr>
-                        <th>Kod</th>
-                        <th>Ad</th>
-                        <th>Domain</th>
-                        <th>Max Agent</th>
-                        <th>Max Çağrı</th>
-                        <th>Durum</th>
-                        <th>Oluşturulma</th>
-                        <th>İşlemler</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {% for tenant in tenants %}
-                    <tr>
-                        <td><strong>{{ tenant.code }}</strong></td>
-                        <td>{{ tenant.name }}</td>
-                        <td>{{ tenant.domain or '-' }}</td>
-                        <td>{{ tenant.max_agents }}</td>
-                        <td>{{ tenant.max_concurrent_calls }}</td>
-                        <td>
-                            <span class="badge badge-{{ 'success' if tenant.status == 'active' else 'warning' if tenant.status == 'trial' else 'danger' }}">
-                                {{ tenant.status|capitalize }}
-                            </span>
-                        </td>
-                        <td>{{ tenant.created_at|datetime }}</td>
-                        <td>
-                            <a href="{{ url_for('platform_tenant_detail', id=tenant.id) }}" class="btn btn-sm btn-ghost">
-                                <i class="ti ti-eye"></i>
-                            </a>
-                            <a href="{{ url_for('platform_tenant_edit', id=tenant.id) }}" class="btn btn-sm btn-ghost">
-                                <i class="ti ti-edit"></i>
-                            </a>
-                            <a href="{{ url_for('platform_tenant_modules', id=tenant.id) }}" class="btn btn-sm btn-ghost">
-                                <i class="ti ti-apps"></i>
-                            </a>
-                        </td>
-                    </tr>
-                    {% else %}
-                    <tr>
-                        <td colspan="8" class="text-muted">Henüz tenant bulunmuyor</td>
-                    </tr>
-                    {% endfor %}
-                </tbody>
-            </table>
+<!-- İstatistik Kartları -->
+<div class="stats-grid">
+    <div class="stat-card">
+        <div class="stat-icon blue">
+            <i class="ti ti-building"></i>
+        </div>
+        <div class="stat-content">
+            <span class="stat-value">{{ tenants|length }}</span>
+            <span class="stat-label" data-tr="Toplam Tenant" data-de="Gesamt Mandanten">Toplam Tenant</span>
+        </div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-icon green">
+            <i class="ti ti-check"></i>
+        </div>
+        <div class="stat-content">
+            <span class="stat-value">{{ tenants|selectattr('status', 'equalto', 'active')|list|length }}</span>
+            <span class="stat-label" data-tr="Aktif" data-de="Aktiv">Aktif</span>
+        </div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-icon orange">
+            <i class="ti ti-clock"></i>
+        </div>
+        <div class="stat-content">
+            <span class="stat-value">{{ tenants|selectattr('status', 'equalto', 'trial')|list|length }}</span>
+            <span class="stat-label" data-tr="Deneme" data-de="Testversion">Deneme</span>
+        </div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-icon purple">
+            <i class="ti ti-users"></i>
+        </div>
+        <div class="stat-content">
+            <span class="stat-value">{{ tenants|sum(attribute='max_agents') }}</span>
+            <span class="stat-label" data-tr="Toplam Agent Kapasitesi" data-de="Gesamte Agentenkapazität">Toplam Agent Kapasitesi</span>
         </div>
     </div>
 </div>
+
+<!-- Tenant Tablosu -->
+<div class="section-card">
+    <div class="section-header">
+        <h3><i class="ti ti-list"></i> <span data-tr="Tenant Listesi" data-de="Mandantenliste">Tenant Listesi</span></h3>
+        <div class="header-actions">
+            <input type="text" id="searchTenant" class="search-input" placeholder="Ara..." onkeyup="window.filterTenants()" data-tr-placeholder="Ara..." data-de-placeholder="Suchen...">
+        </div>
+    </div>
+
+    <table class="data-table" id="tenantsTable">
+        <thead>
+            <tr>
+                <th data-tr="Kod" data-de="Code">Kod</th>
+                <th data-tr="İsim" data-de="Name">İsim</th>
+                <th data-tr="Domain" data-de="Domain">Domain</th>
+                <th data-tr="Max Agent" data-de="Max Agenten">Max Agent</th>
+                <th data-tr="Max Çağrı" data-de="Max Anrufe">Max Çağrı</th>
+                <th data-tr="Durum" data-de="Status">Durum</th>
+                <th data-tr="Oluşturulma" data-de="Erstellt">Oluşturulma</th>
+                <th data-tr="İşlemler" data-de="Aktionen">İşlemler</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for tenant in tenants %}
+            <tr data-tenant-id="{{ tenant.id }}">
+                <td><strong>{{ tenant.code }}</strong></td>
+                <td>{{ tenant.name }}</td>
+                <td>{{ tenant.domain or '-' }}</td>
+                <td>{{ tenant.max_agents }}</td>
+                <td>{{ tenant.max_concurrent_calls }}</td>
+                <td>
+                    <span class="badge badge-{{ 'success' if tenant.status == 'active' else 'warning' if tenant.status == 'trial' else 'danger' }}">
+                        {% if tenant.status == 'active' %}<span data-tr="Aktif" data-de="Aktiv">Aktif</span>
+                        {% elif tenant.status == 'trial' %}<span data-tr="Deneme" data-de="Testversion">Deneme</span>
+                        {% elif tenant.status == 'suspended' %}<span data-tr="Askıda" data-de="Gesperrt">Askıda</span>
+                        {% else %}{{ tenant.status }}{% endif %}
+                    </span>
+                </td>
+                <td>{{ tenant.created_at.strftime('%d.%m.%Y') if tenant.created_at else '-' }}</td>
+                <td class="action-cell">
+                    <button class="btn btn-xs btn-outline" onclick="window.viewTenant({{ tenant.id }})" title="Detay">
+                        <i class="ti ti-eye"></i>
+                    </button>
+                    <button class="btn btn-xs btn-outline" onclick="window.editTenant({{ tenant.id }})" title="Düzenle">
+                        <i class="ti ti-edit"></i>
+                    </button>
+                    <button class="btn btn-xs btn-outline" onclick="window.manageTenantModules({{ tenant.id }})" title="Modüller">
+                        <i class="ti ti-apps"></i>
+                    </button>
+                    <button class="btn btn-xs btn-outline text-danger" onclick="window.suspendTenant({{ tenant.id }})" title="Askıya Al">
+                        <i class="ti ti-ban"></i>
+                    </button>
+                </td>
+            </tr>
+            {% else %}
+            <tr>
+                <td colspan="8" class="empty-state-cell">
+                    <div class="empty-state-mini">
+                        <i class="ti ti-building-off"></i>
+                        <p data-tr="Henüz tenant bulunmuyor" data-de="Noch keine Mandanten vorhanden">Henüz tenant bulunmuyor</p>
+                    </div>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+
+<!-- Yeni Tenant Modal -->
+<div id="newTenantModal" class="modal">
+    <div class="modal-content modal-lg">
+        <div class="modal-header">
+            <h3><i class="ti ti-building-plus"></i> <span data-tr="Yeni Tenant Oluştur" data-de="Neuen Mandanten erstellen">Yeni Tenant Oluştur</span></h3>
+            <button class="modal-close" onclick="window.closeModal('newTenantModal')">&times;</button>
+        </div>
+        <div class="modal-body">
+            <form id="newTenantForm">
+                <div class="form-row">
+                    <div class="form-group">
+                        <label data-tr="Tenant Kodu *" data-de="Mandantencode *">Tenant Kodu *</label>
+                        <input type="text" id="tenantCode" class="form-input" required placeholder="örn: CC001" data-tr-placeholder="örn: CC001" data-de-placeholder="z.B.: CC001">
+                    </div>
+                    <div class="form-group">
+                        <label data-tr="Tenant Adı *" data-de="Mandantenname *">Tenant Adı *</label>
+                        <input type="text" id="tenantName" class="form-input" required placeholder="Call Center Adı" data-tr-placeholder="Call Center Adı" data-de-placeholder="Call Center Name">
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label data-tr="Domain" data-de="Domain">Domain</label>
+                        <input type="text" id="tenantDomain" class="form-input" placeholder="cc.example.com">
+                    </div>
+                    <div class="form-group">
+                        <label data-tr="Durum" data-de="Status">Durum</label>
+                        <select id="tenantStatus" class="form-select">
+                            <option value="active" data-tr="Aktif" data-de="Aktiv">Aktif</option>
+                            <option value="trial" data-tr="Deneme" data-de="Testversion">Deneme</option>
+                            <option value="suspended" data-tr="Askıda" data-de="Gesperrt">Askıda</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label data-tr="Max Agent" data-de="Max Agenten">Max Agent</label>
+                        <input type="number" id="maxAgents" class="form-input" value="10" min="1">
+                    </div>
+                    <div class="form-group">
+                        <label data-tr="Max Eş Zamanlı Çağrı" data-de="Max gleichzeitige Anrufe">Max Eş Zamanlı Çağrı</label>
+                        <input type="number" id="maxCalls" class="form-input" value="20" min="1">
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label data-tr="Admin Kullanıcı Adı *" data-de="Admin Benutzername *">Admin Kullanıcı Adı *</label>
+                    <input type="text" id="adminUsername" class="form-input" required placeholder="admin">
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label data-tr="Admin E-posta *" data-de="Admin E-Mail *">Admin E-posta *</label>
+                        <input type="email" id="adminEmail" class="form-input" required placeholder="admin@example.com">
+                    </div>
+                    <div class="form-group">
+                        <label data-tr="Admin Şifre *" data-de="Admin Passwort *">Admin Şifre *</label>
+                        <input type="password" id="adminPassword" class="form-input" required placeholder="********">
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label data-tr="Modüller" data-de="Module">Modüller</label>
+                    <div class="modules-grid">
+                        <label class="module-checkbox"><input type="checkbox" name="modules" value="crm" checked> CRM</label>
+                        <label class="module-checkbox"><input type="checkbox" name="modules" value="campaigns" checked> <span data-tr="Kampanyalar" data-de="Kampagnen">Kampanyalar</span></label>
+                        <label class="module-checkbox"><input type="checkbox" name="modules" value="voip" checked> VoIP</label>
+                        <label class="module-checkbox"><input type="checkbox" name="modules" value="qa"> <span data-tr="Kalite Kontrol" data-de="Qualitätskontrolle">Kalite Kontrol</span></label>
+                        <label class="module-checkbox"><input type="checkbox" name="modules" value="ai"> AI</label>
+                        <label class="module-checkbox"><input type="checkbox" name="modules" value="reports" checked> <span data-tr="Raporlar" data-de="Berichte">Raporlar</span></label>
+                    </div>
+                </div>
+            </form>
+        </div>
+        <div class="modal-footer">
+            <button class="btn btn-outline" onclick="window.closeModal('newTenantModal')" data-tr="İptal" data-de="Abbrechen">İptal</button>
+            <button class="btn btn-primary" onclick="window.saveTenant()">
+                <i class="ti ti-check"></i> <span data-tr="Oluştur" data-de="Erstellen">Oluştur</span>
+            </button>
+        </div>
+    </div>
+</div>
+
+<!-- Tenant Detay Modal -->
+<div id="tenantDetailModal" class="modal">
+    <div class="modal-content modal-lg">
+        <div class="modal-header">
+            <h3><i class="ti ti-building"></i> <span data-tr="Tenant Detayı" data-de="Mandantendetails">Tenant Detayı</span></h3>
+            <button class="modal-close" onclick="window.closeModal('tenantDetailModal')">&times;</button>
+        </div>
+        <div class="modal-body" id="tenantDetailContent">
+            <!-- Dynamic content -->
+        </div>
+        <div class="modal-footer">
+            <button class="btn btn-outline" onclick="window.closeModal('tenantDetailModal')" data-tr="Kapat" data-de="Schließen">Kapat</button>
+        </div>
+    </div>
+</div>
+
+<!-- Edit Tenant Modal -->
+<div id="editTenantModal" class="modal">
+    <div class="modal-content modal-lg">
+        <div class="modal-header">
+            <h3><i class="ti ti-edit"></i> <span data-tr="Tenant Düzenle" data-de="Mandant bearbeiten">Tenant Düzenle</span></h3>
+            <button class="modal-close" onclick="window.closeModal('editTenantModal')">&times;</button>
+        </div>
+        <div class="modal-body">
+            <form id="editTenantForm">
+                <input type="hidden" id="editTenantId">
+                <div class="form-row">
+                    <div class="form-group">
+                        <label data-tr="Tenant Kodu" data-de="Mandantencode">Tenant Kodu</label>
+                        <input type="text" id="editTenantCode" class="form-input" readonly>
+                    </div>
+                    <div class="form-group">
+                        <label data-tr="Tenant Adı *" data-de="Mandantenname *">Tenant Adı *</label>
+                        <input type="text" id="editTenantName" class="form-input" required>
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label data-tr="Domain" data-de="Domain">Domain</label>
+                        <input type="text" id="editTenantDomain" class="form-input">
+                    </div>
+                    <div class="form-group">
+                        <label data-tr="Durum" data-de="Status">Durum</label>
+                        <select id="editTenantStatus" class="form-select">
+                            <option value="active" data-tr="Aktif" data-de="Aktiv">Aktif</option>
+                            <option value="trial" data-tr="Deneme" data-de="Testversion">Deneme</option>
+                            <option value="suspended" data-tr="Askıda" data-de="Gesperrt">Askıda</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label data-tr="Max Agent" data-de="Max Agenten">Max Agent</label>
+                        <input type="number" id="editMaxAgents" class="form-input" min="1">
+                    </div>
+                    <div class="form-group">
+                        <label data-tr="Max Eş Zamanlı Çağrı" data-de="Max gleichzeitige Anrufe">Max Eş Zamanlı Çağrı</label>
+                        <input type="number" id="editMaxCalls" class="form-input" min="1">
+                    </div>
+                </div>
+            </form>
+        </div>
+        <div class="modal-footer">
+            <button class="btn btn-outline" onclick="window.closeModal('editTenantModal')" data-tr="İptal" data-de="Abbrechen">İptal</button>
+            <button class="btn btn-primary" onclick="window.updateTenant()">
+                <i class="ti ti-check"></i> <span data-tr="Güncelle" data-de="Aktualisieren">Güncelle</span>
+            </button>
+        </div>
+    </div>
+</div>
+
+<!-- Modüller Modal -->
+<div id="modulesModal" class="modal">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h3><i class="ti ti-apps"></i> <span data-tr="Modül Yönetimi" data-de="Modulverwaltung">Modül Yönetimi</span></h3>
+            <button class="modal-close" onclick="window.closeModal('modulesModal')">&times;</button>
+        </div>
+        <div class="modal-body">
+            <input type="hidden" id="modulesTenantId">
+            <div class="modules-list">
+                <div class="module-item">
+                    <div class="module-info">
+                        <i class="ti ti-address-book"></i>
+                        <span>CRM</span>
+                    </div>
+                    <label class="switch">
+                        <input type="checkbox" id="module_crm" checked>
+                        <span class="slider"></span>
+                    </label>
+                </div>
+                <div class="module-item">
+                    <div class="module-info">
+                        <i class="ti ti-speakerphone"></i>
+                        <span data-tr="Kampanyalar" data-de="Kampagnen">Kampanyalar</span>
+                    </div>
+                    <label class="switch">
+                        <input type="checkbox" id="module_campaigns" checked>
+                        <span class="slider"></span>
+                    </label>
+                </div>
+                <div class="module-item">
+                    <div class="module-info">
+                        <i class="ti ti-phone"></i>
+                        <span>VoIP</span>
+                    </div>
+                    <label class="switch">
+                        <input type="checkbox" id="module_voip" checked>
+                        <span class="slider"></span>
+                    </label>
+                </div>
+                <div class="module-item">
+                    <div class="module-info">
+                        <i class="ti ti-certificate"></i>
+                        <span data-tr="Kalite Kontrol" data-de="Qualitätskontrolle">Kalite Kontrol</span>
+                    </div>
+                    <label class="switch">
+                        <input type="checkbox" id="module_qa">
+                        <span class="slider"></span>
+                    </label>
+                </div>
+                <div class="module-item">
+                    <div class="module-info">
+                        <i class="ti ti-brain"></i>
+                        <span>AI</span>
+                    </div>
+                    <label class="switch">
+                        <input type="checkbox" id="module_ai">
+                        <span class="slider"></span>
+                    </label>
+                </div>
+                <div class="module-item">
+                    <div class="module-info">
+                        <i class="ti ti-report-analytics"></i>
+                        <span data-tr="Raporlar" data-de="Berichte">Raporlar</span>
+                    </div>
+                    <label class="switch">
+                        <input type="checkbox" id="module_reports" checked>
+                        <span class="slider"></span>
+                    </label>
+                </div>
+            </div>
+        </div>
+        <div class="modal-footer">
+            <button class="btn btn-outline" onclick="window.closeModal('modulesModal')" data-tr="İptal" data-de="Abbrechen">İptal</button>
+            <button class="btn btn-primary" onclick="window.saveModules()">
+                <i class="ti ti-check"></i> <span data-tr="Kaydet" data-de="Speichern">Kaydet</span>
+            </button>
+        </div>
+    </div>
+</div>
+
+<style>
+.stats-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 1rem;
+    margin-bottom: 2rem;
+}
+
+.stat-card {
+    background: white;
+    border-radius: 12px;
+    padding: 1.25rem;
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+}
+
+.stat-icon {
+    width: 50px;
+    height: 50px;
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.5rem;
+}
+
+.stat-icon.blue { background: #e3f2fd; color: #1565c0; }
+.stat-icon.green { background: #e8f5e9; color: #2e7d32; }
+.stat-icon.orange { background: #fff3e0; color: #e65100; }
+.stat-icon.purple { background: #f3e5f5; color: #7b1fa2; }
+
+.stat-content { display: flex; flex-direction: column; }
+.stat-value { font-size: 1.5rem; font-weight: 700; }
+.stat-label { font-size: 0.85rem; color: var(--text-muted); }
+
+.section-card {
+    background: white;
+    border-radius: 12px;
+    padding: 1.5rem;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+}
+
+.section-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1.5rem;
+    padding-bottom: 1rem;
+    border-bottom: 1px solid #eee;
+}
+
+.section-header h3 { display: flex; align-items: center; gap: 0.5rem; }
+
+.search-input {
+    padding: 0.5rem 1rem;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    font-size: 0.9rem;
+    width: 200px;
+}
+
+.data-table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.data-table th, .data-table td {
+    padding: 0.875rem 1rem;
+    text-align: left;
+    border-bottom: 1px solid #f0f0f0;
+}
+
+.data-table th {
+    font-weight: 600;
+    color: var(--text-secondary);
+    font-size: 0.85rem;
+}
+
+.data-table tbody tr:hover { background: #f8f9fa; }
+
+.action-cell { display: flex; gap: 0.5rem; }
+
+.badge {
+    padding: 0.25rem 0.75rem;
+    border-radius: 20px;
+    font-size: 0.75rem;
+    font-weight: 600;
+}
+
+.badge-success { background: #e8f5e9; color: #2e7d32; }
+.badge-warning { background: #fff3e0; color: #e65100; }
+.badge-danger { background: #ffebee; color: #c62828; }
+
+.empty-state-cell { text-align: center; padding: 2rem !important; }
+.empty-state-mini { color: var(--text-muted); }
+.empty-state-mini i { font-size: 2rem; margin-bottom: 0.5rem; }
+
+/* Modal */
+.modal {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0,0,0,0.5);
+    z-index: 1000;
+    align-items: center;
+    justify-content: center;
+}
+
+.modal.active { display: flex; }
+
+.modal-content {
+    background: white;
+    border-radius: 16px;
+    width: 90%;
+    max-width: 500px;
+    max-height: 90vh;
+    overflow-y: auto;
+}
+
+.modal-content.modal-lg { max-width: 700px; }
+
+.modal-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 1.25rem 1.5rem;
+    border-bottom: 1px solid #eee;
+}
+
+.modal-header h3 { display: flex; align-items: center; gap: 0.5rem; }
+
+.modal-close {
+    width: 32px;
+    height: 32px;
+    border: none;
+    background: #f0f0f0;
+    border-radius: 8px;
+    font-size: 1.25rem;
+    cursor: pointer;
+}
+
+.modal-body { padding: 1.5rem; }
+
+.modal-footer {
+    display: flex;
+    justify-content: flex-end;
+    gap: 0.75rem;
+    padding: 1rem 1.5rem;
+    border-top: 1px solid #eee;
+}
+
+/* Form */
+.form-group { margin-bottom: 1rem; }
+.form-group label {
+    display: block;
+    margin-bottom: 0.5rem;
+    font-size: 0.9rem;
+    font-weight: 500;
+}
+
+.form-input, .form-select {
+    width: 100%;
+    padding: 0.75rem;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    font-size: 0.9rem;
+}
+
+.form-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1rem;
+}
+
+.modules-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 0.5rem;
+}
+
+.module-checkbox {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.5rem;
+    background: #f8f9fa;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 0.85rem;
+}
+
+.module-checkbox:has(input:checked) {
+    background: #e8f5e9;
+    color: #2e7d32;
+}
+
+/* Modules List */
+.modules-list { display: flex; flex-direction: column; gap: 0.75rem; }
+
+.module-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0.875rem;
+    background: #f8f9fa;
+    border-radius: 8px;
+}
+
+.module-info { display: flex; align-items: center; gap: 0.75rem; }
+.module-info i { font-size: 1.25rem; color: var(--primary-color); }
+
+/* Switch */
+.switch {
+    position: relative;
+    display: inline-block;
+    width: 44px;
+    height: 24px;
+}
+
+.switch input { opacity: 0; width: 0; height: 0; }
+
+.slider {
+    position: absolute;
+    cursor: pointer;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: #ccc;
+    transition: .3s;
+    border-radius: 24px;
+}
+
+.slider:before {
+    position: absolute;
+    content: "";
+    height: 18px;
+    width: 18px;
+    left: 3px;
+    bottom: 3px;
+    background-color: white;
+    transition: .3s;
+    border-radius: 50%;
+}
+
+input:checked + .slider { background-color: var(--primary-color); }
+input:checked + .slider:before { transform: translateX(20px); }
+
+/* Buttons */
+.btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.5rem 1rem;
+    border: none;
+    border-radius: 8px;
+    font-size: 0.9rem;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.btn-primary {
+    background: linear-gradient(135deg, var(--primary-color), #ffc107);
+    color: white;
+}
+
+.btn-primary:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+}
+
+.btn-outline {
+    background: white;
+    border: 1px solid #ddd;
+    color: var(--text-primary);
+}
+
+.btn-outline:hover {
+    border-color: var(--primary-color);
+    color: var(--primary-color);
+}
+
+.btn-xs { padding: 0.25rem 0.5rem; font-size: 0.8rem; }
+.text-danger { color: #c62828 !important; }
+</style>
+
+<script>
+window.onload = function() {
+    if(typeof setLang === 'function') {
+        setLang(localStorage.getItem('lang') || 'tr');
+    }
+};
+
+// Demo tenant data (simulated)
+var demoTenants = [
+    { id: 1, code: 'MAIN', name: 'AI Bee CC', domain: '-', max_agents: 10, max_calls: 20, status: 'active', created: '25.12.2024' }
+];
+
+// Filter tenants
+window.filterTenants = function() {
+    var search = document.getElementById('searchTenant').value.toLowerCase();
+    var rows = document.querySelectorAll('#tenantsTable tbody tr');
+    rows.forEach(function(row) {
+        var text = row.textContent.toLowerCase();
+        row.style.display = text.includes(search) ? '' : 'none';
+    });
+};
+
+// New tenant modal
+window.openNewTenantModal = function() {
+    document.getElementById('newTenantForm').reset();
+    document.getElementById('newTenantModal').classList.add('active');
+};
+
+// Save new tenant
+window.saveTenant = function() {
+    var code = document.getElementById('tenantCode').value;
+    var name = document.getElementById('tenantName').value;
+    
+    if(!code || !name) {
+        showNotification('Lütfen zorunlu alanları doldurun!', 'error');
+        return;
+    }
+    
+    showNotification('Tenant oluşturuluyor...', 'info');
+    
+    // Simulate API call
+    setTimeout(function() {
+        showNotification('Tenant başarıyla oluşturuldu: ' + name, 'success');
+        closeModal('newTenantModal');
+        // In real implementation, would redirect or refresh
+    }, 1000);
+};
+
+// View tenant detail
+window.viewTenant = function(id) {
+    var content = document.getElementById('tenantDetailContent');
+    content.innerHTML = '<div class="tenant-detail">' +
+        '<div class="detail-grid">' +
+        '<div class="detail-item"><label>Kod:</label><span>MAIN</span></div>' +
+        '<div class="detail-item"><label>Ad:</label><span>AI Bee CC</span></div>' +
+        '<div class="detail-item"><label>Durum:</label><span class="badge badge-success">Aktif</span></div>' +
+        '<div class="detail-item"><label>Max Agent:</label><span>10</span></div>' +
+        '<div class="detail-item"><label>Max Çağrı:</label><span>20</span></div>' +
+        '<div class="detail-item"><label>Oluşturulma:</label><span>25.12.2024</span></div>' +
+        '</div>' +
+        '<h4 style="margin-top:1.5rem;">Aktif Modüller</h4>' +
+        '<div class="modules-badges">' +
+        '<span class="badge badge-success">CRM</span>' +
+        '<span class="badge badge-success">Kampanyalar</span>' +
+        '<span class="badge badge-success">VoIP</span>' +
+        '<span class="badge badge-success">Raporlar</span>' +
+        '</div>' +
+        '</div>';
+    document.getElementById('tenantDetailModal').classList.add('active');
+};
+
+// Edit tenant
+window.editTenant = function(id) {
+    document.getElementById('editTenantId').value = id;
+    document.getElementById('editTenantCode').value = 'MAIN';
+    document.getElementById('editTenantName').value = 'AI Bee CC';
+    document.getElementById('editTenantDomain').value = '';
+    document.getElementById('editTenantStatus').value = 'active';
+    document.getElementById('editMaxAgents').value = 10;
+    document.getElementById('editMaxCalls').value = 20;
+    document.getElementById('editTenantModal').classList.add('active');
+};
+
+// Update tenant
+window.updateTenant = function() {
+    var name = document.getElementById('editTenantName').value;
+    if(!name) {
+        showNotification('Tenant adı gerekli!', 'error');
+        return;
+    }
+    
+    showNotification('Tenant güncelleniyor...', 'info');
+    setTimeout(function() {
+        showNotification('Tenant güncellendi!', 'success');
+        closeModal('editTenantModal');
+    }, 1000);
+};
+
+// Manage modules
+window.manageTenantModules = function(id) {
+    document.getElementById('modulesTenantId').value = id;
+    document.getElementById('modulesModal').classList.add('active');
+};
+
+// Save modules
+window.saveModules = function() {
+    showNotification('Modüller kaydediliyor...', 'info');
+    setTimeout(function() {
+        showNotification('Modüller güncellendi!', 'success');
+        closeModal('modulesModal');
+    }, 1000);
+};
+
+// Suspend tenant
+window.suspendTenant = function(id) {
+    if(confirm('Bu tenant\'ı askıya almak istediğinizden emin misiniz?')) {
+        showNotification('Tenant askıya alındı', 'success');
+    }
+};
+
+// Close modal
+window.closeModal = function(modalId) {
+    document.getElementById(modalId).classList.remove('active');
+};
+
+// Close modal on outside click
+document.querySelectorAll('.modal').forEach(function(modal) {
+    modal.addEventListener('click', function(e) {
+        if(e.target === this) this.classList.remove('active');
+    });
+});
+
+// Notification
+function showNotification(message, type) {
+    var colors = { success: '#4caf50', error: '#f44336', info: '#2196f3' };
+    var notification = document.createElement('div');
+    notification.innerHTML = '<i class="ti ti-' + (type === 'success' ? 'check' : type === 'error' ? 'x' : 'info-circle') + '"></i> ' + message;
+    notification.style.cssText = 'position:fixed;top:20px;right:20px;background:' + colors[type] + ';color:white;padding:1rem 1.5rem;border-radius:8px;z-index:9999;display:flex;align-items:center;gap:0.5rem;box-shadow:0 4px 12px rgba(0,0,0,0.15);';
+    document.body.appendChild(notification);
+    setTimeout(function() { notification.remove(); }, 3000);
+}
+</script>
 {% endblock %}
-
-
-
