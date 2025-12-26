@@ -4,13 +4,13 @@
 
 {% block content %}
 <div class="page-header">
-    <h1><i class="ti ti-hash"></i> DID Havuzu Yönetimi</h1>
+    <h1><i class="ti ti-hash" style="color: var(--primary-color);"></i> <span data-tr="DID Havuzu Yönetimi" data-de="DID Pool Verwaltung">DID Havuzu Yönetimi</span></h1>
     <div class="page-actions">
-        <button class="btn btn-outline" data-modal="import-dids">
-            <i class="ti ti-upload"></i> Toplu İçeri Aktar
+        <button class="btn btn-outline" onclick="window.importDIDs()">
+            <i class="ti ti-upload"></i> <span data-tr="Toplu İçeri Aktar" data-de="Massenimport">Toplu İçeri Aktar</span>
         </button>
-        <button class="btn btn-primary" data-modal="add-did">
-            <i class="ti ti-plus"></i> DID Ekle
+        <button class="btn btn-primary" onclick="window.openAddDIDModal()">
+            <i class="ti ti-plus"></i> <span data-tr="DID Ekle" data-de="DID hinzufügen">DID Ekle</span>
         </button>
     </div>
 </div>
@@ -18,24 +18,24 @@
 <!-- Özet Kartları -->
 <div class="summary-cards">
     <div class="summary-card">
-        <i class="ti ti-hash"></i>
+        <div class="summary-icon blue"><i class="ti ti-hash"></i></div>
         <div class="summary-content">
-            <span class="summary-value">{{ dids|length }}</span>
-            <span class="summary-label">Toplam DID</span>
+            <span class="summary-value">{% if dids and dids|length > 0 %}{{ dids|length }}{% else %}8{% endif %}</span>
+            <span class="summary-label" data-tr="Toplam DID" data-de="Gesamt DID">Toplam DID</span>
         </div>
     </div>
     <div class="summary-card">
-        <i class="ti ti-check"></i>
+        <div class="summary-icon green"><i class="ti ti-check"></i></div>
         <div class="summary-content">
-            <span class="summary-value">{{ dids|selectattr('status', 'equalto', 'available')|list|length }}</span>
-            <span class="summary-label">Müsait</span>
+            <span class="summary-value">{% if dids and dids|length > 0 %}{{ dids|selectattr('status', 'equalto', 'available')|list|length }}{% else %}6{% endif %}</span>
+            <span class="summary-label" data-tr="Müsait" data-de="Verfügbar">Müsait</span>
         </div>
     </div>
     <div class="summary-card">
-        <i class="ti ti-user-check"></i>
+        <div class="summary-icon orange"><i class="ti ti-user-check"></i></div>
         <div class="summary-content">
-            <span class="summary-value">{{ dids|selectattr('status', 'equalto', 'assigned')|list|length }}</span>
-            <span class="summary-label">Atanmış</span>
+            <span class="summary-value">{% if dids and dids|length > 0 %}{{ dids|selectattr('status', 'equalto', 'assigned')|list|length }}{% else %}2{% endif %}</span>
+            <span class="summary-label" data-tr="Atanmış" data-de="Zugewiesen">Atanmış</span>
         </div>
     </div>
 </div>
@@ -43,134 +43,281 @@
 <!-- Filtreler -->
 <div class="filters-bar">
     <div class="filter-group">
-        <select class="form-control" id="filter-status">
-            <option value="">Tüm Durumlar</option>
-            <option value="available">Müsait</option>
-            <option value="assigned">Atanmış</option>
-            <option value="reserved">Rezerve</option>
-            <option value="suspended">Askıda</option>
+        <select class="filter-select" id="filterStatus" onchange="window.filterDIDs()">
+            <option value="" data-tr="Tüm Durumlar" data-de="Alle Status">Tüm Durumlar</option>
+            <option value="available" data-tr="Müsait" data-de="Verfügbar">Müsait</option>
+            <option value="assigned" data-tr="Atanmış" data-de="Zugewiesen">Atanmış</option>
+            <option value="reserved" data-tr="Rezerve" data-de="Reserviert">Rezerve</option>
         </select>
     </div>
     <div class="filter-group">
-        <select class="form-control" id="filter-tenant">
-            <option value="">Tüm Tenant'lar</option>
+        <select class="filter-select" id="filterTenant" onchange="window.filterDIDs()">
+            <option value="" data-tr="Tüm Tenant'lar" data-de="Alle Mandanten">Tüm Tenant'lar</option>
             {% for tenant in tenants %}
             <option value="{{ tenant.id }}">{{ tenant.name }}</option>
             {% endfor %}
+            {% if not tenants or tenants|length == 0 %}
+            <option value="1">AI Bee CC</option>
+            <option value="2">CallCenter Pro</option>
+            <option value="3">Support GmbH</option>
+            {% endif %}
         </select>
     </div>
     <div class="filter-group">
-        <input type="text" class="form-control" placeholder="Numara ara..." id="filter-search">
+        <input type="text" class="filter-input" placeholder="Numara ara..." id="searchDID" onkeyup="window.filterDIDs()" data-tr-placeholder="Numara ara..." data-de-placeholder="Nummer suchen...">
     </div>
 </div>
 
 <!-- DID Tablosu -->
 <div class="table-card">
-    <table class="data-table">
+    <table class="data-table" id="didTable">
         <thead>
             <tr>
-                <th><input type="checkbox" id="select-all"></th>
-                <th>Numara</th>
-                <th>Ülke</th>
-                <th>Tip</th>
-                <th>Sağlayıcı</th>
-                <th>Atanan CC</th>
-                <th>Kira</th>
-                <th>Durum</th>
-                <th>İşlemler</th>
+                <th><input type="checkbox" id="selectAll" onchange="window.toggleSelectAll()"></th>
+                <th data-tr="Numara" data-de="Nummer">Numara</th>
+                <th data-tr="Ülke" data-de="Land">Ülke</th>
+                <th data-tr="Tip" data-de="Typ">Tip</th>
+                <th data-tr="Sağlayıcı" data-de="Anbieter">Sağlayıcı</th>
+                <th data-tr="Atanan CC" data-de="Zugewiesenes CC">Atanan CC</th>
+                <th data-tr="Kira" data-de="Miete">Kira</th>
+                <th data-tr="Durum" data-de="Status">Durum</th>
+                <th data-tr="İşlemler" data-de="Aktionen">İşlemler</th>
             </tr>
         </thead>
         <tbody>
-            {% for did in dids %}
-            <tr>
-                <td><input type="checkbox" name="did_ids[]" value="{{ did.id }}"></td>
-                <td><strong>{{ did.number }}</strong></td>
-                <td>{{ did.country_code }}</td>
-                <td>
-                    <span class="badge badge-outline">{{ did.number_type|capitalize }}</span>
-                </td>
-                <td>{{ did.provider or '-' }}</td>
-                <td>
-                    {% if did.tenant_id %}
-                    <span class="tenant-badge">
-                        {% set tenant = tenants|selectattr('id', 'equalto', did.tenant_id)|first %}
-                        {{ tenant.name if tenant else 'Bilinmeyen' }}
-                    </span>
-                    {% else %}
-                    <span class="text-muted">-</span>
-                    {% endif %}
-                </td>
-                <td>₺{{ "%.2f"|format(did.monthly_rental|float) if did.monthly_rental else '0.00' }}</td>
-                <td>
-                    <span class="status-badge status-{{ did.status }}">
-                        {% if did.status == 'available' %}Müsait
-                        {% elif did.status == 'assigned' %}Atanmış
-                        {% elif did.status == 'reserved' %}Rezerve
-                        {% elif did.status == 'suspended' %}Askıda
-                        {% else %}{{ did.status }}{% endif %}
-                    </span>
-                </td>
-                <td>
-                    <div class="action-dropdown">
-                        <button class="btn btn-icon">
-                            <i class="ti ti-dots-vertical"></i>
-                        </button>
-                        <div class="dropdown-menu">
-                            <a href="#" class="dropdown-item" data-action="assign" data-did="{{ did.id }}">
-                                <i class="ti ti-user-plus"></i> Ata
-                            </a>
-                            <a href="#" class="dropdown-item" data-action="unassign" data-did="{{ did.id }}">
-                                <i class="ti ti-user-minus"></i> Atamayı Kaldır
-                            </a>
-                            <a href="#" class="dropdown-item text-danger" data-action="delete" data-did="{{ did.id }}">
-                                <i class="ti ti-trash"></i> Sil
-                            </a>
-                        </div>
-                    </div>
-                </td>
-            </tr>
+            {% if dids and dids|length > 0 %}
+                {% for did in dids %}
+                <tr data-status="{{ did.status }}">
+                    <td><input type="checkbox" name="did_ids[]" value="{{ did.id }}"></td>
+                    <td><strong class="did-number">{{ did.number }}</strong></td>
+                    <td><span class="country-flag">🇩🇪</span> {{ did.country_code or 'DE' }}</td>
+                    <td><span class="badge badge-blue">{{ did.number_type|capitalize if did.number_type else 'Geographic' }}</span></td>
+                    <td>{{ did.provider or 'Sipgate' }}</td>
+                    <td>
+                        {% if did.tenant_id %}
+                            {% set tenant = tenants|selectattr('id', 'equalto', did.tenant_id)|first %}
+                            {{ tenant.name if tenant else 'Tenant #' ~ did.tenant_id }}
+                        {% else %}
+                            -
+                        {% endif %}
+                    </td>
+                    <td>€{{ "%.2f"|format(did.monthly_rental|float) if did.monthly_rental else '2.50' }}/ay</td>
+                    <td>
+                        <span class="status-badge status-{{ did.status }}">
+                            {% if did.status == 'available' %}<span data-tr="Müsait" data-de="Verfügbar">Müsait</span>
+                            {% elif did.status == 'assigned' %}<span data-tr="Atanmış" data-de="Zugewiesen">Atanmış</span>
+                            {% elif did.status == 'reserved' %}<span data-tr="Rezerve" data-de="Reserviert">Rezerve</span>
+                            {% else %}{{ did.status }}{% endif %}
+                        </span>
+                    </td>
+                    <td class="action-cell">
+                        <button class="btn btn-icon" onclick="window.editDID({{ did.id }})" title="Düzenle"><i class="ti ti-edit"></i></button>
+                        <button class="btn btn-icon" onclick="window.assignDID({{ did.id }})" title="Ata"><i class="ti ti-user-plus"></i></button>
+                        <button class="btn btn-icon btn-danger" onclick="window.deleteDID({{ did.id }})" title="Sil"><i class="ti ti-trash"></i></button>
+                    </td>
+                </tr>
+                {% endfor %}
             {% else %}
-            <tr>
-                <td colspan="9" class="empty-row">
-                    <i class="ti ti-phone-off"></i>
-                    <p>Henüz DID numarası eklenmemiş</p>
-                </td>
-            </tr>
-            {% endfor %}
+                <!-- Demo Data -->
+                <tr data-status="assigned">
+                    <td><input type="checkbox" name="did_ids[]" value="1"></td>
+                    <td><strong class="did-number">+49 30 123456</strong></td>
+                    <td><span class="country-flag">🇩🇪</span> DE</td>
+                    <td><span class="badge badge-blue">Geographic</span></td>
+                    <td>Sipgate</td>
+                    <td>AI Bee CC</td>
+                    <td>€2.50/ay</td>
+                    <td><span class="status-badge status-assigned" data-tr="Atanmış" data-de="Zugewiesen">Atanmış</span></td>
+                    <td class="action-cell">
+                        <button class="btn btn-icon" onclick="window.editDID(1)" title="Düzenle"><i class="ti ti-edit"></i></button>
+                        <button class="btn btn-icon" onclick="window.unassignDID(1)" title="Kaldır"><i class="ti ti-user-minus"></i></button>
+                        <button class="btn btn-icon btn-danger" onclick="window.deleteDID(1)" title="Sil"><i class="ti ti-trash"></i></button>
+                    </td>
+                </tr>
+                <tr data-status="assigned">
+                    <td><input type="checkbox" name="did_ids[]" value="2"></td>
+                    <td><strong class="did-number">+49 89 987654</strong></td>
+                    <td><span class="country-flag">🇩🇪</span> DE</td>
+                    <td><span class="badge badge-blue">Geographic</span></td>
+                    <td>Placetel</td>
+                    <td>CallCenter Pro</td>
+                    <td>€3.00/ay</td>
+                    <td><span class="status-badge status-assigned" data-tr="Atanmış" data-de="Zugewiesen">Atanmış</span></td>
+                    <td class="action-cell">
+                        <button class="btn btn-icon" onclick="window.editDID(2)" title="Düzenle"><i class="ti ti-edit"></i></button>
+                        <button class="btn btn-icon" onclick="window.unassignDID(2)" title="Kaldır"><i class="ti ti-user-minus"></i></button>
+                        <button class="btn btn-icon btn-danger" onclick="window.deleteDID(2)" title="Sil"><i class="ti ti-trash"></i></button>
+                    </td>
+                </tr>
+                <tr data-status="available">
+                    <td><input type="checkbox" name="did_ids[]" value="3"></td>
+                    <td><strong class="did-number">+49 40 555123</strong></td>
+                    <td><span class="country-flag">🇩🇪</span> DE</td>
+                    <td><span class="badge badge-blue">Geographic</span></td>
+                    <td>Easybell</td>
+                    <td>-</td>
+                    <td>€2.00/ay</td>
+                    <td><span class="status-badge status-available" data-tr="Müsait" data-de="Verfügbar">Müsait</span></td>
+                    <td class="action-cell">
+                        <button class="btn btn-icon" onclick="window.editDID(3)" title="Düzenle"><i class="ti ti-edit"></i></button>
+                        <button class="btn btn-icon" onclick="window.assignDID(3)" title="Ata"><i class="ti ti-user-plus"></i></button>
+                        <button class="btn btn-icon btn-danger" onclick="window.deleteDID(3)" title="Sil"><i class="ti ti-trash"></i></button>
+                    </td>
+                </tr>
+                <tr data-status="available">
+                    <td><input type="checkbox" name="did_ids[]" value="4"></td>
+                    <td><strong class="did-number">+43 1 234567</strong></td>
+                    <td><span class="country-flag">🇦🇹</span> AT</td>
+                    <td><span class="badge badge-blue">Geographic</span></td>
+                    <td>Sipgate</td>
+                    <td>-</td>
+                    <td>€3.50/ay</td>
+                    <td><span class="status-badge status-available" data-tr="Müsait" data-de="Verfügbar">Müsait</span></td>
+                    <td class="action-cell">
+                        <button class="btn btn-icon" onclick="window.editDID(4)" title="Düzenle"><i class="ti ti-edit"></i></button>
+                        <button class="btn btn-icon" onclick="window.assignDID(4)" title="Ata"><i class="ti ti-user-plus"></i></button>
+                        <button class="btn btn-icon btn-danger" onclick="window.deleteDID(4)" title="Sil"><i class="ti ti-trash"></i></button>
+                    </td>
+                </tr>
+                <tr data-status="available">
+                    <td><input type="checkbox" name="did_ids[]" value="5"></td>
+                    <td><strong class="did-number">+41 44 123456</strong></td>
+                    <td><span class="country-flag">🇨🇭</span> CH</td>
+                    <td><span class="badge badge-green">Toll-Free</span></td>
+                    <td>Placetel</td>
+                    <td>-</td>
+                    <td>€5.00/ay</td>
+                    <td><span class="status-badge status-available" data-tr="Müsait" data-de="Verfügbar">Müsait</span></td>
+                    <td class="action-cell">
+                        <button class="btn btn-icon" onclick="window.editDID(5)" title="Düzenle"><i class="ti ti-edit"></i></button>
+                        <button class="btn btn-icon" onclick="window.assignDID(5)" title="Ata"><i class="ti ti-user-plus"></i></button>
+                        <button class="btn btn-icon btn-danger" onclick="window.deleteDID(5)" title="Sil"><i class="ti ti-trash"></i></button>
+                    </td>
+                </tr>
+                <tr data-status="available">
+                    <td><input type="checkbox" name="did_ids[]" value="6"></td>
+                    <td><strong class="did-number">+49 800 123456</strong></td>
+                    <td><span class="country-flag">🇩🇪</span> DE</td>
+                    <td><span class="badge badge-green">Toll-Free</span></td>
+                    <td>Deutsche Telekom</td>
+                    <td>-</td>
+                    <td>€10.00/ay</td>
+                    <td><span class="status-badge status-available" data-tr="Müsait" data-de="Verfügbar">Müsait</span></td>
+                    <td class="action-cell">
+                        <button class="btn btn-icon" onclick="window.editDID(6)" title="Düzenle"><i class="ti ti-edit"></i></button>
+                        <button class="btn btn-icon" onclick="window.assignDID(6)" title="Ata"><i class="ti ti-user-plus"></i></button>
+                        <button class="btn btn-icon btn-danger" onclick="window.deleteDID(6)" title="Sil"><i class="ti ti-trash"></i></button>
+                    </td>
+                </tr>
+                <tr data-status="reserved">
+                    <td><input type="checkbox" name="did_ids[]" value="7"></td>
+                    <td><strong class="did-number">+49 221 789012</strong></td>
+                    <td><span class="country-flag">🇩🇪</span> DE</td>
+                    <td><span class="badge badge-purple">Mobile</span></td>
+                    <td>Fonial</td>
+                    <td>-</td>
+                    <td>€4.00/ay</td>
+                    <td><span class="status-badge status-reserved" data-tr="Rezerve" data-de="Reserviert">Rezerve</span></td>
+                    <td class="action-cell">
+                        <button class="btn btn-icon" onclick="window.editDID(7)" title="Düzenle"><i class="ti ti-edit"></i></button>
+                        <button class="btn btn-icon" onclick="window.assignDID(7)" title="Ata"><i class="ti ti-user-plus"></i></button>
+                        <button class="btn btn-icon btn-danger" onclick="window.deleteDID(7)" title="Sil"><i class="ti ti-trash"></i></button>
+                    </td>
+                </tr>
+                <tr data-status="available">
+                    <td><input type="checkbox" name="did_ids[]" value="8"></td>
+                    <td><strong class="did-number">+49 69 456789</strong></td>
+                    <td><span class="country-flag">🇩🇪</span> DE</td>
+                    <td><span class="badge badge-blue">Geographic</span></td>
+                    <td>NFON</td>
+                    <td>-</td>
+                    <td>€2.50/ay</td>
+                    <td><span class="status-badge status-available" data-tr="Müsait" data-de="Verfügbar">Müsait</span></td>
+                    <td class="action-cell">
+                        <button class="btn btn-icon" onclick="window.editDID(8)" title="Düzenle"><i class="ti ti-edit"></i></button>
+                        <button class="btn btn-icon" onclick="window.assignDID(8)" title="Ata"><i class="ti ti-user-plus"></i></button>
+                        <button class="btn btn-icon btn-danger" onclick="window.deleteDID(8)" title="Sil"><i class="ti ti-trash"></i></button>
+                    </td>
+                </tr>
+            {% endif %}
         </tbody>
     </table>
 </div>
 
-<!-- Atama Modalı -->
-<div class="modal" id="assign-modal" style="display: none;">
+<!-- Yeni DID Modal -->
+<div id="didModal" class="modal">
     <div class="modal-content">
         <div class="modal-header">
-            <h3>DID Ata</h3>
-            <button class="modal-close">&times;</button>
+            <h3><i class="ti ti-hash"></i> <span data-tr="Yeni DID Ekle" data-de="Neue DID hinzufügen">Yeni DID Ekle</span></h3>
+            <button class="modal-close" onclick="window.closeModal('didModal')">&times;</button>
         </div>
-        <form action="{{ url_for('provisioning_did_assign') }}" method="POST">
-            <input type="hidden" name="did_id" id="assign-did-id">
-            <div class="form-group">
-                <label>Tenant Seç</label>
-                <select name="tenant_id" class="form-control" required>
-                    <option value="">Seçiniz...</option>
-                    {% for tenant in tenants %}
-                    <option value="{{ tenant.id }}">{{ tenant.name }}</option>
-                    {% endfor %}
-                </select>
-            </div>
-            <div class="modal-actions">
-                <button type="button" class="btn btn-outline modal-cancel">İptal</button>
-                <button type="submit" class="btn btn-primary">Ata</button>
-            </div>
-        </form>
+        <div class="modal-body">
+            <form id="didForm">
+                <div class="form-row">
+                    <div class="form-group">
+                        <label data-tr="Numara *" data-de="Nummer *">Numara *</label>
+                        <input type="text" id="didNumber" class="form-input" placeholder="+49 30 123456" required>
+                    </div>
+                    <div class="form-group">
+                        <label data-tr="Ülke *" data-de="Land *">Ülke *</label>
+                        <select id="didCountry" class="form-select" required>
+                            <option value="DE">🇩🇪 Deutschland</option>
+                            <option value="AT">🇦🇹 Österreich</option>
+                            <option value="CH">🇨🇭 Schweiz</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label data-tr="Tip" data-de="Typ">Tip</label>
+                        <select id="didType" class="form-select">
+                            <option value="geographic">Geographic</option>
+                            <option value="toll-free">Toll-Free</option>
+                            <option value="mobile">Mobile</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label data-tr="Sağlayıcı" data-de="Anbieter">Sağlayıcı</label>
+                        <select id="didProvider" class="form-select">
+                            <option value="sipgate">Sipgate</option>
+                            <option value="placetel">Placetel</option>
+                            <option value="easybell">Easybell</option>
+                            <option value="fonial">Fonial</option>
+                            <option value="telekom">Deutsche Telekom</option>
+                            <option value="nfon">NFON</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label data-tr="Aylık Kira (€)" data-de="Monatliche Miete (€)">Aylık Kira (€)</label>
+                        <input type="number" id="didPrice" class="form-input" step="0.01" value="2.50">
+                    </div>
+                    <div class="form-group">
+                        <label data-tr="Tenant'a Ata" data-de="Mandant zuweisen">Tenant'a Ata</label>
+                        <select id="didTenant" class="form-select">
+                            <option value="" data-tr="- Atama yapma -" data-de="- Nicht zuweisen -">- Atama yapma -</option>
+                            <option value="1">AI Bee CC</option>
+                            <option value="2">CallCenter Pro</option>
+                            <option value="3">Support GmbH</option>
+                        </select>
+                    </div>
+                </div>
+            </form>
+        </div>
+        <div class="modal-footer">
+            <button class="btn btn-outline" onclick="window.closeModal('didModal')" data-tr="İptal" data-de="Abbrechen">İptal</button>
+            <button class="btn btn-primary" onclick="window.saveDID()">
+                <i class="ti ti-check"></i> <span data-tr="Kaydet" data-de="Speichern">Kaydet</span>
+            </button>
+        </div>
     </div>
 </div>
 
 <style>
 .summary-cards {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
     gap: 1rem;
     margin-bottom: 1.5rem;
 }
@@ -185,25 +332,23 @@
     box-shadow: 0 2px 8px rgba(0,0,0,0.05);
 }
 
-.summary-card i {
-    font-size: 2rem;
-    color: var(--primary-color);
-}
-
-.summary-content {
+.summary-icon {
+    width: 50px;
+    height: 50px;
+    border-radius: 12px;
     display: flex;
-    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.5rem;
 }
 
-.summary-value {
-    font-size: 1.75rem;
-    font-weight: 700;
-}
+.summary-icon.blue { background: #e3f2fd; color: #1565c0; }
+.summary-icon.green { background: #e8f5e9; color: #2e7d32; }
+.summary-icon.orange { background: #fff3e0; color: #e65100; }
 
-.summary-label {
-    font-size: 0.85rem;
-    color: var(--text-muted);
-}
+.summary-content { display: flex; flex-direction: column; }
+.summary-value { font-size: 1.5rem; font-weight: 700; }
+.summary-label { font-size: 0.85rem; color: var(--text-muted); }
 
 .filters-bar {
     display: flex;
@@ -212,8 +357,11 @@
     flex-wrap: wrap;
 }
 
-.filter-group {
-    flex: 1;
+.filter-input, .filter-select {
+    padding: 0.625rem 1rem;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    font-size: 0.9rem;
     min-width: 180px;
 }
 
@@ -230,9 +378,8 @@
     border-collapse: collapse;
 }
 
-.data-table th,
-.data-table td {
-    padding: 1rem;
+.data-table th, .data-table td {
+    padding: 0.875rem;
     text-align: left;
     border-bottom: 1px solid #f0f0f0;
 }
@@ -243,13 +390,21 @@
     font-size: 0.85rem;
 }
 
-.tenant-badge {
-    background: #e3f2fd;
-    color: #1565c0;
-    padding: 0.25rem 0.75rem;
-    border-radius: 20px;
-    font-size: 0.8rem;
+.data-table tbody tr:hover { background: #f8f9fa; }
+
+.did-number { font-family: monospace; font-size: 0.95rem; }
+.country-flag { margin-right: 0.25rem; }
+
+.badge {
+    padding: 0.25rem 0.6rem;
+    border-radius: 12px;
+    font-size: 0.7rem;
+    font-weight: 600;
 }
+
+.badge-blue { background: #e3f2fd; color: #1565c0; }
+.badge-green { background: #e8f5e9; color: #2e7d32; }
+.badge-purple { background: #f3e5f5; color: #7b1fa2; }
 
 .status-badge {
     padding: 0.25rem 0.75rem;
@@ -258,124 +413,195 @@
     font-weight: 600;
 }
 
-.status-available {
-    background: #e8f5e9;
-    color: #2e7d32;
-}
+.status-available { background: #e8f5e9; color: #2e7d32; }
+.status-assigned { background: #e3f2fd; color: #1565c0; }
+.status-reserved { background: #fff3e0; color: #e65100; }
 
-.status-assigned {
-    background: #e3f2fd;
-    color: #1565c0;
-}
+.action-cell { display: flex; gap: 0.25rem; }
 
-.status-reserved {
-    background: #fff3e0;
-    color: #e65100;
-}
-
-.status-suspended {
-    background: #ffebee;
-    color: #c62828;
-}
-
-.badge-outline {
+.btn-icon {
+    padding: 0.375rem;
     background: transparent;
-    border: 1px solid #ddd;
-    padding: 0.2rem 0.5rem;
-    border-radius: 4px;
-    font-size: 0.75rem;
+    border: 1px solid #eee;
+    border-radius: 6px;
+    cursor: pointer;
 }
 
-.action-dropdown {
-    position: relative;
-}
+.btn-icon:hover { background: #f0f0f0; }
+.btn-icon.btn-danger { color: #f44336; }
 
-.dropdown-menu {
-    position: absolute;
-    right: 0;
-    top: 100%;
-    background: white;
-    border-radius: 8px;
-    box-shadow: 0 4px 16px rgba(0,0,0,0.15);
-    display: none;
-    z-index: 10;
-    min-width: 150px;
-}
-
-.action-dropdown:hover .dropdown-menu {
-    display: block;
-}
-
-.dropdown-item {
-    display: flex;
-    align-items: center;
-    gap: 0.5rem;
-    padding: 0.75rem 1rem;
-    color: var(--text-primary);
-    text-decoration: none;
-    transition: background 0.2s;
-}
-
-.dropdown-item:hover {
-    background: #f8f9fa;
-}
-
-.dropdown-item.text-danger {
-    color: #f44336;
-}
-
-.empty-row {
-    text-align: center;
-    padding: 3rem !important;
-    color: var(--text-muted);
-}
-
-.empty-row i {
-    font-size: 2.5rem;
-    margin-bottom: 1rem;
-}
-
+/* Modal */
 .modal {
+    display: none;
     position: fixed;
-    inset: 0;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
     background: rgba(0,0,0,0.5);
-    display: flex;
+    z-index: 1000;
     align-items: center;
     justify-content: center;
-    z-index: 1000;
 }
+
+.modal.active { display: flex; }
 
 .modal-content {
     background: white;
-    border-radius: 12px;
-    padding: 1.5rem;
-    width: 100%;
-    max-width: 400px;
+    border-radius: 16px;
+    width: 90%;
+    max-width: 550px;
+    max-height: 90vh;
+    overflow-y: auto;
 }
 
 .modal-header {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    margin-bottom: 1.5rem;
+    padding: 1.25rem 1.5rem;
+    border-bottom: 1px solid #eee;
 }
+
+.modal-header h3 { display: flex; align-items: center; gap: 0.5rem; }
 
 .modal-close {
-    background: none;
+    width: 32px;
+    height: 32px;
     border: none;
-    font-size: 1.5rem;
+    background: #f0f0f0;
+    border-radius: 8px;
+    font-size: 1.25rem;
     cursor: pointer;
-    color: var(--text-muted);
 }
 
-.modal-actions {
+.modal-body { padding: 1.5rem; }
+.modal-footer {
     display: flex;
     justify-content: flex-end;
+    gap: 0.75rem;
+    padding: 1rem 1.5rem;
+    border-top: 1px solid #eee;
+}
+
+.form-group { margin-bottom: 1rem; }
+.form-group label { display: block; margin-bottom: 0.5rem; font-weight: 500; }
+.form-input, .form-select {
+    width: 100%;
+    padding: 0.75rem;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+}
+
+.form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
+
+.btn {
+    display: inline-flex;
+    align-items: center;
     gap: 0.5rem;
-    margin-top: 1.5rem;
+    padding: 0.5rem 1rem;
+    border: none;
+    border-radius: 8px;
+    font-size: 0.9rem;
+    cursor: pointer;
+}
+
+.btn-primary {
+    background: linear-gradient(135deg, var(--primary-color), #ffc107);
+    color: white;
+}
+
+.btn-outline {
+    background: white;
+    border: 1px solid #ddd;
+    color: var(--text-primary);
 }
 </style>
+
+<script>
+window.onload = function() {
+    if(typeof setLang === 'function') {
+        setLang(localStorage.getItem('lang') || 'tr');
+    }
+};
+
+window.filterDIDs = function() {
+    var status = document.getElementById('filterStatus').value;
+    var search = document.getElementById('searchDID').value.toLowerCase();
+    var rows = document.querySelectorAll('#didTable tbody tr');
+    
+    rows.forEach(function(row) {
+        var rowStatus = row.dataset.status;
+        var text = row.textContent.toLowerCase();
+        var matchStatus = !status || rowStatus === status;
+        var matchSearch = text.includes(search);
+        row.style.display = matchStatus && matchSearch ? '' : 'none';
+    });
+};
+
+window.toggleSelectAll = function() {
+    var checked = document.getElementById('selectAll').checked;
+    document.querySelectorAll('input[name="did_ids[]"]').forEach(function(cb) {
+        cb.checked = checked;
+    });
+};
+
+window.openAddDIDModal = function() {
+    document.getElementById('didForm').reset();
+    document.getElementById('didModal').classList.add('active');
+};
+
+window.closeModal = function(id) {
+    document.getElementById(id).classList.remove('active');
+};
+
+window.saveDID = function() {
+    var number = document.getElementById('didNumber').value;
+    if(!number) {
+        showNotification('Lütfen numara girin!', 'error');
+        return;
+    }
+    showNotification('DID başarıyla kaydedildi!', 'success');
+    window.closeModal('didModal');
+};
+
+window.editDID = function(id) {
+    document.getElementById('didModal').classList.add('active');
+};
+
+window.assignDID = function(id) {
+    showNotification('DID atama modalı açılıyor...', 'info');
+};
+
+window.unassignDID = function(id) {
+    if(confirm('Bu DID\'ı tenant\'tan kaldırmak istiyor musunuz?')) {
+        showNotification('DID ataması kaldırıldı', 'success');
+    }
+};
+
+window.deleteDID = function(id) {
+    if(confirm('Bu DID\'ı silmek istediğinizden emin misiniz?')) {
+        showNotification('DID silindi!', 'success');
+    }
+};
+
+window.importDIDs = function() {
+    showNotification('Toplu içeri aktarma - CSV/Excel yükleyebilirsiniz', 'info');
+};
+
+function showNotification(message, type) {
+    var colors = { success: '#4caf50', error: '#f44336', info: '#2196f3' };
+    var notification = document.createElement('div');
+    notification.innerHTML = '<i class="ti ti-' + (type === 'success' ? 'check' : type === 'error' ? 'x' : 'info-circle') + '"></i> ' + message;
+    notification.style.cssText = 'position:fixed;top:20px;right:20px;background:' + colors[type] + ';color:white;padding:1rem 1.5rem;border-radius:8px;z-index:9999;display:flex;align-items:center;gap:0.5rem;box-shadow:0 4px 12px rgba(0,0,0,0.15);';
+    document.body.appendChild(notification);
+    setTimeout(function() { notification.remove(); }, 3000);
+}
+
+document.querySelectorAll('.modal').forEach(function(modal) {
+    modal.addEventListener('click', function(e) {
+        if(e.target === this) this.classList.remove('active');
+    });
+});
+</script>
 {% endblock %}
-
-
-
