@@ -2,69 +2,697 @@
 
 {% block title %}Disposition Yönetimi - AI BEE CC{% endblock %}
 
+{% block extra_css %}
+<style>
+.disposition-page {
+    padding: 1.5rem;
+}
+
+.stats-row {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 1rem;
+    margin-bottom: 1.5rem;
+}
+
+.stat-card {
+    background: white;
+    border-radius: 12px;
+    padding: 1.25rem;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+}
+
+.stat-icon {
+    width: 50px;
+    height: 50px;
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.5rem;
+    color: white;
+}
+
+.stat-icon.blue { background: linear-gradient(135deg, #2196F3, #1976D2); }
+.stat-icon.green { background: linear-gradient(135deg, #4CAF50, #388E3C); }
+.stat-icon.orange { background: linear-gradient(135deg, #FF9800, #F57C00); }
+.stat-icon.purple { background: linear-gradient(135deg, #9C27B0, #7B1FA2); }
+
+.stat-value { font-size: 1.5rem; font-weight: 700; color: #1a1a2e; }
+.stat-label { font-size: 0.8rem; color: #888; }
+
+.disp-container {
+    background: white;
+    border-radius: 16px;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.06);
+    overflow: hidden;
+}
+
+.disp-header {
+    padding: 1.25rem 1.5rem;
+    background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+    color: white;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.disp-header h3 {
+    margin: 0;
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+}
+
+.disp-header h3 i { color: #F5A623; }
+
+.disp-table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.disp-table th {
+    background: #f8f9fa;
+    padding: 1rem;
+    text-align: left;
+    font-size: 0.75rem;
+    text-transform: uppercase;
+    color: #888;
+}
+
+.disp-table td {
+    padding: 1rem;
+    border-bottom: 1px solid #f0f0f0;
+}
+
+.disp-table tr:hover { background: #fafafa; }
+
+.set-info {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+}
+
+.set-icon {
+    width: 40px;
+    height: 40px;
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.25rem;
+    color: white;
+}
+
+.set-icon.sales { background: linear-gradient(135deg, #4CAF50, #388E3C); }
+.set-icon.support { background: linear-gradient(135deg, #2196F3, #1976D2); }
+.set-icon.callback { background: linear-gradient(135deg, #FF9800, #F57C00); }
+
+.set-name { font-weight: 600; color: #1a1a2e; }
+.set-desc { font-size: 0.8rem; color: #888; }
+
+.count-badge {
+    background: #e3f2fd;
+    color: #1565c0;
+    padding: 0.4rem 0.75rem;
+    border-radius: 20px;
+    font-weight: 600;
+    font-size: 0.85rem;
+}
+
+.default-badge {
+    padding: 0.25rem 0.75rem;
+    border-radius: 20px;
+    font-size: 0.75rem;
+    font-weight: 600;
+}
+
+.default-badge.yes { background: #e8f5e9; color: #2e7d32; }
+.default-badge.no { background: #f5f5f5; color: #888; }
+
+.status-badge {
+    padding: 0.25rem 0.75rem;
+    border-radius: 20px;
+    font-size: 0.75rem;
+    font-weight: 600;
+}
+
+.status-badge.active { background: #e8f5e9; color: #2e7d32; }
+.status-badge.inactive { background: #ffebee; color: #c62828; }
+
+.action-buttons { display: flex; gap: 0.5rem; }
+
+.action-btn {
+    width: 32px;
+    height: 32px;
+    border-radius: 8px;
+    border: none;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s;
+}
+
+.action-btn.list { background: #e3f2fd; color: #1976D2; }
+.action-btn.edit { background: #fff3e0; color: #ef6c00; }
+.action-btn.delete { background: #ffebee; color: #c62828; }
+.action-btn.default { background: #e8f5e9; color: #2e7d32; }
+
+.action-btn:hover { transform: translateY(-2px); }
+
+/* Modal */
+.modal-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.6);
+    backdrop-filter: blur(4px);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 1000;
+    opacity: 0;
+    visibility: hidden;
+    transition: all 0.3s;
+}
+
+.modal-overlay.show { opacity: 1; visibility: visible; }
+
+.modal-content {
+    background: white;
+    border-radius: 20px;
+    width: 100%;
+    max-width: 700px;
+    max-height: 90vh;
+    overflow: hidden;
+}
+
+.modal-header {
+    padding: 1.5rem;
+    background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+    color: white;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.modal-header h3 { margin: 0; display: flex; align-items: center; gap: 0.75rem; }
+.modal-header h3 i { color: #F5A623; }
+
+.modal-close {
+    background: rgba(255,255,255,0.1);
+    border: none;
+    color: white;
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    cursor: pointer;
+}
+
+.modal-body { padding: 1.5rem; max-height: 60vh; overflow-y: auto; }
+
+.modal-footer {
+    padding: 1rem 1.5rem;
+    background: #f8f9fa;
+    display: flex;
+    gap: 1rem;
+    justify-content: flex-end;
+}
+
+.form-group { margin-bottom: 1rem; }
+.form-group label { display: block; margin-bottom: 0.5rem; font-weight: 500; }
+.form-group input, .form-group select, .form-group textarea {
+    width: 100%;
+    padding: 0.75rem;
+    border: 1px solid #e0e0e0;
+    border-radius: 8px;
+}
+
+.form-group input:focus, .form-group select:focus {
+    outline: none;
+    border-color: #F5A623;
+}
+
+.form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
+
+/* Disposition List */
+.disp-list {
+    border: 1px solid #e0e0e0;
+    border-radius: 8px;
+    max-height: 300px;
+    overflow-y: auto;
+}
+
+.disp-item {
+    display: flex;
+    align-items: center;
+    padding: 0.75rem;
+    border-bottom: 1px solid #f0f0f0;
+    gap: 0.75rem;
+}
+
+.disp-item:last-child { border-bottom: none; }
+
+.disp-color {
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+}
+
+.disp-item-name { flex: 1; font-weight: 500; }
+.disp-item-code { font-size: 0.8rem; color: #888; font-family: monospace; }
+
+.disp-item-actions {
+    display: flex;
+    gap: 0.25rem;
+}
+
+.disp-item-btn {
+    width: 24px;
+    height: 24px;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.75rem;
+}
+
+.disp-item-btn.edit { background: #fff3e0; color: #ef6c00; }
+.disp-item-btn.delete { background: #ffebee; color: #c62828; }
+
+.add-disp-btn {
+    width: 100%;
+    padding: 0.75rem;
+    border: 2px dashed #e0e0e0;
+    background: transparent;
+    border-radius: 8px;
+    cursor: pointer;
+    color: #888;
+    margin-top: 0.5rem;
+    transition: all 0.2s;
+}
+
+.add-disp-btn:hover {
+    border-color: #F5A623;
+    color: #F5A623;
+}
+</style>
+{% endblock %}
+
 {% block content %}
-<div class="page-header">
-    <div>
-        <h1 class="page-title">Disposition Yönetimi</h1>
-        <p class="page-subtitle">Arama sonuç kodlarını tanımlayın</p>
+<div class="disposition-page">
+    <div class="page-header">
+        <div>
+            <h1 class="page-title">
+                <i class="ti ti-list-check" style="color: #F5A623;"></i>
+                <span data-tr="Disposition Yönetimi" data-de="Disposition-Verwaltung">Disposition Yönetimi</span>
+            </h1>
+            <p class="page-subtitle" data-tr="Arama sonuç kodlarını tanımlayın" data-de="Anrufergebnis-Codes definieren">Arama sonuç kodlarını tanımlayın</p>
+        </div>
+        <button class="btn btn-primary" onclick="openNewSetModal()">
+            <i class="ti ti-plus"></i>
+            <span data-tr="Yeni Set" data-de="Neues Set">Yeni Set</span>
+        </button>
     </div>
-    <button class="btn btn-primary">
-        <i class="ti ti-plus"></i> Yeni Set
-    </button>
+
+    <!-- Stats -->
+    <div class="stats-row">
+        <div class="stat-card">
+            <div class="stat-icon blue"><i class="ti ti-folders"></i></div>
+            <div>
+                <div class="stat-value">3</div>
+                <div class="stat-label" data-tr="Disposition Seti" data-de="Disposition-Sets">Disposition Seti</div>
+            </div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-icon green"><i class="ti ti-list-check"></i></div>
+            <div>
+                <div class="stat-value">24</div>
+                <div class="stat-label" data-tr="Toplam Disposition" data-de="Gesamt Dispositionen">Toplam Disposition</div>
+            </div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-icon orange"><i class="ti ti-check"></i></div>
+            <div>
+                <div class="stat-value">3</div>
+                <div class="stat-label" data-tr="Aktif Set" data-de="Aktive Sets">Aktif Set</div>
+            </div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-icon purple"><i class="ti ti-star"></i></div>
+            <div>
+                <div class="stat-value">1</div>
+                <div class="stat-label" data-tr="Varsayılan" data-de="Standard">Varsayılan</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Disposition Sets Table -->
+    <div class="disp-container">
+        <div class="disp-header">
+            <h3><i class="ti ti-list-check"></i> <span data-tr="Disposition Setleri" data-de="Disposition-Sets">Disposition Setleri</span></h3>
+        </div>
+        <table class="disp-table">
+            <thead>
+                <tr>
+                    <th data-tr="Set Adı" data-de="Set-Name">Set Adı</th>
+                    <th data-tr="Disposition Sayısı" data-de="Anzahl Dispositionen">Disposition Sayısı</th>
+                    <th data-tr="Varsayılan" data-de="Standard">Varsayılan</th>
+                    <th data-tr="Durum" data-de="Status">Durum</th>
+                    <th data-tr="İşlemler" data-de="Aktionen">İşlemler</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>
+                        <div class="set-info">
+                            <div class="set-icon sales"><i class="ti ti-phone-outgoing"></i></div>
+                            <div>
+                                <div class="set-name" data-tr="Satış Sonuçları" data-de="Verkaufsergebnisse">Satış Sonuçları</div>
+                                <div class="set-desc" data-tr="Outbound satış kampanyaları için" data-de="Für Outbound-Verkaufskampagnen">Outbound satış kampanyaları için</div>
+                            </div>
+                        </div>
+                    </td>
+                    <td><span class="count-badge">12</span></td>
+                    <td><span class="default-badge yes" data-tr="Evet" data-de="Ja">Evet</span></td>
+                    <td><span class="status-badge active" data-tr="Aktif" data-de="Aktiv">Aktif</span></td>
+                    <td>
+                        <div class="action-buttons">
+                            <button class="action-btn list" onclick="viewDispositions(1)" title="Disposition'lar"><i class="ti ti-list"></i></button>
+                            <button class="action-btn edit" onclick="editSet(1)" title="Düzenle"><i class="ti ti-edit"></i></button>
+                            <button class="action-btn delete" onclick="deleteSet(1)" title="Sil"><i class="ti ti-trash"></i></button>
+                        </div>
+                    </td>
+                </tr>
+                <tr>
+                    <td>
+                        <div class="set-info">
+                            <div class="set-icon support"><i class="ti ti-headset"></i></div>
+                            <div>
+                                <div class="set-name" data-tr="Destek Sonuçları" data-de="Support-Ergebnisse">Destek Sonuçları</div>
+                                <div class="set-desc" data-tr="Müşteri destek çağrıları için" data-de="Für Kundenservice-Anrufe">Müşteri destek çağrıları için</div>
+                            </div>
+                        </div>
+                    </td>
+                    <td><span class="count-badge">8</span></td>
+                    <td><span class="default-badge no" data-tr="Hayır" data-de="Nein">Hayır</span></td>
+                    <td><span class="status-badge active">Aktif</span></td>
+                    <td>
+                        <div class="action-buttons">
+                            <button class="action-btn list" onclick="viewDispositions(2)"><i class="ti ti-list"></i></button>
+                            <button class="action-btn default" onclick="setDefault(2)" title="Varsayılan Yap"><i class="ti ti-star"></i></button>
+                            <button class="action-btn edit" onclick="editSet(2)"><i class="ti ti-edit"></i></button>
+                            <button class="action-btn delete" onclick="deleteSet(2)"><i class="ti ti-trash"></i></button>
+                        </div>
+                    </td>
+                </tr>
+                <tr>
+                    <td>
+                        <div class="set-info">
+                            <div class="set-icon callback"><i class="ti ti-phone-call"></i></div>
+                            <div>
+                                <div class="set-name" data-tr="Geri Arama Sonuçları" data-de="Rückruf-Ergebnisse">Geri Arama Sonuçları</div>
+                                <div class="set-desc" data-tr="Callback kampanyaları için" data-de="Für Callback-Kampagnen">Callback kampanyaları için</div>
+                            </div>
+                        </div>
+                    </td>
+                    <td><span class="count-badge">4</span></td>
+                    <td><span class="default-badge no">Hayır</span></td>
+                    <td><span class="status-badge active">Aktif</span></td>
+                    <td>
+                        <div class="action-buttons">
+                            <button class="action-btn list" onclick="viewDispositions(3)"><i class="ti ti-list"></i></button>
+                            <button class="action-btn default" onclick="setDefault(3)"><i class="ti ti-star"></i></button>
+                            <button class="action-btn edit" onclick="editSet(3)"><i class="ti ti-edit"></i></button>
+                            <button class="action-btn delete" onclick="deleteSet(3)"><i class="ti ti-trash"></i></button>
+                        </div>
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
 </div>
 
-<div class="card">
-    <div class="card-body">
-        <div class="table-wrapper">
-            <table class="table">
-                <thead>
-                    <tr>
-                        <th>Set Adı</th>
-                        <th>Açıklama</th>
-                        <th>Disposition Sayısı</th>
-                        <th>Varsayılan</th>
-                        <th>Durum</th>
-                        <th>İşlemler</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {% for set in disposition_sets %}
-                    <tr>
-                        <td><strong>{{ set.name }}</strong></td>
-                        <td>{{ set.description or '-' }}</td>
-                        <td>{{ set.dispositions.count() }}</td>
-                        <td>
-                            {% if set.is_default %}
-                            <span class="badge badge-success">Evet</span>
-                            {% else %}
-                            <span class="badge badge-secondary">Hayır</span>
-                            {% endif %}
-                        </td>
-                        <td>
-                            <span class="badge badge-{{ 'success' if set.is_active else 'warning' }}">
-                                {{ 'Aktif' if set.is_active else 'Pasif' }}
-                            </span>
-                        </td>
-                        <td>
-                            <button class="btn btn-sm btn-ghost" title="Disposition'lar">
-                                <i class="ti ti-list"></i>
-                            </button>
-                            <button class="btn btn-sm btn-ghost" title="Düzenle">
-                                <i class="ti ti-edit"></i>
-                            </button>
-                        </td>
-                    </tr>
-                    {% else %}
-                    <tr>
-                        <td colspan="6" class="text-muted">Henüz disposition seti oluşturulmamış</td>
-                    </tr>
-                    {% endfor %}
-                </tbody>
-            </table>
+<!-- New/Edit Set Modal -->
+<div class="modal-overlay" id="setModal">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h3><i class="ti ti-folder-plus"></i> <span id="setModalTitle" data-tr="Yeni Disposition Seti" data-de="Neues Disposition-Set">Yeni Disposition Seti</span></h3>
+            <button class="modal-close" onclick="closeSetModal()"><i class="ti ti-x"></i></button>
+        </div>
+        <div class="modal-body">
+            <div class="form-group">
+                <label data-tr="Set Adı" data-de="Set-Name">Set Adı</label>
+                <input type="text" id="setName" data-tr-placeholder="Örn: Satış Sonuçları" data-de-placeholder="z.B. Verkaufsergebnisse" placeholder="Örn: Satış Sonuçları">
+            </div>
+            <div class="form-group">
+                <label data-tr="Açıklama" data-de="Beschreibung">Açıklama</label>
+                <textarea id="setDesc" rows="2" data-tr-placeholder="Set açıklaması" data-de-placeholder="Set-Beschreibung" placeholder="Set açıklaması"></textarea>
+            </div>
+            <div class="form-row">
+                <div class="form-group">
+                    <label data-tr="Durum" data-de="Status">Durum</label>
+                    <select id="setStatus">
+                        <option value="1" data-tr="Aktif" data-de="Aktiv">Aktif</option>
+                        <option value="0" data-tr="Pasif" data-de="Inaktiv">Pasif</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label data-tr="Varsayılan" data-de="Standard">Varsayılan</label>
+                    <select id="setDefault">
+                        <option value="0" data-tr="Hayır" data-de="Nein">Hayır</option>
+                        <option value="1" data-tr="Evet" data-de="Ja">Evet</option>
+                    </select>
+                </div>
+            </div>
+        </div>
+        <div class="modal-footer">
+            <button class="btn btn-secondary" onclick="closeSetModal()" data-tr="İptal" data-de="Abbrechen">İptal</button>
+            <button class="btn btn-primary" onclick="saveSet()"><i class="ti ti-device-floppy"></i> <span data-tr="Kaydet" data-de="Speichern">Kaydet</span></button>
+        </div>
+    </div>
+</div>
+
+<!-- Dispositions List Modal -->
+<div class="modal-overlay" id="dispListModal">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h3><i class="ti ti-list"></i> <span id="dispListTitle">Disposition Listesi</span></h3>
+            <button class="modal-close" onclick="closeDispListModal()"><i class="ti ti-x"></i></button>
+        </div>
+        <div class="modal-body">
+            <div class="disp-list" id="dispList">
+                <!-- Dispositions will be loaded here -->
+            </div>
+            <button class="add-disp-btn" onclick="addNewDisposition()">
+                <i class="ti ti-plus"></i> <span data-tr="Yeni Disposition Ekle" data-de="Neue Disposition hinzufügen">Yeni Disposition Ekle</span>
+            </button>
+        </div>
+        <div class="modal-footer">
+            <button class="btn btn-secondary" onclick="closeDispListModal()" data-tr="Kapat" data-de="Schließen">Kapat</button>
+        </div>
+    </div>
+</div>
+
+<!-- Add Disposition Modal -->
+<div class="modal-overlay" id="addDispModal">
+    <div class="modal-content" style="max-width: 500px;">
+        <div class="modal-header">
+            <h3><i class="ti ti-plus"></i> <span data-tr="Yeni Disposition" data-de="Neue Disposition">Yeni Disposition</span></h3>
+            <button class="modal-close" onclick="closeAddDispModal()"><i class="ti ti-x"></i></button>
+        </div>
+        <div class="modal-body">
+            <div class="form-group">
+                <label data-tr="Disposition Adı" data-de="Disposition-Name">Disposition Adı</label>
+                <input type="text" id="dispName" data-tr-placeholder="Örn: Satış Başarılı" data-de-placeholder="z.B. Verkauf erfolgreich">
+            </div>
+            <div class="form-row">
+                <div class="form-group">
+                    <label data-tr="Kod" data-de="Code">Kod</label>
+                    <input type="text" id="dispCode" style="text-transform: uppercase;" data-tr-placeholder="Örn: SALE" data-de-placeholder="z.B. SALE">
+                </div>
+                <div class="form-group">
+                    <label data-tr="Renk" data-de="Farbe">Renk</label>
+                    <input type="color" id="dispColor" value="#4CAF50" style="height: 42px;">
+                </div>
+            </div>
+            <div class="form-group">
+                <label data-tr="Kategori" data-de="Kategorie">Kategori</label>
+                <select id="dispCategory">
+                    <option value="positive" data-tr="Pozitif" data-de="Positiv">Pozitif</option>
+                    <option value="negative" data-tr="Negatif" data-de="Negativ">Negatif</option>
+                    <option value="neutral" data-tr="Nötr" data-de="Neutral">Nötr</option>
+                    <option value="callback" data-tr="Geri Arama" data-de="Rückruf">Geri Arama</option>
+                </select>
+            </div>
+        </div>
+        <div class="modal-footer">
+            <button class="btn btn-secondary" onclick="closeAddDispModal()" data-tr="İptal" data-de="Abbrechen">İptal</button>
+            <button class="btn btn-primary" onclick="saveDisposition()"><i class="ti ti-plus"></i> <span data-tr="Ekle" data-de="Hinzufügen">Ekle</span></button>
         </div>
     </div>
 </div>
 {% endblock %}
 
+{% block extra_js %}
+<script>
+(function() {
+    'use strict';
 
+    function getCurrentLang() { return localStorage.getItem('selectedLang') || 'tr'; }
 
+    function showNotification(message, type) {
+        const toast = document.createElement('div');
+        toast.style.cssText = 'position:fixed;top:20px;right:20px;padding:15px 25px;border-radius:10px;color:white;font-weight:500;z-index:9999;box-shadow:0 4px 20px rgba(0,0,0,0.2);animation:slideIn 0.3s ease;';
+        toast.style.background = type === 'success' ? 'linear-gradient(135deg, #4CAF50, #45a049)' : type === 'error' ? 'linear-gradient(135deg, #f44336, #d32f2f)' : 'linear-gradient(135deg, #2196F3, #1976D2)';
+        toast.textContent = message;
+        document.body.appendChild(toast);
+        setTimeout(function() { toast.remove(); }, 3000);
+    }
+
+    const dispositionData = {
+        1: [
+            { name: 'Satış Başarılı', code: 'SALE', color: '#4CAF50' },
+            { name: 'İlgilenmiyor', code: 'NOT_INT', color: '#f44336' },
+            { name: 'Geri Ara', code: 'CALLBACK', color: '#FF9800' },
+            { name: 'Meşgul', code: 'BUSY', color: '#9C27B0' },
+            { name: 'Cevap Yok', code: 'NO_ANS', color: '#607D8B' },
+            { name: 'Yanlış Numara', code: 'WRONG_NUM', color: '#795548' },
+            { name: 'DNC', code: 'DNC', color: '#f44336' },
+            { name: 'Düşünecek', code: 'THINK', color: '#2196F3' },
+            { name: 'Fiyat Sorunu', code: 'PRICE', color: '#FF5722' },
+            { name: 'Bilgi Gönder', code: 'SEND_INFO', color: '#00BCD4' },
+            { name: 'Randevu', code: 'APPT', color: '#8BC34A' },
+            { name: 'Transfer', code: 'TRANSFER', color: '#3F51B5' }
+        ],
+        2: [
+            { name: 'Çözüldü', code: 'RESOLVED', color: '#4CAF50' },
+            { name: 'Teknik Destek', code: 'TECH_SUP', color: '#2196F3' },
+            { name: 'Şikayet', code: 'COMPLAINT', color: '#f44336' },
+            { name: 'Bilgi Talebi', code: 'INFO_REQ', color: '#FF9800' },
+            { name: 'İptal Talebi', code: 'CANCEL', color: '#9C27B0' },
+            { name: 'Değişiklik', code: 'CHANGE', color: '#607D8B' },
+            { name: 'Takip Gerekli', code: 'FOLLOW_UP', color: '#795548' },
+            { name: 'Escalate', code: 'ESCALATE', color: '#E91E63' }
+        ],
+        3: [
+            { name: 'Randevu Onay', code: 'APPT_CONF', color: '#4CAF50' },
+            { name: 'Randevu İptal', code: 'APPT_CANC', color: '#f44336' },
+            { name: 'Yeniden Planla', code: 'RESCHEDULE', color: '#FF9800' },
+            { name: 'Ulaşılamadı', code: 'NO_REACH', color: '#607D8B' }
+        ]
+    };
+
+    let currentSetId = null;
+
+    window.openNewSetModal = function() {
+        document.getElementById('setModalTitle').textContent = getCurrentLang() === 'de' ? 'Neues Disposition-Set' : 'Yeni Disposition Seti';
+        document.getElementById('setName').value = '';
+        document.getElementById('setDesc').value = '';
+        document.getElementById('setModal').classList.add('show');
+    };
+
+    window.closeSetModal = function() {
+        document.getElementById('setModal').classList.remove('show');
+    };
+
+    window.editSet = function(id) {
+        document.getElementById('setModalTitle').textContent = getCurrentLang() === 'de' ? 'Set bearbeiten' : 'Set Düzenle';
+        document.getElementById('setModal').classList.add('show');
+        showNotification(getCurrentLang() === 'de' ? 'Set wird geladen...' : 'Set yükleniyor...', 'info');
+    };
+
+    window.saveSet = function() {
+        const name = document.getElementById('setName').value;
+        if (!name) {
+            showNotification(getCurrentLang() === 'de' ? 'Bitte geben Sie einen Namen ein' : 'Lütfen bir ad girin', 'error');
+            return;
+        }
+        showNotification(getCurrentLang() === 'de' ? 'Set erfolgreich gespeichert!' : 'Set başarıyla kaydedildi!', 'success');
+        closeSetModal();
+    };
+
+    window.deleteSet = function(id) {
+        const msg = getCurrentLang() === 'de' ? 'Dieses Set wirklich löschen?' : 'Bu seti silmek istediğinize emin misiniz?';
+        if (confirm(msg)) {
+            showNotification(getCurrentLang() === 'de' ? 'Set gelöscht' : 'Set silindi', 'success');
+        }
+    };
+
+    window.setDefault = function(id) {
+        showNotification(getCurrentLang() === 'de' ? 'Als Standard festgelegt' : 'Varsayılan olarak ayarlandı', 'success');
+    };
+
+    window.viewDispositions = function(id) {
+        currentSetId = id;
+        const setNames = { 
+            1: getCurrentLang() === 'de' ? 'Verkaufsergebnisse' : 'Satış Sonuçları',
+            2: getCurrentLang() === 'de' ? 'Support-Ergebnisse' : 'Destek Sonuçları',
+            3: getCurrentLang() === 'de' ? 'Rückruf-Ergebnisse' : 'Geri Arama Sonuçları'
+        };
+        document.getElementById('dispListTitle').textContent = setNames[id] + ' - Dispositions';
+        
+        const dispositions = dispositionData[id] || [];
+        let html = '';
+        dispositions.forEach(function(d, i) {
+            html += '<div class="disp-item">';
+            html += '<span class="disp-color" style="background:' + d.color + '"></span>';
+            html += '<span class="disp-item-name">' + d.name + '</span>';
+            html += '<span class="disp-item-code">' + d.code + '</span>';
+            html += '<div class="disp-item-actions">';
+            html += '<button class="disp-item-btn edit" onclick="editDisposition(' + i + ')"><i class="ti ti-edit"></i></button>';
+            html += '<button class="disp-item-btn delete" onclick="deleteDisposition(' + i + ')"><i class="ti ti-trash"></i></button>';
+            html += '</div>';
+            html += '</div>';
+        });
+        
+        document.getElementById('dispList').innerHTML = html;
+        document.getElementById('dispListModal').classList.add('show');
+    };
+
+    window.closeDispListModal = function() {
+        document.getElementById('dispListModal').classList.remove('show');
+    };
+
+    window.addNewDisposition = function() {
+        document.getElementById('addDispModal').classList.add('show');
+    };
+
+    window.closeAddDispModal = function() {
+        document.getElementById('addDispModal').classList.remove('show');
+    };
+
+    window.saveDisposition = function() {
+        const name = document.getElementById('dispName').value;
+        const code = document.getElementById('dispCode').value;
+        if (!name || !code) {
+            showNotification(getCurrentLang() === 'de' ? 'Bitte füllen Sie alle Felder aus' : 'Lütfen tüm alanları doldurun', 'error');
+            return;
+        }
+        showNotification(getCurrentLang() === 'de' ? 'Disposition hinzugefügt!' : 'Disposition eklendi!', 'success');
+        closeAddDispModal();
+        viewDispositions(currentSetId);
+    };
+
+    window.editDisposition = function(index) {
+        showNotification(getCurrentLang() === 'de' ? 'Disposition wird bearbeitet...' : 'Disposition düzenleniyor...', 'info');
+    };
+
+    window.deleteDisposition = function(index) {
+        const msg = getCurrentLang() === 'de' ? 'Diese Disposition wirklich löschen?' : 'Bu disposition\'ı silmek istediğinize emin misiniz?';
+        if (confirm(msg)) {
+            showNotification(getCurrentLang() === 'de' ? 'Disposition gelöscht' : 'Disposition silindi', 'success');
+        }
+    };
+
+    const style = document.createElement('style');
+    style.textContent = '@keyframes slideIn{from{transform:translateX(100%);opacity:0}to{transform:translateX(0);opacity:1}}';
+    document.head.appendChild(style);
+})();
+</script>
+{% endblock %}
