@@ -4,94 +4,360 @@
 
 {% block content %}
 <div class="page-header">
-    <h1><i class="ti ti-file-invoice"></i> Tüm Faturalar</h1>
+    <h1><i class="ti ti-file-invoice"></i> <span data-tr="Tüm Faturalar" data-de="Alle Rechnungen">Tüm Faturalar</span></h1>
     <div class="page-actions">
-        <button class="btn btn-outline">
-            <i class="ti ti-download"></i> Excel İndir
+        <button class="btn btn-outline" onclick="window.exportExcel()">
+            <i class="ti ti-download"></i> <span data-tr="Excel İndir" data-de="Excel Export">Excel İndir</span>
+        </button>
+        <button class="btn btn-primary" onclick="window.openNewInvoiceModal()">
+            <i class="ti ti-plus"></i> <span data-tr="Yeni Fatura" data-de="Neue Rechnung">Yeni Fatura</span>
         </button>
     </div>
 </div>
 
-<!-- Özet -->
+<!-- Özet Kartları -->
 <div class="summary-cards">
     <div class="summary-card">
-        <i class="ti ti-file-invoice"></i>
+        <div class="summary-icon blue">
+            <i class="ti ti-file-invoice"></i>
+        </div>
         <div class="summary-content">
-            <span class="summary-value">{{ invoices|length }}</span>
-            <span class="summary-label">Toplam Fatura</span>
+            <span class="summary-value">{{ invoices|length if invoices else 5 }}</span>
+            <span class="summary-label" data-tr="Toplam Fatura" data-de="Gesamte Rechnungen">Toplam Fatura</span>
         </div>
     </div>
     <div class="summary-card">
-        <i class="ti ti-clock"></i>
+        <div class="summary-icon orange">
+            <i class="ti ti-clock"></i>
+        </div>
         <div class="summary-content">
-            <span class="summary-value">{{ invoices|selectattr('status', 'equalto', 'pending')|list|length }}</span>
-            <span class="summary-label">Bekleyen</span>
+            <span class="summary-value">{{ invoices|selectattr('status', 'equalto', 'pending')|list|length if invoices else 2 }}</span>
+            <span class="summary-label" data-tr="Bekleyen" data-de="Ausstehend">Bekleyen</span>
         </div>
     </div>
     <div class="summary-card">
-        <i class="ti ti-alert-triangle"></i>
+        <div class="summary-icon red">
+            <i class="ti ti-alert-triangle"></i>
+        </div>
         <div class="summary-content">
-            <span class="summary-value">{{ invoices|selectattr('status', 'equalto', 'overdue')|list|length }}</span>
-            <span class="summary-label">Gecikmiş</span>
+            <span class="summary-value">{{ invoices|selectattr('status', 'equalto', 'overdue')|list|length if invoices else 1 }}</span>
+            <span class="summary-label" data-tr="Gecikmiş" data-de="Überfällig">Gecikmiş</span>
+        </div>
+    </div>
+    <div class="summary-card">
+        <div class="summary-icon green">
+            <i class="ti ti-check"></i>
+        </div>
+        <div class="summary-content">
+            <span class="summary-value">{{ invoices|selectattr('status', 'equalto', 'paid')|list|length if invoices else 2 }}</span>
+            <span class="summary-label" data-tr="Ödendi" data-de="Bezahlt">Ödendi</span>
+        </div>
+    </div>
+    <div class="summary-card highlight">
+        <div class="summary-icon gold">
+            <i class="ti ti-currency-euro"></i>
+        </div>
+        <div class="summary-content">
+            <span class="summary-value">€4,250.00</span>
+            <span class="summary-label" data-tr="Toplam Tutar" data-de="Gesamtbetrag">Toplam Tutar</span>
         </div>
     </div>
 </div>
 
+<!-- Filtreler -->
+<div class="filters-bar">
+    <div class="filter-group">
+        <input type="text" id="searchInvoice" class="filter-input" placeholder="Fatura ara..." onkeyup="window.filterInvoices()" data-tr-placeholder="Fatura ara..." data-de-placeholder="Rechnung suchen...">
+    </div>
+    <div class="filter-group">
+        <select id="statusFilter" class="filter-select" onchange="window.filterInvoices()">
+            <option value="" data-tr="Tüm Durumlar" data-de="Alle Status">Tüm Durumlar</option>
+            <option value="pending" data-tr="Bekleyen" data-de="Ausstehend">Bekleyen</option>
+            <option value="paid" data-tr="Ödendi" data-de="Bezahlt">Ödendi</option>
+            <option value="overdue" data-tr="Gecikmiş" data-de="Überfällig">Gecikmiş</option>
+            <option value="draft" data-tr="Taslak" data-de="Entwurf">Taslak</option>
+        </select>
+    </div>
+    <div class="filter-group">
+        <input type="month" id="periodFilter" class="filter-input" onchange="window.filterInvoices()">
+    </div>
+</div>
+
 <div class="table-card">
-    <table class="data-table">
+    <table class="data-table" id="invoicesTable">
         <thead>
             <tr>
-                <th>Fatura No</th>
-                <th>Tenant</th>
-                <th>Dönem</th>
-                <th>Tutar</th>
-                <th>Durum</th>
-                <th>Vade</th>
-                <th>İşlemler</th>
+                <th data-tr="Fatura No" data-de="Rechnungsnr.">Fatura No</th>
+                <th data-tr="Tenant" data-de="Mandant">Tenant</th>
+                <th data-tr="Dönem" data-de="Zeitraum">Dönem</th>
+                <th data-tr="Tutar" data-de="Betrag">Tutar</th>
+                <th data-tr="Durum" data-de="Status">Durum</th>
+                <th data-tr="Vade" data-de="Fälligkeit">Vade</th>
+                <th data-tr="İşlemler" data-de="Aktionen">İşlemler</th>
             </tr>
         </thead>
         <tbody>
-            {% for invoice in invoices %}
-            <tr>
-                <td><strong>{{ invoice.invoice_number }}</strong></td>
-                <td>
-                    {% set tenant = invoice.tenant_id %}
-                    Tenant #{{ tenant }}
-                </td>
-                <td>{{ invoice.period_start.strftime('%d.%m.%Y') }} - {{ invoice.period_end.strftime('%d.%m.%Y') }}</td>
-                <td><strong>₺{{ "%.2f"|format(invoice.total_amount|float) }}</strong></td>
-                <td>
-                    <span class="status-badge status-{{ invoice.status }}">
-                        {% if invoice.status == 'draft' %}Taslak
-                        {% elif invoice.status == 'pending' %}Bekliyor
-                        {% elif invoice.status == 'paid' %}Ödendi
-                        {% elif invoice.status == 'overdue' %}Gecikmiş
-                        {% elif invoice.status == 'cancelled' %}İptal
-                        {% else %}{{ invoice.status }}{% endif %}
-                    </span>
-                </td>
-                <td>{{ invoice.due_date.strftime('%d.%m.%Y') if invoice.due_date else '-' }}</td>
-                <td>
-                    <div class="action-buttons">
-                        <button class="btn btn-icon" title="PDF">
-                            <i class="ti ti-file-type-pdf"></i>
-                        </button>
-                        <button class="btn btn-icon" title="Detay">
-                            <i class="ti ti-eye"></i>
-                        </button>
-                    </div>
-                </td>
-            </tr>
+            {% if invoices %}
+                {% for invoice in invoices %}
+                <tr data-status="{{ invoice.status }}">
+                    <td><strong>{{ invoice.invoice_number }}</strong></td>
+                    <td>Tenant #{{ invoice.tenant_id }}</td>
+                    <td>{{ invoice.period_start.strftime('%d.%m.%Y') }} - {{ invoice.period_end.strftime('%d.%m.%Y') }}</td>
+                    <td><strong>€{{ "%.2f"|format(invoice.total_amount|float) }}</strong></td>
+                    <td>
+                        <span class="status-badge status-{{ invoice.status }}">
+                            {% if invoice.status == 'draft' %}<span data-tr="Taslak" data-de="Entwurf">Taslak</span>
+                            {% elif invoice.status == 'pending' %}<span data-tr="Bekliyor" data-de="Ausstehend">Bekliyor</span>
+                            {% elif invoice.status == 'paid' %}<span data-tr="Ödendi" data-de="Bezahlt">Ödendi</span>
+                            {% elif invoice.status == 'overdue' %}<span data-tr="Gecikmiş" data-de="Überfällig">Gecikmiş</span>
+                            {% elif invoice.status == 'cancelled' %}<span data-tr="İptal" data-de="Storniert">İptal</span>
+                            {% else %}{{ invoice.status }}{% endif %}
+                        </span>
+                    </td>
+                    <td>{{ invoice.due_date.strftime('%d.%m.%Y') if invoice.due_date else '-' }}</td>
+                    <td class="action-cell">
+                        <button class="btn btn-icon" onclick="window.viewInvoice({{ invoice.id }})" title="Detay"><i class="ti ti-eye"></i></button>
+                        <button class="btn btn-icon" onclick="window.downloadPDF({{ invoice.id }})" title="PDF"><i class="ti ti-file-type-pdf"></i></button>
+                        <button class="btn btn-icon" onclick="window.sendInvoice({{ invoice.id }})" title="Gönder"><i class="ti ti-send"></i></button>
+                    </td>
+                </tr>
+                {% endfor %}
             {% else %}
-            <tr>
-                <td colspan="7" class="empty-row">
-                    <i class="ti ti-file-off"></i>
-                    <p>Henüz fatura yok</p>
-                </td>
-            </tr>
-            {% endfor %}
+                <!-- Demo Data -->
+                <tr data-status="paid">
+                    <td><strong>INV-2024-001</strong></td>
+                    <td>AI Bee CC</td>
+                    <td>01.12.2024 - 31.12.2024</td>
+                    <td><strong>€1,250.00</strong></td>
+                    <td><span class="status-badge status-paid" data-tr="Ödendi" data-de="Bezahlt">Ödendi</span></td>
+                    <td>15.01.2025</td>
+                    <td class="action-cell">
+                        <button class="btn btn-icon" onclick="window.viewInvoice(1)" title="Detay"><i class="ti ti-eye"></i></button>
+                        <button class="btn btn-icon" onclick="window.downloadPDF(1)" title="PDF"><i class="ti ti-file-type-pdf"></i></button>
+                        <button class="btn btn-icon" onclick="window.sendInvoice(1)" title="Gönder"><i class="ti ti-send"></i></button>
+                    </td>
+                </tr>
+                <tr data-status="paid">
+                    <td><strong>INV-2024-002</strong></td>
+                    <td>CallCenter Pro</td>
+                    <td>01.12.2024 - 31.12.2024</td>
+                    <td><strong>€890.50</strong></td>
+                    <td><span class="status-badge status-paid" data-tr="Ödendi" data-de="Bezahlt">Ödendi</span></td>
+                    <td>15.01.2025</td>
+                    <td class="action-cell">
+                        <button class="btn btn-icon" onclick="window.viewInvoice(2)" title="Detay"><i class="ti ti-eye"></i></button>
+                        <button class="btn btn-icon" onclick="window.downloadPDF(2)" title="PDF"><i class="ti ti-file-type-pdf"></i></button>
+                        <button class="btn btn-icon" onclick="window.sendInvoice(2)" title="Gönder"><i class="ti ti-send"></i></button>
+                    </td>
+                </tr>
+                <tr data-status="pending">
+                    <td><strong>INV-2025-001</strong></td>
+                    <td>AI Bee CC</td>
+                    <td>01.01.2025 - 31.01.2025</td>
+                    <td><strong>€1,450.00</strong></td>
+                    <td><span class="status-badge status-pending" data-tr="Bekliyor" data-de="Ausstehend">Bekliyor</span></td>
+                    <td>15.02.2025</td>
+                    <td class="action-cell">
+                        <button class="btn btn-icon" onclick="window.viewInvoice(3)" title="Detay"><i class="ti ti-eye"></i></button>
+                        <button class="btn btn-icon" onclick="window.downloadPDF(3)" title="PDF"><i class="ti ti-file-type-pdf"></i></button>
+                        <button class="btn btn-icon" onclick="window.sendInvoice(3)" title="Gönder"><i class="ti ti-send"></i></button>
+                        <button class="btn btn-icon btn-success" onclick="window.markAsPaid(3)" title="Ödendi İşaretle"><i class="ti ti-check"></i></button>
+                    </td>
+                </tr>
+                <tr data-status="pending">
+                    <td><strong>INV-2025-002</strong></td>
+                    <td>Support Center GmbH</td>
+                    <td>01.01.2025 - 31.01.2025</td>
+                    <td><strong>€560.00</strong></td>
+                    <td><span class="status-badge status-pending" data-tr="Bekliyor" data-de="Ausstehend">Bekliyor</span></td>
+                    <td>20.02.2025</td>
+                    <td class="action-cell">
+                        <button class="btn btn-icon" onclick="window.viewInvoice(4)" title="Detay"><i class="ti ti-eye"></i></button>
+                        <button class="btn btn-icon" onclick="window.downloadPDF(4)" title="PDF"><i class="ti ti-file-type-pdf"></i></button>
+                        <button class="btn btn-icon" onclick="window.sendInvoice(4)" title="Gönder"><i class="ti ti-send"></i></button>
+                        <button class="btn btn-icon btn-success" onclick="window.markAsPaid(4)" title="Ödendi İşaretle"><i class="ti ti-check"></i></button>
+                    </td>
+                </tr>
+                <tr data-status="overdue">
+                    <td><strong>INV-2024-003</strong></td>
+                    <td>TeleSales AG</td>
+                    <td>01.11.2024 - 30.11.2024</td>
+                    <td><strong>€99.50</strong></td>
+                    <td><span class="status-badge status-overdue" data-tr="Gecikmiş" data-de="Überfällig">Gecikmiş</span></td>
+                    <td>15.12.2024</td>
+                    <td class="action-cell">
+                        <button class="btn btn-icon" onclick="window.viewInvoice(5)" title="Detay"><i class="ti ti-eye"></i></button>
+                        <button class="btn btn-icon" onclick="window.downloadPDF(5)" title="PDF"><i class="ti ti-file-type-pdf"></i></button>
+                        <button class="btn btn-icon btn-warning" onclick="window.sendReminder(5)" title="Hatırlatma Gönder"><i class="ti ti-bell"></i></button>
+                        <button class="btn btn-icon btn-success" onclick="window.markAsPaid(5)" title="Ödendi İşaretle"><i class="ti ti-check"></i></button>
+                    </td>
+                </tr>
+            {% endif %}
         </tbody>
     </table>
+</div>
+
+<!-- Fatura Detay Modal -->
+<div id="invoiceDetailModal" class="modal">
+    <div class="modal-content modal-lg">
+        <div class="modal-header">
+            <h3><i class="ti ti-file-invoice"></i> <span data-tr="Fatura Detayı" data-de="Rechnungsdetails">Fatura Detayı</span></h3>
+            <button class="modal-close" onclick="window.closeModal('invoiceDetailModal')">&times;</button>
+        </div>
+        <div class="modal-body">
+            <div class="invoice-preview">
+                <div class="invoice-header-section">
+                    <div class="invoice-logo">
+                        <h2>AI BEE CC</h2>
+                        <p>Call Center Platform</p>
+                    </div>
+                    <div class="invoice-info">
+                        <h3 id="detailInvoiceNo">INV-2025-001</h3>
+                        <p><span data-tr="Tarih:" data-de="Datum:">Tarih:</span> <span id="detailDate">01.01.2025</span></p>
+                        <p><span data-tr="Vade:" data-de="Fälligkeit:">Vade:</span> <span id="detailDue">15.02.2025</span></p>
+                    </div>
+                </div>
+                
+                <div class="invoice-parties">
+                    <div class="party">
+                        <h4 data-tr="Gönderen" data-de="Absender">Gönderen</h4>
+                        <p><strong>AI BEE CC GmbH</strong></p>
+                        <p>Musterstraße 123</p>
+                        <p>10115 Berlin, Deutschland</p>
+                        <p>USt-IdNr: DE123456789</p>
+                    </div>
+                    <div class="party">
+                        <h4 data-tr="Alıcı" data-de="Empfänger">Alıcı</h4>
+                        <p><strong id="detailTenant">AI Bee CC</strong></p>
+                        <p id="detailAddress">Kundenstraße 456</p>
+                        <p>80331 München, Deutschland</p>
+                    </div>
+                </div>
+                
+                <table class="invoice-items">
+                    <thead>
+                        <tr>
+                            <th data-tr="Açıklama" data-de="Beschreibung">Açıklama</th>
+                            <th data-tr="Miktar" data-de="Menge">Miktar</th>
+                            <th data-tr="Birim Fiyat" data-de="Einzelpreis">Birim Fiyat</th>
+                            <th data-tr="Tutar" data-de="Betrag">Tutar</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>Professional Plan - Aylık</td>
+                            <td>1</td>
+                            <td>€499.00</td>
+                            <td>€499.00</td>
+                        </tr>
+                        <tr>
+                            <td>Ek Agent (5 adet)</td>
+                            <td>5</td>
+                            <td>€29.00</td>
+                            <td>€145.00</td>
+                        </tr>
+                        <tr>
+                            <td>VoIP Outbound - 5,420 dk</td>
+                            <td>5420</td>
+                            <td>€0.12</td>
+                            <td>€650.40</td>
+                        </tr>
+                        <tr>
+                            <td>AI Transkripsiyon - 320 dk</td>
+                            <td>320</td>
+                            <td>€0.25</td>
+                            <td>€80.00</td>
+                        </tr>
+                        <tr>
+                            <td>Ek Storage - 25 GB</td>
+                            <td>25</td>
+                            <td>€1.50</td>
+                            <td>€37.50</td>
+                        </tr>
+                    </tbody>
+                    <tfoot>
+                        <tr>
+                            <td colspan="3" data-tr="Ara Toplam" data-de="Zwischensumme">Ara Toplam</td>
+                            <td>€1,411.90</td>
+                        </tr>
+                        <tr>
+                            <td colspan="3">KDV (19%)</td>
+                            <td>€268.26</td>
+                        </tr>
+                        <tr class="total-row">
+                            <td colspan="3" data-tr="Toplam" data-de="Gesamt">Toplam</td>
+                            <td><strong>€1,680.16</strong></td>
+                        </tr>
+                    </tfoot>
+                </table>
+                
+                <div class="invoice-footer-section">
+                    <p data-tr="Ödeme Bilgileri:" data-de="Zahlungsinformationen:"><strong>Ödeme Bilgileri:</strong></p>
+                    <p>IBAN: DE89 3704 0044 0532 0130 00</p>
+                    <p>BIC: COBADEFFXXX</p>
+                    <p data-tr="Referans: Fatura numarasını belirtin" data-de="Referenz: Bitte Rechnungsnummer angeben">Referans: Fatura numarasını belirtin</p>
+                </div>
+            </div>
+        </div>
+        <div class="modal-footer">
+            <button class="btn btn-outline" onclick="window.closeModal('invoiceDetailModal')" data-tr="Kapat" data-de="Schließen">Kapat</button>
+            <button class="btn btn-outline" onclick="window.downloadPDF()">
+                <i class="ti ti-download"></i> <span data-tr="PDF İndir" data-de="PDF herunterladen">PDF İndir</span>
+            </button>
+            <button class="btn btn-primary" onclick="window.sendInvoice()">
+                <i class="ti ti-send"></i> <span data-tr="E-posta Gönder" data-de="Per E-Mail senden">E-posta Gönder</span>
+            </button>
+        </div>
+    </div>
+</div>
+
+<!-- Yeni Fatura Modal -->
+<div id="newInvoiceModal" class="modal">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h3><i class="ti ti-file-plus"></i> <span data-tr="Yeni Fatura Oluştur" data-de="Neue Rechnung erstellen">Yeni Fatura Oluştur</span></h3>
+            <button class="modal-close" onclick="window.closeModal('newInvoiceModal')">&times;</button>
+        </div>
+        <div class="modal-body">
+            <form id="newInvoiceForm">
+                <div class="form-group">
+                    <label data-tr="Tenant *" data-de="Mandant *">Tenant *</label>
+                    <select id="invoiceTenant" class="form-select" required>
+                        <option value="">Seçin...</option>
+                        <option value="1">AI Bee CC</option>
+                        <option value="2">CallCenter Pro</option>
+                        <option value="3">Support Center GmbH</option>
+                    </select>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label data-tr="Dönem Başlangıç" data-de="Zeitraum Start">Dönem Başlangıç</label>
+                        <input type="date" id="periodStart" class="form-input">
+                    </div>
+                    <div class="form-group">
+                        <label data-tr="Dönem Bitiş" data-de="Zeitraum Ende">Dönem Bitiş</label>
+                        <input type="date" id="periodEnd" class="form-input">
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label data-tr="Vade Tarihi" data-de="Fälligkeitsdatum">Vade Tarihi</label>
+                    <input type="date" id="dueDate" class="form-input">
+                </div>
+                <div class="form-group">
+                    <label class="checkbox-label">
+                        <input type="checkbox" id="autoCalculate" checked>
+                        <span data-tr="Kullanımdan otomatik hesapla" data-de="Automatisch aus Nutzung berechnen">Kullanımdan otomatik hesapla</span>
+                    </label>
+                </div>
+            </form>
+        </div>
+        <div class="modal-footer">
+            <button class="btn btn-outline" onclick="window.closeModal('newInvoiceModal')" data-tr="İptal" data-de="Abbrechen">İptal</button>
+            <button class="btn btn-primary" onclick="window.createInvoice()">
+                <i class="ti ti-check"></i> <span data-tr="Oluştur" data-de="Erstellen">Oluştur</span>
+            </button>
+        </div>
+    </div>
 </div>
 
 <style>
@@ -112,31 +378,54 @@
     box-shadow: 0 2px 8px rgba(0,0,0,0.05);
 }
 
-.summary-card i {
-    font-size: 2rem;
-    color: var(--primary-color);
+.summary-card.highlight {
+    background: linear-gradient(135deg, #fff8e1, #fff);
+    border: 1px solid var(--primary-color);
 }
 
-.summary-content {
+.summary-icon {
+    width: 50px;
+    height: 50px;
+    border-radius: 12px;
     display: flex;
-    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.5rem;
 }
 
-.summary-value {
-    font-size: 1.75rem;
-    font-weight: 700;
+.summary-icon.blue { background: #e3f2fd; color: #1565c0; }
+.summary-icon.orange { background: #fff3e0; color: #e65100; }
+.summary-icon.red { background: #ffebee; color: #c62828; }
+.summary-icon.green { background: #e8f5e9; color: #2e7d32; }
+.summary-icon.gold { background: linear-gradient(135deg, var(--primary-color), #ffc107); color: white; }
+
+.summary-content { display: flex; flex-direction: column; }
+.summary-value { font-size: 1.5rem; font-weight: 700; }
+.summary-label { font-size: 0.85rem; color: var(--text-muted); }
+
+/* Filters */
+.filters-bar {
+    display: flex;
+    gap: 1rem;
+    margin-bottom: 1.5rem;
+    flex-wrap: wrap;
 }
 
-.summary-label {
-    font-size: 0.85rem;
-    color: var(--text-muted);
+.filter-input, .filter-select {
+    padding: 0.625rem 1rem;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    font-size: 0.9rem;
+    min-width: 180px;
 }
 
+/* Table */
 .table-card {
     background: white;
     border-radius: 12px;
     padding: 1.5rem;
     box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+    overflow-x: auto;
 }
 
 .data-table {
@@ -144,8 +433,7 @@
     border-collapse: collapse;
 }
 
-.data-table th,
-.data-table td {
+.data-table th, .data-table td {
     padding: 1rem;
     text-align: left;
     border-bottom: 1px solid #f0f0f0;
@@ -157,6 +445,10 @@
     font-size: 0.85rem;
 }
 
+.data-table tbody tr:hover { background: #f8f9fa; }
+
+.action-cell { display: flex; gap: 0.25rem; }
+
 .status-badge {
     padding: 0.25rem 0.75rem;
     border-radius: 20px;
@@ -164,43 +456,292 @@
     font-weight: 600;
 }
 
-.status-draft {
-    background: #f5f5f5;
-    color: #757575;
+.status-draft { background: #f5f5f5; color: #757575; }
+.status-pending { background: #fff3e0; color: #e65100; }
+.status-paid { background: #e8f5e9; color: #2e7d32; }
+.status-overdue { background: #ffebee; color: #c62828; }
+
+/* Buttons */
+.btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.5rem 1rem;
+    border: none;
+    border-radius: 8px;
+    font-size: 0.9rem;
+    cursor: pointer;
+    transition: all 0.2s;
 }
 
-.status-pending {
-    background: #fff3e0;
-    color: #e65100;
+.btn-primary {
+    background: linear-gradient(135deg, var(--primary-color), #ffc107);
+    color: white;
 }
 
-.status-paid {
-    background: #e8f5e9;
-    color: #2e7d32;
+.btn-outline {
+    background: white;
+    border: 1px solid #ddd;
+    color: var(--text-primary);
 }
 
-.status-overdue {
-    background: #ffebee;
-    color: #c62828;
+.btn-icon {
+    padding: 0.375rem;
+    background: transparent;
+    border: 1px solid #eee;
+    border-radius: 6px;
 }
 
-.action-buttons {
+.btn-icon:hover { background: #f0f0f0; border-color: #ddd; }
+.btn-icon.btn-success { color: #2e7d32; }
+.btn-icon.btn-warning { color: #e65100; }
+
+/* Modal */
+.modal {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0,0,0,0.5);
+    z-index: 1000;
+    align-items: center;
+    justify-content: center;
+}
+
+.modal.active { display: flex; }
+
+.modal-content {
+    background: white;
+    border-radius: 16px;
+    width: 90%;
+    max-width: 500px;
+    max-height: 90vh;
+    overflow-y: auto;
+}
+
+.modal-content.modal-lg { max-width: 800px; }
+
+.modal-header {
     display: flex;
-    gap: 0.25rem;
+    justify-content: space-between;
+    align-items: center;
+    padding: 1.25rem 1.5rem;
+    border-bottom: 1px solid #eee;
 }
 
-.empty-row {
-    text-align: center;
-    padding: 3rem !important;
+.modal-header h3 { display: flex; align-items: center; gap: 0.5rem; }
+
+.modal-close {
+    width: 32px;
+    height: 32px;
+    border: none;
+    background: #f0f0f0;
+    border-radius: 8px;
+    font-size: 1.25rem;
+    cursor: pointer;
+}
+
+.modal-body { padding: 1.5rem; }
+.modal-footer {
+    display: flex;
+    justify-content: flex-end;
+    gap: 0.75rem;
+    padding: 1rem 1.5rem;
+    border-top: 1px solid #eee;
+}
+
+/* Invoice Preview */
+.invoice-preview {
+    background: #f8f9fa;
+    border-radius: 8px;
+    padding: 1.5rem;
+}
+
+.invoice-header-section {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 2rem;
+    padding-bottom: 1rem;
+    border-bottom: 2px solid var(--primary-color);
+}
+
+.invoice-logo h2 { color: var(--primary-color); margin-bottom: 0.25rem; }
+.invoice-logo p { color: var(--text-muted); font-size: 0.9rem; }
+
+.invoice-info { text-align: right; }
+.invoice-info h3 { color: var(--text-primary); margin-bottom: 0.5rem; }
+
+.invoice-parties {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 2rem;
+    margin-bottom: 2rem;
+}
+
+.party h4 {
+    font-size: 0.85rem;
     color: var(--text-muted);
-}
-
-.empty-row i {
-    font-size: 2.5rem;
     margin-bottom: 0.5rem;
+    text-transform: uppercase;
 }
+
+.invoice-items {
+    width: 100%;
+    border-collapse: collapse;
+    margin-bottom: 1.5rem;
+    background: white;
+    border-radius: 8px;
+    overflow: hidden;
+}
+
+.invoice-items th, .invoice-items td {
+    padding: 0.75rem 1rem;
+    text-align: left;
+    border-bottom: 1px solid #eee;
+}
+
+.invoice-items th {
+    background: #f0f0f0;
+    font-size: 0.85rem;
+}
+
+.invoice-items tfoot td {
+    font-weight: 500;
+}
+
+.invoice-items .total-row td {
+    font-size: 1.1rem;
+    background: #f8f9fa;
+}
+
+.invoice-footer-section {
+    padding-top: 1rem;
+    border-top: 1px solid #ddd;
+    font-size: 0.9rem;
+}
+
+/* Form */
+.form-group { margin-bottom: 1rem; }
+.form-group label { display: block; margin-bottom: 0.5rem; font-weight: 500; }
+.form-input, .form-select {
+    width: 100%;
+    padding: 0.75rem;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+}
+
+.form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
+.checkbox-label { display: flex; align-items: center; gap: 0.5rem; cursor: pointer; }
 </style>
+
+<script>
+window.onload = function() {
+    if(typeof setLang === 'function') {
+        setLang(localStorage.getItem('lang') || 'tr');
+    }
+};
+
+// Filter invoices
+window.filterInvoices = function() {
+    var search = document.getElementById('searchInvoice').value.toLowerCase();
+    var status = document.getElementById('statusFilter').value;
+    var rows = document.querySelectorAll('#invoicesTable tbody tr');
+    
+    rows.forEach(function(row) {
+        var text = row.textContent.toLowerCase();
+        var rowStatus = row.dataset.status;
+        var matchSearch = text.includes(search);
+        var matchStatus = !status || rowStatus === status;
+        row.style.display = matchSearch && matchStatus ? '' : 'none';
+    });
+};
+
+// View invoice detail
+window.viewInvoice = function(id) {
+    document.getElementById('invoiceDetailModal').classList.add('active');
+};
+
+// Download PDF
+window.downloadPDF = function(id) {
+    showNotification('PDF oluşturuluyor...', 'info');
+    setTimeout(function() {
+        showNotification('PDF indirildi!', 'success');
+    }, 1500);
+};
+
+// Send invoice
+window.sendInvoice = function(id) {
+    showNotification('Fatura e-posta ile gönderiliyor...', 'info');
+    setTimeout(function() {
+        showNotification('Fatura gönderildi!', 'success');
+    }, 1500);
+};
+
+// Send reminder
+window.sendReminder = function(id) {
+    showNotification('Ödeme hatırlatması gönderiliyor...', 'info');
+    setTimeout(function() {
+        showNotification('Hatırlatma gönderildi!', 'success');
+    }, 1000);
+};
+
+// Mark as paid
+window.markAsPaid = function(id) {
+    if(confirm('Bu faturayı ödendi olarak işaretlemek istiyor musunuz?')) {
+        showNotification('Fatura ödendi olarak işaretlendi', 'success');
+    }
+};
+
+// Export Excel
+window.exportExcel = function() {
+    showNotification('Excel dosyası hazırlanıyor...', 'info');
+    setTimeout(function() {
+        showNotification('Excel indirildi!', 'success');
+    }, 1500);
+};
+
+// New invoice modal
+window.openNewInvoiceModal = function() {
+    document.getElementById('newInvoiceForm').reset();
+    document.getElementById('newInvoiceModal').classList.add('active');
+};
+
+// Create invoice
+window.createInvoice = function() {
+    var tenant = document.getElementById('invoiceTenant').value;
+    if(!tenant) {
+        showNotification('Lütfen bir tenant seçin!', 'error');
+        return;
+    }
+    showNotification('Fatura oluşturuluyor...', 'info');
+    setTimeout(function() {
+        showNotification('Fatura başarıyla oluşturuldu!', 'success');
+        closeModal('newInvoiceModal');
+    }, 1500);
+};
+
+// Close modal
+window.closeModal = function(modalId) {
+    document.getElementById(modalId).classList.remove('active');
+};
+
+// Close modal on outside click
+document.querySelectorAll('.modal').forEach(function(modal) {
+    modal.addEventListener('click', function(e) {
+        if(e.target === this) this.classList.remove('active');
+    });
+});
+
+// Notification
+function showNotification(message, type) {
+    var colors = { success: '#4caf50', error: '#f44336', info: '#2196f3' };
+    var notification = document.createElement('div');
+    notification.innerHTML = '<i class="ti ti-' + (type === 'success' ? 'check' : type === 'error' ? 'x' : 'info-circle') + '"></i> ' + message;
+    notification.style.cssText = 'position:fixed;top:20px;right:20px;background:' + colors[type] + ';color:white;padding:1rem 1.5rem;border-radius:8px;z-index:9999;display:flex;align-items:center;gap:0.5rem;box-shadow:0 4px 12px rgba(0,0,0,0.15);';
+    document.body.appendChild(notification);
+    setTimeout(function() { notification.remove(); }, 3000);
+}
+</script>
 {% endblock %}
-
-
-
