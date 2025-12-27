@@ -672,8 +672,40 @@
         </div>
         <a class="btn btn-primary" href="{{ url_for('admin_user_new') }}">
             <i class="ti ti-plus"></i>
-            <span data-tr="Yeni Kullan??c??" data-de="Neuer Benutzer">Yeni Kullan??c??</span>
+            <span data-tr="Yeni Kullanıcı" data-de="Neuer Benutzer">Yeni Kullanıcı</span>
         </a>
+    </div>
+
+    <!-- Stats -->
+    <div class="stats-row">
+        <div class="stat-card">
+            <div class="stat-icon blue"><i class="ti ti-users"></i></div>
+            <div>
+                <div class="stat-value">{{ users|length if users else 0 }}</div>
+                <div class="stat-label" data-tr="Toplam Kullanıcı" data-de="Gesamt Benutzer">Toplam Kullanıcı</div>
+            </div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-icon green"><i class="ti ti-user-check"></i></div>
+            <div>
+                <div class="stat-value">{{ users|selectattr('is_active', 'equalto', true)|list|length if users else 0 }}</div>
+                <div class="stat-label" data-tr="Aktif" data-de="Aktiv">Aktif</div>
+            </div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-icon orange"><i class="ti ti-headset"></i></div>
+            <div>
+                <div class="stat-value">{{ users|selectattr('role', 'equalto', 'agent')|list|length if users else 0 }}</div>
+                <div class="stat-label" data-tr="Agent" data-de="Agenten">Agent</div>
+            </div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-icon purple"><i class="ti ti-shield"></i></div>
+            <div>
+                <div class="stat-value">{{ users|selectattr('role', 'in', ['admin', 'super_admin'])|list|length if users else 0 }}</div>
+                <div class="stat-label" data-tr="Admin" data-de="Admin">Admin</div>
+            </div>
+        </div>
     </div>
 
     <!-- Filters -->
@@ -681,10 +713,10 @@
         <input type="text" id="searchInput" onkeyup="filterUsers()" placeholder="Benutzer suchen..."
                data-tr-placeholder="Kullanıcı ara..." data-de-placeholder="Benutzer suchen...">
         {% if tenants %}
-        <select id=\"tenantFilter\" onchange=\"applyTenantFilter()\">
-            <option value=\"\" data-tr=\"T??m CC\" data-de=\"Alle CC\">T??m CC</option>
+        <select id="tenantFilter" onchange="applyTenantFilter()">
+            <option value="" data-tr="Tüm CC" data-de="Alle CC">Tüm CC</option>
             {% for t in tenants %}
-            <option value=\"{{ t.id }}\" {% if selected_tenant_id and t.id == selected_tenant_id %}selected{% endif %}>{{ t.name }} ({{ t.code }})</option>
+            <option value="{{ t.id }}" {% if selected_tenant_id and t.id == selected_tenant_id %}selected{% endif %}>{{ t.name }} ({{ t.code }})</option>
             {% endfor %}
         </select>
         {% endif %}
@@ -713,7 +745,7 @@
                 <tr>
                     <th data-tr="Kullanıcı" data-de="Benutzer">Kullanıcı</th>
                     <th data-tr="E-posta" data-de="E-Mail">E-posta</th>
-                    {% if tenants %}<th data-tr=\"CC\" data-de=\"CC\">CC</th>{% endif %}
+                    {% if tenants %}<th data-tr="CC" data-de="CC">CC</th>{% endif %}
                     <th data-tr="Rol" data-de="Rolle">Rol</th>
                     <th data-tr="Dahili" data-de="Durchwahl">Dahili</th>
                     <th data-tr="Durum" data-de="Status">Durum</th>
@@ -1359,6 +1391,17 @@
         document.getElementById('roleFilter').value = '';
         document.getElementById('statusFilter').value = '';
         filterUsers();
+    };
+
+    window.applyTenantFilter = function() {
+        var select = document.getElementById('tenantFilter');
+        if (!select) return;
+        var tenantId = select.value;
+        if (tenantId) {
+            window.location.href = '{{ url_for("admin_users") }}?tenant_id=' + encodeURIComponent(tenantId);
+        } else {
+            window.location.href = '{{ url_for("admin_users") }}';
+        }
     };
 
     // User Modal
