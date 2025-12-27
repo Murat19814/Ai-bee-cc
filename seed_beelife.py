@@ -45,7 +45,7 @@ def main():
             tenant = Tenant(
                 code='BEELIFE',
                 name='Bee Life Consulting CC',
-                is_active=True,
+                status='active',
                 max_agents=50,
                 max_concurrent_calls=30,
                 created_at=datetime.utcnow()
@@ -73,7 +73,7 @@ def main():
                     tenant_id=tenant.id,
                     sector=proj_data['sector'],
                     campaign_type='outbound',
-                    is_active=True,
+                    status='active',
                     created_at=datetime.utcnow()
                 )
                 db.session.add(project)
