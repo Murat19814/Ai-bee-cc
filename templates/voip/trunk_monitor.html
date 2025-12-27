@@ -1,0 +1,944 @@
+{% extends "base.html" %}
+
+{% block title %}Trunk Monitor & Failover - AI BEE CC{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <h1><i class="ti ti-activity-heartbeat" style="color: var(--primary-color);"></i> <span data-tr="Trunk Monitor & Failover" data-de="Trunk Monitor & Failover">Trunk Monitor & Failover</span></h1>
+    <div class="page-actions">
+        <button class="btn btn-outline" onclick="window.refreshAll()">
+            <i class="ti ti-refresh"></i> <span data-tr="Yenile" data-de="Aktualisieren">Yenile</span>
+        </button>
+        <button class="btn btn-primary" onclick="window.openFailoverSettings()">
+            <i class="ti ti-settings"></i> <span data-tr="Failover Ayarları" data-de="Failover Einstellungen">Failover Ayarları</span>
+        </button>
+    </div>
+</div>
+
+<!-- Genel Durum -->
+<div class="status-overview">
+    <div class="status-card status-healthy">
+        <div class="status-icon">
+            <i class="ti ti-shield-check"></i>
+        </div>
+        <div class="status-info">
+            <span class="status-title" data-tr="Sistem Durumu" data-de="Systemstatus">Sistem Durumu</span>
+            <span class="status-value" data-tr="Tüm Trunk'lar Aktif" data-de="Alle Trunks Aktiv">Tüm Trunk'lar Aktif</span>
+        </div>
+        <div class="status-indicator pulse-green"></div>
+    </div>
+    <div class="status-card">
+        <div class="status-icon blue">
+            <i class="ti ti-phone-call"></i>
+        </div>
+        <div class="status-info">
+            <span class="status-title" data-tr="Aktif Çağrı" data-de="Aktive Anrufe">Aktif Çağrı</span>
+            <span class="status-value" id="activeCallsCount">42</span>
+        </div>
+    </div>
+    <div class="status-card">
+        <div class="status-icon purple">
+            <i class="ti ti-antenna"></i>
+        </div>
+        <div class="status-info">
+            <span class="status-title" data-tr="Toplam Kanal" data-de="Gesamt Kanäle">Toplam Kanal</span>
+            <span class="status-value">120</span>
+        </div>
+    </div>
+    <div class="status-card">
+        <div class="status-icon orange">
+            <i class="ti ti-clock"></i>
+        </div>
+        <div class="status-info">
+            <span class="status-title" data-tr="Uptime" data-de="Betriebszeit">Uptime</span>
+            <span class="status-value">99.98%</span>
+        </div>
+    </div>
+</div>
+
+<!-- Trunk Kartları -->
+<div class="section-title">
+    <h2><i class="ti ti-server"></i> <span data-tr="SIP Trunk Durumları" data-de="SIP Trunk Status">SIP Trunk Durumları</span></h2>
+</div>
+
+<div class="trunk-grid">
+    <!-- Sipgate - Primary -->
+    <div class="trunk-monitor-card priority-1" id="trunk-sipgate">
+        <div class="trunk-header">
+            <div class="trunk-title">
+                <span class="priority-badge">P1</span>
+                <h3>Sipgate</h3>
+                <span class="trunk-role" data-tr="Ana Trunk" data-de="Primär">Ana Trunk</span>
+            </div>
+            <div class="trunk-status online">
+                <i class="ti ti-circle-filled"></i>
+                <span data-tr="Çevrimiçi" data-de="Online">Çevrimiçi</span>
+            </div>
+        </div>
+        
+        <div class="trunk-metrics">
+            <div class="metric">
+                <div class="metric-label" data-tr="Kanal Kullanımı" data-de="Kanalnutzung">Kanal Kullanımı</div>
+                <div class="metric-bar">
+                    <div class="metric-fill" style="width: 65%"></div>
+                </div>
+                <div class="metric-value">39 / 60</div>
+            </div>
+            <div class="metric">
+                <div class="metric-label" data-tr="Gecikme (Latency)" data-de="Latenz">Gecikme (Latency)</div>
+                <div class="metric-value good">24ms <i class="ti ti-check"></i></div>
+            </div>
+            <div class="metric">
+                <div class="metric-label" data-tr="Paket Kaybı" data-de="Paketverlust">Paket Kaybı</div>
+                <div class="metric-value good">0.02% <i class="ti ti-check"></i></div>
+            </div>
+            <div class="metric">
+                <div class="metric-label" data-tr="ASR (Başarı)" data-de="ASR (Erfolg)">ASR (Başarı)</div>
+                <div class="metric-value good">94.5%</div>
+            </div>
+        </div>
+        
+        <div class="trunk-stats">
+            <div class="stat">
+                <span class="stat-value">12,450</span>
+                <span class="stat-label" data-tr="Bugün Çağrı" data-de="Anrufe Heute">Bugün Çağrı</span>
+            </div>
+            <div class="stat">
+                <span class="stat-value">38,420 dk</span>
+                <span class="stat-label" data-tr="Bugün Süre" data-de="Dauer Heute">Bugün Süre</span>
+            </div>
+        </div>
+        
+        <div class="trunk-actions">
+            <button class="btn btn-sm btn-outline" onclick="window.testTrunk('sipgate')">
+                <i class="ti ti-plug"></i> <span data-tr="Test" data-de="Test">Test</span>
+            </button>
+            <button class="btn btn-sm btn-outline" onclick="window.viewTrunkLogs('sipgate')">
+                <i class="ti ti-list"></i> <span data-tr="Loglar" data-de="Logs">Loglar</span>
+            </button>
+            <button class="btn btn-sm btn-warning" onclick="window.pauseTrunk('sipgate')">
+                <i class="ti ti-player-pause"></i> <span data-tr="Duraklat" data-de="Pause">Duraklat</span>
+            </button>
+        </div>
+    </div>
+    
+    <!-- Easybell - Secondary -->
+    <div class="trunk-monitor-card priority-2" id="trunk-easybell">
+        <div class="trunk-header">
+            <div class="trunk-title">
+                <span class="priority-badge">P2</span>
+                <h3>Easybell</h3>
+                <span class="trunk-role" data-tr="Yedek Trunk" data-de="Sekundär">Yedek Trunk</span>
+            </div>
+            <div class="trunk-status online">
+                <i class="ti ti-circle-filled"></i>
+                <span data-tr="Çevrimiçi" data-de="Online">Çevrimiçi</span>
+            </div>
+        </div>
+        
+        <div class="trunk-metrics">
+            <div class="metric">
+                <div class="metric-label" data-tr="Kanal Kullanımı" data-de="Kanalnutzung">Kanal Kullanımı</div>
+                <div class="metric-bar">
+                    <div class="metric-fill" style="width: 25%"></div>
+                </div>
+                <div class="metric-value">10 / 40</div>
+            </div>
+            <div class="metric">
+                <div class="metric-label" data-tr="Gecikme (Latency)" data-de="Latenz">Gecikme (Latency)</div>
+                <div class="metric-value good">32ms <i class="ti ti-check"></i></div>
+            </div>
+            <div class="metric">
+                <div class="metric-label" data-tr="Paket Kaybı" data-de="Paketverlust">Paket Kaybı</div>
+                <div class="metric-value good">0.05% <i class="ti ti-check"></i></div>
+            </div>
+            <div class="metric">
+                <div class="metric-label" data-tr="ASR (Başarı)" data-de="ASR (Erfolg)">ASR (Başarı)</div>
+                <div class="metric-value good">92.8%</div>
+            </div>
+        </div>
+        
+        <div class="trunk-stats">
+            <div class="stat">
+                <span class="stat-value">3,120</span>
+                <span class="stat-label" data-tr="Bugün Çağrı" data-de="Anrufe Heute">Bugün Çağrı</span>
+            </div>
+            <div class="stat">
+                <span class="stat-value">9,850 dk</span>
+                <span class="stat-label" data-tr="Bugün Süre" data-de="Dauer Heute">Bugün Süre</span>
+            </div>
+        </div>
+        
+        <div class="trunk-actions">
+            <button class="btn btn-sm btn-outline" onclick="window.testTrunk('easybell')">
+                <i class="ti ti-plug"></i> <span data-tr="Test" data-de="Test">Test</span>
+            </button>
+            <button class="btn btn-sm btn-outline" onclick="window.viewTrunkLogs('easybell')">
+                <i class="ti ti-list"></i> <span data-tr="Loglar" data-de="Logs">Loglar</span>
+            </button>
+            <button class="btn btn-sm btn-warning" onclick="window.pauseTrunk('easybell')">
+                <i class="ti ti-player-pause"></i> <span data-tr="Duraklat" data-de="Pause">Duraklat</span>
+            </button>
+        </div>
+    </div>
+    
+    <!-- Placetel - Tertiary -->
+    <div class="trunk-monitor-card priority-3" id="trunk-placetel">
+        <div class="trunk-header">
+            <div class="trunk-title">
+                <span class="priority-badge">P3</span>
+                <h3>Placetel</h3>
+                <span class="trunk-role" data-tr="Acil Yedek" data-de="Notfall">Acil Yedek</span>
+            </div>
+            <div class="trunk-status standby">
+                <i class="ti ti-circle-filled"></i>
+                <span data-tr="Beklemede" data-de="Standby">Beklemede</span>
+            </div>
+        </div>
+        
+        <div class="trunk-metrics">
+            <div class="metric">
+                <div class="metric-label" data-tr="Kanal Kullanımı" data-de="Kanalnutzung">Kanal Kullanımı</div>
+                <div class="metric-bar">
+                    <div class="metric-fill" style="width: 0%"></div>
+                </div>
+                <div class="metric-value">0 / 20</div>
+            </div>
+            <div class="metric">
+                <div class="metric-label" data-tr="Gecikme (Latency)" data-de="Latenz">Gecikme (Latency)</div>
+                <div class="metric-value good">28ms <i class="ti ti-check"></i></div>
+            </div>
+            <div class="metric">
+                <div class="metric-label" data-tr="Paket Kaybı" data-de="Paketverlust">Paket Kaybı</div>
+                <div class="metric-value good">0.01% <i class="ti ti-check"></i></div>
+            </div>
+            <div class="metric">
+                <div class="metric-label" data-tr="ASR (Başarı)" data-de="ASR (Erfolg)">ASR (Başarı)</div>
+                <div class="metric-value">-</div>
+            </div>
+        </div>
+        
+        <div class="trunk-stats">
+            <div class="stat">
+                <span class="stat-value">0</span>
+                <span class="stat-label" data-tr="Bugün Çağrı" data-de="Anrufe Heute">Bugün Çağrı</span>
+            </div>
+            <div class="stat">
+                <span class="stat-value">0 dk</span>
+                <span class="stat-label" data-tr="Bugün Süre" data-de="Dauer Heute">Bugün Süre</span>
+            </div>
+        </div>
+        
+        <div class="trunk-actions">
+            <button class="btn btn-sm btn-outline" onclick="window.testTrunk('placetel')">
+                <i class="ti ti-plug"></i> <span data-tr="Test" data-de="Test">Test</span>
+            </button>
+            <button class="btn btn-sm btn-outline" onclick="window.viewTrunkLogs('placetel')">
+                <i class="ti ti-list"></i> <span data-tr="Loglar" data-de="Logs">Loglar</span>
+            </button>
+            <button class="btn btn-sm btn-success" onclick="window.activateTrunk('placetel')">
+                <i class="ti ti-player-play"></i> <span data-tr="Aktifleştir" data-de="Aktivieren">Aktifleştir</span>
+            </button>
+        </div>
+    </div>
+</div>
+
+<!-- Failover Kuralları -->
+<div class="section-title">
+    <h2><i class="ti ti-arrows-exchange"></i> <span data-tr="Failover Kuralları" data-de="Failover Regeln">Failover Kuralları</span></h2>
+</div>
+
+<div class="failover-rules">
+    <div class="rule-card active">
+        <div class="rule-icon"><i class="ti ti-arrow-right"></i></div>
+        <div class="rule-content">
+            <h4 data-tr="Kural 1: Latency Failover" data-de="Regel 1: Latenz Failover">Kural 1: Latency Failover</h4>
+            <p data-tr="Gecikme > 100ms olursa bir sonraki trunk'a geç" data-de="Bei Latenz > 100ms zum nächsten Trunk wechseln">Gecikme > 100ms olursa bir sonraki trunk'a geç</p>
+        </div>
+        <div class="rule-status">
+            <label class="switch">
+                <input type="checkbox" checked>
+                <span class="slider"></span>
+            </label>
+        </div>
+    </div>
+    
+    <div class="rule-card active">
+        <div class="rule-icon"><i class="ti ti-arrow-right"></i></div>
+        <div class="rule-content">
+            <h4 data-tr="Kural 2: Kapasite Failover" data-de="Regel 2: Kapazitäts Failover">Kural 2: Kapasite Failover</h4>
+            <p data-tr="Kanal kullanımı > %90 olursa yük dengeleme yap" data-de="Bei Kanalnutzung > 90% Lastverteilung aktivieren">Kanal kullanımı > %90 olursa yük dengeleme yap</p>
+        </div>
+        <div class="rule-status">
+            <label class="switch">
+                <input type="checkbox" checked>
+                <span class="slider"></span>
+            </label>
+        </div>
+    </div>
+    
+    <div class="rule-card active">
+        <div class="rule-icon"><i class="ti ti-arrow-right"></i></div>
+        <div class="rule-content">
+            <h4 data-tr="Kural 3: Bağlantı Hatası" data-de="Regel 3: Verbindungsfehler">Kural 3: Bağlantı Hatası</h4>
+            <p data-tr="SIP 503/408 hatası alınırsa anında geç" data-de="Bei SIP 503/408 Fehler sofort wechseln">SIP 503/408 hatası alınırsa anında geç</p>
+        </div>
+        <div class="rule-status">
+            <label class="switch">
+                <input type="checkbox" checked>
+                <span class="slider"></span>
+            </label>
+        </div>
+    </div>
+    
+    <div class="rule-card">
+        <div class="rule-icon"><i class="ti ti-arrow-right"></i></div>
+        <div class="rule-content">
+            <h4 data-tr="Kural 4: ASR Failover" data-de="Regel 4: ASR Failover">Kural 4: ASR Failover</h4>
+            <p data-tr="Başarı oranı < %80 düşerse uyarı ver" data-de="Bei Erfolgsrate < 80% Warnung ausgeben">Başarı oranı < %80 düşerse uyarı ver</p>
+        </div>
+        <div class="rule-status">
+            <label class="switch">
+                <input type="checkbox">
+                <span class="slider"></span>
+            </label>
+        </div>
+    </div>
+</div>
+
+<!-- Son Olaylar -->
+<div class="section-title">
+    <h2><i class="ti ti-history"></i> <span data-tr="Son Olaylar" data-de="Letzte Ereignisse">Son Olaylar</span></h2>
+</div>
+
+<div class="events-card">
+    <div class="event-item success">
+        <div class="event-time">14:32:45</div>
+        <div class="event-icon"><i class="ti ti-check"></i></div>
+        <div class="event-content">
+            <span class="event-title">Sipgate</span>
+            <span class="event-desc" data-tr="Bağlantı testi başarılı - 24ms" data-de="Verbindungstest erfolgreich - 24ms">Bağlantı testi başarılı - 24ms</span>
+        </div>
+    </div>
+    <div class="event-item success">
+        <div class="event-time">14:30:12</div>
+        <div class="event-icon"><i class="ti ti-check"></i></div>
+        <div class="event-content">
+            <span class="event-title">Easybell</span>
+            <span class="event-desc" data-tr="Bağlantı testi başarılı - 32ms" data-de="Verbindungstest erfolgreich - 32ms">Bağlantı testi başarılı - 32ms</span>
+        </div>
+    </div>
+    <div class="event-item warning">
+        <div class="event-time">12:45:33</div>
+        <div class="event-icon"><i class="ti ti-alert-triangle"></i></div>
+        <div class="event-content">
+            <span class="event-title">Sipgate</span>
+            <span class="event-desc" data-tr="Kanal kullanımı %85'e ulaştı" data-de="Kanalnutzung erreichte 85%">Kanal kullanımı %85'e ulaştı</span>
+        </div>
+    </div>
+    <div class="event-item info">
+        <div class="event-time">10:15:00</div>
+        <div class="event-icon"><i class="ti ti-info-circle"></i></div>
+        <div class="event-content">
+            <span class="event-title" data-tr="Sistem" data-de="System">Sistem</span>
+            <span class="event-desc" data-tr="Failover kuralları güncellendi" data-de="Failover-Regeln aktualisiert">Failover kuralları güncellendi</span>
+        </div>
+    </div>
+    <div class="event-item success">
+        <div class="event-time">09:00:00</div>
+        <div class="event-icon"><i class="ti ti-power"></i></div>
+        <div class="event-content">
+            <span class="event-title" data-tr="Sistem" data-de="System">Sistem</span>
+            <span class="event-desc" data-tr="Trunk Monitor başlatıldı" data-de="Trunk Monitor gestartet">Trunk Monitor başlatıldı</span>
+        </div>
+    </div>
+</div>
+
+<!-- Failover Ayarları Modal -->
+<div id="failoverModal" class="modal">
+    <div class="modal-content modal-lg">
+        <div class="modal-header">
+            <h3><i class="ti ti-settings"></i> <span data-tr="Failover Ayarları" data-de="Failover Einstellungen">Failover Ayarları</span></h3>
+            <button class="modal-close" onclick="window.closeModal('failoverModal')">&times;</button>
+        </div>
+        <div class="modal-body">
+            <h4 data-tr="Trunk Öncelik Sırası" data-de="Trunk Prioritätsreihenfolge">Trunk Öncelik Sırası</h4>
+            <div class="priority-list" id="priorityList">
+                <div class="priority-item" draggable="true" data-trunk="sipgate">
+                    <i class="ti ti-grip-vertical"></i>
+                    <span class="priority-num">1</span>
+                    <span class="priority-name">Sipgate</span>
+                    <span class="priority-status online">Online</span>
+                </div>
+                <div class="priority-item" draggable="true" data-trunk="easybell">
+                    <i class="ti ti-grip-vertical"></i>
+                    <span class="priority-num">2</span>
+                    <span class="priority-name">Easybell</span>
+                    <span class="priority-status online">Online</span>
+                </div>
+                <div class="priority-item" draggable="true" data-trunk="placetel">
+                    <i class="ti ti-grip-vertical"></i>
+                    <span class="priority-num">3</span>
+                    <span class="priority-name">Placetel</span>
+                    <span class="priority-status standby">Standby</span>
+                </div>
+            </div>
+            
+            <h4 data-tr="Failover Eşikleri" data-de="Failover Schwellenwerte">Failover Eşikleri</h4>
+            <div class="form-row">
+                <div class="form-group">
+                    <label data-tr="Maksimum Latency (ms)" data-de="Maximale Latenz (ms)">Maksimum Latency (ms)</label>
+                    <input type="number" class="form-input" value="100" min="50" max="500">
+                </div>
+                <div class="form-group">
+                    <label data-tr="Maksimum Paket Kaybı (%)" data-de="Maximaler Paketverlust (%)">Maksimum Paket Kaybı (%)</label>
+                    <input type="number" class="form-input" value="2" min="0.1" max="10" step="0.1">
+                </div>
+            </div>
+            <div class="form-row">
+                <div class="form-group">
+                    <label data-tr="Kapasite Eşiği (%)" data-de="Kapazitätsschwelle (%)">Kapasite Eşiği (%)</label>
+                    <input type="number" class="form-input" value="90" min="50" max="100">
+                </div>
+                <div class="form-group">
+                    <label data-tr="Minimum ASR (%)" data-de="Minimale ASR (%)">Minimum ASR (%)</label>
+                    <input type="number" class="form-input" value="80" min="50" max="100">
+                </div>
+            </div>
+            
+            <h4 data-tr="Bildirim Ayarları" data-de="Benachrichtigungseinstellungen">Bildirim Ayarları</h4>
+            <div class="notification-settings">
+                <label class="checkbox-label">
+                    <input type="checkbox" checked>
+                    <span data-tr="Failover gerçekleştiğinde e-posta gönder" data-de="E-Mail senden bei Failover">Failover gerçekleştiğinde e-posta gönder</span>
+                </label>
+                <label class="checkbox-label">
+                    <input type="checkbox" checked>
+                    <span data-tr="Trunk çevrimdışı olduğunda SMS gönder" data-de="SMS senden wenn Trunk offline">Trunk çevrimdışı olduğunda SMS gönder</span>
+                </label>
+                <label class="checkbox-label">
+                    <input type="checkbox" checked>
+                    <span data-tr="Dashboard'da bildirim göster" data-de="Benachrichtigung im Dashboard anzeigen">Dashboard'da bildirim göster</span>
+                </label>
+            </div>
+        </div>
+        <div class="modal-footer">
+            <button class="btn btn-outline" onclick="window.closeModal('failoverModal')" data-tr="İptal" data-de="Abbrechen">İptal</button>
+            <button class="btn btn-primary" onclick="window.saveFailoverSettings()">
+                <i class="ti ti-check"></i> <span data-tr="Kaydet" data-de="Speichern">Kaydet</span>
+            </button>
+        </div>
+    </div>
+</div>
+
+<style>
+.status-overview {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    gap: 1rem;
+    margin-bottom: 2rem;
+}
+
+.status-card {
+    background: white;
+    border-radius: 12px;
+    padding: 1.25rem;
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+}
+
+.status-card.status-healthy {
+    background: linear-gradient(135deg, #e8f5e9, #c8e6c9);
+    border: 1px solid #4caf50;
+}
+
+.status-icon {
+    width: 50px;
+    height: 50px;
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.5rem;
+    background: rgba(255,255,255,0.8);
+    color: #4caf50;
+}
+
+.status-icon.blue { background: #e3f2fd; color: #1565c0; }
+.status-icon.purple { background: #f3e5f5; color: #7b1fa2; }
+.status-icon.orange { background: #fff3e0; color: #e65100; }
+
+.status-info { display: flex; flex-direction: column; flex: 1; }
+.status-title { font-size: 0.85rem; color: var(--text-muted); }
+.status-value { font-size: 1.1rem; font-weight: 600; }
+
+.status-indicator {
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    background: #4caf50;
+}
+
+.pulse-green {
+    animation: pulse-green 2s infinite;
+}
+
+@keyframes pulse-green {
+    0% { box-shadow: 0 0 0 0 rgba(76, 175, 80, 0.7); }
+    70% { box-shadow: 0 0 0 10px rgba(76, 175, 80, 0); }
+    100% { box-shadow: 0 0 0 0 rgba(76, 175, 80, 0); }
+}
+
+.section-title {
+    margin: 2rem 0 1rem;
+}
+
+.section-title h2 {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 1.25rem;
+    color: var(--text-primary);
+}
+
+.trunk-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+    gap: 1.5rem;
+}
+
+.trunk-monitor-card {
+    background: white;
+    border-radius: 16px;
+    padding: 1.5rem;
+    box-shadow: 0 2px 12px rgba(0,0,0,0.08);
+    border-left: 4px solid #ddd;
+}
+
+.trunk-monitor-card.priority-1 { border-left-color: #4caf50; }
+.trunk-monitor-card.priority-2 { border-left-color: #2196f3; }
+.trunk-monitor-card.priority-3 { border-left-color: #ff9800; }
+
+.trunk-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 1.25rem;
+}
+
+.trunk-title { display: flex; align-items: center; gap: 0.75rem; flex-wrap: wrap; }
+.trunk-title h3 { margin: 0; font-size: 1.25rem; }
+
+.priority-badge {
+    background: linear-gradient(135deg, var(--primary-color), #ffc107);
+    color: white;
+    padding: 0.25rem 0.6rem;
+    border-radius: 6px;
+    font-size: 0.75rem;
+    font-weight: 700;
+}
+
+.trunk-role {
+    font-size: 0.8rem;
+    color: var(--text-muted);
+    background: #f5f5f5;
+    padding: 0.2rem 0.5rem;
+    border-radius: 4px;
+}
+
+.trunk-status {
+    display: flex;
+    align-items: center;
+    gap: 0.35rem;
+    font-size: 0.85rem;
+    font-weight: 600;
+}
+
+.trunk-status.online { color: #4caf50; }
+.trunk-status.offline { color: #f44336; }
+.trunk-status.standby { color: #ff9800; }
+
+.trunk-status i { font-size: 0.6rem; }
+
+.trunk-metrics {
+    display: grid;
+    gap: 0.75rem;
+    margin-bottom: 1.25rem;
+}
+
+.metric {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+}
+
+.metric-label {
+    font-size: 0.85rem;
+    color: var(--text-muted);
+    min-width: 130px;
+}
+
+.metric-bar {
+    flex: 1;
+    height: 8px;
+    background: #eee;
+    border-radius: 4px;
+    overflow: hidden;
+}
+
+.metric-fill {
+    height: 100%;
+    background: linear-gradient(90deg, #4caf50, #8bc34a);
+    border-radius: 4px;
+    transition: width 0.3s;
+}
+
+.metric-value {
+    font-size: 0.9rem;
+    font-weight: 600;
+    min-width: 80px;
+    text-align: right;
+}
+
+.metric-value.good { color: #4caf50; }
+.metric-value.warning { color: #ff9800; }
+.metric-value.bad { color: #f44336; }
+
+.trunk-stats {
+    display: flex;
+    gap: 2rem;
+    padding: 1rem 0;
+    border-top: 1px solid #eee;
+    border-bottom: 1px solid #eee;
+    margin-bottom: 1rem;
+}
+
+.stat { display: flex; flex-direction: column; }
+.stat-value { font-size: 1.25rem; font-weight: 700; color: var(--primary-color); }
+.stat-label { font-size: 0.8rem; color: var(--text-muted); }
+
+.trunk-actions {
+    display: flex;
+    gap: 0.5rem;
+}
+
+.btn-sm { padding: 0.375rem 0.75rem; font-size: 0.85rem; }
+.btn-warning { background: #ff9800; color: white; border: none; }
+.btn-success { background: #4caf50; color: white; border: none; }
+
+/* Failover Rules */
+.failover-rules {
+    display: grid;
+    gap: 1rem;
+}
+
+.rule-card {
+    background: white;
+    border-radius: 12px;
+    padding: 1rem 1.25rem;
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+    opacity: 0.6;
+}
+
+.rule-card.active { opacity: 1; }
+
+.rule-icon {
+    width: 40px;
+    height: 40px;
+    background: #f5f5f5;
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--primary-color);
+}
+
+.rule-content { flex: 1; }
+.rule-content h4 { margin: 0 0 0.25rem; font-size: 0.95rem; }
+.rule-content p { margin: 0; font-size: 0.85rem; color: var(--text-muted); }
+
+/* Switch Toggle */
+.switch {
+    position: relative;
+    width: 50px;
+    height: 26px;
+}
+
+.switch input { opacity: 0; width: 0; height: 0; }
+
+.slider {
+    position: absolute;
+    cursor: pointer;
+    inset: 0;
+    background: #ccc;
+    border-radius: 26px;
+    transition: 0.3s;
+}
+
+.slider:before {
+    position: absolute;
+    content: "";
+    height: 20px;
+    width: 20px;
+    left: 3px;
+    bottom: 3px;
+    background: white;
+    border-radius: 50%;
+    transition: 0.3s;
+}
+
+input:checked + .slider { background: #4caf50; }
+input:checked + .slider:before { transform: translateX(24px); }
+
+/* Events */
+.events-card {
+    background: white;
+    border-radius: 12px;
+    padding: 1rem;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+}
+
+.event-item {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    padding: 0.75rem 0;
+    border-bottom: 1px solid #f0f0f0;
+}
+
+.event-item:last-child { border-bottom: none; }
+
+.event-time {
+    font-size: 0.8rem;
+    color: var(--text-muted);
+    min-width: 70px;
+    font-family: monospace;
+}
+
+.event-icon {
+    width: 32px;
+    height: 32px;
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.event-item.success .event-icon { background: #e8f5e9; color: #4caf50; }
+.event-item.warning .event-icon { background: #fff3e0; color: #ff9800; }
+.event-item.error .event-icon { background: #ffebee; color: #f44336; }
+.event-item.info .event-icon { background: #e3f2fd; color: #2196f3; }
+
+.event-content { display: flex; flex-direction: column; }
+.event-title { font-weight: 600; font-size: 0.9rem; }
+.event-desc { font-size: 0.85rem; color: var(--text-muted); }
+
+/* Modal */
+.modal {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0,0,0,0.5);
+    z-index: 1000;
+    align-items: center;
+    justify-content: center;
+}
+
+.modal.active { display: flex; }
+
+.modal-content {
+    background: white;
+    border-radius: 16px;
+    width: 90%;
+    max-width: 500px;
+    max-height: 90vh;
+    overflow-y: auto;
+}
+
+.modal-content.modal-lg { max-width: 600px; }
+
+.modal-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 1.25rem 1.5rem;
+    border-bottom: 1px solid #eee;
+}
+
+.modal-header h3 { display: flex; align-items: center; gap: 0.5rem; margin: 0; }
+
+.modal-close {
+    width: 32px;
+    height: 32px;
+    border: none;
+    background: #f0f0f0;
+    border-radius: 8px;
+    font-size: 1.25rem;
+    cursor: pointer;
+}
+
+.modal-body { padding: 1.5rem; }
+.modal-body h4 { margin: 1.5rem 0 1rem; font-size: 1rem; }
+.modal-body h4:first-child { margin-top: 0; }
+
+.modal-footer {
+    display: flex;
+    justify-content: flex-end;
+    gap: 0.75rem;
+    padding: 1rem 1.5rem;
+    border-top: 1px solid #eee;
+}
+
+/* Priority List */
+.priority-list {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.priority-item {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    padding: 0.75rem 1rem;
+    background: #f8f9fa;
+    border-radius: 8px;
+    cursor: grab;
+}
+
+.priority-item:active { cursor: grabbing; }
+
+.priority-num {
+    width: 28px;
+    height: 28px;
+    background: var(--primary-color);
+    color: white;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 700;
+    font-size: 0.85rem;
+}
+
+.priority-name { flex: 1; font-weight: 500; }
+.priority-status { font-size: 0.8rem; padding: 0.2rem 0.5rem; border-radius: 4px; }
+.priority-status.online { background: #e8f5e9; color: #4caf50; }
+.priority-status.standby { background: #fff3e0; color: #ff9800; }
+
+.form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
+.form-group { margin-bottom: 1rem; }
+.form-group label { display: block; margin-bottom: 0.5rem; font-weight: 500; }
+.form-input { width: 100%; padding: 0.75rem; border: 1px solid #ddd; border-radius: 8px; }
+
+.checkbox-label { display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.75rem; cursor: pointer; }
+
+.btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.5rem 1rem;
+    border: none;
+    border-radius: 8px;
+    font-size: 0.9rem;
+    cursor: pointer;
+}
+
+.btn-primary {
+    background: linear-gradient(135deg, var(--primary-color), #ffc107);
+    color: white;
+}
+
+.btn-outline {
+    background: white;
+    border: 1px solid #ddd;
+    color: var(--text-primary);
+}
+</style>
+
+<script>
+window.onload = function() {
+    if(typeof setLang === 'function') {
+        setLang(localStorage.getItem('lang') || 'tr');
+    }
+    
+    // Simulated real-time updates
+    setInterval(updateMetrics, 5000);
+};
+
+function updateMetrics() {
+    // Simulate active calls fluctuation
+    var calls = Math.floor(Math.random() * 15) + 35;
+    document.getElementById('activeCallsCount').textContent = calls;
+}
+
+window.refreshAll = function() {
+    showNotification('Tüm trunk\'lar yenileniyor...', 'info');
+    setTimeout(function() {
+        showNotification('Trunk durumları güncellendi', 'success');
+    }, 1500);
+};
+
+window.openFailoverSettings = function() {
+    document.getElementById('failoverModal').classList.add('active');
+};
+
+window.closeModal = function(id) {
+    document.getElementById(id).classList.remove('active');
+};
+
+window.saveFailoverSettings = function() {
+    showNotification('Failover ayarları kaydedildi', 'success');
+    window.closeModal('failoverModal');
+};
+
+window.testTrunk = function(trunk) {
+    showNotification(trunk + ' test ediliyor...', 'info');
+    setTimeout(function() {
+        showNotification(trunk + ' bağlantı testi başarılı!', 'success');
+    }, 2000);
+};
+
+window.viewTrunkLogs = function(trunk) {
+    showNotification(trunk + ' logları yükleniyor...', 'info');
+};
+
+window.pauseTrunk = function(trunk) {
+    if(confirm(trunk + ' trunk\'ını duraklatmak istiyor musunuz?')) {
+        showNotification(trunk + ' duraklatıldı', 'warning');
+    }
+};
+
+window.activateTrunk = function(trunk) {
+    showNotification(trunk + ' aktifleştiriliyor...', 'info');
+    setTimeout(function() {
+        showNotification(trunk + ' aktif edildi!', 'success');
+    }, 1500);
+};
+
+function showNotification(message, type) {
+    var colors = { success: '#4caf50', error: '#f44336', info: '#2196f3', warning: '#ff9800' };
+    var icons = { success: 'check', error: 'x', info: 'info-circle', warning: 'alert-triangle' };
+    var notification = document.createElement('div');
+    notification.innerHTML = '<i class="ti ti-' + icons[type] + '"></i> ' + message;
+    notification.style.cssText = 'position:fixed;top:20px;right:20px;background:' + colors[type] + ';color:white;padding:1rem 1.5rem;border-radius:8px;z-index:9999;display:flex;align-items:center;gap:0.5rem;box-shadow:0 4px 12px rgba(0,0,0,0.15);';
+    document.body.appendChild(notification);
+    setTimeout(function() { notification.remove(); }, 3000);
+}
+
+document.querySelectorAll('.modal').forEach(function(modal) {
+    modal.addEventListener('click', function(e) {
+        if(e.target === this) this.classList.remove('active');
+    });
+});
+</script>
+{% endblock %}
+
