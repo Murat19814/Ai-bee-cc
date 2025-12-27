@@ -22,7 +22,7 @@ from models import (
     # Telephony
     SIPTrunk, DID, IVR, IVROption, Queue, QueueMember,
     # Campaign
-    Campaign, DialList, Lead, LeadAttempt,
+    Campaign, CampaignUser, DialList, Lead, LeadAttempt,
     # CRM
     Customer, CustomerNote, CustomField, Pipeline, PipelineStage, Ticket, TicketCategory,
     # Call
@@ -602,9 +602,21 @@ def admin_panel():
 @login_required
 @admin_required
 def admin_users():
-    """Kullanıcı yönetimi"""
-    users = User.query.filter_by(tenant_id=current_user.tenant_id).order_by(User.created_at.desc()).all()
-    return render_template('admin/users.html', users=users)
+    """Kullan??c?? y??netimi"""
+    selected_tenant_id = request.args.get('tenant_id', type=int)
+
+    if current_user.is_super_admin:
+        q = User.query
+        if selected_tenant_id:
+            q = q.filter_by(tenant_id=selected_tenant_id)
+        users = q.order_by(User.created_at.desc()).all()
+        tenants = Tenant.query.order_by(Tenant.name.asc()).all()
+    else:
+        users = User.query.filter_by(tenant_id=current_user.tenant_id).order_by(User.created_at.desc()).all()
+        tenants = None
+        selected_tenant_id = current_user.tenant_id
+
+    return render_template('admin/users.html', users=users, tenants=tenants, selected_tenant_id=selected_tenant_id)
 
 
 @app.route('/admin/users/new', methods=['GET', 'POST'])
@@ -654,10 +666,17 @@ def admin_user_new():
                     can_edit_customers=True
                 )
                 db.session.add(project_user)
-        
-        # Kampanya atamaları (AgentCampaign tablosu varsa)
+
+        # Kampanya atamalar??
         campaign_ids = request.form.getlist('campaigns[]')
-        # TODO: Kampanya ataması için AgentCampaign modeli kullanılacak
+        for camp_id in campaign_ids:
+            if camp_id:
+                db.session.add(CampaignUser(
+                    campaign_id=int(camp_id),
+                    user_id=user.id,
+                    role=user.role,
+                    is_active=True
+                ))
         
         db.session.commit()
         
@@ -683,34 +702,73 @@ def admin_user_new():
 @login_required
 @admin_required
 def admin_user_edit(id):
-    """Kullanıcı düzenle"""
+    """Kullan??c?? d??zenle"""
     user = User.query.get_or_404(id)
-    
+
     if user.tenant_id != current_user.tenant_id and not current_user.is_super_admin:
         abort(403)
-    
+
     if request.method == 'POST':
         user.email = request.form.get('email')
         user.first_name = request.form.get('first_name')
         user.last_name = request.form.get('last_name')
         user.full_name = f"{request.form.get('first_name')} {request.form.get('last_name')}"
+
+        user.german_first_name = request.form.get('german_first_name')
+        user.german_last_name = request.form.get('german_last_name')
+        user.german_full_name = f"{request.form.get('german_first_name', '')} {request.form.get('german_last_name', '')}".strip() or None
+
+        user.phone = request.form.get('phone')
         user.role = request.form.get('role')
         user.extension = request.form.get('extension')
         user.department_id = request.form.get('department_id') or None
         user.team_id = request.form.get('team_id') or None
-        user.is_active = request.form.get('is_active') == 'on'
-        
+        user.is_active = request.form.get('is_active') == '1'
+        user.must_change_password = 'must_change_password' in request.form
+
         if request.form.get('password'):
             user.set_password(request.form.get('password'))
-        
+
+        # Reset assignments
+        ProjectUser.query.filter_by(user_id=user.id).delete()
+        CampaignUser.query.filter_by(user_id=user.id).delete()
+
+        # Projects
+        for proj_id in request.form.getlist('projects[]'):
+            if proj_id:
+                db.session.add(ProjectUser(
+                    project_id=int(proj_id),
+                    user_id=user.id,
+                    role=user.role,
+                    can_view_recordings=True,
+                    can_export_data=user.role in ['supervisor', 'admin', 'super_admin'],
+                    can_edit_customers=True
+                ))
+
+        # Campaigns
+        for camp_id in request.form.getlist('campaigns[]'):
+            if camp_id:
+                db.session.add(CampaignUser(
+                    campaign_id=int(camp_id),
+                    user_id=user.id,
+                    role=user.role,
+                    is_active=True
+                ))
+
         db.session.commit()
-        log_audit('update', 'user', user.id, f'Kullanıcı güncellendi: {user.username}')
-        flash('Kullanıcı başarıyla güncellendi.', 'success')
+        log_audit('update', 'user', user.id, f'Kullan??c?? g??ncellendi: {user.username}')
+        flash('Kullan??c?? ba??ar??yla g??ncellendi.', 'success')
         return redirect(url_for('admin_users'))
-    
-    departments = Department.query.filter_by(tenant_id=current_user.tenant_id, is_active=True).all()
-    teams = Team.query.filter_by(tenant_id=current_user.tenant_id, is_active=True).all()
-    return render_template('admin/user_form.html', user=user, departments=departments, teams=teams)
+
+    departments = Department.query.filter_by(tenant_id=user.tenant_id, is_active=True).all()
+    teams = Team.query.filter_by(tenant_id=user.tenant_id, is_active=True).all()
+    projects = Project.query.filter_by(tenant_id=user.tenant_id, is_active=True).all()
+    campaigns = Campaign.query.filter_by(tenant_id=user.tenant_id, is_active=True).all()
+
+    user_projects = [pu.project_id for pu in ProjectUser.query.filter_by(user_id=user.id).all()]
+    user_campaigns = [cu.campaign_id for cu in CampaignUser.query.filter_by(user_id=user.id).all()]
+
+    return render_template('admin/user_form.html', user=user, departments=departments, teams=teams, projects=projects, campaigns=campaigns, user_projects=user_projects, user_campaigns=user_campaigns)
 
 
 @app.route('/admin/roles')

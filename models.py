@@ -176,6 +176,23 @@ class ProjectUser(db.Model):
     assigned_at = db.Column(db.DateTime, default=datetime.utcnow)
 
 
+
+
+class CampaignUser(db.Model):
+    """Kampanya-Kullan??c?? e??le??tirmesi (Agent/QC/Supervisor kampanya atamas??)"""
+    __tablename__ = 'campaign_users'
+
+    id = db.Column(db.Integer, primary_key=True)
+    campaign_id = db.Column(db.Integer, db.ForeignKey('campaigns.id'), nullable=False)
+    user_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
+
+    role = db.Column(db.String(20), default='agent')  # agent, qc_listener, supervisor
+    is_active = db.Column(db.Boolean, default=True)
+    assigned_at = db.Column(db.DateTime, default=datetime.utcnow)
+
+    __table_args__ = (
+        db.UniqueConstraint('campaign_id', 'user_id', name='uq_campaign_user'),
+    )
 # ============================================
 # 3. USER & RBAC MODELS
 # ============================================
@@ -249,6 +266,7 @@ class User(UserMixin, db.Model):
     roles = db.relationship('UserRole', backref='user', lazy='dynamic')
     skills = db.relationship('UserSkill', backref='user', lazy='dynamic')
     projects = db.relationship('ProjectUser', backref='user', lazy='dynamic')
+    campaign_assignments = db.relationship('CampaignUser', backref='user', lazy='dynamic')
     calls = db.relationship('Call', backref='agent', lazy='dynamic', foreign_keys='Call.agent_id')
     
     def set_password(self, password):
