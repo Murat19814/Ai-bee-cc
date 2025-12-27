@@ -611,8 +611,9 @@ def admin_users():
 @login_required
 @admin_required
 def admin_user_new():
-    """Yeni kullanıcı oluştur"""
+    """Yeni kullanıcı oluştur - Detaylı form"""
     if request.method == 'POST':
+        # Kullanıcı oluştur
         user = User(
             tenant_id=current_user.tenant_id,
             username=request.form.get('username'),
@@ -620,23 +621,62 @@ def admin_user_new():
             first_name=request.form.get('first_name'),
             last_name=request.form.get('last_name'),
             full_name=f"{request.form.get('first_name')} {request.form.get('last_name')}",
+            german_first_name=request.form.get('german_first_name'),
+            german_last_name=request.form.get('german_last_name'),
+            german_full_name=f"{request.form.get('german_first_name', '')} {request.form.get('german_last_name', '')}".strip() or None,
+            phone=request.form.get('phone'),
             role=request.form.get('role'),
             extension=request.form.get('extension'),
             department_id=request.form.get('department_id') or None,
             team_id=request.form.get('team_id') or None,
-            is_active=True
+            is_active=request.form.get('is_active') == '1',
+            must_change_password='must_change_password' in request.form
         )
         user.set_password(request.form.get('password'))
+        
+        # Super admin kontrolü
+        if request.form.get('role') == 'super_admin' and current_user.is_super_admin:
+            user.is_super_admin = True
+        
         db.session.add(user)
+        db.session.flush()  # ID almak için
+        
+        # Proje atamaları
+        project_ids = request.form.getlist('projects[]')
+        for proj_id in project_ids:
+            if proj_id:
+                project_user = ProjectUser(
+                    project_id=int(proj_id),
+                    user_id=user.id,
+                    role=user.role,
+                    can_view_recordings=True,
+                    can_export_data=user.role in ['supervisor', 'admin', 'super_admin'],
+                    can_edit_customers=True
+                )
+                db.session.add(project_user)
+        
+        # Kampanya atamaları (AgentCampaign tablosu varsa)
+        campaign_ids = request.form.getlist('campaigns[]')
+        # TODO: Kampanya ataması için AgentCampaign modeli kullanılacak
+        
         db.session.commit()
         
-        log_audit('create', 'user', user.id, f'Yeni kullanıcı oluşturuldu: {user.username}')
+        log_audit('create', 'user', user.id, f'Yeni kullanıcı oluşturuldu: {user.username} (Rol: {user.role})')
         flash(f'"{user.full_name}" başarıyla oluşturuldu.', 'success')
         return redirect(url_for('admin_users'))
     
+    # GET - Form verilerini hazırla
     departments = Department.query.filter_by(tenant_id=current_user.tenant_id, is_active=True).all()
     teams = Team.query.filter_by(tenant_id=current_user.tenant_id, is_active=True).all()
-    return render_template('admin/user_form.html', user=None, departments=departments, teams=teams)
+    projects = Project.query.filter_by(tenant_id=current_user.tenant_id, is_active=True).all()
+    campaigns = Campaign.query.filter_by(tenant_id=current_user.tenant_id, is_active=True).all()
+    
+    return render_template('admin/user_form.html', 
+                          user=None, 
+                          departments=departments, 
+                          teams=teams,
+                          projects=projects,
+                          campaigns=campaigns)
 
 
 @app.route('/admin/users/<int:id>/edit', methods=['GET', 'POST'])

@@ -176,6 +176,8 @@ def main():
                 first_name=first_name,
                 last_name=last_name,
                 full_name=user_data['name'],
+                german_first_name=None,  # Sonradan eklenecek
+                german_last_name=None,
                 password_hash=generate_password_hash(password),
                 role=user_data['role'],
                 tenant_id=tenant.id,

@@ -199,6 +199,11 @@ class User(UserMixin, db.Model):
     phone = db.Column(db.String(20))
     avatar_url = db.Column(db.String(500))
     
+    # Almanca İsim (Müşteriye gösterilecek)
+    german_first_name = db.Column(db.String(80))
+    german_last_name = db.Column(db.String(80))
+    german_full_name = db.Column(db.String(160))
+    
     # Dahili numara
     extension = db.Column(db.String(20))
     sip_password = db.Column(db.String(100))

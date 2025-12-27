@@ -4,132 +4,984 @@
 
 {% block content %}
 <div class="page-header">
-    <div>
-        <h1 class="page-title">{{ 'Kullanıcı Düzenle' if user else 'Yeni Kullanıcı Oluştur' }}</h1>
-        <p class="page-subtitle">Kullanıcı bilgilerini {{ 'güncelleyin' if user else 'girin' }}</p>
+    <div class="page-title">
+        <a href="{{ url_for('admin_users') }}" class="back-btn">
+            <i class="ti ti-arrow-left"></i>
+        </a>
+        <h1>
+            <i class="ti ti-user-plus" style="color: var(--primary-color);"></i>
+            <span data-tr="{{ 'Kullanıcı Düzenle' if user else 'Yeni Kullanıcı Kaydı' }}" 
+                  data-de="{{ 'Benutzer bearbeiten' if user else 'Neuer Benutzer' }}">
+                {{ 'Kullanıcı Düzenle' if user else 'Yeni Kullanıcı Kaydı' }}
+            </span>
+        </h1>
+    </div>
+    <div class="page-actions">
+        <button type="button" class="btn btn-outline" onclick="window.history.back()">
+            <i class="ti ti-x"></i> <span data-tr="İptal" data-de="Abbrechen">İptal</span>
+        </button>
+        <button type="submit" form="userForm" class="btn btn-primary">
+            <i class="ti ti-check"></i> <span data-tr="Kaydet" data-de="Speichern">Kaydet</span>
+        </button>
     </div>
 </div>
 
-<div class="card" style="max-width: 800px;">
-    <div class="card-body">
-        <form method="POST">
-            <div class="grid grid-cols-2">
+<form id="userForm" method="POST" class="user-form">
+    <div class="form-grid">
+        <!-- Sol Kolon - Kişisel Bilgiler -->
+        <div class="form-section">
+            <div class="section-header">
+                <i class="ti ti-user"></i>
+                <h3 data-tr="Kişisel Bilgiler" data-de="Persönliche Daten">Kişisel Bilgiler</h3>
+            </div>
+            
+            <div class="form-row">
                 <div class="form-group">
-                    <label class="form-label">
-                        <i class="ti ti-user"></i> Kullanıcı Adı
-                    </label>
-                    <input type="text" name="username" class="form-control" 
-                           value="{{ user.username if user else '' }}" required {{ 'readonly' if user else '' }}>
+                    <label data-tr="Ad *" data-de="Vorname *">Ad *</label>
+                    <input type="text" name="first_name" class="form-input" required
+                           placeholder="Örn: Ahmet" data-tr-placeholder="Örn: Ahmet" data-de-placeholder="z.B. Max"
+                           value="{{ user.first_name if user else '' }}">
                 </div>
-                
                 <div class="form-group">
-                    <label class="form-label">
-                        <i class="ti ti-mail"></i> E-posta
-                    </label>
-                    <input type="email" name="email" class="form-control" 
-                           value="{{ user.email if user else '' }}" required>
+                    <label data-tr="Soyad *" data-de="Nachname *">Soyad *</label>
+                    <input type="text" name="last_name" class="form-input" required
+                           placeholder="Örn: Yılmaz" data-tr-placeholder="Örn: Yılmaz" data-de-placeholder="z.B. Müller"
+                           value="{{ user.last_name if user else '' }}">
                 </div>
             </div>
             
-            <div class="grid grid-cols-2">
+            <div class="form-row">
                 <div class="form-group">
-                    <label class="form-label">
-                        <i class="ti ti-id"></i> Ad
-                    </label>
-                    <input type="text" name="first_name" class="form-control" 
-                           value="{{ user.first_name if user else '' }}" required>
+                    <label data-tr="Almanca Ad" data-de="Deutscher Vorname">Almanca Ad</label>
+                    <input type="text" name="german_first_name" class="form-input"
+                           placeholder="Örn: Max" data-tr-placeholder="Örn: Max" data-de-placeholder="z.B. Max"
+                           value="{{ user.german_first_name if user else '' }}">
+                    <small class="form-hint" data-tr="Müşteriye gösterilecek isim" data-de="Name für Kunden">Müşteriye gösterilecek isim</small>
                 </div>
-                
                 <div class="form-group">
-                    <label class="form-label">
-                        <i class="ti ti-id"></i> Soyad
-                    </label>
-                    <input type="text" name="last_name" class="form-control" 
-                           value="{{ user.last_name if user else '' }}" required>
+                    <label data-tr="Almanca Soyad" data-de="Deutscher Nachname">Almanca Soyad</label>
+                    <input type="text" name="german_last_name" class="form-input"
+                           placeholder="Örn: Müller" data-tr-placeholder="Örn: Müller" data-de-placeholder="z.B. Müller"
+                           value="{{ user.german_last_name if user else '' }}">
                 </div>
             </div>
             
-            <div class="grid grid-cols-2">
+            <div class="form-row">
                 <div class="form-group">
-                    <label class="form-label">
-                        <i class="ti ti-shield"></i> Rol
-                    </label>
-                    <select name="role" class="form-control" required>
-                        <option value="agent" {{ 'selected' if user and user.role == 'agent' else '' }}>Agent</option>
-                        <option value="supervisor" {{ 'selected' if user and user.role == 'supervisor' else '' }}>Supervisor</option>
-                        <option value="qa" {{ 'selected' if user and user.role == 'qa' else '' }}>QA</option>
-                        <option value="analyst" {{ 'selected' if user and user.role == 'analyst' else '' }}>Analyst</option>
-                        <option value="admin" {{ 'selected' if user and user.role == 'admin' else '' }}>Admin</option>
-                        <option value="client" {{ 'selected' if user and user.role == 'client' else '' }}>Client</option>
-                    </select>
+                    <label data-tr="E-posta *" data-de="E-Mail *">E-posta *</label>
+                    <input type="email" name="email" class="form-input" required
+                           placeholder="ornek@sirket.com" 
+                           value="{{ user.email if user else '' }}">
                 </div>
-                
                 <div class="form-group">
-                    <label class="form-label">
-                        <i class="ti ti-phone"></i> Dahili
-                    </label>
-                    <input type="text" name="extension" class="form-control" 
-                           value="{{ user.extension if user else '' }}" placeholder="Örn: 101">
+                    <label data-tr="Telefon" data-de="Telefon">Telefon</label>
+                    <input type="tel" name="phone" class="form-input"
+                           placeholder="+90 5XX XXX XX XX"
+                           value="{{ user.phone if user else '' }}">
+                </div>
+            </div>
+        </div>
+        
+        <!-- Sağ Kolon - Hesap Bilgileri -->
+        <div class="form-section">
+            <div class="section-header">
+                <i class="ti ti-key"></i>
+                <h3 data-tr="Hesap Bilgileri" data-de="Kontoinformationen">Hesap Bilgileri</h3>
+            </div>
+            
+            <div class="form-row">
+                <div class="form-group">
+                    <label data-tr="Kullanıcı Adı *" data-de="Benutzername *">Kullanıcı Adı *</label>
+                    <input type="text" name="username" id="username" class="form-input" required
+                           placeholder="ornek.kullanici" 
+                           value="{{ user.username if user else '' }}"
+                           {{ 'readonly' if user else '' }}>
+                    <small class="form-hint" data-tr="Giriş için kullanılacak" data-de="Für Anmeldung">Giriş için kullanılacak</small>
+                </div>
+                <div class="form-group">
+                    <label data-tr="Dahili Numara" data-de="Durchwahl">Dahili Numara</label>
+                    <input type="text" name="extension" class="form-input"
+                           placeholder="101"
+                           value="{{ user.extension if user else '' }}">
                 </div>
             </div>
             
-            <div class="grid grid-cols-2">
+            {% if not user %}
+            <div class="form-row">
                 <div class="form-group">
-                    <label class="form-label">
-                        <i class="ti ti-building"></i> Departman
-                    </label>
-                    <select name="department_id" class="form-control">
-                        <option value="">Seçiniz</option>
-                        {% for dept in departments %}
-                        <option value="{{ dept.id }}" {{ 'selected' if user and user.department_id == dept.id else '' }}>
-                            {{ dept.name }}
-                        </option>
-                        {% endfor %}
-                    </select>
+                    <label data-tr="Şifre *" data-de="Passwort *">Şifre *</label>
+                    <div class="password-input">
+                        <input type="password" name="password" id="password" class="form-input" required
+                               placeholder="••••••••" minlength="8">
+                        <button type="button" class="toggle-password" onclick="togglePassword('password')">
+                            <i class="ti ti-eye"></i>
+                        </button>
+                        <button type="button" class="generate-password" onclick="generatePassword()">
+                            <i class="ti ti-refresh"></i>
+                        </button>
+                    </div>
                 </div>
-                
                 <div class="form-group">
-                    <label class="form-label">
-                        <i class="ti ti-users"></i> Takım
-                    </label>
-                    <select name="team_id" class="form-control">
-                        <option value="">Seçiniz</option>
-                        {% for team in teams %}
-                        <option value="{{ team.id }}" {{ 'selected' if user and user.team_id == team.id else '' }}>
-                            {{ team.name }}
-                        </option>
-                        {% endfor %}
-                    </select>
+                    <label data-tr="Şifre Tekrar *" data-de="Passwort bestätigen *">Şifre Tekrar *</label>
+                    <div class="password-input">
+                        <input type="password" name="password_confirm" id="password_confirm" class="form-input" required
+                               placeholder="••••••••" minlength="8">
+                        <button type="button" class="toggle-password" onclick="togglePassword('password_confirm')">
+                            <i class="ti ti-eye"></i>
+                        </button>
+                    </div>
                 </div>
-            </div>
-            
-            <div class="form-group">
-                <label class="form-label">
-                    <i class="ti ti-lock"></i> Şifre {{ '(Boş bırakırsanız değişmez)' if user else '' }}
-                </label>
-                <input type="password" name="password" class="form-control" 
-                       placeholder="Min. 8 karakter" {{ '' if user else 'required' }} minlength="8">
-            </div>
-            
-            {% if user %}
-            <div class="form-group">
-                <label class="d-flex align-center gap-2">
-                    <input type="checkbox" name="is_active" {{ 'checked' if user.is_active else '' }}>
-                    <span>Aktif</span>
-                </label>
             </div>
             {% endif %}
             
-            <div class="d-flex gap-2" style="margin-top: 2rem;">
-                <button type="submit" class="btn btn-primary">
-                    <i class="ti ti-check"></i> {{ 'Güncelle' if user else 'Oluştur' }}
-                </button>
-                <a href="{{ url_for('admin_users') }}" class="btn btn-secondary">İptal</a>
+            <div class="form-group">
+                <label class="checkbox-label">
+                    <input type="checkbox" name="must_change_password" {{ 'checked' if not user else '' }}>
+                    <span data-tr="İlk girişte şifre değiştirmeli" data-de="Passwort bei erster Anmeldung ändern">İlk girişte şifre değiştirmeli</span>
+                </label>
             </div>
-        </form>
+        </div>
+        
+        <!-- Organizasyon Bilgileri -->
+        <div class="form-section full-width">
+            <div class="section-header">
+                <i class="ti ti-building"></i>
+                <h3 data-tr="Organizasyon & Rol" data-de="Organisation & Rolle">Organizasyon & Rol</h3>
+            </div>
+            
+            <div class="form-row four-cols">
+                <div class="form-group">
+                    <label data-tr="Rol *" data-de="Rolle *">Rol *</label>
+                    <select name="role" id="roleSelect" class="form-select" required onchange="updateRoleOptions()">
+                        <option value="">-- Seçiniz --</option>
+                        <option value="super_admin" {{ 'selected' if user and user.role == 'super_admin' else '' }}>Super Admin</option>
+                        <option value="admin" {{ 'selected' if user and user.role == 'admin' else '' }}>Admin</option>
+                        <option value="supervisor" {{ 'selected' if user and user.role == 'supervisor' else '' }}>Supervisor</option>
+                        <option value="qc_listener" {{ 'selected' if user and user.role == 'qc_listener' else '' }}>QC Dinleme</option>
+                        <option value="agent" {{ 'selected' if user and user.role == 'agent' else '' }}>Agent</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label data-tr="Departman" data-de="Abteilung">Departman</label>
+                    <select name="department_id" id="departmentSelect" class="form-select" onchange="loadTeams()">
+                        <option value="">-- Seçiniz --</option>
+                        <option value="1">Satış</option>
+                        <option value="2">Destek</option>
+                        <option value="3">QC</option>
+                        <option value="4">Teknik</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label data-tr="Takım" data-de="Team">Takım</label>
+                    <select name="team_id" id="teamSelect" class="form-select">
+                        <option value="">-- Önce departman seçin --</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label data-tr="Durum" data-de="Status">Durum</label>
+                    <select name="is_active" class="form-select">
+                        <option value="1" {{ 'selected' if not user or user.is_active else '' }}>Aktif</option>
+                        <option value="0" {{ 'selected' if user and not user.is_active else '' }}>Pasif</option>
+                    </select>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Proje & Kampanya Ataması -->
+        <div class="form-section full-width" id="projectSection">
+            <div class="section-header">
+                <i class="ti ti-folder"></i>
+                <h3 data-tr="Proje & Kampanya Ataması" data-de="Projekt & Kampagnenzuweisung">Proje & Kampanya Ataması</h3>
+            </div>
+            
+            <div class="assignment-tabs">
+                <button type="button" class="tab-btn active" onclick="switchTab('projects')">
+                    <i class="ti ti-folder"></i> <span data-tr="Projeler" data-de="Projekte">Projeler</span>
+                </button>
+                <button type="button" class="tab-btn" onclick="switchTab('campaigns')">
+                    <i class="ti ti-speakerphone"></i> <span data-tr="Kampanyalar" data-de="Kampagnen">Kampanyalar</span>
+                </button>
+            </div>
+            
+            <!-- Proje Seçimi -->
+            <div id="projectsTab" class="tab-content active">
+                <div class="assignment-grid">
+                    {% if projects %}
+                        {% for project in projects %}
+                        <div class="assignment-card" data-project="{{ project.id }}">
+                            <input type="checkbox" name="projects[]" value="{{ project.id }}" id="proj{{ project.id }}"
+                                   {% if user and project.id in user_projects %}checked{% endif %}>
+                            <label for="proj{{ project.id }}">
+                                <div class="card-icon" style="background: {% if loop.index % 2 == 0 %}#f3e5f5{% else %}#e3f2fd{% endif %};">
+                                    <i class="ti ti-folder" style="color: {% if loop.index % 2 == 0 %}#7b1fa2{% else %}#1565c0{% endif %};"></i>
+                                </div>
+                                <div class="card-info">
+                                    <strong>{{ project.code }}</strong>
+                                    <span>{{ project.name }}</span>
+                                </div>
+                                <div class="card-check"><i class="ti ti-check"></i></div>
+                            </label>
+                        </div>
+                        {% endfor %}
+                    {% else %}
+                        <div class="empty-state">
+                            <i class="ti ti-folder-off"></i>
+                            <p data-tr="Henüz proje oluşturulmamış" data-de="Noch keine Projekte erstellt">Henüz proje oluşturulmamış</p>
+                        </div>
+                    {% endif %}
+                    <div class="assignment-card add-new" onclick="openNewProjectModal()">
+                        <div class="card-icon" style="background: #f5f5f5;">
+                            <i class="ti ti-plus" style="color: #666;"></i>
+                        </div>
+                        <div class="card-info">
+                            <strong data-tr="Yeni Proje" data-de="Neues Projekt">Yeni Proje</strong>
+                            <span data-tr="Proje ekle" data-de="Projekt hinzufügen">Proje ekle</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Kampanya Seçimi -->
+            <div id="campaignsTab" class="tab-content">
+                <div class="campaign-filter">
+                    <select id="campaignProjectFilter" class="form-select" onchange="filterCampaigns()">
+                        <option value="" data-tr="Tüm Projeler" data-de="Alle Projekte">Tüm Projeler</option>
+                        {% for project in projects %}
+                        <option value="{{ project.id }}">{{ project.code }} - {{ project.name }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="assignment-grid" id="campaignGrid">
+                    {% if campaigns %}
+                        {% for campaign in campaigns %}
+                        <div class="assignment-card" data-project="{{ campaign.project_id }}">
+                            <input type="checkbox" name="campaigns[]" value="{{ campaign.id }}" id="camp{{ campaign.id }}"
+                                   {% if user and campaign.id in user_campaigns %}checked{% endif %}>
+                            <label for="camp{{ campaign.id }}">
+                                <div class="card-icon" style="background: {% if campaign.dialer_type == 'inbound' %}#fff3e0{% else %}#e8f5e9{% endif %};">
+                                    <i class="ti ti-phone-{% if campaign.dialer_type == 'inbound' %}incoming{% else %}outgoing{% endif %}" 
+                                       style="color: {% if campaign.dialer_type == 'inbound' %}#e65100{% else %}#2e7d32{% endif %};"></i>
+                                </div>
+                                <div class="card-info">
+                                    <strong>{{ campaign.name }}</strong>
+                                    <span>Proje: {{ campaign.project.code if campaign.project else '-' }} • {{ 'Aktif' if campaign.is_active else 'Pasif' }}</span>
+                                </div>
+                                <div class="card-badge {{ campaign.dialer_type or 'outbound' }}">{{ (campaign.dialer_type or 'outbound')|title }}</div>
+                                <div class="card-check"><i class="ti ti-check"></i></div>
+                            </label>
+                        </div>
+                        {% endfor %}
+                    {% else %}
+                        <div class="empty-state">
+                            <i class="ti ti-speakerphone-off"></i>
+                            <p data-tr="Henüz kampanya oluşturulmamış" data-de="Noch keine Kampagnen erstellt">Henüz kampanya oluşturulmamış</p>
+                        </div>
+                    {% endif %}
+                    <div class="assignment-card add-new" onclick="openNewCampaignModal()">
+                        <div class="card-icon" style="background: #f5f5f5;">
+                            <i class="ti ti-plus" style="color: #666;"></i>
+                        </div>
+                        <div class="card-info">
+                            <strong data-tr="Yeni Kampanya" data-de="Neue Kampagne">Yeni Kampanya</strong>
+                            <span data-tr="Kampanya ekle" data-de="Kampagne hinzufügen">Kampanya ekle</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="selected-summary" id="selectedSummary">
+                <i class="ti ti-info-circle"></i>
+                <span data-tr="Seçili: " data-de="Ausgewählt: ">Seçili: </span>
+                <strong id="selectedCount">0 proje, 0 kampanya</strong>
+            </div>
+        </div>
+        
+        <!-- Agent Özel Ayarları -->
+        <div class="form-section full-width" id="agentSettings" style="display: none;">
+            <div class="section-header">
+                <i class="ti ti-settings"></i>
+                <h3 data-tr="Agent Ayarları" data-de="Agent-Einstellungen">Agent Ayarları</h3>
+            </div>
+            
+            <div class="form-row three-cols">
+                <div class="form-group">
+                    <label data-tr="Arama Hızı (1-8)" data-de="Anrufgeschwindigkeit (1-8)">Arama Hızı (1-8)</label>
+                    <input type="range" name="call_speed" min="1" max="8" value="4" class="form-range" 
+                           oninput="document.getElementById('speedValue').textContent = this.value">
+                    <div class="range-labels">
+                        <span>1 (Yavaş)</span>
+                        <span id="speedValue">4</span>
+                        <span>8 (Hızlı)</span>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label data-tr="Günlük Çağrı Limiti" data-de="Tägliches Anruflimit">Günlük Çağrı Limiti</label>
+                    <input type="number" name="daily_call_limit" class="form-input" value="300" min="0">
+                </div>
+                <div class="form-group">
+                    <label data-tr="Mola Hakkı (dk)" data-de="Pausenrecht (Min)">Mola Hakkı (dk)</label>
+                    <input type="number" name="break_allowance" class="form-input" value="60" min="0">
+                </div>
+            </div>
+            
+            <div class="form-row">
+                <div class="form-group">
+                    <label class="checkbox-label">
+                        <input type="checkbox" name="can_manual_dial" checked>
+                        <span data-tr="Manuel arama yapabilir" data-de="Kann manuell anrufen">Manuel arama yapabilir</span>
+                    </label>
+                </div>
+                <div class="form-group">
+                    <label class="checkbox-label">
+                        <input type="checkbox" name="can_transfer" checked>
+                        <span data-tr="Çağrı transfer edebilir" data-de="Kann Anrufe weiterleiten">Çağrı transfer edebilir</span>
+                    </label>
+                </div>
+                <div class="form-group">
+                    <label class="checkbox-label">
+                        <input type="checkbox" name="can_hold" checked>
+                        <span data-tr="Beklemeye alabilir" data-de="Kann halten">Beklemeye alabilir</span>
+                    </label>
+                </div>
+            </div>
+        </div>
+        
+        <!-- QC Özel Ayarları -->
+        <div class="form-section full-width" id="qcSettings" style="display: none;">
+            <div class="section-header">
+                <i class="ti ti-headphones"></i>
+                <h3 data-tr="QC Dinleme Ayarları" data-de="QC-Überwachungseinstellungen">QC Dinleme Ayarları</h3>
+            </div>
+            
+            <div class="form-row">
+                <div class="form-group">
+                    <label class="checkbox-label">
+                        <input type="checkbox" name="can_listen" checked>
+                        <span data-tr="Canlı dinleme yapabilir" data-de="Kann live zuhören">Canlı dinleme yapabilir</span>
+                    </label>
+                </div>
+                <div class="form-group">
+                    <label class="checkbox-label">
+                        <input type="checkbox" name="can_whisper">
+                        <span data-tr="Fısıldama yapabilir" data-de="Kann flüstern">Fısıldama yapabilir</span>
+                    </label>
+                </div>
+                <div class="form-group">
+                    <label class="checkbox-label">
+                        <input type="checkbox" name="can_barge">
+                        <span data-tr="Görüşmeye katılabilir" data-de="Kann beitreten">Görüşmeye katılabilir</span>
+                    </label>
+                </div>
+                <div class="form-group">
+                    <label class="checkbox-label">
+                        <input type="checkbox" name="can_evaluate" checked>
+                        <span data-tr="Değerlendirme yapabilir" data-de="Kann bewerten">Değerlendirme yapabilir</span>
+                    </label>
+                </div>
+            </div>
+        </div>
     </div>
-</div>
+</form>
+
+<style>
+.page-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 2rem;
+    flex-wrap: wrap;
+    gap: 1rem;
+}
+
+.page-title {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+}
+
+.back-btn {
+    width: 40px;
+    height: 40px;
+    border-radius: 10px;
+    background: white;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--text-primary);
+    text-decoration: none;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+}
+
+.page-title h1 {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    margin: 0;
+    font-size: 1.5rem;
+}
+
+.page-actions {
+    display: flex;
+    gap: 0.75rem;
+}
+
+.form-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1.5rem;
+}
+
+.form-section {
+    background: white;
+    border-radius: 16px;
+    padding: 1.5rem;
+    box-shadow: 0 2px 12px rgba(0,0,0,0.06);
+}
+
+.form-section.full-width {
+    grid-column: 1 / -1;
+}
+
+.section-header {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    margin-bottom: 1.5rem;
+    padding-bottom: 1rem;
+    border-bottom: 1px solid #eee;
+}
+
+.section-header i {
+    font-size: 1.25rem;
+    color: var(--primary-color);
+}
+
+.section-header h3 {
+    margin: 0;
+    font-size: 1.1rem;
+}
+
+.form-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1rem;
+    margin-bottom: 1rem;
+}
+
+.form-row.three-cols {
+    grid-template-columns: repeat(3, 1fr);
+}
+
+.form-row.four-cols {
+    grid-template-columns: repeat(4, 1fr);
+}
+
+.form-group {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.form-group label {
+    font-weight: 500;
+    font-size: 0.9rem;
+    color: var(--text-primary);
+}
+
+.form-input, .form-select {
+    padding: 0.75rem 1rem;
+    border: 1px solid #ddd;
+    border-radius: 10px;
+    font-size: 0.95rem;
+    transition: all 0.2s;
+}
+
+.form-input:focus, .form-select:focus {
+    outline: none;
+    border-color: var(--primary-color);
+    box-shadow: 0 0 0 3px rgba(255, 193, 7, 0.1);
+}
+
+.form-hint {
+    font-size: 0.8rem;
+    color: var(--text-muted);
+}
+
+.password-input {
+    position: relative;
+    display: flex;
+    gap: 0.5rem;
+}
+
+.password-input input {
+    flex: 1;
+}
+
+.toggle-password, .generate-password {
+    width: 40px;
+    height: 40px;
+    border: 1px solid #ddd;
+    border-radius: 10px;
+    background: white;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--text-muted);
+}
+
+.toggle-password:hover, .generate-password:hover {
+    background: #f5f5f5;
+    color: var(--primary-color);
+}
+
+.checkbox-label {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    cursor: pointer;
+    font-weight: normal;
+}
+
+.checkbox-label input[type="checkbox"] {
+    width: 18px;
+    height: 18px;
+    accent-color: var(--primary-color);
+}
+
+/* Assignment Tabs */
+.assignment-tabs {
+    display: flex;
+    gap: 0.5rem;
+    margin-bottom: 1.5rem;
+}
+
+.tab-btn {
+    padding: 0.75rem 1.5rem;
+    border: none;
+    background: #f5f5f5;
+    border-radius: 10px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 0.9rem;
+    font-weight: 500;
+    transition: all 0.2s;
+}
+
+.tab-btn.active {
+    background: var(--primary-color);
+    color: var(--dark-bg);
+}
+
+.tab-content {
+    display: none;
+}
+
+.tab-content.active {
+    display: block;
+}
+
+/* Assignment Grid */
+.assignment-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+    gap: 1rem;
+}
+
+.assignment-card {
+    position: relative;
+}
+
+.assignment-card input[type="checkbox"] {
+    position: absolute;
+    opacity: 0;
+    width: 0;
+    height: 0;
+}
+
+.assignment-card label {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    padding: 1rem;
+    background: #f8f9fa;
+    border: 2px solid transparent;
+    border-radius: 12px;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.assignment-card:hover label {
+    background: #f0f0f0;
+}
+
+.assignment-card input:checked + label {
+    background: #fff8e1;
+    border-color: var(--primary-color);
+}
+
+.card-icon {
+    width: 48px;
+    height: 48px;
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.25rem;
+}
+
+.card-info {
+    flex: 1;
+}
+
+.card-info strong {
+    display: block;
+    font-size: 0.95rem;
+}
+
+.card-info span {
+    font-size: 0.8rem;
+    color: var(--text-muted);
+}
+
+.card-check {
+    width: 24px;
+    height: 24px;
+    border: 2px solid #ddd;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-size: 0.8rem;
+    transition: all 0.2s;
+}
+
+.assignment-card input:checked + label .card-check {
+    background: var(--primary-color);
+    border-color: var(--primary-color);
+}
+
+.card-badge {
+    position: absolute;
+    top: 0.5rem;
+    right: 0.5rem;
+    padding: 0.2rem 0.5rem;
+    border-radius: 6px;
+    font-size: 0.7rem;
+    font-weight: 600;
+}
+
+.card-badge.outbound {
+    background: #e8f5e9;
+    color: #2e7d32;
+}
+
+.card-badge.inbound {
+    background: #fff3e0;
+    color: #e65100;
+}
+
+.assignment-card.add-new label {
+    border: 2px dashed #ddd;
+    background: transparent;
+    flex-direction: column;
+    text-align: center;
+    padding: 1.5rem;
+}
+
+.assignment-card.add-new:hover label {
+    border-color: var(--primary-color);
+    background: #fffde7;
+}
+
+.empty-state {
+    grid-column: 1 / -1;
+    text-align: center;
+    padding: 2rem;
+    color: var(--text-muted);
+}
+
+.empty-state i {
+    font-size: 2.5rem;
+    margin-bottom: 0.5rem;
+    opacity: 0.5;
+}
+
+.campaign-filter {
+    margin-bottom: 1rem;
+}
+
+.campaign-filter select {
+    max-width: 300px;
+}
+
+.selected-summary {
+    margin-top: 1rem;
+    padding: 0.75rem 1rem;
+    background: #e3f2fd;
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 0.9rem;
+    color: #1565c0;
+}
+
+/* Range Input */
+.form-range {
+    width: 100%;
+    accent-color: var(--primary-color);
+}
+
+.range-labels {
+    display: flex;
+    justify-content: space-between;
+    font-size: 0.8rem;
+    color: var(--text-muted);
+}
+
+#speedValue {
+    font-weight: 700;
+    color: var(--primary-color);
+    font-size: 1rem;
+}
+
+/* Buttons */
+.btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.75rem 1.5rem;
+    border: none;
+    border-radius: 10px;
+    font-size: 0.95rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.btn-primary {
+    background: linear-gradient(135deg, var(--primary-color), #ffc107);
+    color: var(--dark-bg);
+}
+
+.btn-primary:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(255, 193, 7, 0.3);
+}
+
+.btn-outline {
+    background: white;
+    border: 1px solid #ddd;
+    color: var(--text-primary);
+}
+
+.btn-outline:hover {
+    background: #f5f5f5;
+}
+
+/* Responsive */
+@media (max-width: 1200px) {
+    .form-row.four-cols {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}
+
+@media (max-width: 768px) {
+    .form-grid {
+        grid-template-columns: 1fr;
+    }
+    
+    .form-row, .form-row.three-cols, .form-row.four-cols {
+        grid-template-columns: 1fr;
+    }
+    
+    .page-header {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+}
+</style>
+
+<script>
+window.onload = function() {
+    if(typeof setLang === 'function') {
+        setLang(localStorage.getItem('lang') || 'tr');
+    }
+    updateRoleOptions();
+    updateSelectedCount();
+    
+    // Auto-generate username from name
+    var firstNameInput = document.querySelector('input[name="first_name"]');
+    var lastNameInput = document.querySelector('input[name="last_name"]');
+    var usernameInput = document.getElementById('username');
+    
+    if(firstNameInput && lastNameInput && usernameInput && !usernameInput.readOnly) {
+        function updateUsername() {
+            var first = firstNameInput.value.toLowerCase().trim();
+            var last = lastNameInput.value.toLowerCase().trim();
+            
+            // Türkçe karakterleri değiştir
+            var trChars = {'ı':'i','ğ':'g','ü':'u','ş':'s','ö':'o','ç':'c','İ':'i','Ğ':'g','Ü':'u','Ş':'s','Ö':'o','Ç':'c'};
+            for(var tr in trChars) {
+                first = first.split(tr).join(trChars[tr]);
+                last = last.split(tr).join(trChars[tr]);
+            }
+            
+            if(first && last) {
+                usernameInput.value = first + '.' + last.split(' ').pop();
+            }
+        }
+        
+        firstNameInput.addEventListener('blur', updateUsername);
+        lastNameInput.addEventListener('blur', updateUsername);
+    }
+    
+    // Checkbox change listener
+    document.querySelectorAll('.assignment-card input[type="checkbox"]').forEach(function(cb) {
+        cb.addEventListener('change', updateSelectedCount);
+    });
+};
+
+function updateRoleOptions() {
+    var role = document.getElementById('roleSelect').value;
+    var agentSettings = document.getElementById('agentSettings');
+    var qcSettings = document.getElementById('qcSettings');
+    var projectSection = document.getElementById('projectSection');
+    
+    // Hide all special settings
+    agentSettings.style.display = 'none';
+    qcSettings.style.display = 'none';
+    
+    // Show based on role
+    if(role === 'agent') {
+        agentSettings.style.display = 'block';
+        projectSection.style.display = 'block';
+    } else if(role === 'qc_listener') {
+        qcSettings.style.display = 'block';
+        projectSection.style.display = 'block';
+    } else if(role === 'supervisor') {
+        projectSection.style.display = 'block';
+    } else if(role === 'super_admin' || role === 'admin') {
+        projectSection.style.display = 'none';
+    } else {
+        projectSection.style.display = 'block';
+    }
+}
+
+function switchTab(tab) {
+    document.querySelectorAll('.tab-btn').forEach(function(btn) {
+        btn.classList.remove('active');
+    });
+    document.querySelectorAll('.tab-content').forEach(function(content) {
+        content.classList.remove('active');
+    });
+    
+    event.target.closest('.tab-btn').classList.add('active');
+    document.getElementById(tab + 'Tab').classList.add('active');
+}
+
+function filterCampaigns() {
+    var projectId = document.getElementById('campaignProjectFilter').value;
+    var cards = document.querySelectorAll('#campaignGrid .assignment-card:not(.add-new)');
+    
+    cards.forEach(function(card) {
+        if(!projectId || card.dataset.project === projectId) {
+            card.style.display = 'block';
+        } else {
+            card.style.display = 'none';
+        }
+    });
+}
+
+function updateSelectedCount() {
+    var projects = document.querySelectorAll('input[name="projects[]"]:checked').length;
+    var campaigns = document.querySelectorAll('input[name="campaigns[]"]:checked').length;
+    document.getElementById('selectedCount').textContent = projects + ' proje, ' + campaigns + ' kampanya';
+}
+
+function loadTeams() {
+    var deptId = document.getElementById('departmentSelect').value;
+    var teamSelect = document.getElementById('teamSelect');
+    
+    // Demo teams
+    var teams = {
+        '1': [['1', 'Outbound Satış'], ['2', 'Inbound Satış']],
+        '2': [['3', 'Teknik Destek'], ['4', 'Müşteri Hizmetleri']],
+        '3': [['5', 'QC Dinleme'], ['6', 'Kalite Kontrol']],
+        '4': [['7', 'IT'], ['8', 'Geliştirme']]
+    };
+    
+    teamSelect.innerHTML = '<option value="">-- Seçiniz --</option>';
+    
+    if(deptId && teams[deptId]) {
+        teams[deptId].forEach(function(team) {
+            var option = document.createElement('option');
+            option.value = team[0];
+            option.textContent = team[1];
+            teamSelect.appendChild(option);
+        });
+    }
+}
+
+function togglePassword(fieldId) {
+    var field = document.getElementById(fieldId);
+    var btn = field.parentElement.querySelector('.toggle-password i');
+    
+    if(field.type === 'password') {
+        field.type = 'text';
+        btn.className = 'ti ti-eye-off';
+    } else {
+        field.type = 'password';
+        btn.className = 'ti ti-eye';
+    }
+}
+
+function generatePassword() {
+    var chars = 'ABCDEFGHJKLMNPQRSTUVWXYZabcdefghjkmnpqrstuvwxyz23456789!@#$';
+    var password = '';
+    for(var i = 0; i < 12; i++) {
+        password += chars.charAt(Math.floor(Math.random() * chars.length));
+    }
+    
+    document.getElementById('password').value = password;
+    document.getElementById('password_confirm').value = password;
+    document.getElementById('password').type = 'text';
+    document.getElementById('password_confirm').type = 'text';
+    
+    showNotification('Şifre oluşturuldu: ' + password, 'success');
+}
+
+function openNewProjectModal() {
+    alert('Yeni Proje modalı açılacak');
+}
+
+function openNewCampaignModal() {
+    window.location.href = "{{ url_for('campaign_new') }}";
+}
+
+function showNotification(message, type) {
+    var colors = { success: '#4caf50', error: '#f44336', info: '#2196f3' };
+    var notification = document.createElement('div');
+    notification.innerHTML = '<i class="ti ti-check"></i> ' + message;
+    notification.style.cssText = 'position:fixed;top:20px;right:20px;background:' + colors[type] + ';color:white;padding:1rem 1.5rem;border-radius:10px;z-index:9999;display:flex;align-items:center;gap:0.5rem;box-shadow:0 4px 12px rgba(0,0,0,0.15);';
+    document.body.appendChild(notification);
+    setTimeout(function() { notification.remove(); }, 4000);
+}
+
+// Form validation
+document.getElementById('userForm').addEventListener('submit', function(e) {
+    var password = document.getElementById('password');
+    var confirm = document.getElementById('password_confirm');
+    
+    if(password && confirm && password.value !== confirm.value) {
+        e.preventDefault();
+        showNotification('Şifreler eşleşmiyor!', 'error');
+        return false;
+    }
+});
+</script>
 {% endblock %}
-
-
-
