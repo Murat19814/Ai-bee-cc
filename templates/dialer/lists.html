@@ -319,11 +319,13 @@
     left: 0;
     right: 0;
     bottom: 0;
-    background: rgba(0,0,0,0.7);
+    background: rgba(0, 0, 0, 0.85);
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
     display: flex;
     align-items: center;
     justify-content: center;
-    z-index: 9999;
+    z-index: 99999;
     opacity: 0;
     visibility: hidden;
     transition: all 0.3s;
@@ -335,7 +337,7 @@
 }
 
 .modal-content {
-    background: var(--card-bg);
+    background: #1e1e2d;
     border-radius: 16px;
     width: 95%;
     max-width: 1100px;
@@ -343,6 +345,7 @@
     overflow: hidden;
     transform: scale(0.9);
     transition: all 0.3s;
+    box-shadow: 0 25px 80px rgba(0, 0, 0, 0.5), 0 0 0 1px rgba(255, 255, 255, 0.1);
 }
 
 .modal-overlay.active .modal-content {
@@ -356,6 +359,7 @@
     padding: 1.25rem 1.5rem;
     background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
     color: white;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
 }
 
 .modal-header h3 {
@@ -363,6 +367,7 @@
     display: flex;
     align-items: center;
     gap: 0.75rem;
+    font-size: 1.1rem;
 }
 
 .modal-close {
@@ -386,6 +391,8 @@
     padding: 1.5rem;
     max-height: calc(90vh - 80px);
     overflow-y: auto;
+    background: #1e1e2d;
+    color: #e0e0e0;
 }
 
 /* Stats Cards */
@@ -397,17 +404,18 @@
 }
 
 .stat-card {
-    background: var(--bg-color);
+    background: #252536;
     border-radius: 12px;
     padding: 1.25rem;
     text-align: center;
-    border: 1px solid var(--border-color);
+    border: 1px solid rgba(255, 255, 255, 0.1);
 }
 
 .stat-card .stat-label {
     font-size: 0.85rem;
-    color: var(--text-muted);
+    color: #9e9e9e;
     margin-bottom: 0.5rem;
+    margin-top: 0.75rem;
 }
 
 .stat-card .stat-value {
@@ -417,7 +425,7 @@
 
 .stat-card .stat-sub {
     font-size: 0.8rem;
-    color: var(--text-muted);
+    color: #757575;
     margin-top: 0.25rem;
 }
 
@@ -446,7 +454,7 @@
 
 .progress-ring .progress-bg {
     fill: none;
-    stroke: var(--border-color);
+    stroke: rgba(255, 255, 255, 0.1);
     stroke-width: 8;
 }
 
@@ -470,19 +478,23 @@
 .disposition-table {
     width: 100%;
     border-collapse: collapse;
+    background: #252536;
+    border-radius: 12px;
+    overflow: hidden;
 }
 
 .disposition-table th,
 .disposition-table td {
     padding: 0.75rem 1rem;
     text-align: left;
-    border-bottom: 1px solid var(--border-color);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
 }
 
 .disposition-table th {
-    background: var(--bg-color);
+    background: #1a1a2e;
     font-weight: 600;
     font-size: 0.85rem;
+    color: #fff;
 }
 
 .disposition-table .dispo-name {
@@ -1132,33 +1144,33 @@
             </div>
             
             <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 1rem;">
-                <div class="stat-card" style="border-radius: 12px;">
-                    <h5 style="margin: 0 0 1rem 0; color: var(--text-muted); font-size: 0.9rem;">
+                <div class="stat-card" style="border-radius: 12px; text-align: left;">
+                    <h5 style="margin: 0 0 1rem 0; color: #9e9e9e; font-size: 0.9rem;">
                         <i class="ti ti-phone"></i> <span data-tr="Arama Detayları" data-de="Anrufdetails">Arama Detayları</span>
                     </h5>
-                    <table style="width: 100%; font-size: 0.9rem;">
+                    <table style="width: 100%; font-size: 0.9rem; color: #e0e0e0;">
                         <tr><td data-tr="Toplam Numara" data-de="Gesamte Nummern">Toplam Numara</td><td style="text-align: right; font-weight: 600;">421</td></tr>
                         <tr><td data-tr="Giden/Gelen Çağrılar" data-de="Eingehende/ausgehende Anrufe">Giden/Gelen Çağrılar</td><td style="text-align: right; font-weight: 600;">157</td></tr>
                         <tr><td data-tr="Aranacak Numara" data-de="Zu rufende Nummern">Aranacak Numara</td><td style="text-align: right; font-weight: 600; color: #4CAF50;">252</td></tr>
                         <tr><td>Drop</td><td style="text-align: right; font-weight: 600; color: #f44336;">10</td></tr>
                     </table>
                 </div>
-                <div class="stat-card" style="border-radius: 12px;">
-                    <h5 style="margin: 0 0 1rem 0; color: var(--text-muted); font-size: 0.9rem;">
+                <div class="stat-card" style="border-radius: 12px; text-align: left;">
+                    <h5 style="margin: 0 0 1rem 0; color: #9e9e9e; font-size: 0.9rem;">
                         <i class="ti ti-chart-bar"></i> <span data-tr="Arama İstatistikleri" data-de="Anrufstatistik">Arama İstatistikleri</span>
                     </h5>
-                    <table style="width: 100%; font-size: 0.9rem;">
+                    <table style="width: 100%; font-size: 0.9rem; color: #e0e0e0;">
                         <tr><td data-tr="Cevaplanan" data-de="Antwortete">Cevaplanan</td><td style="text-align: right; font-weight: 600; color: #4CAF50;">16</td></tr>
                         <tr><td data-tr="Ulaşılamadı" data-de="Nicht Erreicht">Ulaşılamadı</td><td style="text-align: right; font-weight: 600;">68</td></tr>
                         <tr><td data-tr="Telesekreter" data-de="Anrufbeantworter">Telesekreter</td><td style="text-align: right; font-weight: 600;">55</td></tr>
                         <tr><td data-tr="Bağlantı Hatası" data-de="Verbindungsfehler">Bağlantı Hatası</td><td style="text-align: right; font-weight: 600; color: #f44336;">18</td></tr>
                     </table>
                 </div>
-                <div class="stat-card" style="border-radius: 12px;">
-                    <h5 style="margin: 0 0 1rem 0; color: var(--text-muted); font-size: 0.9rem;">
+                <div class="stat-card" style="border-radius: 12px; text-align: left;">
+                    <h5 style="margin: 0 0 1rem 0; color: #9e9e9e; font-size: 0.9rem;">
                         <i class="ti ti-clock"></i> <span data-tr="Süre Bilgileri" data-de="Gesamtdauer">Süre Bilgileri</span>
                     </h5>
-                    <table style="width: 100%; font-size: 0.9rem;">
+                    <table style="width: 100%; font-size: 0.9rem; color: #e0e0e0;">
                         <tr><td data-tr="Toplam Arama Süresi" data-de="Gesamte Anrufszeit">Toplam Arama Süresi</td><td style="text-align: right; font-weight: 600; color: #2196F3;">00:23:51</td></tr>
                         <tr><td data-tr="Ortalama Süre" data-de="Durchschnitt Anrufszeit">Ortalama Süre</td><td style="text-align: right; font-weight: 600;">00:01:29</td></tr>
                         <tr><td data-tr="Son Arama" data-de="Letzter Anruf">Son Arama</td><td style="text-align: right; font-weight: 600; color: #FF9800;">02.01.2026</td></tr>
@@ -1178,18 +1190,18 @@
             <button class="modal-close" onclick="closeModal('processModal')"><i class="ti ti-x"></i></button>
         </div>
         <div class="modal-body">
-            <div style="display: flex; gap: 1rem; margin-bottom: 1.5rem; flex-wrap: wrap;">
+            <div style="display: flex; gap: 1rem; margin-bottom: 1.5rem; flex-wrap: wrap; background: #252536; padding: 1rem; border-radius: 10px;">
                 <div class="form-group" style="flex: 1; min-width: 200px;">
-                    <label data-tr="Başlangıç Tarihi" data-de="Anfangsdatum">Başlangıç Tarihi</label>
-                    <input type="date" style="width: 100%; padding: 0.5rem; border-radius: 6px; border: 1px solid var(--border-color);">
+                    <label style="color: #9e9e9e; display: block; margin-bottom: 0.5rem;" data-tr="Başlangıç Tarihi" data-de="Anfangsdatum">Başlangıç Tarihi</label>
+                    <input type="date" style="width: 100%; padding: 0.5rem; border-radius: 6px; border: 1px solid rgba(255,255,255,0.2); background: #1a1a2e; color: #fff;">
                 </div>
                 <div class="form-group" style="flex: 1; min-width: 200px;">
-                    <label data-tr="Bitiş Tarihi" data-de="Enddatum">Bitiş Tarihi</label>
-                    <input type="date" style="width: 100%; padding: 0.5rem; border-radius: 6px; border: 1px solid var(--border-color);">
+                    <label style="color: #9e9e9e; display: block; margin-bottom: 0.5rem;" data-tr="Bitiş Tarihi" data-de="Enddatum">Bitiş Tarihi</label>
+                    <input type="date" style="width: 100%; padding: 0.5rem; border-radius: 6px; border: 1px solid rgba(255,255,255,0.2); background: #1a1a2e; color: #fff;">
                 </div>
                 <div class="form-group" style="flex: 1; min-width: 200px;">
-                    <label data-tr="Proses Türü" data-de="Prozessart">Proses Türü</label>
-                    <select style="width: 100%; padding: 0.5rem; border-radius: 6px; border: 1px solid var(--border-color);">
+                    <label style="color: #9e9e9e; display: block; margin-bottom: 0.5rem;" data-tr="Proses Türü" data-de="Prozessart">Proses Türü</label>
+                    <select style="width: 100%; padding: 0.5rem; border-radius: 6px; border: 1px solid rgba(255,255,255,0.2); background: #1a1a2e; color: #fff;">
                         <option>Default</option>
                     </select>
                 </div>
