@@ -1403,7 +1403,41 @@ def dialer_lists():
     lists = DialList.query.filter_by(tenant_id=tenant_id).order_by(DialList.created_at.desc()).all()
     campaigns = Campaign.query.filter_by(tenant_id=tenant_id, status='active').all()
     tenants = Tenant.query.order_by(Tenant.name.asc()).all() if current_user.is_super_admin else None
-    return render_template('dialer/lists.html', lists=lists, campaigns=campaigns, tenants=tenants, selected_tenant_id=tenant_id)
+    
+    # Liste istatistikleri (Lead durumlarına göre)
+    list_stats = {}
+    try:
+        from sqlalchemy import func, case
+        list_ids = [l.id for l in lists]
+        if list_ids:
+            rows = db.session.query(
+                Lead.dial_list_id.label('dial_list_id'),
+                func.count(Lead.id).label('total'),
+                func.sum(case((Lead.status == 'imported', 1), else_=0)).label('imported'),
+                func.sum(case((Lead.status == 'new', 1), else_=0)).label('queued'),
+                func.sum(case((Lead.status == 'in_progress', 1), else_=0)).label('in_call'),
+                func.sum(case((Lead.status == 'converted', 1), else_=0)).label('sales'),
+                func.sum(case((Lead.status == 'callback', 1), else_=0)).label('callbacks'),
+                func.sum(case((Lead.status.in_(['closed', 'dnc']), 1), else_=0)).label('closed'),
+            ).filter(
+                Lead.tenant_id == tenant_id,
+                Lead.dial_list_id.in_(list_ids)
+            ).group_by(Lead.dial_list_id).all()
+
+            for r in rows:
+                list_stats[int(r.dial_list_id)] = {
+                    'total': int(r.total or 0),
+                    'imported': int(r.imported or 0),
+                    'queued': int(r.queued or 0),
+                    'in_call': int(r.in_call or 0),
+                    'sales': int(r.sales or 0),
+                    'callbacks': int(r.callbacks or 0),
+                    'closed': int(r.closed or 0),
+                }
+    except Exception:
+        list_stats = {}
+
+    return render_template('dialer/lists.html', lists=lists, campaigns=campaigns, tenants=tenants, selected_tenant_id=tenant_id, list_stats=list_stats)
 
 
 @app.route('/api/data/analyze', methods=['POST'])
@@ -1619,15 +1653,21 @@ def api_data_confirm():
                 added += 1
                 
                 # Lead de oluştur
+                pr = (data.get('priority') if isinstance(data, dict) else None) or 'normal'
+                pr_map = {'low': 3, 'normal': 5, 'high': 8}
+                pr_val = pr_map.get(str(pr).lower(), 5)
+
                 lead = Lead(
                     tenant_id=tenant_id,
+                    project_id=dial_list.campaign.project_id if dial_list.campaign else None,
+                    campaign_id=dial_list.campaign_id,
                     dial_list_id=dial_list.id,
                     customer_id=customer.id,
                     phone=phone,
                     first_name=customer.first_name,
                     last_name=customer.last_name,
-                    status='new',
-                    priority=data.get('priority', 'normal')
+                    status='imported',  # Kuyruğa alınmadan kullanılmasın
+                    priority=pr_val
                 )
                 db.session.add(lead)
                 
@@ -1669,6 +1709,81 @@ def api_data_cancel():
                     os.remove(os.path.join(upload_dir, f))
     
     return jsonify({'success': True})
+
+
+@app.route('/api/dialer/lists/<int:list_id>/process-stats')
+@login_required
+@admin_required
+def api_dialer_list_process_stats(list_id):
+    """DialList proses/istatistikleri (DB'den)"""
+    from sqlalchemy import func
+    tenant_id = get_effective_tenant_id(request.args.get('tenant_id'))
+    dial_list = DialList.query.filter_by(id=list_id, tenant_id=tenant_id).first_or_404()
+
+    # Lead totals
+    total_leads = Lead.query.filter_by(tenant_id=tenant_id, dial_list_id=list_id).count()
+    imported = Lead.query.filter_by(tenant_id=tenant_id, dial_list_id=list_id, status='imported').count()
+    queued = Lead.query.filter_by(tenant_id=tenant_id, dial_list_id=list_id, status='new').count()
+    in_call = Lead.query.filter_by(tenant_id=tenant_id, dial_list_id=list_id, status='in_progress').count()
+    sales = Lead.query.filter_by(tenant_id=tenant_id, dial_list_id=list_id, status='converted').count()
+    no_interest = Lead.query.filter_by(tenant_id=tenant_id, dial_list_id=list_id, status='closed').count()
+    callbacks = Lead.query.filter_by(tenant_id=tenant_id, dial_list_id=list_id, status='callback').count()
+
+    # Call dispositions grouped (if exist)
+    lead_ids_subq = db.session.query(Lead.id).filter(Lead.tenant_id == tenant_id, Lead.dial_list_id == list_id).subquery()
+    disp_rows = db.session.query(Call.disposition, func.count(Call.id)).filter(
+        Call.tenant_id == tenant_id,
+        Call.lead_id.in_(lead_ids_subq)
+    ).group_by(Call.disposition).all()
+    disp_counts = { (d or 'unknown'): int(c) for d, c in disp_rows }
+
+    def pct(n):
+        base = max(total_leads, 1)
+        return round((n / base) * 100, 1)
+
+    items = [
+        {'key': 'imported', 'label_tr': 'Yeni Veri (aranabilir)', 'label_de': 'Neue Daten', 'count': imported, 'percent': pct(imported)},
+        {'key': 'queued', 'label_tr': 'Kuyrukta Bekliyor', 'label_de': 'Daten in der Schlange', 'count': queued, 'percent': pct(queued)},
+        {'key': 'in_call', 'label_tr': 'Aramada', 'label_de': 'in Anruf', 'count': in_call, 'percent': pct(in_call)},
+        {'key': 'callback', 'label_tr': 'Geri Arama', 'label_de': 'Wiedervorlage', 'count': callbacks, 'percent': pct(callbacks)},
+        {'key': 'sale_ok', 'label_tr': 'Satış OK', 'label_de': 'VERKAUF OK', 'count': disp_counts.get('sale_ok', sales), 'percent': pct(disp_counts.get('sale_ok', sales))},
+        {'key': 'no_interest', 'label_tr': 'İlgilenmiyor', 'label_de': 'Kein Interesse', 'count': disp_counts.get('no_interest', no_interest), 'percent': pct(disp_counts.get('no_interest', no_interest))},
+        {'key': 'no_answer', 'label_tr': 'Cevap Yok', 'label_de': 'Kein Antwort', 'count': disp_counts.get('no_answer', 0), 'percent': pct(disp_counts.get('no_answer', 0))},
+        {'key': 'voicemail', 'label_tr': 'Telesekreter', 'label_de': 'Anrufbeantworter', 'count': disp_counts.get('voicemail', 0), 'percent': pct(disp_counts.get('voicemail', 0))},
+        {'key': 'wrong_number', 'label_tr': 'Yanlış Numara', 'label_de': 'Außer Betrieb', 'count': disp_counts.get('wrong_number', 0), 'percent': pct(disp_counts.get('wrong_number', 0))},
+    ]
+
+    return jsonify({
+        'success': True,
+        'list_id': dial_list.id,
+        'name': dial_list.name,
+        'total_leads': total_leads,
+        'items': items
+    })
+
+
+@app.route('/api/dialer/lists/<int:list_id>/enqueue', methods=['POST'])
+@login_required
+@admin_required
+def api_dialer_list_enqueue(list_id):
+    """DialList'i kuyruğa al: imported -> new"""
+    data = request.get_json(silent=True) or {}
+    tenant_id = get_effective_tenant_id(data.get('tenant_id'))
+    dial_list = DialList.query.filter_by(id=list_id, tenant_id=tenant_id).first_or_404()
+
+    # Campaign/Project propagate to leads
+    project_id = dial_list.campaign.project_id if dial_list.campaign else dial_list.project_id
+    campaign_id = dial_list.campaign_id
+
+    q = Lead.query.filter_by(tenant_id=tenant_id, dial_list_id=list_id, status='imported')
+    updated = q.update({
+        'status': 'new',
+        'project_id': project_id,
+        'campaign_id': campaign_id
+    }, synchronize_session=False)
+
+    db.session.commit()
+    return jsonify({'success': True, 'updated': int(updated or 0)})
 
 
 # ==================== CRM ROUTES ====================
