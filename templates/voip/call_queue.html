@@ -467,7 +467,7 @@
         </div>
         <div class="queue-stat-card completed">
             <div class="queue-stat-icon"><i class="ti ti-check"></i></div>
-            <div class="queue-stat-value" id="completedCount">156</div>
+            <div class="queue-stat-value" id="completedCount">0</div>
             <div class="queue-stat-label" data-tr="Tamamlanan (Bugün)" data-de="Abgeschlossen (Heute)">Tamamlanan (Bugün)</div>
         </div>
         <div class="queue-stat-card failed">
@@ -526,9 +526,9 @@
             <div class="agent-speed-grid">
                 <!-- Agent 1 -->
                 <div class="agent-speed-card">
-                    <div class="agent-speed-avatar">AK</div>
+                    <div class="agent-speed-avatar">TK</div>
                     <div class="agent-speed-info">
-                        <div class="agent-speed-name">Ahmet K.</div>
+                        <div class="agent-speed-name">Tuncay K.</div>
                         <div class="agent-speed-status" data-tr="Çevrimiçi" data-de="Online">Çevrimiçi</div>
                     </div>
                     <div class="speed-selector" data-agent="1">
@@ -545,9 +545,9 @@
 
                 <!-- Agent 2 -->
                 <div class="agent-speed-card">
-                    <div class="agent-speed-avatar">BY</div>
+                    <div class="agent-speed-avatar">AA</div>
                     <div class="agent-speed-info">
-                        <div class="agent-speed-name">Buse Y.</div>
+                        <div class="agent-speed-name">Aslı A.</div>
                         <div class="agent-speed-status" data-tr="Çevrimiçi" data-de="Online">Çevrimiçi</div>
                     </div>
                     <div class="speed-selector" data-agent="2">
@@ -564,9 +564,9 @@
 
                 <!-- Agent 3 -->
                 <div class="agent-speed-card">
-                    <div class="agent-speed-avatar">CD</div>
+                    <div class="agent-speed-avatar">EC</div>
                     <div class="agent-speed-info">
-                        <div class="agent-speed-name">Can D.</div>
+                        <div class="agent-speed-name">Erdoğan Ç.</div>
                         <div class="agent-speed-status" data-tr="Çevrimiçi" data-de="Online">Çevrimiçi</div>
                     </div>
                     <div class="speed-selector" data-agent="3">
@@ -583,9 +583,9 @@
 
                 <!-- Agent 4 -->
                 <div class="agent-speed-card">
-                    <div class="agent-speed-avatar">EF</div>
+                    <div class="agent-speed-avatar">HC</div>
                     <div class="agent-speed-info">
-                        <div class="agent-speed-name">Elif F.</div>
+                        <div class="agent-speed-name">Hilal C.</div>
                         <div class="agent-speed-status" data-tr="Çevrimiçi" data-de="Online">Çevrimiçi</div>
                     </div>
                     <div class="speed-selector" data-agent="4">
@@ -665,37 +665,12 @@
                     </tr>
                 </thead>
                 <tbody>
-                    <tr>
-                        <td><strong>Ahmet K.</strong></td>
-                        <td>Mehmet Yılmaz</td>
-                        <td>+90 532 XXX XX 12</td>
-                        <td><span class="call-status connected" data-tr="Bağlandı" data-de="Verbunden">Bağlandı</span></td>
-                        <td class="call-duration">03:24</td>
-                        <td><button class="btn btn-sm btn-danger"><i class="ti ti-phone-off"></i></button></td>
-                    </tr>
-                    <tr>
-                        <td><strong>Buse Y.</strong></td>
-                        <td>Ali Demir</td>
-                        <td>+90 533 XXX XX 45</td>
-                        <td><span class="call-status ringing" data-tr="Çalıyor" data-de="Klingelt">Çalıyor</span></td>
-                        <td class="call-duration">00:15</td>
-                        <td><button class="btn btn-sm btn-danger"><i class="ti ti-phone-off"></i></button></td>
-                    </tr>
-                    <tr>
-                        <td><strong>Can D.</strong></td>
-                        <td>Fatma Kaya</td>
-                        <td>+90 535 XXX XX 78</td>
-                        <td><span class="call-status connected" data-tr="Bağlandı" data-de="Verbunden">Bağlandı</span></td>
-                        <td class="call-duration">01:45</td>
-                        <td><button class="btn btn-sm btn-danger"><i class="ti ti-phone-off"></i></button></td>
-                    </tr>
-                    <tr>
-                        <td><strong>Elif F.</strong></td>
-                        <td>Hasan Çelik</td>
-                        <td>+90 536 XXX XX 90</td>
-                        <td><span class="call-status connected" data-tr="Bağlandı" data-de="Verbunden">Bağlandı</span></td>
-                        <td class="call-duration">05:12</td>
-                        <td><button class="btn btn-sm btn-danger"><i class="ti ti-phone-off"></i></button></td>
+                    <!-- Aktif çağrı olmadığında bu mesaj gösterilir -->
+                    <tr class="empty-row">
+                        <td colspan="6" style="text-align: center; padding: 2rem;">
+                            <i class="ti ti-phone-check" style="font-size: 2rem; color: #4CAF50; opacity: 0.5;"></i>
+                            <p style="margin-top: 0.5rem; color: #888;" data-tr="Şu anda aktif çağrı yok" data-de="Keine aktiven Anrufe">Şu anda aktif çağrı yok</p>
+                        </td>
                     </tr>
                 </tbody>
             </table>
