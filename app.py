@@ -1378,9 +1378,10 @@ def campaign_detail(id):
 @login_required
 @admin_required
 def dialer_lists():
-    """Arama listeleri"""
+    """Arama listeleri - DATENBANK"""
     lists = DialList.query.filter_by(tenant_id=current_user.tenant_id).order_by(DialList.created_at.desc()).all()
-    return render_template('dialer/lists.html', lists=lists)
+    campaigns = Campaign.query.filter_by(tenant_id=current_user.tenant_id, status='active').all()
+    return render_template('dialer/lists.html', lists=lists, campaigns=campaigns)
 
 
 @app.route('/api/data/analyze', methods=['POST'])
