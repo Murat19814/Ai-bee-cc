@@ -433,7 +433,7 @@
                             <span>6</span>
                         </div>
                     </td>
-                    <td>Ahmet Yılmaz</td>
+                    <td>Ayhan Yıldızdoğan</td>
                     <td><span class="status-badge active" data-tr="Aktif" data-de="Aktiv">Aktif</span></td>
                     <td>
                         <div class="action-buttons">
@@ -607,11 +607,10 @@
                         <label data-tr="Supervisor" data-de="Supervisor">Supervisor</label>
                         <select id="teamSupervisor">
                             <option value="" data-tr="-- Seçiniz --" data-de="-- Auswählen --">-- Seçiniz --</option>
-                            <option value="1">Ahmet Yılmaz</option>
-                            <option value="2">Elif Kara</option>
-                            <option value="3">Can Arslan</option>
-                            <option value="4">Zeynep Demir</option>
-                            <option value="5">Selin Öztürk</option>
+                            <option value="1">Ayhan Yıldızdoğan</option>
+                            <option value="2">Ahmet Kömür</option>
+                            <option value="3">Hatice Yıldız</option>
+                            <option value="4">Meral Taşdoğan</option>
                         </select>
                     </div>
                 </div>
@@ -674,12 +673,13 @@
         setTimeout(function() { toast.remove(); }, 3000);
     }
 
+    // BeeLife Consulting CC - Takım Üyeleri
     const teamMembers = {
-        1: [{ name: 'Ahmet Yılmaz', role: 'Supervisor', initials: 'AY' }, { name: 'Mehmet Kaya', role: 'Agent', initials: 'MK' }, { name: 'Zeynep Demir', role: 'Agent', initials: 'ZD' }, { name: 'Ali Veli', role: 'Agent', initials: 'AV' }, { name: 'Fatma Şen', role: 'Agent', initials: 'FŞ' }, { name: 'Hasan Çelik', role: 'Agent', initials: 'HÇ' }],
-        2: [{ name: 'Elif Kara', role: 'Supervisor', initials: 'EK' }, { name: 'Burak Tekin', role: 'Agent', initials: 'BT' }, { name: 'Ayşe Yurt', role: 'Agent', initials: 'AY' }, { name: 'Kemal Öz', role: 'Agent', initials: 'KÖ' }],
-        3: [{ name: 'Can Arslan', role: 'Supervisor', initials: 'CA' }, { name: 'Hülya Özcan', role: 'Agent', initials: 'HÖ' }, { name: 'Serkan Ak', role: 'Agent', initials: 'SA' }, { name: 'Deniz Kır', role: 'Agent', initials: 'DK' }, { name: 'Ece Bal', role: 'Agent', initials: 'EB' }],
-        4: [{ name: 'Zeynep Demir', role: 'QC Supervisor', initials: 'ZD' }, { name: 'Alper Soy', role: 'QC Listener', initials: 'AS' }, { name: 'Berna Koç', role: 'QC Listener', initials: 'BK' }, { name: 'Cem Tan', role: 'QC Listener', initials: 'CT' }],
-        5: [{ name: 'Selin Öztürk', role: 'Supervisor', initials: 'SÖ' }, { name: 'Furkan Kurt', role: 'Agent', initials: 'FK' }, { name: 'Gizem Ay', role: 'Agent', initials: 'GA' }]
+        1: [{ name: 'Ayhan Yıldızdoğan', role: 'Supervisor', initials: 'AY' }, { name: 'Tuncay Karaca', role: 'Agent', initials: 'TK' }, { name: 'Aslı Akdoğan', role: 'Agent', initials: 'AA' }, { name: 'Erdoğan Çuvoğlu', role: 'Agent', initials: 'EC' }, { name: 'Hilal Coşkun', role: 'Agent', initials: 'HC' }, { name: 'Yücel Gökçe', role: 'Agent', initials: 'YG' }],
+        2: [{ name: 'Ayhan Yıldızdoğan', role: 'Supervisor', initials: 'AY' }, { name: 'Fatma Karipçin', role: 'Agent', initials: 'FK' }, { name: 'Gönül Dağ', role: 'Agent', initials: 'GD' }, { name: 'Gülay Dikmen', role: 'Agent', initials: 'GD' }],
+        3: [{ name: 'Ayhan Yıldızdoğan', role: 'Supervisor', initials: 'AY' }, { name: 'Leyla Doğan', role: 'Agent', initials: 'LD' }, { name: 'Selma Delioğlu', role: 'Agent', initials: 'SD' }, { name: 'Şeyda Uludağ', role: 'Agent', initials: 'ŞU' }, { name: 'Yüksel Taşkın', role: 'Agent', initials: 'YT' }],
+        4: [{ name: 'Ahmet Kömür', role: 'QC Supervisor', initials: 'AK' }, { name: 'Hatice Yıldız', role: 'QC Listener', initials: 'HY' }, { name: 'Meral Taşdoğan', role: 'QC Listener', initials: 'MT' }],
+        5: [{ name: 'Ayhan Yıldızdoğan', role: 'Supervisor', initials: 'AY' }, { name: 'Taner Turan', role: 'Agent', initials: 'TT' }]
     };
 
     window.filterTeams = function() {

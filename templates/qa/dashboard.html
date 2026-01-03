@@ -354,52 +354,11 @@
                         </tr>
                         {% endfor %}
                     {% else %}
-                        <!-- Demo Data -->
-                        <tr>
-                            <td class="agent-name">Ahmet Yılmaz</td>
-                            <td class="call-duration">04:32</td>
-                            <td class="call-date">26.12.2024 14:25</td>
-                            <td>
-                                <div style="display: flex; gap: 0.5rem;">
-                                    <button class="btn-listen" onclick="listenCall(1)" title="Dinle">
-                                        <i class="ti ti-headphones"></i>
-                                    </button>
-                                    <button class="btn-evaluate" onclick="evaluateCall(1)">
-                                        <i class="ti ti-clipboard-check"></i>
-                                        <span data-tr="Değerlendir" data-de="Bewerten">Değerlendir</span>
-                                    </button>
-                                </div>
-                            </td>
-                        </tr>
-                        <tr>
-                            <td class="agent-name">Mehmet Demir</td>
-                            <td class="call-duration">06:15</td>
-                            <td class="call-date">26.12.2024 13:50</td>
-                            <td>
-                                <div style="display: flex; gap: 0.5rem;">
-                                    <button class="btn-listen" onclick="listenCall(2)" title="Dinle">
-                                        <i class="ti ti-headphones"></i>
-                                    </button>
-                                    <button class="btn-evaluate" onclick="evaluateCall(2)">
-                                        <i class="ti ti-clipboard-check"></i>
-                                        <span data-tr="Değerlendir" data-de="Bewerten">Değerlendir</span>
-                                    </button>
-                                </div>
-                            </td>
-                        </tr>
-                        <tr>
-                            <td class="agent-name">Ayşe Kaya</td>
-                            <td class="call-duration">03:48</td>
-                            <td class="call-date">26.12.2024 12:30</td>
-                            <td>
-                                <div style="display: flex; gap: 0.5rem;">
-                                    <button class="btn-listen" onclick="listenCall(3)" title="Dinle">
-                                        <i class="ti ti-headphones"></i>
-                                    </button>
-                                    <button class="btn-evaluate" onclick="evaluateCall(3)">
-                                        <i class="ti ti-clipboard-check"></i>
-                                        <span data-tr="Değerlendir" data-de="Bewerten">Değerlendir</span>
-                                    </button>
+                        <tr class="empty-row">
+                            <td colspan="4">
+                                <div style="text-align: center; padding: 2rem;">
+                                    <i class="ti ti-phone-check" style="font-size: 3rem; color: #4CAF50; opacity: 0.5;"></i>
+                                    <p style="margin-top: 1rem; color: var(--text-muted);" data-tr="Tüm çağrılar değerlendirilmiş! 🎉" data-de="Alle Anrufe wurden bewertet! 🎉">Tüm çağrılar değerlendirilmiş! 🎉</p>
                                 </div>
                             </td>
                         </tr>
@@ -446,30 +405,13 @@
                         </tr>
                         {% endfor %}
                     {% else %}
-                        <!-- Demo Data -->
-                        <tr>
-                            <td class="agent-name">Fatma Öz</td>
-                            <td><span class="score-badge high"><i class="ti ti-star-filled"></i> 92%</span></td>
-                            <td><span class="result-badge success">QC OK</span></td>
-                            <td class="call-date">26.12.2024 11:45</td>
-                        </tr>
-                        <tr>
-                            <td class="agent-name">Ali Veli</td>
-                            <td><span class="score-badge medium"><i class="ti ti-star-filled"></i> 74%</span></td>
-                            <td><span class="result-badge warning">Termin</span></td>
-                            <td class="call-date">26.12.2024 10:30</td>
-                        </tr>
-                        <tr>
-                            <td class="agent-name">Zeynep Ak</td>
-                            <td><span class="score-badge high"><i class="ti ti-star-filled"></i> 88%</span></td>
-                            <td><span class="result-badge success">QC OK</span></td>
-                            <td class="call-date">26.12.2024 09:15</td>
-                        </tr>
-                        <tr>
-                            <td class="agent-name">Mustafa Can</td>
-                            <td><span class="score-badge low"><i class="ti ti-star-filled"></i> 45%</span></td>
-                            <td><span class="result-badge danger">Storno</span></td>
-                            <td class="call-date">25.12.2024 16:40</td>
+                        <tr class="empty-row">
+                            <td colspan="4">
+                                <div style="text-align: center; padding: 2rem;">
+                                    <i class="ti ti-clipboard-list" style="font-size: 3rem; color: var(--primary); opacity: 0.5;"></i>
+                                    <p style="margin-top: 1rem; color: var(--text-muted);" data-tr="Henüz değerlendirme yapılmamış" data-de="Noch keine Bewertungen">Henüz değerlendirme yapılmamış</p>
+                                </div>
+                            </td>
                         </tr>
                     {% endif %}
                 </tbody>

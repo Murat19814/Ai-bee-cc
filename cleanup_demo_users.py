@@ -12,13 +12,42 @@ Usage:
 
 Safe rules:
 - NEVER touch user "Murat66"
-- Candidates are common demo accounts like username=="admin" and emails ending with "@ai-bee-cc.com"
+- NEVER touch BeeLife users (@beelife-cc.com)
+- Candidates are ALL OTHER users (demo accounts)
 """
 
 import argparse
 
 from app import app, db
 from models import AuditLog, SecurityEvent, User
+
+
+# BeeLife gerçek kullanıcı isimleri - BUNLARI ASLA SİLME
+BEELIFE_USERNAMES = {
+    "Murat66",
+    "ferhat.acikgoz",
+    "ayhan.yildizdogan",
+    "ahmet.komur",
+    "hatice.yildiz",
+    "meral.tasdogan",
+    "abdulcelil.arslan",
+    "asli.akdogan",
+    "eda.hatipoglu",
+    "erdogan.cuvoglu",
+    "fatma.karipcin",
+    "gonul.dag",
+    "gulay.dikmen",
+    "hilal.coskun",
+    "leyla.dogan",
+    "nihat.kedi",
+    "selma.delioglu",
+    "seyda.uludag",
+    "tuncay.karaca",
+    "turgay.yumrukaya",
+    "yucel.gokce",
+    "yuksel.taskin",
+    "taner.turan",
+}
 
 
 def main():
@@ -38,29 +67,43 @@ def main():
     args = parser.parse_args()
 
     with app.app_context():
-        keep_usernames = {"Murat66"}
-
         candidates = []
+        kept_users = []
+        
         for u in User.query.all():
-            if u.username in keep_usernames:
+            # KORU: Bilinen kullanıcı adları
+            if u.username in BEELIFE_USERNAMES:
+                kept_users.append(u)
                 continue
-
-            is_demo = False
-            if u.username == "admin":
-                is_demo = True
-            if (u.email or "").lower().endswith("@ai-bee-cc.com"):
-                is_demo = True
-
-            if is_demo:
-                candidates.append(u)
+            
+            # KORU: BeeLife email'leri
+            if (u.email or "").lower().endswith("@beelife-cc.com"):
+                kept_users.append(u)
+                continue
+            
+            # Geri kalan her şey DEMO - temizlenecek
+            candidates.append(u)
 
         print("=" * 80)
-        print(f"Demo candidates: {len(candidates)}")
+        print("🐝 BEE LIFE CC - DEMO KULLANICI TEMİZLİĞİ")
+        print("=" * 80)
+        
+        print(f"\n✅ KORUNAN KULLANICILAR ({len(kept_users)}):")
+        print("-" * 60)
+        for u in kept_users:
+            print(f"   ✓ {u.username:<25} {u.email or '-':<35} {u.role}")
+        
+        print(f"\n🗑️  SİLİNECEK DEMO KULLANICILAR ({len(candidates)}):")
+        print("-" * 60)
         for u in candidates:
-            print(f"- id={u.id} tenant_id={u.tenant_id} username={u.username} email={u.email} role={u.role}")
+            status = "DEACTIVE" if not u.is_active else "active"
+            print(f"   ✗ id={u.id:<4} {u.username:<25} {u.email or '-':<35} {u.role:<12} [{status}]")
 
         if not args.apply:
-            print("\nDry-run only. Run with --apply to apply changes.")
+            print("\n" + "=" * 80)
+            print("⚠️  DRY-RUN: Değişiklik yapılmadı!")
+            print("    Uygulamak için: python cleanup_demo_users.py --apply")
+            print("=" * 80)
             return
 
         try:
@@ -72,18 +115,19 @@ def main():
                     u.lock_reason = "disabled_by_cleanup"
 
                     # Make login impossible even if something toggles is_active later
-                    if u.email:
+                    if u.email and not u.email.startswith("disabled+"):
                         u.email = f"disabled+{u.id}@invalid.local"
-                    u.username = f"disabled_{u.id}_{u.username}"
+                    if not u.username.startswith("disabled_"):
+                        u.username = f"disabled_{u.id}_{u.username}"
 
                 db.session.commit()
-                print(f"\nDeactivated {len(candidates)} demo users.")
+                print(f"\n✅ {len(candidates)} demo kullanıcı deaktif edildi.")
                 return
 
             # mode == delete
             if not args.purge_audit:
-                print("\nRefusing to hard-delete without --purge-audit (to avoid FK violations).")
-                print("Tip: use --mode deactivate (recommended).")
+                print("\n❌ --purge-audit olmadan hard-delete yapılamaz (FK ihlali riski).")
+                print("   Önerilen: --mode deactivate kullanın.")
                 return
 
             for u in candidates:
@@ -93,9 +137,10 @@ def main():
                 db.session.delete(u)
 
             db.session.commit()
-            print(f"\nDeleted {len(candidates)} demo users (with audit/security purge).")
-        except Exception:
+            print(f"\n✅ {len(candidates)} demo kullanıcı silindi (audit kayıtları dahil).")
+        except Exception as e:
             db.session.rollback()
+            print(f"\n❌ HATA: {e}")
             raise
 
 
