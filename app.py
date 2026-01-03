@@ -485,6 +485,14 @@ def platform_tenants():
     return render_template('platform/tenants.html', tenants=tenants)
 
 
+@app.route('/platform/backup')
+@login_required
+@super_admin_required
+def platform_backup():
+    """Sistem backup yönetimi"""
+    return render_template('platform/backup.html')
+
+
 @app.route('/platform/tenants/new', methods=['GET', 'POST'])
 @login_required
 @super_admin_required

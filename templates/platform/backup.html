@@ -1,0 +1,762 @@
+{% extends "base.html" %}
+
+{% block title %}Sistem Backup - {{ app_name }}{% endblock %}
+
+{% block extra_css %}
+<style>
+.backup-page { padding: 1.5rem; }
+
+/* Backup Cards */
+.backup-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+    gap: 1.5rem;
+    margin-bottom: 2rem;
+}
+
+.backup-card {
+    background: white;
+    border-radius: 16px;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.06);
+    overflow: hidden;
+}
+
+.backup-card-header {
+    padding: 1.25rem 1.5rem;
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    border-bottom: 1px solid #eee;
+}
+
+.backup-card-header.database { background: linear-gradient(135deg, #667eea, #764ba2); color: white; }
+.backup-card-header.files { background: linear-gradient(135deg, #4CAF50, #388E3C); color: white; }
+.backup-card-header.full { background: linear-gradient(135deg, #FF9800, #F57C00); color: white; }
+.backup-card-header.restore { background: linear-gradient(135deg, #f44336, #D32F2F); color: white; }
+
+.backup-card-header i {
+    font-size: 1.5rem;
+}
+
+.backup-card-header h3 {
+    margin: 0;
+    font-size: 1.1rem;
+}
+
+.backup-card-body {
+    padding: 1.5rem;
+}
+
+.backup-info {
+    margin-bottom: 1.5rem;
+}
+
+.backup-info-row {
+    display: flex;
+    justify-content: space-between;
+    padding: 0.75rem 0;
+    border-bottom: 1px solid #f0f0f0;
+}
+
+.backup-info-row:last-child {
+    border-bottom: none;
+}
+
+.backup-info-label {
+    color: #666;
+}
+
+.backup-info-value {
+    font-weight: 600;
+}
+
+.backup-btn {
+    width: 100%;
+    padding: 1rem;
+    border: none;
+    border-radius: 10px;
+    font-weight: 700;
+    font-size: 1rem;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    transition: all 0.2s;
+}
+
+.backup-btn.primary {
+    background: linear-gradient(135deg, #667eea, #764ba2);
+    color: white;
+}
+
+.backup-btn.success {
+    background: linear-gradient(135deg, #4CAF50, #388E3C);
+    color: white;
+}
+
+.backup-btn.warning {
+    background: linear-gradient(135deg, #FF9800, #F57C00);
+    color: white;
+}
+
+.backup-btn.danger {
+    background: linear-gradient(135deg, #f44336, #D32F2F);
+    color: white;
+}
+
+.backup-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+}
+
+.backup-btn:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+    transform: none;
+}
+
+/* Progress */
+.backup-progress {
+    display: none;
+    margin-top: 1rem;
+}
+
+.backup-progress.show {
+    display: block;
+}
+
+.progress-bar-bg {
+    height: 8px;
+    background: #e0e0e0;
+    border-radius: 4px;
+    overflow: hidden;
+}
+
+.progress-bar-fill {
+    height: 100%;
+    background: linear-gradient(90deg, #667eea, #764ba2);
+    border-radius: 4px;
+    width: 0%;
+    transition: width 0.3s;
+}
+
+.progress-text {
+    text-align: center;
+    margin-top: 0.5rem;
+    font-size: 0.85rem;
+    color: #666;
+}
+
+/* Backup History */
+.backup-history {
+    background: white;
+    border-radius: 16px;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.06);
+    overflow: hidden;
+}
+
+.backup-history-header {
+    padding: 1rem 1.5rem;
+    border-bottom: 1px solid #eee;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.backup-history-header h3 {
+    margin: 0;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.backup-table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.backup-table th,
+.backup-table td {
+    padding: 1rem 1.5rem;
+    text-align: left;
+    border-bottom: 1px solid #eee;
+}
+
+.backup-table th {
+    background: #f8f9fa;
+    font-weight: 600;
+    font-size: 0.8rem;
+    color: #666;
+    text-transform: uppercase;
+}
+
+.backup-table tr:hover {
+    background: #f8f9fa;
+}
+
+.backup-type-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+    padding: 0.35rem 0.75rem;
+    border-radius: 20px;
+    font-size: 0.75rem;
+    font-weight: 600;
+}
+
+.backup-type-badge.database { background: #E8EAF6; color: #3F51B5; }
+.backup-type-badge.files { background: #E8F5E9; color: #2E7D32; }
+.backup-type-badge.full { background: #FFF3E0; color: #E65100; }
+
+.backup-status {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+    padding: 0.35rem 0.75rem;
+    border-radius: 20px;
+    font-size: 0.75rem;
+    font-weight: 600;
+}
+
+.backup-status.success { background: #E8F5E9; color: #2E7D32; }
+.backup-status.failed { background: #FFEBEE; color: #C62828; }
+.backup-status.running { background: #E3F2FD; color: #1565C0; }
+
+/* Storage Info */
+.storage-info {
+    background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+    border-radius: 16px;
+    padding: 1.5rem;
+    color: white;
+    margin-bottom: 2rem;
+}
+
+.storage-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1rem;
+}
+
+.storage-header h3 {
+    margin: 0;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.storage-bar {
+    height: 12px;
+    background: rgba(255,255,255,0.1);
+    border-radius: 6px;
+    overflow: hidden;
+    margin-bottom: 1rem;
+}
+
+.storage-bar-fill {
+    height: 100%;
+    background: linear-gradient(90deg, #4CAF50, #8BC34A);
+    border-radius: 6px;
+}
+
+.storage-stats {
+    display: flex;
+    gap: 2rem;
+}
+
+.storage-stat {
+    text-align: center;
+}
+
+.storage-stat-value {
+    font-size: 1.5rem;
+    font-weight: 700;
+}
+
+.storage-stat-label {
+    font-size: 0.8rem;
+    opacity: 0.7;
+}
+
+/* Settings */
+.backup-settings {
+    background: white;
+    border-radius: 16px;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.06);
+    padding: 1.5rem;
+    margin-bottom: 2rem;
+}
+
+.settings-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 1rem;
+}
+
+.setting-item {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.setting-item label {
+    font-weight: 600;
+    font-size: 0.9rem;
+}
+
+.setting-item select,
+.setting-item input {
+    padding: 0.75rem;
+    border: 2px solid #e0e0e0;
+    border-radius: 8px;
+    font-size: 0.9rem;
+}
+
+.setting-item select:focus,
+.setting-item input:focus {
+    outline: none;
+    border-color: #667eea;
+}
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="backup-page">
+    <div class="page-header">
+        <div>
+            <h1 class="page-title">
+                <i class="ti ti-database-export" style="color: #667eea;"></i>
+                <span data-tr="Sistem Backup" data-de="System-Backup">Sistem Backup</span>
+            </h1>
+            <p class="page-subtitle" data-tr="Veritabanı ve dosya yedekleme yönetimi" data-de="Datenbank- und Dateisicherungsverwaltung">Veritabanı ve dosya yedekleme yönetimi</p>
+        </div>
+    </div>
+
+    <!-- Storage Info -->
+    <div class="storage-info">
+        <div class="storage-header">
+            <h3>
+                <i class="ti ti-server"></i>
+                <span data-tr="OVH Sunucu Depolama" data-de="OVH Server-Speicher">OVH Sunucu Depolama</span>
+            </h3>
+            <span style="background: rgba(76, 175, 80, 0.2); padding: 0.5rem 1rem; border-radius: 20px; color: #4CAF50;">
+                <i class="ti ti-check"></i> <span data-tr="Bağlı" data-de="Verbunden">Bağlı</span>
+            </span>
+        </div>
+        <div class="storage-bar">
+            <div class="storage-bar-fill" style="width: 23%;"></div>
+        </div>
+        <div class="storage-stats">
+            <div class="storage-stat">
+                <div class="storage-stat-value">23.4 GB</div>
+                <div class="storage-stat-label" data-tr="Kullanılan" data-de="Verwendet">Kullanılan</div>
+            </div>
+            <div class="storage-stat">
+                <div class="storage-stat-value">100 GB</div>
+                <div class="storage-stat-label" data-tr="Toplam" data-de="Gesamt">Toplam</div>
+            </div>
+            <div class="storage-stat">
+                <div class="storage-stat-value">76.6 GB</div>
+                <div class="storage-stat-label" data-tr="Boş Alan" data-de="Freier Speicher">Boş Alan</div>
+            </div>
+            <div class="storage-stat">
+                <div class="storage-stat-value">12</div>
+                <div class="storage-stat-label" data-tr="Backup Sayısı" data-de="Anzahl Backups">Backup Sayısı</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Backup Cards -->
+    <div class="backup-grid">
+        <!-- Database Backup -->
+        <div class="backup-card">
+            <div class="backup-card-header database">
+                <i class="ti ti-database"></i>
+                <h3 data-tr="Veritabanı Backup" data-de="Datenbank-Backup">Veritabanı Backup</h3>
+            </div>
+            <div class="backup-card-body">
+                <div class="backup-info">
+                    <div class="backup-info-row">
+                        <span class="backup-info-label" data-tr="Son Backup" data-de="Letztes Backup">Son Backup</span>
+                        <span class="backup-info-value">03.01.2026 02:00</span>
+                    </div>
+                    <div class="backup-info-row">
+                        <span class="backup-info-label" data-tr="Boyut" data-de="Größe">Boyut</span>
+                        <span class="backup-info-value">2.3 GB</span>
+                    </div>
+                    <div class="backup-info-row">
+                        <span class="backup-info-label" data-tr="Tablolar" data-de="Tabellen">Tablolar</span>
+                        <span class="backup-info-value">42 tablo</span>
+                    </div>
+                </div>
+                <button class="backup-btn primary" onclick="startBackup('database')">
+                    <i class="ti ti-database-export"></i>
+                    <span data-tr="Veritabanı Yedekle" data-de="Datenbank sichern">Veritabanı Yedekle</span>
+                </button>
+                <div class="backup-progress" id="progress-database">
+                    <div class="progress-bar-bg">
+                        <div class="progress-bar-fill" id="progress-fill-database"></div>
+                    </div>
+                    <div class="progress-text" id="progress-text-database">Hazırlanıyor...</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Files Backup -->
+        <div class="backup-card">
+            <div class="backup-card-header files">
+                <i class="ti ti-folder"></i>
+                <h3 data-tr="Dosya Backup" data-de="Datei-Backup">Dosya Backup</h3>
+            </div>
+            <div class="backup-card-body">
+                <div class="backup-info">
+                    <div class="backup-info-row">
+                        <span class="backup-info-label" data-tr="Son Backup" data-de="Letztes Backup">Son Backup</span>
+                        <span class="backup-info-value">03.01.2026 02:00</span>
+                    </div>
+                    <div class="backup-info-row">
+                        <span class="backup-info-label" data-tr="Boyut" data-de="Größe">Boyut</span>
+                        <span class="backup-info-value">18.5 GB</span>
+                    </div>
+                    <div class="backup-info-row">
+                        <span class="backup-info-label" data-tr="Dosyalar" data-de="Dateien">Dosyalar</span>
+                        <span class="backup-info-value">~125,000 dosya</span>
+                    </div>
+                </div>
+                <button class="backup-btn success" onclick="startBackup('files')">
+                    <i class="ti ti-folder-plus"></i>
+                    <span data-tr="Dosyaları Yedekle" data-de="Dateien sichern">Dosyaları Yedekle</span>
+                </button>
+                <div class="backup-progress" id="progress-files">
+                    <div class="progress-bar-bg">
+                        <div class="progress-bar-fill" id="progress-fill-files"></div>
+                    </div>
+                    <div class="progress-text" id="progress-text-files">Hazırlanıyor...</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Full System Backup -->
+        <div class="backup-card">
+            <div class="backup-card-header full">
+                <i class="ti ti-server-cog"></i>
+                <h3 data-tr="Tam Sistem Backup" data-de="Vollständiges System-Backup">Tam Sistem Backup</h3>
+            </div>
+            <div class="backup-card-body">
+                <div class="backup-info">
+                    <div class="backup-info-row">
+                        <span class="backup-info-label" data-tr="Son Backup" data-de="Letztes Backup">Son Backup</span>
+                        <span class="backup-info-value">01.01.2026 03:00</span>
+                    </div>
+                    <div class="backup-info-row">
+                        <span class="backup-info-label" data-tr="Boyut" data-de="Größe">Boyut</span>
+                        <span class="backup-info-value">20.8 GB</span>
+                    </div>
+                    <div class="backup-info-row">
+                        <span class="backup-info-label" data-tr="İçerik" data-de="Inhalt">İçerik</span>
+                        <span class="backup-info-value">DB + Dosyalar + Config</span>
+                    </div>
+                </div>
+                <button class="backup-btn warning" onclick="startBackup('full')">
+                    <i class="ti ti-packages"></i>
+                    <span data-tr="Tam Backup Al" data-de="Vollständiges Backup">Tam Backup Al</span>
+                </button>
+                <div class="backup-progress" id="progress-full">
+                    <div class="progress-bar-bg">
+                        <div class="progress-bar-fill" id="progress-fill-full"></div>
+                    </div>
+                    <div class="progress-text" id="progress-text-full">Hazırlanıyor...</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Restore -->
+        <div class="backup-card">
+            <div class="backup-card-header restore">
+                <i class="ti ti-restore"></i>
+                <h3 data-tr="Geri Yükleme" data-de="Wiederherstellung">Geri Yükleme</h3>
+            </div>
+            <div class="backup-card-body">
+                <div class="backup-info">
+                    <div class="backup-info-row">
+                        <span class="backup-info-label" data-tr="Son Geri Yükleme" data-de="Letzte Wiederherstellung">Son Geri Yükleme</span>
+                        <span class="backup-info-value">-</span>
+                    </div>
+                    <div class="backup-info-row">
+                        <span class="backup-info-label" data-tr="Durum" data-de="Status">Durum</span>
+                        <span class="backup-info-value" style="color: #4CAF50;">Sistem Sağlıklı</span>
+                    </div>
+                    <div class="backup-info-row">
+                        <span class="backup-info-label" data-tr="Uyarı" data-de="Warnung">Uyarı</span>
+                        <span class="backup-info-value" style="color: #f44336; font-size: 0.8rem;">Dikkatli kullanın!</span>
+                    </div>
+                </div>
+                <button class="backup-btn danger" onclick="showRestoreModal()">
+                    <i class="ti ti-refresh-alert"></i>
+                    <span data-tr="Backup'tan Geri Yükle" data-de="Aus Backup wiederherstellen">Backup'tan Geri Yükle</span>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Auto Backup Settings -->
+    <div class="backup-settings">
+        <h3 style="margin-bottom: 1rem; display: flex; align-items: center; gap: 0.5rem;">
+            <i class="ti ti-settings" style="color: #667eea;"></i>
+            <span data-tr="Otomatik Backup Ayarları" data-de="Automatische Backup-Einstellungen">Otomatik Backup Ayarları</span>
+        </h3>
+        <div class="settings-grid">
+            <div class="setting-item">
+                <label data-tr="Otomatik Backup" data-de="Automatisches Backup">Otomatik Backup</label>
+                <select id="autoBackupEnabled">
+                    <option value="1" data-tr="Aktif" data-de="Aktiv">Aktif</option>
+                    <option value="0" data-tr="Deaktif" data-de="Deaktiviert">Deaktif</option>
+                </select>
+            </div>
+            <div class="setting-item">
+                <label data-tr="Backup Sıklığı" data-de="Backup-Häufigkeit">Backup Sıklığı</label>
+                <select id="backupFrequency">
+                    <option value="daily" data-tr="Günlük" data-de="Täglich">Günlük</option>
+                    <option value="weekly" data-tr="Haftalık" data-de="Wöchentlich">Haftalık</option>
+                    <option value="monthly" data-tr="Aylık" data-de="Monatlich">Aylık</option>
+                </select>
+            </div>
+            <div class="setting-item">
+                <label data-tr="Backup Saati" data-de="Backup-Zeit">Backup Saati</label>
+                <input type="time" id="backupTime" value="02:00">
+            </div>
+            <div class="setting-item">
+                <label data-tr="Tutulacak Backup Sayısı" data-de="Anzahl aufzubewahrender Backups">Tutulacak Backup Sayısı</label>
+                <select id="retentionCount">
+                    <option value="7">7</option>
+                    <option value="14" selected>14</option>
+                    <option value="30">30</option>
+                    <option value="90">90</option>
+                </select>
+            </div>
+        </div>
+        <button class="backup-btn primary" style="width: auto; margin-top: 1rem;" onclick="saveSettings()">
+            <i class="ti ti-device-floppy"></i>
+            <span data-tr="Ayarları Kaydet" data-de="Einstellungen speichern">Ayarları Kaydet</span>
+        </button>
+    </div>
+
+    <!-- Backup History -->
+    <div class="backup-history">
+        <div class="backup-history-header">
+            <h3>
+                <i class="ti ti-history" style="color: #667eea;"></i>
+                <span data-tr="Backup Geçmişi" data-de="Backup-Verlauf">Backup Geçmişi</span>
+            </h3>
+            <button class="btn btn-secondary btn-sm" onclick="refreshHistory()">
+                <i class="ti ti-refresh"></i>
+            </button>
+        </div>
+        <table class="backup-table">
+            <thead>
+                <tr>
+                    <th data-tr="Tarih" data-de="Datum">Tarih</th>
+                    <th data-tr="Tür" data-de="Typ">Tür</th>
+                    <th data-tr="Boyut" data-de="Größe">Boyut</th>
+                    <th data-tr="Süre" data-de="Dauer">Süre</th>
+                    <th data-tr="Durum" data-de="Status">Durum</th>
+                    <th data-tr="İşlemler" data-de="Aktionen">İşlemler</th>
+                </tr>
+            </thead>
+            <tbody id="backupHistoryBody">
+                <tr>
+                    <td>03.01.2026 02:00</td>
+                    <td><span class="backup-type-badge full"><i class="ti ti-packages"></i> Tam Sistem</span></td>
+                    <td>20.8 GB</td>
+                    <td>45 dk</td>
+                    <td><span class="backup-status success"><i class="ti ti-check"></i> Başarılı</span></td>
+                    <td>
+                        <button class="btn btn-ghost btn-sm" onclick="downloadBackup(1)"><i class="ti ti-download"></i></button>
+                        <button class="btn btn-ghost btn-sm" onclick="restoreBackup(1)"><i class="ti ti-restore"></i></button>
+                        <button class="btn btn-ghost btn-sm text-danger" onclick="deleteBackup(1)"><i class="ti ti-trash"></i></button>
+                    </td>
+                </tr>
+                <tr>
+                    <td>02.01.2026 02:00</td>
+                    <td><span class="backup-type-badge database"><i class="ti ti-database"></i> Veritabanı</span></td>
+                    <td>2.3 GB</td>
+                    <td>8 dk</td>
+                    <td><span class="backup-status success"><i class="ti ti-check"></i> Başarılı</span></td>
+                    <td>
+                        <button class="btn btn-ghost btn-sm" onclick="downloadBackup(2)"><i class="ti ti-download"></i></button>
+                        <button class="btn btn-ghost btn-sm" onclick="restoreBackup(2)"><i class="ti ti-restore"></i></button>
+                        <button class="btn btn-ghost btn-sm text-danger" onclick="deleteBackup(2)"><i class="ti ti-trash"></i></button>
+                    </td>
+                </tr>
+                <tr>
+                    <td>01.01.2026 02:00</td>
+                    <td><span class="backup-type-badge files"><i class="ti ti-folder"></i> Dosyalar</span></td>
+                    <td>18.5 GB</td>
+                    <td>35 dk</td>
+                    <td><span class="backup-status success"><i class="ti ti-check"></i> Başarılı</span></td>
+                    <td>
+                        <button class="btn btn-ghost btn-sm" onclick="downloadBackup(3)"><i class="ti ti-download"></i></button>
+                        <button class="btn btn-ghost btn-sm" onclick="restoreBackup(3)"><i class="ti ti-restore"></i></button>
+                        <button class="btn btn-ghost btn-sm text-danger" onclick="deleteBackup(3)"><i class="ti ti-trash"></i></button>
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<!-- Restore Modal -->
+<div class="modal-overlay" id="restoreModal" style="display: none;">
+    <div class="modal" style="max-width: 500px;">
+        <div class="modal-header" style="background: linear-gradient(135deg, #f44336, #D32F2F); color: white;">
+            <h3><i class="ti ti-alert-triangle"></i> <span data-tr="Geri Yükleme Uyarısı" data-de="Wiederherstellungswarnung">Geri Yükleme Uyarısı</span></h3>
+            <button class="modal-close" onclick="closeRestoreModal()"><i class="ti ti-x"></i></button>
+        </div>
+        <div class="modal-body">
+            <div style="background: #FFF3E0; padding: 1rem; border-radius: 8px; margin-bottom: 1rem; color: #E65100;">
+                <i class="ti ti-alert-triangle"></i>
+                <strong data-tr="Dikkat!" data-de="Achtung!">Dikkat!</strong>
+                <p style="margin: 0.5rem 0 0 0; font-size: 0.9rem;" data-tr="Bu işlem mevcut verilerin üzerine yazacaktır. Bu işlem geri alınamaz!" data-de="Dieser Vorgang überschreibt die aktuellen Daten. Diese Aktion kann nicht rückgängig gemacht werden!">Bu işlem mevcut verilerin üzerine yazacaktır. Bu işlem geri alınamaz!</p>
+            </div>
+            
+            <div class="form-group">
+                <label data-tr="Backup Seçin" data-de="Backup auswählen">Backup Seçin</label>
+                <select id="restoreBackupSelect" class="form-control">
+                    <option value="">Backup seçin...</option>
+                    <option value="1">03.01.2026 02:00 - Tam Sistem (20.8 GB)</option>
+                    <option value="2">02.01.2026 02:00 - Veritabanı (2.3 GB)</option>
+                    <option value="3">01.01.2026 02:00 - Dosyalar (18.5 GB)</option>
+                </select>
+            </div>
+            
+            <div class="form-group" style="margin-top: 1rem;">
+                <label data-tr="Onay için 'GERİ YÜKLE' yazın" data-de="Geben Sie 'WIEDERHERSTELLEN' ein">Onay için 'GERİ YÜKLE' yazın</label>
+                <input type="text" id="restoreConfirmText" class="form-control" placeholder="GERİ YÜKLE">
+            </div>
+        </div>
+        <div class="modal-footer">
+            <button class="btn btn-secondary" onclick="closeRestoreModal()" data-tr="İptal" data-de="Abbrechen">İptal</button>
+            <button class="btn btn-danger" onclick="executeRestore()" id="executeRestoreBtn" disabled>
+                <i class="ti ti-restore"></i>
+                <span data-tr="Geri Yükle" data-de="Wiederherstellen">Geri Yükle</span>
+            </button>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+// Start backup
+function startBackup(type) {
+    const btn = event.currentTarget;
+    const progress = document.getElementById(`progress-${type}`);
+    const progressFill = document.getElementById(`progress-fill-${type}`);
+    const progressText = document.getElementById(`progress-text-${type}`);
+    
+    btn.disabled = true;
+    progress.classList.add('show');
+    
+    let percent = 0;
+    const interval = setInterval(() => {
+        percent += Math.random() * 15;
+        if (percent > 100) percent = 100;
+        
+        progressFill.style.width = percent + '%';
+        
+        if (percent < 30) {
+            progressText.textContent = document.documentElement.lang === 'de' 
+                ? 'Daten werden vorbereitet...' 
+                : 'Veriler hazırlanıyor...';
+        } else if (percent < 70) {
+            progressText.textContent = document.documentElement.lang === 'de' 
+                ? 'Backup wird erstellt...' 
+                : 'Backup oluşturuluyor...';
+        } else if (percent < 100) {
+            progressText.textContent = document.documentElement.lang === 'de' 
+                ? 'Auf OVH-Server wird gespeichert...' 
+                : 'OVH sunucuya kaydediliyor...';
+        } else {
+            progressText.textContent = document.documentElement.lang === 'de' 
+                ? '✓ Backup erfolgreich!' 
+                : '✓ Backup başarılı!';
+            clearInterval(interval);
+            
+            setTimeout(() => {
+                btn.disabled = false;
+                progress.classList.remove('show');
+                progressFill.style.width = '0%';
+                
+                const msg = document.documentElement.lang === 'de' 
+                    ? 'Backup erfolgreich auf OVH-Server gespeichert!' 
+                    : 'Backup başarıyla OVH sunucuya kaydedildi!';
+                alert(msg);
+            }, 1500);
+        }
+    }, 500);
+}
+
+// Restore modal
+function showRestoreModal() {
+    document.getElementById('restoreModal').style.display = 'flex';
+}
+
+function closeRestoreModal() {
+    document.getElementById('restoreModal').style.display = 'none';
+    document.getElementById('restoreConfirmText').value = '';
+    document.getElementById('executeRestoreBtn').disabled = true;
+}
+
+// Enable restore button when correct text entered
+document.getElementById('restoreConfirmText').addEventListener('input', function() {
+    const btn = document.getElementById('executeRestoreBtn');
+    btn.disabled = this.value !== 'GERİ YÜKLE';
+});
+
+function executeRestore() {
+    const backupId = document.getElementById('restoreBackupSelect').value;
+    if (!backupId) {
+        alert(document.documentElement.lang === 'de' ? 'Bitte wählen Sie ein Backup' : 'Lütfen bir backup seçin');
+        return;
+    }
+    
+    closeRestoreModal();
+    alert(document.documentElement.lang === 'de' 
+        ? 'Wiederherstellung gestartet. Das System wird neu gestartet...' 
+        : 'Geri yükleme başlatıldı. Sistem yeniden başlatılacak...');
+}
+
+function restoreBackup(id) {
+    document.getElementById('restoreBackupSelect').value = id;
+    showRestoreModal();
+}
+
+function downloadBackup(id) {
+    alert(document.documentElement.lang === 'de' 
+        ? 'Backup #' + id + ' wird heruntergeladen...' 
+        : 'Backup #' + id + ' indiriliyor...');
+}
+
+function deleteBackup(id) {
+    const msg = document.documentElement.lang === 'de' 
+        ? 'Backup #' + id + ' wirklich löschen?' 
+        : 'Backup #' + id + ' silinsin mi?';
+    
+    if (confirm(msg)) {
+        alert(document.documentElement.lang === 'de' ? 'Backup gelöscht' : 'Backup silindi');
+    }
+}
+
+function saveSettings() {
+    alert(document.documentElement.lang === 'de' 
+        ? 'Einstellungen gespeichert!' 
+        : 'Ayarlar kaydedildi!');
+}
+
+function refreshHistory() {
+    location.reload();
+}
+</script>
+{% endblock %}
+
