@@ -310,6 +310,46 @@ def agent_login():
     return render_template('login_agent.html', login_type='agent')
 
 
+@app.route('/qc/login', methods=['GET', 'POST'])
+def qc_login():
+    """QC Dinleme Giriş Sayfası"""
+    if current_user.is_authenticated:
+        if current_user.role == 'qc_listener':
+            return redirect(url_for('qc_listener_panel'))
+        else:
+            logout_user()
+    
+    error = None
+    if request.method == 'POST':
+        username = request.form.get('username')
+        password = request.form.get('password')
+        
+        user = process_login(username, password, allowed_roles=['qc_listener'])
+        if user:
+            return redirect(url_for('qc_listener_panel'))
+        else:
+            error = True
+    
+    return render_template('login_qc.html', error=error)
+
+
+@app.route('/qc/login/post', methods=['POST'])
+def login_qc_post():
+    """QC Login POST handler"""
+    return qc_login()
+
+
+@app.route('/qc/panel')
+@login_required
+def qc_listener_panel():
+    """QC Dinleme Paneli"""
+    if current_user.role not in ['qc_listener', 'supervisor', 'admin', 'super_admin']:
+        flash('Bu sayfaya erişim yetkiniz yok.', 'danger')
+        return redirect(url_for('dashboard'))
+    
+    return render_template('qc/listener_panel.html')
+
+
 @app.route('/logout')
 @login_required
 def logout():

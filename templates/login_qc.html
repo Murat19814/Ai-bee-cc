@@ -1,0 +1,322 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>QC Dinleme Girişi - AI BEE CC</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@latest/tabler-icons.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        
+        body {
+            font-family: 'Inter', sans-serif;
+            min-height: 100vh;
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 2rem;
+        }
+        
+        .login-container {
+            width: 100%;
+            max-width: 420px;
+        }
+        
+        .login-card {
+            background: rgba(255,255,255,0.95);
+            border-radius: 24px;
+            padding: 3rem 2.5rem;
+            box-shadow: 0 25px 80px rgba(0,0,0,0.3);
+            backdrop-filter: blur(20px);
+        }
+        
+        .login-header {
+            text-align: center;
+            margin-bottom: 2rem;
+        }
+        
+        .login-icon {
+            width: 80px;
+            height: 80px;
+            background: linear-gradient(135deg, #4CAF50, #2E7D32);
+            border-radius: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 1.5rem;
+            font-size: 2.5rem;
+            color: white;
+            box-shadow: 0 10px 30px rgba(76, 175, 80, 0.3);
+        }
+        
+        .login-title {
+            font-family: 'Space Grotesk', sans-serif;
+            font-size: 1.75rem;
+            font-weight: 700;
+            color: #1a1a2e;
+            margin-bottom: 0.5rem;
+        }
+        
+        .login-subtitle {
+            color: #666;
+            font-size: 0.9rem;
+        }
+        
+        .qc-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            background: linear-gradient(135deg, #4CAF50, #2E7D32);
+            color: white;
+            padding: 0.5rem 1rem;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: 600;
+            margin-top: 1rem;
+        }
+        
+        .form-group {
+            margin-bottom: 1.5rem;
+        }
+        
+        .form-label {
+            display: block;
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 0.5rem;
+            font-size: 0.9rem;
+        }
+        
+        .form-input {
+            width: 100%;
+            padding: 1rem 1.25rem;
+            border: 2px solid #e0e0e0;
+            border-radius: 12px;
+            font-size: 1rem;
+            transition: all 0.3s;
+            background: #f8f9fa;
+        }
+        
+        .form-input:focus {
+            outline: none;
+            border-color: #4CAF50;
+            background: white;
+            box-shadow: 0 0 0 4px rgba(76, 175, 80, 0.1);
+        }
+        
+        .input-icon {
+            position: relative;
+        }
+        
+        .input-icon i {
+            position: absolute;
+            left: 1rem;
+            top: 50%;
+            transform: translateY(-50%);
+            color: #888;
+        }
+        
+        .input-icon input {
+            padding-left: 3rem;
+        }
+        
+        .btn-login {
+            width: 100%;
+            padding: 1rem;
+            background: linear-gradient(135deg, #4CAF50, #2E7D32);
+            color: white;
+            border: none;
+            border-radius: 12px;
+            font-size: 1rem;
+            font-weight: 700;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+            transition: all 0.3s;
+            box-shadow: 0 4px 15px rgba(76, 175, 80, 0.3);
+        }
+        
+        .btn-login:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(76, 175, 80, 0.4);
+        }
+        
+        .login-footer {
+            text-align: center;
+            margin-top: 2rem;
+            padding-top: 1.5rem;
+            border-top: 1px solid #eee;
+        }
+        
+        .login-footer a {
+            color: #4CAF50;
+            text-decoration: none;
+            font-weight: 600;
+        }
+        
+        .login-footer a:hover {
+            text-decoration: underline;
+        }
+        
+        .features-list {
+            background: #f0f9f0;
+            border-radius: 12px;
+            padding: 1rem;
+            margin-top: 1.5rem;
+        }
+        
+        .feature-item {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.5rem 0;
+            font-size: 0.85rem;
+            color: #2E7D32;
+        }
+        
+        .feature-item i {
+            color: #4CAF50;
+        }
+        
+        /* Language Toggle */
+        .lang-toggle {
+            position: absolute;
+            top: 1rem;
+            right: 1rem;
+            display: flex;
+            background: rgba(255,255,255,0.1);
+            border-radius: 8px;
+            overflow: hidden;
+        }
+        
+        .lang-btn {
+            padding: 0.5rem 1rem;
+            border: none;
+            background: transparent;
+            color: white;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.3s;
+        }
+        
+        .lang-btn.active {
+            background: white;
+            color: #1a1a2e;
+        }
+        
+        .error-message {
+            background: #FFEBEE;
+            color: #C62828;
+            padding: 1rem;
+            border-radius: 10px;
+            margin-bottom: 1rem;
+            font-size: 0.9rem;
+            display: none;
+        }
+    </style>
+</head>
+<body>
+    <div class="lang-toggle">
+        <button class="lang-btn active" onclick="setLang('tr')">TR</button>
+        <button class="lang-btn" onclick="setLang('de')">DE</button>
+    </div>
+    
+    <div class="login-container">
+        <div class="login-card">
+            <div class="login-header">
+                <div class="login-icon">
+                    <i class="ti ti-headphones"></i>
+                </div>
+                <h1 class="login-title" data-tr="QC Dinleme Paneli" data-de="QC Anhörungspanel">QC Dinleme Paneli</h1>
+                <p class="login-subtitle" data-tr="Kalite kontrol ekibi girişi" data-de="Qualitätskontrolle Team-Login">Kalite kontrol ekibi girişi</p>
+                <div class="qc-badge">
+                    <i class="ti ti-shield-check"></i>
+                    <span data-tr="Yetkili Erişim" data-de="Autorisierter Zugang">Yetkili Erişim</span>
+                </div>
+            </div>
+            
+            <div class="error-message" id="errorMessage">
+                <i class="ti ti-alert-circle"></i>
+                <span data-tr="Kullanıcı adı veya şifre hatalı" data-de="Benutzername oder Passwort falsch">Kullanıcı adı veya şifre hatalı</span>
+            </div>
+            
+            <form action="{{ url_for('login_qc_post') }}" method="POST">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() if csrf_token is defined else '' }}">
+                
+                <div class="form-group">
+                    <label class="form-label" data-tr="Kullanıcı Adı" data-de="Benutzername">Kullanıcı Adı</label>
+                    <div class="input-icon">
+                        <i class="ti ti-user"></i>
+                        <input type="text" name="username" class="form-input" placeholder="QC kullanıcı adınız" required>
+                    </div>
+                </div>
+                
+                <div class="form-group">
+                    <label class="form-label" data-tr="Şifre" data-de="Passwort">Şifre</label>
+                    <div class="input-icon">
+                        <i class="ti ti-lock"></i>
+                        <input type="password" name="password" class="form-input" placeholder="••••••••" required>
+                    </div>
+                </div>
+                
+                <button type="submit" class="btn-login">
+                    <i class="ti ti-login"></i>
+                    <span data-tr="QC Paneline Giriş" data-de="QC Panel Login">QC Paneline Giriş</span>
+                </button>
+            </form>
+            
+            <div class="features-list">
+                <div class="feature-item">
+                    <i class="ti ti-check"></i>
+                    <span data-tr="Ses kayıtlarını dinleme" data-de="Aufnahmen anhören">Ses kayıtlarını dinleme</span>
+                </div>
+                <div class="feature-item">
+                    <i class="ti ti-check"></i>
+                    <span data-tr="QC OK / TERMİN / STORNO işlemleri" data-de="QC OK / TERMIN / STORNO Aktionen">QC OK / TERMİN / STORNO işlemleri</span>
+                </div>
+                <div class="feature-item">
+                    <i class="ti ti-check"></i>
+                    <span data-tr="Müşteri bilgilerini görüntüleme" data-de="Kundeninformationen anzeigen">Müşteri bilgilerini görüntüleme</span>
+                </div>
+            </div>
+            
+            <div class="login-footer">
+                <p data-tr="Agent girişi için" data-de="Für Agent-Login">Agent girişi için</p>
+                <a href="{{ url_for('login_agent') }}" data-tr="Agent Girişi" data-de="Agent Login">Agent Girişi</a>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        function setLang(lang) {
+            document.querySelectorAll('.lang-btn').forEach(btn => btn.classList.remove('active'));
+            event.target.classList.add('active');
+            
+            document.querySelectorAll('[data-tr]').forEach(el => {
+                el.textContent = el.getAttribute(`data-${lang}`);
+            });
+            
+            localStorage.setItem('selectedLang', lang);
+        }
+        
+        // Load saved language
+        const savedLang = localStorage.getItem('selectedLang') || 'tr';
+        if (savedLang !== 'tr') {
+            setLang(savedLang);
+            document.querySelectorAll('.lang-btn').forEach(btn => {
+                btn.classList.toggle('active', btn.textContent === savedLang.toUpperCase());
+            });
+        }
+        
+        // Show error if exists
+        {% if error %}
+        document.getElementById('errorMessage').style.display = 'block';
+        {% endif %}
+    </script>
+</body>
+</html>
+
