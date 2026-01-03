@@ -63,9 +63,8 @@ def seed_campaign():
                 project_id=ems_project.id,  # EMS projesine bağlı
                 name='BEE LIFE CONSULTING',
                 description='Bee Life Consulting ana kampanyası',
-                campaign_type='outbound',
-                status='active',
-                priority='high'
+                dialer_type='preview',
+                status='active'
             )
             db.session.add(campaign)
             db.session.flush()
@@ -81,9 +80,8 @@ def seed_campaign():
                 project_id=ems_project.id,
                 name='EMS - Outbound Sales',
                 description='Europe Mega Service Satış Kampanyası',
-                campaign_type='outbound',
-                status='active',
-                priority='high'
+                dialer_type='progressive',
+                status='active'
             )
             db.session.add(ems_campaign)
             print(f"✅ Kampanya oluşturuldu: EMS - Outbound Sales")
@@ -96,9 +94,8 @@ def seed_campaign():
                 project_id=mps_project.id,
                 name='MPS - Promo Campaign',
                 description='Mega Promo Service Promosyon Kampanyası',
-                campaign_type='outbound',
-                status='active',
-                priority='normal'
+                dialer_type='preview',
+                status='active'
             )
             db.session.add(mps_campaign)
             print(f"✅ Kampanya oluşturuldu: MPS - Promo Campaign")
