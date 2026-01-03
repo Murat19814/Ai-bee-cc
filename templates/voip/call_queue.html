@@ -433,6 +433,157 @@
     display: flex;
     gap: 0.5rem;
 }
+
+/* Global Speed Control */
+.global-speed-control {
+    background: linear-gradient(145deg, #f8f9fa, #fff);
+    border-radius: 16px;
+    padding: 2rem;
+    text-align: center;
+    border: 2px solid #e0e0e0;
+}
+
+.global-speed-display {
+    margin-bottom: 1.5rem;
+}
+
+.speed-value-large {
+    font-size: 4rem;
+    font-weight: 900;
+    background: linear-gradient(135deg, #9C27B0, #7B1FA2);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    line-height: 1;
+}
+
+.speed-label {
+    font-size: 0.9rem;
+    color: #666;
+    margin-top: 0.5rem;
+}
+
+.global-speed-slider-container {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    margin-bottom: 1.5rem;
+    padding: 0 1rem;
+}
+
+.speed-min, .speed-max {
+    font-weight: 700;
+    color: #888;
+    font-size: 0.9rem;
+}
+
+.global-speed-slider {
+    flex: 1;
+    height: 8px;
+    -webkit-appearance: none;
+    appearance: none;
+    background: #e0e0e0;
+    border-radius: 4px;
+    outline: none;
+}
+
+.global-speed-slider::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #9C27B0, #7B1FA2);
+    cursor: pointer;
+    box-shadow: 0 2px 10px rgba(156, 39, 176, 0.3);
+    transition: transform 0.2s;
+}
+
+.global-speed-slider::-webkit-slider-thumb:hover {
+    transform: scale(1.1);
+}
+
+.speed-quick-buttons {
+    display: flex;
+    gap: 0.75rem;
+    justify-content: center;
+    margin-bottom: 1.5rem;
+    flex-wrap: wrap;
+}
+
+.speed-quick-btn {
+    padding: 0.75rem 1.25rem;
+    border-radius: 10px;
+    border: 2px solid #e0e0e0;
+    background: white;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.speed-quick-btn:hover {
+    border-color: #9C27B0;
+    color: #9C27B0;
+}
+
+.speed-quick-btn.active {
+    background: linear-gradient(135deg, #9C27B0, #7B1FA2);
+    color: white;
+    border-color: #9C27B0;
+}
+
+.btn-apply-speed {
+    width: 100%;
+    padding: 1rem;
+    font-size: 1rem;
+    border-radius: 12px;
+}
+
+.online-agents-summary {
+    margin-top: 1.5rem;
+    padding-top: 1.5rem;
+    border-top: 1px solid #eee;
+}
+
+.summary-title {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-weight: 600;
+    margin-bottom: 1rem;
+    justify-content: center;
+}
+
+.agent-count {
+    background: #9C27B0;
+    color: white;
+    padding: 0.25rem 0.75rem;
+    border-radius: 20px;
+    font-size: 0.85rem;
+}
+
+.agent-mini-list {
+    display: flex;
+    gap: 0.5rem;
+    justify-content: center;
+    flex-wrap: wrap;
+}
+
+.agent-mini {
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #667eea, #764ba2);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-size: 0.7rem;
+    font-weight: 700;
+}
 </style>
 {% endblock %}
 
@@ -506,12 +657,12 @@
         </div>
     </div>
 
-    <!-- Call Speed Panel -->
+    <!-- Global Call Speed Panel -->
     <div class="call-speed-panel">
         <div class="call-speed-header">
             <div class="queue-control-title">
                 <i class="ti ti-gauge"></i>
-                <span data-tr="Arama Hızı Ayarları" data-de="Anrufgeschwindigkeitseinstellungen">Arama Hızı Ayarları</span>
+                <span data-tr="Toplu Arama Hızı" data-de="Globale Anrufgeschwindigkeit">Toplu Arama Hızı</span>
             </div>
         </div>
         <div class="call-speed-body">
@@ -519,123 +670,61 @@
                 <i class="ti ti-info-circle"></i>
                 <div class="speed-info-text">
                     <strong data-tr="Arama Hızı Nedir?" data-de="Was ist Anrufgeschwindigkeit?">Arama Hızı Nedir?</strong>
-                    <span data-tr="Her agent için aynı anda kaç müşteri aranacağını belirler. 1 = tek tek, 8 = aynı anda 8 müşteri" data-de="Bestimmt, wie viele Kunden gleichzeitig pro Agent angerufen werden. 1 = einzeln, 8 = 8 Kunden gleichzeitig">Her agent için aynı anda kaç müşteri aranacağını belirler. 1 = tek tek, 8 = aynı anda 8 müşteri</span>
+                    <span data-tr="Tüm agentler için aynı anda kaç müşteri aranacağını belirler. Değişiklik tüm çevrimiçi agentlere uygulanır." data-de="Bestimmt, wie viele Kunden gleichzeitig pro Agent angerufen werden. Änderungen gelten für alle Online-Agenten.">Tüm agentler için aynı anda kaç müşteri aranacağını belirler. Değişiklik tüm çevrimiçi agentlere uygulanır.</span>
                 </div>
             </div>
 
-            <div class="agent-speed-grid">
-                <!-- Agent 1 -->
-                <div class="agent-speed-card">
-                    <div class="agent-speed-avatar">TK</div>
-                    <div class="agent-speed-info">
-                        <div class="agent-speed-name">Tuncay K.</div>
-                        <div class="agent-speed-status" data-tr="Çevrimiçi" data-de="Online">Çevrimiçi</div>
-                    </div>
-                    <div class="speed-selector" data-agent="1">
-                        <button class="speed-btn" data-speed="1">1</button>
-                        <button class="speed-btn" data-speed="2">2</button>
-                        <button class="speed-btn active" data-speed="3">3</button>
-                        <button class="speed-btn" data-speed="4">4</button>
-                        <button class="speed-btn" data-speed="5">5</button>
-                        <button class="speed-btn" data-speed="6">6</button>
-                        <button class="speed-btn" data-speed="7">7</button>
-                        <button class="speed-btn" data-speed="8">8</button>
-                    </div>
+            <!-- Global Speed Control -->
+            <div class="global-speed-control">
+                <div class="global-speed-display">
+                    <div class="speed-value-large" id="globalSpeedValue">3</div>
+                    <div class="speed-label" data-tr="Eş Zamanlı Arama" data-de="Gleichzeitige Anrufe">Eş Zamanlı Arama</div>
                 </div>
-
-                <!-- Agent 2 -->
-                <div class="agent-speed-card">
-                    <div class="agent-speed-avatar">AA</div>
-                    <div class="agent-speed-info">
-                        <div class="agent-speed-name">Aslı A.</div>
-                        <div class="agent-speed-status" data-tr="Çevrimiçi" data-de="Online">Çevrimiçi</div>
-                    </div>
-                    <div class="speed-selector" data-agent="2">
-                        <button class="speed-btn" data-speed="1">1</button>
-                        <button class="speed-btn active" data-speed="2">2</button>
-                        <button class="speed-btn" data-speed="3">3</button>
-                        <button class="speed-btn" data-speed="4">4</button>
-                        <button class="speed-btn" data-speed="5">5</button>
-                        <button class="speed-btn" data-speed="6">6</button>
-                        <button class="speed-btn" data-speed="7">7</button>
-                        <button class="speed-btn" data-speed="8">8</button>
-                    </div>
+                
+                <div class="global-speed-slider-container">
+                    <span class="speed-min">1</span>
+                    <input type="range" id="globalSpeedSlider" min="1" max="8" value="3" class="global-speed-slider" onchange="updateGlobalSpeed(this.value)">
+                    <span class="speed-max">8</span>
                 </div>
-
-                <!-- Agent 3 -->
-                <div class="agent-speed-card">
-                    <div class="agent-speed-avatar">EC</div>
-                    <div class="agent-speed-info">
-                        <div class="agent-speed-name">Erdoğan Ç.</div>
-                        <div class="agent-speed-status" data-tr="Çevrimiçi" data-de="Online">Çevrimiçi</div>
-                    </div>
-                    <div class="speed-selector" data-agent="3">
-                        <button class="speed-btn" data-speed="1">1</button>
-                        <button class="speed-btn" data-speed="2">2</button>
-                        <button class="speed-btn" data-speed="3">3</button>
-                        <button class="speed-btn active" data-speed="4">4</button>
-                        <button class="speed-btn" data-speed="5">5</button>
-                        <button class="speed-btn" data-speed="6">6</button>
-                        <button class="speed-btn" data-speed="7">7</button>
-                        <button class="speed-btn" data-speed="8">8</button>
-                    </div>
+                
+                <div class="speed-quick-buttons">
+                    <button class="speed-quick-btn" onclick="setGlobalSpeed(1)" data-tr="Yavaş" data-de="Langsam">
+                        <i class="ti ti-walk"></i> Yavaş (1)
+                    </button>
+                    <button class="speed-quick-btn active" onclick="setGlobalSpeed(3)" data-tr="Normal" data-de="Normal">
+                        <i class="ti ti-run"></i> Normal (3)
+                    </button>
+                    <button class="speed-quick-btn" onclick="setGlobalSpeed(5)" data-tr="Hızlı" data-de="Schnell">
+                        <i class="ti ti-bolt"></i> Hızlı (5)
+                    </button>
+                    <button class="speed-quick-btn" onclick="setGlobalSpeed(8)" data-tr="Maksimum" data-de="Maximum">
+                        <i class="ti ti-rocket"></i> Maks (8)
+                    </button>
                 </div>
+                
+                <button class="btn btn-primary btn-apply-speed" onclick="applyGlobalSpeed()">
+                    <i class="ti ti-check"></i>
+                    <span data-tr="Tüm Agentlere Uygula" data-de="Auf alle Agenten anwenden">Tüm Agentlere Uygula</span>
+                </button>
+            </div>
 
-                <!-- Agent 4 -->
-                <div class="agent-speed-card">
-                    <div class="agent-speed-avatar">HC</div>
-                    <div class="agent-speed-info">
-                        <div class="agent-speed-name">Hilal C.</div>
-                        <div class="agent-speed-status" data-tr="Çevrimiçi" data-de="Online">Çevrimiçi</div>
-                    </div>
-                    <div class="speed-selector" data-agent="4">
-                        <button class="speed-btn" data-speed="1">1</button>
-                        <button class="speed-btn" data-speed="2">2</button>
-                        <button class="speed-btn" data-speed="3">3</button>
-                        <button class="speed-btn" data-speed="4">4</button>
-                        <button class="speed-btn active" data-speed="5">5</button>
-                        <button class="speed-btn" data-speed="6">6</button>
-                        <button class="speed-btn" data-speed="7">7</button>
-                        <button class="speed-btn" data-speed="8">8</button>
-                    </div>
+            <!-- Online Agents Summary -->
+            <div class="online-agents-summary">
+                <div class="summary-title">
+                    <i class="ti ti-users"></i>
+                    <span data-tr="Çevrimiçi Agentler" data-de="Online Agenten">Çevrimiçi Agentler</span>
+                    <span class="agent-count">17</span>
                 </div>
-
-                <!-- Agent 5 -->
-                <div class="agent-speed-card">
-                    <div class="agent-speed-avatar">GH</div>
-                    <div class="agent-speed-info">
-                        <div class="agent-speed-name">Gül H.</div>
-                        <div class="agent-speed-status" data-tr="Çevrimiçi" data-de="Online">Çevrimiçi</div>
-                    </div>
-                    <div class="speed-selector" data-agent="5">
-                        <button class="speed-btn" data-speed="1">1</button>
-                        <button class="speed-btn active" data-speed="2">2</button>
-                        <button class="speed-btn" data-speed="3">3</button>
-                        <button class="speed-btn" data-speed="4">4</button>
-                        <button class="speed-btn" data-speed="5">5</button>
-                        <button class="speed-btn" data-speed="6">6</button>
-                        <button class="speed-btn" data-speed="7">7</button>
-                        <button class="speed-btn" data-speed="8">8</button>
-                    </div>
-                </div>
-
-                <!-- Agent 6 -->
-                <div class="agent-speed-card">
-                    <div class="agent-speed-avatar">IJ</div>
-                    <div class="agent-speed-info">
-                        <div class="agent-speed-name">İsmail J.</div>
-                        <div class="agent-speed-status" data-tr="Çevrimiçi" data-de="Online">Çevrimiçi</div>
-                    </div>
-                    <div class="speed-selector" data-agent="6">
-                        <button class="speed-btn" data-speed="1">1</button>
-                        <button class="speed-btn" data-speed="2">2</button>
-                        <button class="speed-btn" data-speed="3">3</button>
-                        <button class="speed-btn" data-speed="4">4</button>
-                        <button class="speed-btn" data-speed="5">5</button>
-                        <button class="speed-btn active" data-speed="6">6</button>
-                        <button class="speed-btn" data-speed="7">7</button>
-                        <button class="speed-btn" data-speed="8">8</button>
-                    </div>
+                <div class="agent-mini-list">
+                    <span class="agent-mini">TK</span>
+                    <span class="agent-mini">AA</span>
+                    <span class="agent-mini">EÇ</span>
+                    <span class="agent-mini">HC</span>
+                    <span class="agent-mini">FK</span>
+                    <span class="agent-mini">GD</span>
+                    <span class="agent-mini">LD</span>
+                    <span class="agent-mini">SD</span>
+                    <span class="agent-mini">+9</span>
                 </div>
             </div>
         </div>
@@ -776,34 +865,88 @@ function startQueue() {
     alert(document.documentElement.lang === 'de' ? 'Anrufe gestartet' : 'Aramalar başlatıldı');
 }
 
-// Speed selector
-document.querySelectorAll('.speed-selector').forEach(selector => {
-    const buttons = selector.querySelectorAll('.speed-btn');
+// Global Speed Control
+let currentGlobalSpeed = 3;
+
+function updateGlobalSpeed(value) {
+    currentGlobalSpeed = parseInt(value);
+    document.getElementById('globalSpeedValue').textContent = value;
     
-    buttons.forEach(btn => {
-        btn.addEventListener('click', function() {
-            const agentId = selector.dataset.agent;
-            const speed = this.dataset.speed;
-            
-            // Remove active from all
-            buttons.forEach(b => b.classList.remove('active'));
-            // Add active to clicked
-            this.classList.add('active');
-            
-            // Show saving message
-            const msg = document.documentElement.lang === 'de' 
-                ? `Agent ${agentId}: Geschwindigkeit auf ${speed} gesetzt. Seite wird aktualisiert...`
-                : `Agent ${agentId}: Hız ${speed} olarak ayarlandı. Sayfa yenileniyor...`;
-            
-            alert(msg);
-            
-            // Reload page after speed change
-            setTimeout(() => {
-                location.reload();
-            }, 500);
-        });
+    // Update quick buttons
+    document.querySelectorAll('.speed-quick-btn').forEach(btn => {
+        btn.classList.remove('active');
     });
-});
+    
+    // Find matching quick button
+    if (value == 1) document.querySelector('.speed-quick-btn:nth-child(1)')?.classList.add('active');
+    else if (value == 3) document.querySelector('.speed-quick-btn:nth-child(2)')?.classList.add('active');
+    else if (value == 5) document.querySelector('.speed-quick-btn:nth-child(3)')?.classList.add('active');
+    else if (value == 8) document.querySelector('.speed-quick-btn:nth-child(4)')?.classList.add('active');
+}
+
+function setGlobalSpeed(speed) {
+    currentGlobalSpeed = speed;
+    document.getElementById('globalSpeedSlider').value = speed;
+    document.getElementById('globalSpeedValue').textContent = speed;
+    
+    // Update quick buttons
+    document.querySelectorAll('.speed-quick-btn').forEach(btn => {
+        btn.classList.remove('active');
+    });
+    event.target.closest('.speed-quick-btn')?.classList.add('active');
+}
+
+function applyGlobalSpeed() {
+    const lang = document.documentElement.lang || 'tr';
+    const agentCount = 17; // Online agent sayısı
+    
+    const msg = lang === 'de' 
+        ? `Geschwindigkeit ${currentGlobalSpeed} wird auf alle ${agentCount} Online-Agenten angewendet...`
+        : `Hız ${currentGlobalSpeed} olarak ${agentCount} çevrimiçi agente uygulanıyor...`;
+    
+    // Show loading
+    const btn = document.querySelector('.btn-apply-speed');
+    const originalText = btn.innerHTML;
+    btn.innerHTML = '<i class="ti ti-loader ti-spin"></i> <span data-tr="Uygulanıyor..." data-de="Wird angewendet...">Uygulanıyor...</span>';
+    btn.disabled = true;
+    
+    // Simulate API call
+    setTimeout(() => {
+        const successMsg = lang === 'de'
+            ? `✓ Geschwindigkeit ${currentGlobalSpeed} erfolgreich auf alle Agenten angewendet!`
+            : `✓ Hız ${currentGlobalSpeed} tüm agentlere başarıyla uygulandı!`;
+        
+        // Show success notification
+        showNotification(successMsg, 'success');
+        
+        btn.innerHTML = originalText;
+        btn.disabled = false;
+    }, 1000);
+}
+
+function showNotification(message, type) {
+    const notification = document.createElement('div');
+    notification.style.cssText = `
+        position: fixed;
+        top: 20px;
+        right: 20px;
+        padding: 1rem 1.5rem;
+        border-radius: 12px;
+        color: white;
+        font-weight: 600;
+        z-index: 9999;
+        animation: slideIn 0.3s ease;
+        box-shadow: 0 4px 20px rgba(0,0,0,0.2);
+        background: ${type === 'success' ? 'linear-gradient(135deg, #4CAF50, #388E3C)' : 'linear-gradient(135deg, #f44336, #D32F2F)'};
+    `;
+    notification.textContent = message;
+    document.body.appendChild(notification);
+    
+    setTimeout(() => {
+        notification.style.animation = 'slideOut 0.3s ease';
+        setTimeout(() => notification.remove(), 300);
+    }, 3000);
+}
 
 // Simulate real-time updates
 setInterval(() => {
