@@ -1383,6 +1383,222 @@ def dialer_lists():
     return render_template('dialer/lists.html', lists=lists)
 
 
+@app.route('/api/data/analyze', methods=['POST'])
+@login_required
+def api_data_analyze():
+    """Data dosyasını analiz et"""
+    import os
+    import uuid
+    
+    if 'file' not in request.files:
+        return jsonify({'error': 'Dosya bulunamadı'}), 400
+    
+    file = request.files['file']
+    if file.filename == '':
+        return jsonify({'error': 'Dosya seçilmedi'}), 400
+    
+    # Dosyayı geçici olarak kaydet
+    file_id = str(uuid.uuid4())
+    upload_dir = os.path.join(app.root_path, 'uploads', 'temp')
+    os.makedirs(upload_dir, exist_ok=True)
+    
+    file_ext = os.path.splitext(file.filename)[1]
+    temp_path = os.path.join(upload_dir, f'{file_id}{file_ext}')
+    file.save(temp_path)
+    
+    # Dosyayı analiz et
+    try:
+        import pandas as pd
+        
+        if file_ext.lower() == '.csv':
+            df = pd.read_csv(temp_path, encoding='utf-8', sep=None, engine='python')
+        else:
+            df = pd.read_excel(temp_path)
+        
+        total = len(df)
+        
+        # Zorunlu alan kontrolü
+        required_cols = []
+        phone_cols = ['telefon', 'tel', 'phone', 'handy', 'mobiltelefon']
+        name_cols = ['vorname', 'name', 'firstname']
+        surname_cols = ['nachname', 'lastname', 'surname']
+        
+        df.columns = df.columns.str.lower().str.strip()
+        
+        # Telefon kontrolü
+        phone_col = None
+        for col in phone_cols:
+            if col in df.columns:
+                phone_col = col
+                break
+        
+        # Hatalı kayıtlar (telefon eksik veya geçersiz)
+        errors = 0
+        if phone_col:
+            # Telefon numarası kontrolü
+            df['_phone_valid'] = df[phone_col].astype(str).str.replace(r'\D', '', regex=True)
+            errors = len(df[df['_phone_valid'].str.len() < 8])
+        else:
+            errors = total  # Telefon sütunu yoksa tümü hatalı
+        
+        # IBAN kontrolü
+        iban_cols = ['iban']
+        iban_col = None
+        for col in iban_cols:
+            if col in df.columns:
+                iban_col = col
+                break
+        
+        with_iban = 0
+        if iban_col:
+            with_iban = len(df[df[iban_col].notna() & (df[iban_col].astype(str).str.len() > 10)])
+        
+        valid = total - errors
+        
+        # Sonuçları döndür
+        return jsonify({
+            'success': True,
+            'file_id': file_id,
+            'filename': file.filename,
+            'total': total,
+            'valid': valid,
+            'errors': errors,
+            'duplicates': 0,  # İlk yüklemede dublet yok
+            'blacklist': 0,   # Blacklist kontrolü sonra
+            'with_iban': with_iban,
+            'columns': list(df.columns)
+        })
+        
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+
+@app.route('/api/data/confirm', methods=['POST'])
+@login_required
+def api_data_confirm():
+    """Analiz edilen datayı onayla ve veritabanına kaydet"""
+    import os
+    import pandas as pd
+    
+    data = request.get_json()
+    file_id = data.get('file_id')
+    name = data.get('name')
+    campaign_id = data.get('campaign_id')
+    
+    # Geçici dosyayı bul
+    upload_dir = os.path.join(app.root_path, 'uploads', 'temp')
+    temp_files = [f for f in os.listdir(upload_dir) if f.startswith(file_id)]
+    
+    if not temp_files:
+        return jsonify({'error': 'Dosya bulunamadı'}), 404
+    
+    temp_path = os.path.join(upload_dir, temp_files[0])
+    
+    try:
+        # Dosyayı oku
+        file_ext = os.path.splitext(temp_files[0])[1]
+        if file_ext.lower() == '.csv':
+            df = pd.read_csv(temp_path, encoding='utf-8', sep=None, engine='python')
+        else:
+            df = pd.read_excel(temp_path)
+        
+        df.columns = df.columns.str.lower().str.strip()
+        
+        # DialList oluştur
+        dial_list = DialList(
+            tenant_id=current_user.tenant_id,
+            campaign_id=int(campaign_id) if campaign_id else None,
+            name=name,
+            total_records=len(df),
+            valid_records=data.get('valid', len(df)),
+            duplicate_records=data.get('duplicates', 0),
+            status='active'
+        )
+        db.session.add(dial_list)
+        db.session.flush()
+        
+        # Müşterileri ekle
+        phone_cols = ['telefon', 'tel', 'phone', 'handy']
+        phone_col = next((c for c in phone_cols if c in df.columns), None)
+        
+        added = 0
+        for _, row in df.iterrows():
+            try:
+                phone = str(row.get(phone_col, '')).strip() if phone_col else ''
+                if not phone or len(phone) < 8:
+                    continue
+                
+                customer = Customer(
+                    tenant_id=current_user.tenant_id,
+                    project_id=dial_list.campaign.project_id if dial_list.campaign else None,
+                    phone=phone,
+                    first_name=str(row.get('vorname', row.get('name', ''))).strip(),
+                    last_name=str(row.get('nachname', row.get('lastname', ''))).strip(),
+                    email=str(row.get('email', row.get('e-mail', ''))).strip() or None,
+                    address=str(row.get('strasse', row.get('straße', row.get('adresse', '')))).strip() or None,
+                    postal_code=str(row.get('plz', '')).strip() or None,
+                    city=str(row.get('ort', row.get('stadt', ''))).strip() or None,
+                    iban=str(row.get('iban', '')).strip() or None,
+                    status='new',
+                    source='import',
+                    source_detail=name
+                )
+                db.session.add(customer)
+                added += 1
+                
+                # Lead de oluştur
+                lead = Lead(
+                    tenant_id=current_user.tenant_id,
+                    dial_list_id=dial_list.id,
+                    customer_id=customer.id,
+                    phone=phone,
+                    first_name=customer.first_name,
+                    last_name=customer.last_name,
+                    status='new',
+                    priority=data.get('priority', 'normal')
+                )
+                db.session.add(lead)
+                
+            except Exception as e:
+                continue
+        
+        dial_list.valid_records = added
+        db.session.commit()
+        
+        # Geçici dosyayı sil
+        os.remove(temp_path)
+        
+        return jsonify({
+            'success': True,
+            'list_id': dial_list.id,
+            'added': added,
+            'message': f'{added} kayıt başarıyla eklendi'
+        })
+        
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({'error': str(e)}), 500
+
+
+@app.route('/api/data/cancel', methods=['POST'])
+@login_required
+def api_data_cancel():
+    """Analizi iptal et ve geçici dosyayı sil"""
+    import os
+    
+    data = request.get_json()
+    file_id = data.get('file_id')
+    
+    if file_id:
+        upload_dir = os.path.join(app.root_path, 'uploads', 'temp')
+        if os.path.exists(upload_dir):
+            for f in os.listdir(upload_dir):
+                if f.startswith(file_id):
+                    os.remove(os.path.join(upload_dir, f))
+    
+    return jsonify({'success': True})
+
+
 # ==================== CRM ROUTES ====================
 
 @app.route('/customers')
