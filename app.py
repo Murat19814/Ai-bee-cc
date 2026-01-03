@@ -1431,9 +1431,33 @@ def customer_new():
 @app.route('/customers/<int:id>')
 @login_required
 def customer_detail(id):
-    """Müşteri detayı"""
+    """Müşteri detayı - Tam panel görünümü"""
     customer = Customer.query.get_or_404(id)
-    return render_template('crm/customer_detail.html', customer=customer)
+    
+    # Get call history
+    calls = Call.query.filter_by(customer_id=id).order_by(Call.started_at.desc()).limit(10).all()
+    
+    # Get recordings
+    recordings = CallRecording.query.join(Call).filter(Call.customer_id == id).all()
+    
+    # Get notes
+    notes = CustomerNote.query.filter_by(customer_id=id).order_by(CustomerNote.created_at.desc()).all()
+    
+    # Get QA evaluations
+    qa_evals = QAEvaluation.query.join(Call).filter(Call.customer_id == id).all()
+    
+    # Numara/Email görünürlüğü - Admin/Supervisor/QC tam görür, Agent maskelenmiş görür
+    show_full_phone = current_user.role in ['admin', 'super_admin', 'supervisor', 'qc_listener']
+    show_full_email = show_full_phone
+    
+    return render_template('crm/customer_panel.html', 
+                          customer=customer,
+                          calls=calls,
+                          recordings=recordings,
+                          notes=notes,
+                          qa_evals=qa_evals,
+                          show_full_phone=show_full_phone,
+                          show_full_email=show_full_email)
 
 
 @app.route('/tickets')
@@ -1763,6 +1787,55 @@ def agent_get_stats():
     }
     
     return jsonify(stats)
+
+
+@app.route('/agent/call/<int:customer_id>')
+@login_required
+def agent_call_card(customer_id):
+    """Agent müşteri arama kartı - Numara maskelenmiş"""
+    customer = Customer.query.get_or_404(customer_id)
+    
+    # Kampanya ayarlarından numara görünürlüğü kontrolü
+    show_full_phone = False
+    active_campaign = session.get('active_campaign_id')
+    if active_campaign:
+        campaign = Campaign.query.get(active_campaign)
+        if campaign:
+            # Kampanya ayarında show_phone_number varsa kontrol et
+            campaign_settings = campaign.settings or {}
+            show_full_phone = campaign_settings.get('show_phone_number', False)
+    
+    # Admin veya Supervisor her zaman görebilir
+    if current_user.role in ['admin', 'super_admin', 'supervisor']:
+        show_full_phone = True
+    
+    # Önceki aramalar
+    previous_calls = Call.query.filter_by(customer_id=customer_id).order_by(Call.started_at.desc()).limit(5).all()
+    
+    # Bugünkü istatistikler
+    today = datetime.now().replace(hour=0, minute=0, second=0)
+    today_calls = Call.query.filter(
+        Call.agent_id == current_user.id,
+        Call.started_at >= today
+    ).all()
+    
+    # Script (kampanyaya ait)
+    script = None
+    if active_campaign:
+        campaign = Campaign.query.get(active_campaign)
+        if campaign and campaign.script_id:
+            script = Script.query.get(campaign.script_id)
+    
+    return render_template('agent/call_card.html',
+                          customer=customer,
+                          show_full_phone=show_full_phone,
+                          previous_calls=previous_calls,
+                          script=script,
+                          today_calls=len(today_calls),
+                          today_sales=sum(1 for c in today_calls if c.disposition == 'sale'),
+                          today_termin=sum(1 for c in today_calls if c.disposition == 'termin'),
+                          today_keine=sum(1 for c in today_calls if c.disposition == 'keine'),
+                          today=datetime.now().strftime('%Y-%m-%d'))
 
 
 # ==================== SUPERVISOR PANEL ROUTES ====================

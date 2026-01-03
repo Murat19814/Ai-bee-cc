@@ -1,0 +1,948 @@
+{% extends "base.html" %}
+
+{% block title %}Müşteri Detay - {{ app_name }}{% endblock %}
+
+{% block extra_css %}
+<style>
+.customer-page { padding: 1.5rem; }
+
+/* Customer Header Card */
+.customer-header-card {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    border-radius: 20px;
+    padding: 2rem;
+    color: white;
+    margin-bottom: 1.5rem;
+    position: relative;
+    overflow: hidden;
+}
+
+.customer-header-card::before {
+    content: '';
+    position: absolute;
+    top: -50%;
+    right: -20%;
+    width: 400px;
+    height: 400px;
+    background: rgba(255,255,255,0.1);
+    border-radius: 50%;
+}
+
+.customer-header-content {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    position: relative;
+    z-index: 1;
+}
+
+.customer-main-info {
+    display: flex;
+    align-items: center;
+    gap: 1.5rem;
+}
+
+.customer-avatar-large {
+    width: 100px;
+    height: 100px;
+    border-radius: 50%;
+    background: rgba(255,255,255,0.2);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 2.5rem;
+    font-weight: 700;
+    border: 4px solid rgba(255,255,255,0.3);
+}
+
+.customer-name-block h1 {
+    font-size: 2rem;
+    font-weight: 700;
+    margin-bottom: 0.5rem;
+}
+
+.customer-id {
+    opacity: 0.8;
+    font-size: 0.9rem;
+    margin-bottom: 0.5rem;
+}
+
+.customer-badges {
+    display: flex;
+    gap: 0.5rem;
+}
+
+.customer-badge {
+    padding: 0.35rem 0.75rem;
+    border-radius: 20px;
+    font-size: 0.75rem;
+    font-weight: 600;
+    background: rgba(255,255,255,0.2);
+}
+
+.customer-badge.sale { background: #4CAF50; }
+.customer-badge.termin { background: #FF9800; }
+.customer-badge.new { background: #2196F3; }
+
+.customer-actions {
+    display: flex;
+    gap: 0.75rem;
+}
+
+.customer-action-btn {
+    padding: 0.75rem 1.25rem;
+    border-radius: 12px;
+    border: 2px solid rgba(255,255,255,0.3);
+    background: rgba(255,255,255,0.1);
+    color: white;
+    font-weight: 600;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    transition: all 0.2s;
+}
+
+.customer-action-btn:hover {
+    background: rgba(255,255,255,0.2);
+    border-color: white;
+}
+
+.customer-action-btn.call {
+    background: #4CAF50;
+    border-color: #4CAF50;
+}
+
+/* Content Grid */
+.customer-content-grid {
+    display: grid;
+    grid-template-columns: 1fr 400px;
+    gap: 1.5rem;
+}
+
+/* Info Cards */
+.info-card {
+    background: white;
+    border-radius: 16px;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.06);
+    overflow: hidden;
+    margin-bottom: 1.5rem;
+}
+
+.info-card-header {
+    padding: 1rem 1.5rem;
+    background: #f8f9fa;
+    border-bottom: 1px solid #eee;
+    font-weight: 700;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.info-card-header i {
+    color: var(--primary);
+}
+
+.info-card-body {
+    padding: 1.5rem;
+}
+
+/* Info Grid */
+.info-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 1rem;
+}
+
+.info-item {
+    padding: 1rem;
+    background: #f8f9fa;
+    border-radius: 12px;
+}
+
+.info-label {
+    font-size: 0.75rem;
+    color: #888;
+    margin-bottom: 0.25rem;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.info-value {
+    font-weight: 600;
+    color: #333;
+    font-size: 1rem;
+}
+
+.info-value.masked {
+    font-family: monospace;
+    letter-spacing: 1px;
+}
+
+.info-value.iban {
+    font-family: monospace;
+    font-size: 0.9rem;
+    word-break: break-all;
+}
+
+/* Full Width Info */
+.info-full {
+    grid-column: 1 / -1;
+}
+
+/* Call History */
+.call-history-list {
+    max-height: 400px;
+    overflow-y: auto;
+}
+
+.call-history-item {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    padding: 1rem;
+    border-bottom: 1px solid #eee;
+    transition: background 0.2s;
+}
+
+.call-history-item:hover {
+    background: #f8f9fa;
+}
+
+.call-history-item:last-child {
+    border-bottom: none;
+}
+
+.call-icon {
+    width: 44px;
+    height: 44px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.25rem;
+}
+
+.call-icon.outbound { background: #E3F2FD; color: #1976D2; }
+.call-icon.inbound { background: #F3E5F5; color: #7B1FA2; }
+.call-icon.missed { background: #FFEBEE; color: #D32F2F; }
+
+.call-details {
+    flex: 1;
+}
+
+.call-date {
+    font-weight: 600;
+    color: #333;
+    margin-bottom: 0.25rem;
+}
+
+.call-meta {
+    font-size: 0.85rem;
+    color: #666;
+    display: flex;
+    gap: 1rem;
+}
+
+.call-result {
+    padding: 0.25rem 0.75rem;
+    border-radius: 20px;
+    font-size: 0.75rem;
+    font-weight: 600;
+}
+
+.call-result.sale { background: #E8F5E9; color: #2E7D32; }
+.call-result.termin { background: #FFF3E0; color: #E65100; }
+.call-result.keine { background: #FFEBEE; color: #C62828; }
+.call-result.qc-ok { background: #E8F5E9; color: #2E7D32; }
+.call-result.qc-termin { background: #F3E5F5; color: #7B1FA2; }
+.call-result.qc-storno { background: #FFEBEE; color: #C62828; }
+
+/* Recording Section */
+.recording-card {
+    background: #f8f9fa;
+    border-radius: 12px;
+    padding: 1rem;
+    margin-bottom: 0.75rem;
+}
+
+.recording-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 0.75rem;
+}
+
+.recording-type {
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.recording-type.system { color: #1976D2; }
+.recording-type.agent { color: #7B1FA2; }
+
+.recording-duration {
+    font-size: 0.85rem;
+    color: #666;
+}
+
+.audio-player {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+}
+
+.play-btn {
+    width: 44px;
+    height: 44px;
+    border-radius: 50%;
+    border: none;
+    background: linear-gradient(135deg, #4CAF50, #388E3C);
+    color: white;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.25rem;
+    transition: all 0.2s;
+}
+
+.play-btn:hover {
+    transform: scale(1.1);
+}
+
+.audio-progress {
+    flex: 1;
+    height: 6px;
+    background: #ddd;
+    border-radius: 3px;
+    overflow: hidden;
+}
+
+.audio-progress-bar {
+    height: 100%;
+    background: linear-gradient(90deg, #4CAF50, #8BC34A);
+    width: 0%;
+}
+
+.audio-time {
+    font-size: 0.8rem;
+    color: #666;
+    min-width: 45px;
+    text-align: right;
+}
+
+/* Notes Section */
+.notes-list {
+    max-height: 300px;
+    overflow-y: auto;
+}
+
+.note-item {
+    padding: 1rem;
+    border-left: 3px solid #667eea;
+    background: #f8f9fa;
+    border-radius: 0 8px 8px 0;
+    margin-bottom: 0.75rem;
+}
+
+.note-header {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 0.5rem;
+}
+
+.note-author {
+    font-weight: 600;
+    font-size: 0.85rem;
+}
+
+.note-date {
+    font-size: 0.75rem;
+    color: #888;
+}
+
+.note-content {
+    font-size: 0.9rem;
+    color: #444;
+}
+
+/* Add Note Form */
+.add-note-form {
+    display: flex;
+    gap: 0.75rem;
+    margin-top: 1rem;
+}
+
+.note-input {
+    flex: 1;
+    padding: 0.75rem 1rem;
+    border: 2px solid #e0e0e0;
+    border-radius: 10px;
+    font-size: 0.9rem;
+}
+
+.note-input:focus {
+    outline: none;
+    border-color: #667eea;
+}
+
+/* QC Status Card */
+.qc-status-card {
+    background: white;
+    border-radius: 16px;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.06);
+    overflow: hidden;
+}
+
+.qc-status-header {
+    padding: 1rem 1.5rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.qc-status-header.ok { background: linear-gradient(135deg, #4CAF50, #388E3C); color: white; }
+.qc-status-header.termin { background: linear-gradient(135deg, #9C27B0, #7B1FA2); color: white; }
+.qc-status-header.storno { background: linear-gradient(135deg, #f44336, #D32F2F); color: white; }
+.qc-status-header.pending { background: linear-gradient(135deg, #FF9800, #F57C00); color: white; }
+
+.qc-status-title {
+    font-weight: 700;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.qc-status-body {
+    padding: 1.5rem;
+}
+
+.qc-info-row {
+    display: flex;
+    justify-content: space-between;
+    padding: 0.75rem 0;
+    border-bottom: 1px solid #eee;
+}
+
+.qc-info-row:last-child {
+    border-bottom: none;
+}
+
+.qc-info-label {
+    color: #666;
+}
+
+.qc-info-value {
+    font-weight: 600;
+}
+
+/* Timeline */
+.timeline {
+    position: relative;
+    padding-left: 30px;
+}
+
+.timeline::before {
+    content: '';
+    position: absolute;
+    left: 10px;
+    top: 0;
+    bottom: 0;
+    width: 2px;
+    background: #e0e0e0;
+}
+
+.timeline-item {
+    position: relative;
+    padding-bottom: 1.5rem;
+}
+
+.timeline-item:last-child {
+    padding-bottom: 0;
+}
+
+.timeline-dot {
+    position: absolute;
+    left: -24px;
+    width: 14px;
+    height: 14px;
+    border-radius: 50%;
+    background: white;
+    border: 3px solid #667eea;
+}
+
+.timeline-dot.sale { border-color: #4CAF50; }
+.timeline-dot.call { border-color: #2196F3; }
+.timeline-dot.qc { border-color: #9C27B0; }
+
+.timeline-content {
+    background: #f8f9fa;
+    padding: 0.75rem 1rem;
+    border-radius: 8px;
+}
+
+.timeline-title {
+    font-weight: 600;
+    margin-bottom: 0.25rem;
+}
+
+.timeline-time {
+    font-size: 0.75rem;
+    color: #888;
+}
+
+/* Responsive */
+@media (max-width: 1024px) {
+    .customer-content-grid {
+        grid-template-columns: 1fr;
+    }
+}
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="customer-page">
+    <!-- Customer Header -->
+    <div class="customer-header-card">
+        <div class="customer-header-content">
+            <div class="customer-main-info">
+                <div class="customer-avatar-large">
+                    <span id="customerInitials">{{ customer.full_name[:2].upper() if customer.full_name else 'XX' }}</span>
+                </div>
+                <div class="customer-name-block">
+                    <h1 id="customerFullName">{{ customer.full_name or 'İsimsiz Müşteri' }}</h1>
+                    <div class="customer-id">#{{ customer.customer_no or ('CUS-' ~ customer.id) }}</div>
+                    <div class="customer-badges">
+                        {% if customer.status == 'sale' %}
+                        <span class="customer-badge sale">SALE</span>
+                        {% elif customer.status == 'termin' %}
+                        <span class="customer-badge termin">TERMİN</span>
+                        {% else %}
+                        <span class="customer-badge new">{{ customer.status or 'YENİ' }}</span>
+                        {% endif %}
+                        {% if customer.project %}
+                        <span class="customer-badge">{{ customer.project.name }}</span>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+            <div class="customer-actions">
+                <button class="customer-action-btn call" onclick="callCustomer({{ customer.id }})">
+                    <i class="ti ti-phone"></i>
+                    <span data-tr="Ara" data-de="Anrufen">Ara</span>
+                </button>
+                <button class="customer-action-btn" onclick="editCustomer({{ customer.id }})">
+                    <i class="ti ti-edit"></i>
+                    <span data-tr="Düzenle" data-de="Bearbeiten">Düzenle</span>
+                </button>
+                <button class="customer-action-btn" onclick="addToBlacklist({{ customer.id }})">
+                    <i class="ti ti-ban"></i>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Content Grid -->
+    <div class="customer-content-grid">
+        <!-- Left Column -->
+        <div class="customer-left">
+            <!-- Contact Info -->
+            <div class="info-card">
+                <div class="info-card-header">
+                    <i class="ti ti-user"></i>
+                    <span data-tr="İletişim Bilgileri" data-de="Kontaktinformationen">İletişim Bilgileri</span>
+                </div>
+                <div class="info-card-body">
+                    <div class="info-grid">
+                        <div class="info-item">
+                            <div class="info-label" data-tr="Ad Soyad" data-de="Vollständiger Name">Ad Soyad</div>
+                            <div class="info-value">{{ customer.full_name or '-' }}</div>
+                        </div>
+                        <div class="info-item">
+                            <div class="info-label" data-tr="Telefon" data-de="Telefon">Telefon</div>
+                            {% if show_full_phone %}
+                            <div class="info-value">{{ customer.phone or '-' }}</div>
+                            {% else %}
+                            <div class="info-value masked">{{ customer.phone[:6] if customer.phone else '' }}**** **{{ customer.phone[-2:] if customer.phone else '' }}</div>
+                            {% endif %}
+                        </div>
+                        <div class="info-item">
+                            <div class="info-label">Email</div>
+                            {% if show_full_email %}
+                            <div class="info-value">{{ customer.email or '-' }}</div>
+                            {% else %}
+                            <div class="info-value">{{ customer.email[:1] if customer.email else '' }}***@{{ customer.email.split('@')[1] if customer.email and '@' in customer.email else '***' }}</div>
+                            {% endif %}
+                        </div>
+                        <div class="info-item">
+                            <div class="info-label" data-tr="Doğum Tarihi" data-de="Geburtsdatum">Doğum Tarihi</div>
+                            <div class="info-value">{{ customer.birth_date.strftime('%d.%m.%Y') if customer.birth_date else '-' }}</div>
+                        </div>
+                        <div class="info-item info-full">
+                            <div class="info-label" data-tr="Adres" data-de="Adresse">Adres</div>
+                            <div class="info-value">{{ customer.address or '-' }}, {{ customer.postal_code or '' }} {{ customer.city or '' }}{% if customer.country %}, {{ customer.country }}{% endif %}</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Bank Info (IBAN) -->
+            {% if customer.iban or customer.bank_name %}
+            <div class="info-card">
+                <div class="info-card-header">
+                    <i class="ti ti-building-bank"></i>
+                    <span data-tr="Banka Bilgileri" data-de="Bankinformationen">Banka Bilgileri</span>
+                </div>
+                <div class="info-card-body">
+                    <div class="info-grid">
+                        <div class="info-item info-full">
+                            <div class="info-label">IBAN</div>
+                            <div class="info-value iban">{{ customer.iban or '-' }}</div>
+                        </div>
+                        <div class="info-item">
+                            <div class="info-label">BIC</div>
+                            <div class="info-value">{{ customer.bic or '-' }}</div>
+                        </div>
+                        <div class="info-item">
+                            <div class="info-label" data-tr="Banka" data-de="Bank">Banka</div>
+                            <div class="info-value">{{ customer.bank_name or '-' }}</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {% endif %}
+
+            <!-- Call History -->
+            <div class="info-card">
+                <div class="info-card-header">
+                    <i class="ti ti-phone-call"></i>
+                    <span data-tr="Arama Geçmişi" data-de="Anrufverlauf">Arama Geçmişi</span>
+                </div>
+                <div class="info-card-body" style="padding: 0;">
+                    <div class="call-history-list">
+                        {% if calls %}
+                        {% for call in calls %}
+                        <div class="call-history-item">
+                            <div class="call-icon {% if call.direction == 'inbound' %}inbound{% elif call.status == 'missed' %}missed{% else %}outbound{% endif %}">
+                                <i class="ti ti-{% if call.direction == 'inbound' %}phone-incoming{% elif call.status == 'missed' %}phone-off{% else %}phone-outgoing{% endif %}"></i>
+                            </div>
+                            <div class="call-details">
+                                <div class="call-date">{{ call.started_at.strftime('%d.%m.%Y %H:%M') if call.started_at else '-' }}</div>
+                                <div class="call-meta">
+                                    <span><i class="ti ti-user"></i> {{ call.agent.first_name[:1] ~ '.' if call.agent else '-' }} {{ call.agent.last_name[:1] ~ '.' if call.agent else '' }}</span>
+                                    <span><i class="ti ti-clock"></i> {{ '%02d:%02d' % (call.duration // 60, call.duration % 60) if call.duration else '00:00' }}</span>
+                                </div>
+                            </div>
+                            <span class="call-result {% if call.disposition == 'sale' %}sale{% elif call.disposition == 'termin' %}termin{% else %}keine{% endif %}">{{ call.disposition|upper if call.disposition else 'N/A' }}</span>
+                        </div>
+                        {% endfor %}
+                        {% else %}
+                        <div class="call-history-item">
+                            <div class="call-icon outbound" style="opacity: 0.5;">
+                                <i class="ti ti-phone-x"></i>
+                            </div>
+                            <div class="call-details">
+                                <div class="call-date" data-tr="Henüz arama yok" data-de="Noch keine Anrufe">Henüz arama yok</div>
+                            </div>
+                        </div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+
+            <!-- Recordings -->
+            <div class="info-card">
+                <div class="info-card-header">
+                    <i class="ti ti-microphone"></i>
+                    <span data-tr="Ses Kayıtları" data-de="Aufnahmen">Ses Kayıtları</span>
+                </div>
+                <div class="info-card-body">
+                    {% if recordings %}
+                    {% for rec in recordings %}
+                    <div class="recording-card">
+                        <div class="recording-header">
+                            <span class="recording-type {% if rec.recording_type == 'agent' %}agent{% else %}system{% endif %}">
+                                <i class="ti ti-{% if rec.recording_type == 'agent' %}microphone{% else %}phone{% endif %}"></i> 
+                                {{ 'Agent Recording (QC)' if rec.recording_type == 'agent' else 'System Recording' }}
+                            </span>
+                            <span class="recording-duration">{{ rec.created_at.strftime('%d.%m.%Y') if rec.created_at else '-' }} • {{ '%02d:%02d' % (rec.duration // 60, rec.duration % 60) if rec.duration else '00:00' }}</span>
+                        </div>
+                        <div class="audio-player">
+                            <button class="play-btn" onclick="playRecording('{{ rec.id }}', '{{ rec.file_path }}')">
+                                <i class="ti ti-player-play" id="playIcon{{ rec.id }}"></i>
+                            </button>
+                            <div class="audio-progress">
+                                <div class="audio-progress-bar" id="progress{{ rec.id }}"></div>
+                            </div>
+                            <span class="audio-time">{{ '%02d:%02d' % (rec.duration // 60, rec.duration % 60) if rec.duration else '00:00' }}</span>
+                        </div>
+                    </div>
+                    {% endfor %}
+                    {% else %}
+                    <div class="text-center" style="padding: 2rem; color: #888;">
+                        <i class="ti ti-microphone-off" style="font-size: 2rem; margin-bottom: 0.5rem; display: block;"></i>
+                        <span data-tr="Henüz kayıt yok" data-de="Noch keine Aufnahmen">Henüz kayıt yok</span>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <!-- Right Column -->
+        <div class="customer-right">
+            <!-- QC Status -->
+            <div class="qc-status-card">
+                <div class="qc-status-header ok">
+                    <div class="qc-status-title">
+                        <i class="ti ti-shield-check"></i>
+                        <span>QC OK</span>
+                    </div>
+                    <i class="ti ti-check"></i>
+                </div>
+                <div class="qc-status-body">
+                    <div class="qc-info-row">
+                        <span class="qc-info-label" data-tr="Değerlendiren" data-de="Bewertet von">Değerlendiren</span>
+                        <span class="qc-info-value">Ahmet Kömür</span>
+                    </div>
+                    <div class="qc-info-row">
+                        <span class="qc-info-label" data-tr="Tarih" data-de="Datum">Tarih</span>
+                        <span class="qc-info-value">03.01.2026 15:45</span>
+                    </div>
+                    <div class="qc-info-row">
+                        <span class="qc-info-label" data-tr="Satış Tarihi" data-de="Verkaufsdatum">Satış Tarihi</span>
+                        <span class="qc-info-value">03.01.2026</span>
+                    </div>
+                    <div class="qc-info-row">
+                        <span class="qc-info-label" data-tr="Agent" data-de="Agent">Agent</span>
+                        <span class="qc-info-value">Tuncay Karaca</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Timeline -->
+            <div class="info-card" style="margin-top: 1.5rem;">
+                <div class="info-card-header">
+                    <i class="ti ti-timeline"></i>
+                    <span data-tr="Aktivite" data-de="Aktivität">Aktivite</span>
+                </div>
+                <div class="info-card-body">
+                    <div class="timeline">
+                        <div class="timeline-item">
+                            <div class="timeline-dot qc"></div>
+                            <div class="timeline-content">
+                                <div class="timeline-title" data-tr="QC Onaylandı" data-de="QC Genehmigt">QC Onaylandı</div>
+                                <div class="timeline-time">03.01.2026 15:45 - Ahmet K.</div>
+                            </div>
+                        </div>
+                        <div class="timeline-item">
+                            <div class="timeline-dot sale"></div>
+                            <div class="timeline-content">
+                                <div class="timeline-title" data-tr="Satış Yapıldı" data-de="Verkauf getätigt">Satış Yapıldı</div>
+                                <div class="timeline-time">03.01.2026 14:32 - Tuncay K.</div>
+                            </div>
+                        </div>
+                        <div class="timeline-item">
+                            <div class="timeline-dot call"></div>
+                            <div class="timeline-content">
+                                <div class="timeline-title" data-tr="Termin Araması" data-de="Terminanruf">Termin Araması</div>
+                                <div class="timeline-time">02.01.2026 11:15 - Aslı A.</div>
+                            </div>
+                        </div>
+                        <div class="timeline-item">
+                            <div class="timeline-dot call"></div>
+                            <div class="timeline-content">
+                                <div class="timeline-title" data-tr="İlk Temas" data-de="Erster Kontakt">İlk Temas</div>
+                                <div class="timeline-time">01.01.2026 09:45 - Erdoğan Ç.</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Notes -->
+            <div class="info-card" style="margin-top: 1.5rem;">
+                <div class="info-card-header">
+                    <i class="ti ti-notes"></i>
+                    <span data-tr="Notlar" data-de="Notizen">Notlar</span>
+                </div>
+                <div class="info-card-body">
+                    <div class="notes-list">
+                        {% if notes %}
+                        {% for note in notes %}
+                        <div class="note-item">
+                            <div class="note-header">
+                                <span class="note-author">{{ note.user.first_name[:1] ~ '. ' ~ note.user.last_name[:1] ~ '.' if note.user else 'Sistem' }}</span>
+                                <span class="note-date">{{ note.created_at.strftime('%d.%m.%Y %H:%M') if note.created_at else '-' }}</span>
+                            </div>
+                            <div class="note-content">{{ note.content }}</div>
+                        </div>
+                        {% endfor %}
+                        {% else %}
+                        <div class="text-center" style="padding: 1rem; color: #888;">
+                            <span data-tr="Henüz not yok" data-de="Noch keine Notizen">Henüz not yok</span>
+                        </div>
+                        {% endif %}
+                    </div>
+                    <div class="add-note-form">
+                        <input type="text" class="note-input" id="newNoteInput" placeholder="Not ekle..." data-tr-placeholder="Not ekle..." data-de-placeholder="Notiz hinzufügen...">
+                        <button class="btn btn-primary" onclick="addNote({{ customer.id }})"><i class="ti ti-plus"></i></button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Product/Package Info -->
+            <div class="info-card" style="margin-top: 1.5rem;">
+                <div class="info-card-header">
+                    <i class="ti ti-package"></i>
+                    <span data-tr="Ürün Bilgisi" data-de="Produktinformation">Ürün Bilgisi</span>
+                </div>
+                <div class="info-card-body">
+                    <div class="info-grid" style="grid-template-columns: 1fr;">
+                        <div class="info-item">
+                            <div class="info-label" data-tr="Proje" data-de="Projekt">Proje</div>
+                            <div class="info-value">EMS - Europe Mega Service</div>
+                        </div>
+                        <div class="info-item">
+                            <div class="info-label" data-tr="Kampanya" data-de="Kampagne">Kampanya</div>
+                            <div class="info-value">Ocak 2026 Satış</div>
+                        </div>
+                        <div class="info-item">
+                            <div class="info-label" data-tr="Paket" data-de="Paket">Paket</div>
+                            <div class="info-value">Premium Plus - €49.90/ay</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+let currentAudio = null;
+let currentRecordingId = null;
+
+function playRecording(recId, filePath) {
+    const icon = document.getElementById(`playIcon${recId}`);
+    const progressBar = document.getElementById(`progress${recId}`);
+    
+    // Farklı kayıt seçildiyse öncekini durdur
+    if (currentRecordingId && currentRecordingId !== recId) {
+        const prevIcon = document.getElementById(`playIcon${currentRecordingId}`);
+        const prevProgress = document.getElementById(`progress${currentRecordingId}`);
+        if (prevIcon) prevIcon.className = 'ti ti-player-play';
+        if (prevProgress) prevProgress.style.width = '0%';
+        if (currentAudio) {
+            currentAudio.pause();
+            currentAudio = null;
+        }
+    }
+    
+    // Zaten çalıyor ise durdur
+    if (currentAudio && currentRecordingId === recId && !currentAudio.paused) {
+        currentAudio.pause();
+        icon.className = 'ti ti-player-play';
+        return;
+    }
+    
+    // Yeni ses oynat
+    if (!currentAudio || currentRecordingId !== recId) {
+        currentAudio = new Audio(`/recordings/${filePath}`);
+        currentRecordingId = recId;
+        
+        currentAudio.addEventListener('timeupdate', () => {
+            const progress = (currentAudio.currentTime / currentAudio.duration) * 100;
+            progressBar.style.width = progress + '%';
+        });
+        
+        currentAudio.addEventListener('ended', () => {
+            icon.className = 'ti ti-player-play';
+            progressBar.style.width = '0%';
+        });
+    }
+    
+    currentAudio.play();
+    icon.className = 'ti ti-player-pause';
+}
+
+function callCustomer(customerId) {
+    const lang = document.documentElement.lang || 'tr';
+    const msg = lang === 'de' ? 'Anruf wird gestartet...' : 'Arama başlatılıyor...';
+    
+    // TODO: Gerçek arama API'sine bağlan
+    fetch(`/api/calls/initiate`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ customer_id: customerId })
+    }).then(r => {
+        if (r.ok) {
+            alert(msg);
+        }
+    }).catch(() => {
+        alert(msg + ' (Demo)');
+    });
+}
+
+function editCustomer(customerId) {
+    window.location.href = `/customers/${customerId}/edit`;
+}
+
+function addToBlacklist(customerId) {
+    const lang = document.documentElement.lang || 'tr';
+    const msg = lang === 'de' 
+        ? 'Möchten Sie diesen Kunden zur Blacklist hinzufügen?' 
+        : 'Bu müşteriyi kara listeye eklemek istiyor musunuz?';
+    
+    if (confirm(msg)) {
+        fetch(`/api/customers/${customerId}/blacklist`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' }
+        }).then(r => {
+            if (r.ok) {
+                alert(lang === 'de' ? 'Zur Blacklist hinzugefügt' : 'Kara listeye eklendi');
+                location.reload();
+            }
+        }).catch(() => {
+            alert(lang === 'de' ? 'Zur Blacklist hinzugefügt (Demo)' : 'Kara listeye eklendi (Demo)');
+        });
+    }
+}
+
+function addNote(customerId) {
+    const input = document.getElementById('newNoteInput');
+    const content = input.value.trim();
+    
+    if (!content) return;
+    
+    fetch(`/api/customers/${customerId}/notes`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ content: content })
+    }).then(r => {
+        if (r.ok) {
+            input.value = '';
+            location.reload();
+        }
+    }).catch(() => {
+        // Demo mode - direkt ekle
+        const notesList = document.querySelector('.notes-list');
+        const newNote = document.createElement('div');
+        newNote.className = 'note-item';
+        newNote.innerHTML = `
+            <div class="note-header">
+                <span class="note-author">Ben</span>
+                <span class="note-date">${new Date().toLocaleDateString('tr')}</span>
+            </div>
+            <div class="note-content">${content}</div>
+        `;
+        notesList.prepend(newNote);
+        input.value = '';
+    });
+}
+</script>
+{% endblock %}
+

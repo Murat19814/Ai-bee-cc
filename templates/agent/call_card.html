@@ -1,0 +1,847 @@
+{% extends "base.html" %}
+
+{% block title %}Müşteri Kartı - {{ app_name }}{% endblock %}
+
+{% block extra_css %}
+<style>
+.call-card-page {
+    padding: 1.5rem;
+    max-width: 1400px;
+    margin: 0 auto;
+}
+
+/* Main Call Card */
+.main-call-card {
+    display: grid;
+    grid-template-columns: 1fr 350px;
+    gap: 1.5rem;
+}
+
+/* Customer Info Section */
+.customer-section {
+    background: white;
+    border-radius: 20px;
+    box-shadow: 0 4px 30px rgba(0,0,0,0.08);
+    overflow: hidden;
+}
+
+.customer-header {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    padding: 1.5rem 2rem;
+    color: white;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.customer-info {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+}
+
+.customer-avatar {
+    width: 70px;
+    height: 70px;
+    border-radius: 50%;
+    background: rgba(255,255,255,0.2);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.5rem;
+    font-weight: 700;
+    border: 3px solid rgba(255,255,255,0.3);
+}
+
+.customer-name-block h2 {
+    font-size: 1.5rem;
+    margin-bottom: 0.25rem;
+}
+
+.customer-phone {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 1.1rem;
+    opacity: 0.9;
+    letter-spacing: 1px;
+}
+
+.call-timer {
+    text-align: center;
+}
+
+.timer-display {
+    font-size: 2.5rem;
+    font-weight: 700;
+    font-family: 'JetBrains Mono', monospace;
+}
+
+.call-status {
+    font-size: 0.85rem;
+    opacity: 0.8;
+    margin-top: 0.25rem;
+}
+
+.call-status.ringing { animation: pulse 1s infinite; }
+.call-status.connected { color: #69f0ae; }
+
+@keyframes pulse {
+    0%, 100% { opacity: 0.5; }
+    50% { opacity: 1; }
+}
+
+/* Customer Details */
+.customer-details {
+    padding: 1.5rem 2rem;
+}
+
+.detail-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 1rem;
+}
+
+.detail-item {
+    padding: 1rem;
+    background: #f8f9fa;
+    border-radius: 12px;
+}
+
+.detail-label {
+    font-size: 0.75rem;
+    color: #888;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin-bottom: 0.25rem;
+}
+
+.detail-value {
+    font-weight: 600;
+    color: #333;
+}
+
+.detail-value.masked {
+    font-family: 'JetBrains Mono', monospace;
+    letter-spacing: 2px;
+    color: #666;
+}
+
+.detail-full {
+    grid-column: 1 / -1;
+}
+
+/* Call History Mini */
+.call-history-mini {
+    padding: 1rem 2rem;
+    background: #f8f9fa;
+    border-top: 1px solid #eee;
+}
+
+.history-title {
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: #666;
+    margin-bottom: 0.75rem;
+}
+
+.history-badges {
+    display: flex;
+    gap: 0.5rem;
+    flex-wrap: wrap;
+}
+
+.history-badge {
+    padding: 0.35rem 0.75rem;
+    border-radius: 20px;
+    font-size: 0.75rem;
+    font-weight: 600;
+}
+
+.history-badge.call { background: #E3F2FD; color: #1976D2; }
+.history-badge.sale { background: #E8F5E9; color: #2E7D32; }
+.history-badge.termin { background: #FFF3E0; color: #E65100; }
+.history-badge.keine { background: #FFEBEE; color: #C62828; }
+
+/* Action Panel */
+.action-panel {
+    background: white;
+    border-radius: 20px;
+    box-shadow: 0 4px 30px rgba(0,0,0,0.08);
+    padding: 1.5rem;
+}
+
+.action-title {
+    font-weight: 700;
+    font-size: 1.1rem;
+    margin-bottom: 1rem;
+    padding-bottom: 0.75rem;
+    border-bottom: 2px solid #f0f0f0;
+}
+
+/* Call Actions */
+.call-action-buttons {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 0.75rem;
+    margin-bottom: 1.5rem;
+}
+
+.call-action-btn {
+    padding: 1rem;
+    border-radius: 12px;
+    border: none;
+    font-weight: 600;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    transition: all 0.2s;
+}
+
+.call-action-btn:hover {
+    transform: translateY(-2px);
+}
+
+.call-action-btn.hold {
+    background: #FFF3E0;
+    color: #E65100;
+}
+
+.call-action-btn.mute {
+    background: #E3F2FD;
+    color: #1976D2;
+}
+
+.call-action-btn.transfer {
+    background: #F3E5F5;
+    color: #7B1FA2;
+}
+
+.call-action-btn.record {
+    background: #FFEBEE;
+    color: #C62828;
+}
+
+.call-action-btn.record.recording {
+    background: #C62828;
+    color: white;
+    animation: recordPulse 1s infinite;
+}
+
+@keyframes recordPulse {
+    0%, 100% { box-shadow: 0 0 0 0 rgba(198, 40, 40, 0.4); }
+    50% { box-shadow: 0 0 0 10px rgba(198, 40, 40, 0); }
+}
+
+/* Disposition Section */
+.disposition-section {
+    margin-bottom: 1.5rem;
+}
+
+.disposition-title {
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: #666;
+    margin-bottom: 0.75rem;
+}
+
+.disposition-options {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.disposition-btn {
+    padding: 0.75rem 1rem;
+    border-radius: 10px;
+    border: 2px solid #e0e0e0;
+    background: white;
+    text-align: left;
+    cursor: pointer;
+    transition: all 0.2s;
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+}
+
+.disposition-btn:hover {
+    border-color: #667eea;
+    background: #f8f9ff;
+}
+
+.disposition-btn.selected {
+    border-color: #667eea;
+    background: #667eea;
+    color: white;
+}
+
+.disposition-icon {
+    width: 32px;
+    height: 32px;
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.disposition-btn:not(.selected) .disposition-icon.sale { background: #E8F5E9; color: #2E7D32; }
+.disposition-btn:not(.selected) .disposition-icon.termin { background: #FFF3E0; color: #E65100; }
+.disposition-btn:not(.selected) .disposition-icon.keine { background: #FFEBEE; color: #C62828; }
+.disposition-btn:not(.selected) .disposition-icon.other { background: #F5F5F5; color: #666; }
+
+.disposition-btn.selected .disposition-icon {
+    background: rgba(255,255,255,0.2);
+    color: white;
+}
+
+.disposition-text {
+    flex: 1;
+}
+
+.disposition-text strong {
+    display: block;
+    font-size: 0.9rem;
+}
+
+.disposition-text small {
+    font-size: 0.75rem;
+    opacity: 0.7;
+}
+
+/* Termin Picker */
+.termin-picker {
+    display: none;
+    padding: 1rem;
+    background: #FFF3E0;
+    border-radius: 10px;
+    margin-top: 0.75rem;
+}
+
+.termin-picker.visible {
+    display: block;
+}
+
+.termin-row {
+    display: flex;
+    gap: 0.75rem;
+    margin-bottom: 0.75rem;
+}
+
+.termin-row input {
+    flex: 1;
+    padding: 0.5rem;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+}
+
+/* End Call Button */
+.end-call-btn {
+    width: 100%;
+    padding: 1rem;
+    border-radius: 12px;
+    border: none;
+    background: linear-gradient(135deg, #f44336, #D32F2F);
+    color: white;
+    font-weight: 700;
+    font-size: 1rem;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    transition: all 0.2s;
+}
+
+.end-call-btn:hover {
+    transform: scale(1.02);
+    box-shadow: 0 4px 15px rgba(244, 67, 54, 0.4);
+}
+
+/* Notes */
+.notes-section {
+    margin-top: 1.5rem;
+    padding-top: 1.5rem;
+    border-top: 2px solid #f0f0f0;
+}
+
+.note-textarea {
+    width: 100%;
+    padding: 1rem;
+    border: 2px solid #e0e0e0;
+    border-radius: 12px;
+    resize: vertical;
+    min-height: 80px;
+    font-family: inherit;
+}
+
+.note-textarea:focus {
+    outline: none;
+    border-color: #667eea;
+}
+
+/* Script Section */
+.script-section {
+    margin-top: 1.5rem;
+}
+
+.script-card {
+    background: linear-gradient(135deg, #f8f9fa, #ffffff);
+    border: 2px solid #e0e0e0;
+    border-radius: 16px;
+    overflow: hidden;
+}
+
+.script-header {
+    padding: 1rem 1.5rem;
+    background: #f8f9fa;
+    border-bottom: 1px solid #eee;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.script-title {
+    font-weight: 700;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.script-nav {
+    display: flex;
+    gap: 0.5rem;
+}
+
+.script-nav-btn {
+    width: 32px;
+    height: 32px;
+    border-radius: 8px;
+    border: 1px solid #ddd;
+    background: white;
+    cursor: pointer;
+}
+
+.script-body {
+    padding: 1.5rem;
+    max-height: 300px;
+    overflow-y: auto;
+}
+
+.script-step {
+    display: none;
+}
+
+.script-step.active {
+    display: block;
+}
+
+.script-step-title {
+    font-weight: 700;
+    color: #667eea;
+    margin-bottom: 0.75rem;
+}
+
+.script-content {
+    line-height: 1.7;
+    color: #444;
+}
+
+.script-highlight {
+    background: #fff3cd;
+    padding: 0.1rem 0.25rem;
+    border-radius: 4px;
+}
+
+/* Daily Stats */
+.daily-stats {
+    margin-top: 1.5rem;
+    padding: 1rem;
+    background: linear-gradient(135deg, #667eea, #764ba2);
+    border-radius: 12px;
+    color: white;
+}
+
+.stats-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 1rem;
+}
+
+.stat-item {
+    text-align: center;
+}
+
+.stat-value {
+    font-size: 1.5rem;
+    font-weight: 700;
+}
+
+.stat-label {
+    font-size: 0.75rem;
+    opacity: 0.8;
+}
+
+/* Responsive */
+@media (max-width: 1024px) {
+    .main-call-card {
+        grid-template-columns: 1fr;
+    }
+}
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="call-card-page">
+    <div class="main-call-card">
+        <!-- Customer Info Section -->
+        <div class="customer-section">
+            <div class="customer-header">
+                <div class="customer-info">
+                    <div class="customer-avatar">
+                        <span id="customerInitial">{{ customer.full_name[:2].upper() if customer and customer.full_name else 'XX' }}</span>
+                    </div>
+                    <div class="customer-name-block">
+                        <h2 id="customerName">{{ customer.full_name if customer else 'Bilinmeyen Müşteri' }}</h2>
+                        {% if show_full_phone %}
+                        <div class="customer-phone">{{ customer.phone if customer else '-' }}</div>
+                        {% else %}
+                        <div class="customer-phone">{{ customer.phone[:6] if customer and customer.phone else '' }}**** **{{ customer.phone[-2:] if customer and customer.phone else '' }}</div>
+                        {% endif %}
+                    </div>
+                </div>
+                <div class="call-timer">
+                    <div class="timer-display" id="callTimer">00:00</div>
+                    <div class="call-status ringing" id="callStatus" data-tr="Bağlanıyor..." data-de="Verbinde...">Bağlanıyor...</div>
+                </div>
+            </div>
+            
+            <div class="customer-details">
+                <div class="detail-grid">
+                    <div class="detail-item">
+                        <div class="detail-label" data-tr="Doğum Tarihi" data-de="Geburtsdatum">Doğum Tarihi</div>
+                        <div class="detail-value">{{ customer.birth_date.strftime('%d.%m.%Y') if customer and customer.birth_date else '-' }}</div>
+                    </div>
+                    <div class="detail-item">
+                        <div class="detail-label" data-tr="Şehir" data-de="Stadt">Şehir</div>
+                        <div class="detail-value">{{ customer.city if customer else '-' }} {% if customer and customer.postal_code %}({{ customer.postal_code }}){% endif %}</div>
+                    </div>
+                    <div class="detail-item detail-full">
+                        <div class="detail-label" data-tr="Adres" data-de="Adresse">Adres</div>
+                        <div class="detail-value">{{ customer.address if customer else '-' }}</div>
+                    </div>
+                    {% if customer and customer.iban %}
+                    <div class="detail-item detail-full">
+                        <div class="detail-label">IBAN</div>
+                        <div class="detail-value" style="font-family: monospace;">{{ customer.iban }}</div>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+            
+            <div class="call-history-mini">
+                <div class="history-title" data-tr="Son Aramalar" data-de="Letzte Anrufe">Son Aramalar</div>
+                <div class="history-badges">
+                    {% if previous_calls %}
+                    {% for pc in previous_calls[:5] %}
+                    <span class="history-badge {{ pc.disposition or 'call' }}">
+                        {{ pc.started_at.strftime('%d.%m') if pc.started_at else '-' }} - {{ pc.disposition or 'Arama' }}
+                    </span>
+                    {% endfor %}
+                    {% else %}
+                    <span class="history-badge call" data-tr="İlk Arama" data-de="Erster Anruf">İlk Arama</span>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+        
+        <!-- Action Panel -->
+        <div class="action-panel">
+            <div class="action-title" data-tr="Çağrı İşlemleri" data-de="Anrufaktionen">Çağrı İşlemleri</div>
+            
+            <!-- Call Actions -->
+            <div class="call-action-buttons">
+                <button class="call-action-btn hold" onclick="toggleHold()">
+                    <i class="ti ti-player-pause"></i>
+                    <span data-tr="Beklet" data-de="Halten">Beklet</span>
+                </button>
+                <button class="call-action-btn mute" onclick="toggleMute()">
+                    <i class="ti ti-microphone"></i>
+                    <span data-tr="Sessize Al" data-de="Stumm">Sessize Al</span>
+                </button>
+                <button class="call-action-btn transfer" onclick="showTransfer()">
+                    <i class="ti ti-arrows-exchange"></i>
+                    <span data-tr="Transfer" data-de="Transfer">Transfer</span>
+                </button>
+                <button class="call-action-btn record" id="recordBtn" onclick="toggleRecording()">
+                    <i class="ti ti-circle-filled"></i>
+                    <span data-tr="QC Kayıt" data-de="QC Aufnahme">QC Kayıt</span>
+                </button>
+            </div>
+            
+            <!-- Disposition -->
+            <div class="disposition-section">
+                <div class="disposition-title" data-tr="Sonuç Seç" data-de="Ergebnis wählen">Sonuç Seç</div>
+                <div class="disposition-options">
+                    <button class="disposition-btn" data-disposition="sale" onclick="selectDisposition(this, 'sale')">
+                        <div class="disposition-icon sale"><i class="ti ti-check"></i></div>
+                        <div class="disposition-text">
+                            <strong>SALE</strong>
+                            <small data-tr="Satış yapıldı" data-de="Verkauf erfolgreich">Satış yapıldı</small>
+                        </div>
+                    </button>
+                    <button class="disposition-btn" data-disposition="termin" onclick="selectDisposition(this, 'termin')">
+                        <div class="disposition-icon termin"><i class="ti ti-calendar"></i></div>
+                        <div class="disposition-text">
+                            <strong>TERMİN</strong>
+                            <small data-tr="Geri arama planla" data-de="Rückruf planen">Geri arama planla</small>
+                        </div>
+                    </button>
+                    <button class="disposition-btn" data-disposition="keine" onclick="selectDisposition(this, 'keine')">
+                        <div class="disposition-icon keine"><i class="ti ti-x"></i></div>
+                        <div class="disposition-text">
+                            <strong>KEİNE INTERESSE</strong>
+                            <small data-tr="İlgi yok" data-de="Kein Interesse">İlgi yok</small>
+                        </div>
+                    </button>
+                    <button class="disposition-btn" data-disposition="busy" onclick="selectDisposition(this, 'busy')">
+                        <div class="disposition-icon other"><i class="ti ti-phone-off"></i></div>
+                        <div class="disposition-text">
+                            <strong>MEŞGUL / ULAŞILAMADI</strong>
+                            <small data-tr="Tekrar ara" data-de="Erneut anrufen">Tekrar ara</small>
+                        </div>
+                    </button>
+                </div>
+                
+                <!-- Termin Picker -->
+                <div class="termin-picker" id="terminPicker">
+                    <div class="termin-row">
+                        <input type="date" id="terminDate" min="{{ today }}">
+                        <input type="time" id="terminTime" value="10:00">
+                    </div>
+                    <input type="text" placeholder="Termin notu..." data-tr-placeholder="Termin notu..." data-de-placeholder="Terminnotiz..." id="terminNote">
+                </div>
+            </div>
+            
+            <!-- Notes -->
+            <div class="notes-section">
+                <textarea class="note-textarea" placeholder="Görüşme notları..." data-tr-placeholder="Görüşme notları..." data-de-placeholder="Gesprächsnotizen..." id="callNotes"></textarea>
+            </div>
+            
+            <!-- End Call -->
+            <button class="end-call-btn" onclick="endCall()">
+                <i class="ti ti-phone-off"></i>
+                <span data-tr="Çağrıyı Sonlandır" data-de="Anruf beenden">Çağrıyı Sonlandır</span>
+            </button>
+            
+            <!-- Daily Stats -->
+            <div class="daily-stats">
+                <div class="stats-grid">
+                    <div class="stat-item">
+                        <div class="stat-value" id="todayCalls">{{ today_calls or 0 }}</div>
+                        <div class="stat-label" data-tr="Bugün Arama" data-de="Heute Anrufe">Bugün Arama</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-value" id="todaySales">{{ today_sales or 0 }}</div>
+                        <div class="stat-label" data-tr="Satış" data-de="Verkäufe">Satış</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-value" id="todayTermin">{{ today_termin or 0 }}</div>
+                        <div class="stat-label" data-tr="Termin" data-de="Termine">Termin</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-value" id="todayKeine">{{ today_keine or 0 }}</div>
+                        <div class="stat-label" data-tr="Keine" data-de="Keine">Keine</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Script Section -->
+    {% if script %}
+    <div class="script-section">
+        <div class="script-card">
+            <div class="script-header">
+                <div class="script-title">
+                    <i class="ti ti-script"></i>
+                    <span>{{ script.name }}</span>
+                </div>
+                <div class="script-nav">
+                    <button class="script-nav-btn" onclick="prevStep()"><i class="ti ti-chevron-left"></i></button>
+                    <button class="script-nav-btn" onclick="nextStep()"><i class="ti ti-chevron-right"></i></button>
+                </div>
+            </div>
+            <div class="script-body">
+                <div class="script-step active" id="step1">
+                    <div class="script-step-title" data-tr="1. Selamlama" data-de="1. Begrüßung">1. Selamlama</div>
+                    <div class="script-content">
+                        Guten Tag, mein Name ist <span class="script-highlight">[İSİM]</span> von EMS Europe Mega Service. 
+                        Spreche ich mit <span class="script-highlight">{{ customer.full_name if customer else 'Herr/Frau' }}</span>?
+                    </div>
+                </div>
+                <div class="script-step" id="step2">
+                    <div class="script-step-title" data-tr="2. Sunum" data-de="2. Präsentation">2. Sunum</div>
+                    <div class="script-content">
+                        Wunderbar! Ich rufe Sie heute an, weil wir für unsere Bestandskunden ein 
+                        <span class="script-highlight">exklusives Angebot</span> haben...
+                    </div>
+                </div>
+                <div class="script-step" id="step3">
+                    <div class="script-step-title" data-tr="3. Kapanış" data-de="3. Abschluss">3. Kapanış</div>
+                    <div class="script-content">
+                        Perfekt! Dann bestätige ich jetzt Ihre Bestellung. 
+                        Ihr IBAN beginnt mit <span class="script-highlight">DE...</span>?
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+// Call Timer
+let callSeconds = 0;
+let timerInterval = null;
+let isConnected = false;
+let isRecording = false;
+let selectedDisposition = null;
+let currentScriptStep = 1;
+const totalScriptSteps = 3;
+
+// Start call simulation
+document.addEventListener('DOMContentLoaded', () => {
+    // Simulate connection after 2 seconds
+    setTimeout(() => {
+        isConnected = true;
+        document.getElementById('callStatus').textContent = 
+            (document.documentElement.lang === 'de') ? 'Verbunden' : 'Bağlandı';
+        document.getElementById('callStatus').classList.remove('ringing');
+        document.getElementById('callStatus').classList.add('connected');
+        startTimer();
+    }, 2000);
+});
+
+function startTimer() {
+    timerInterval = setInterval(() => {
+        callSeconds++;
+        const mins = Math.floor(callSeconds / 60).toString().padStart(2, '0');
+        const secs = (callSeconds % 60).toString().padStart(2, '0');
+        document.getElementById('callTimer').textContent = `${mins}:${secs}`;
+    }, 1000);
+}
+
+function toggleHold() {
+    const btn = event.currentTarget;
+    btn.classList.toggle('active');
+    const isHold = btn.classList.contains('active');
+    btn.querySelector('i').className = isHold ? 'ti ti-player-play' : 'ti ti-player-pause';
+}
+
+function toggleMute() {
+    const btn = event.currentTarget;
+    btn.classList.toggle('active');
+    const isMuted = btn.classList.contains('active');
+    btn.querySelector('i').className = isMuted ? 'ti ti-microphone-off' : 'ti ti-microphone';
+}
+
+function showTransfer() {
+    const lang = document.documentElement.lang || 'tr';
+    const msg = lang === 'de' ? 'Transfer-Funktion (Demo)' : 'Transfer özelliği (Demo)';
+    alert(msg);
+}
+
+function toggleRecording() {
+    const btn = document.getElementById('recordBtn');
+    isRecording = !isRecording;
+    
+    if (isRecording) {
+        btn.classList.add('recording');
+        btn.querySelector('span').textContent = 
+            (document.documentElement.lang === 'de') ? 'Aufnahme läuft...' : 'Kayıt Yapılıyor...';
+    } else {
+        btn.classList.remove('recording');
+        btn.querySelector('span').textContent = 
+            (document.documentElement.lang === 'de') ? 'QC Aufnahme' : 'QC Kayıt';
+    }
+}
+
+function selectDisposition(btn, type) {
+    // Remove selected from all
+    document.querySelectorAll('.disposition-btn').forEach(b => b.classList.remove('selected'));
+    btn.classList.add('selected');
+    selectedDisposition = type;
+    
+    // Show termin picker if termin selected
+    const terminPicker = document.getElementById('terminPicker');
+    if (type === 'termin') {
+        terminPicker.classList.add('visible');
+    } else {
+        terminPicker.classList.remove('visible');
+    }
+}
+
+function prevStep() {
+    if (currentScriptStep > 1) {
+        document.getElementById(`step${currentScriptStep}`).classList.remove('active');
+        currentScriptStep--;
+        document.getElementById(`step${currentScriptStep}`).classList.add('active');
+    }
+}
+
+function nextStep() {
+    if (currentScriptStep < totalScriptSteps) {
+        document.getElementById(`step${currentScriptStep}`).classList.remove('active');
+        currentScriptStep++;
+        document.getElementById(`step${currentScriptStep}`).classList.add('active');
+    }
+}
+
+function endCall() {
+    const lang = document.documentElement.lang || 'tr';
+    
+    if (!selectedDisposition) {
+        alert(lang === 'de' ? 'Bitte wählen Sie ein Ergebnis' : 'Lütfen bir sonuç seçin');
+        return;
+    }
+    
+    if (timerInterval) {
+        clearInterval(timerInterval);
+    }
+    
+    // Collect data
+    const callData = {
+        customer_id: {{ customer.id if customer else 'null' }},
+        duration: callSeconds,
+        disposition: selectedDisposition,
+        notes: document.getElementById('callNotes').value,
+        recording: isRecording
+    };
+    
+    if (selectedDisposition === 'termin') {
+        callData.termin_date = document.getElementById('terminDate').value;
+        callData.termin_time = document.getElementById('terminTime').value;
+        callData.termin_note = document.getElementById('terminNote').value;
+    }
+    
+    // Submit
+    fetch('/api/calls/end', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(callData)
+    }).then(() => {
+        window.location.href = '/agent/dashboard';
+    }).catch(() => {
+        // Demo mode
+        alert(lang === 'de' ? 'Anruf beendet (Demo)' : 'Çağrı sonlandırıldı (Demo)');
+        window.location.href = '/agent/dashboard';
+    });
+}
+
+// Set today's date as min for termin
+document.getElementById('terminDate').min = new Date().toISOString().split('T')[0];
+</script>
+{% endblock %}
+
