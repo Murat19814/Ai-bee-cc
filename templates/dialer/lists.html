@@ -894,11 +894,10 @@
                     <div class="form-group">
                         <label data-tr="Kampanya" data-de="Kampagne">Kampanya</label>
                         <select id="campaignSelect">
-                            <option value="">-- Kampanya Seçin --</option>
+                            <option value="">-- Kampanya Seçin (Opsiyonel) --</option>
                             {% for campaign in campaigns %}
                             <option value="{{ campaign.id }}">{{ campaign.name }}</option>
                             {% endfor %}
-                            <option value="1">100000 - Beelife2 (Deutschland)</option>
                         </select>
                     </div>
                     <div class="form-group">

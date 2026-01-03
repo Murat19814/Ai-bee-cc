@@ -1503,9 +1503,16 @@ def api_data_confirm():
         # Dosya bulunamadı - demo mod ile devam et
         # DialList oluştur sadece (müşteri olmadan)
         try:
+            # Campaign kontrolü
+            valid_campaign_id = None
+            if campaign_id:
+                campaign = Campaign.query.filter_by(id=int(campaign_id)).first()
+                if campaign:
+                    valid_campaign_id = campaign.id
+            
             dial_list = DialList(
                 tenant_id=current_user.tenant_id,
-                campaign_id=int(campaign_id) if campaign_id else None,
+                campaign_id=valid_campaign_id,
                 name=name,
                 total_records=data.get('total', 0),
                 valid_records=data.get('valid', 0),
@@ -1519,7 +1526,7 @@ def api_data_confirm():
                 'success': True,
                 'list_id': dial_list.id,
                 'added': data.get('valid', 0),
-                'message': f'{name} kaydedildi (dosyasız mod)'
+                'message': f'{name} kaydedildi'
             })
         except Exception as e:
             db.session.rollback()
@@ -1537,10 +1544,17 @@ def api_data_confirm():
         
         df.columns = df.columns.str.lower().str.strip()
         
+        # Campaign kontrolü
+        valid_campaign_id = None
+        if campaign_id:
+            campaign = Campaign.query.filter_by(id=int(campaign_id)).first()
+            if campaign:
+                valid_campaign_id = campaign.id
+        
         # DialList oluştur
         dial_list = DialList(
             tenant_id=current_user.tenant_id,
-            campaign_id=int(campaign_id) if campaign_id else None,
+            campaign_id=valid_campaign_id,
             name=name,
             total_records=len(df),
             valid_records=data.get('valid', len(df)),
