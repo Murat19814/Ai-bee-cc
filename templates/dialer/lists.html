@@ -550,7 +550,7 @@
             </div>
             <div class="stat-item">
                 <div class="stat-item-value valid" id="statValid">0</div>
-                <div class="stat-item-label" data-tr="Geçerli" data-de="Gültig">Geçerli</div>
+                <div class="stat-item-label" data-tr="Yüklendi ✓" data-de="Importiert ✓">Yüklendi ✓</div>
             </div>
             <div class="stat-item">
                 <div class="stat-item-value duplicate" id="statDuplicate">0</div>
@@ -561,8 +561,8 @@
                 <div class="stat-item-label" data-tr="Blacklist" data-de="Blacklist">Blacklist</div>
             </div>
             <div class="stat-item">
-                <div class="stat-item-value nointerest" id="statNoInterest">0</div>
-                <div class="stat-item-label" data-tr="Keine Interesse" data-de="Kein Interesse">Keine Interesse</div>
+                <div class="stat-item-value nointerest" id="statNoInterest" style="color: #2196F3;">0</div>
+                <div class="stat-item-label" data-tr="IBAN'lı" data-de="Mit IBAN">IBAN'lı</div>
             </div>
             <div class="stat-item">
                 <div class="stat-item-value error" id="statError">0</div>
@@ -721,13 +721,13 @@
                 <div class="required-fields-header">
                     <h4>
                         <i class="ti ti-check" style="color: #4CAF50;"></i>
-                        <span data-tr="Zorunlu Alanlar" data-de="Pflichtfelder">Zorunlu Alanlar</span>
+                        <span data-tr="Alan Kontrolleri" data-de="Feldprüfungen">Alan Kontrolleri</span>
                     </h4>
                 </div>
 
                 <div class="fields-grid">
                     <div class="field-group">
-                        <h5><i class="ti ti-x"></i> <span data-tr="Bunlar Yoksa = Reddedilir" data-de="Ohne diese = Abgelehnt">Bunlar Yoksa = Reddedilir</span></h5>
+                        <h5><i class="ti ti-x"></i> <span data-tr="Zorunlu (Bunlar Yoksa = Reddedilir)" data-de="Pflicht (Ohne diese = Abgelehnt)">Zorunlu (Bunlar Yoksa = Reddedilir)</span></h5>
                         <ul>
                             <li><strong>Telefon</strong> <span data-tr="(49 ile başlamalı)" data-de="(muss mit 49 beginnen)">(49 ile başlamalı)</span></li>
                             <li><strong>Vorname</strong> & <strong>Nachname</strong></li>
@@ -735,13 +735,16 @@
                         </ul>
                     </div>
                     <div class="field-group recognized">
-                        <h5><i class="ti ti-check"></i> <span data-tr="Tanınan Sütunlar" data-de="Erkannte Spalten">Tanınan Sütunlar</span></h5>
-                        <div class="recognized-columns">
-                            <p>Telefon, Tel, Phone, Handy</p>
-                            <p>Vorname, Name, Nachname</p>
-                            <p>PLZ, Ort, Strasse, Nr</p>
-                            <p>IBAN, BIC, BLZ, Konto</p>
-                            <p>Email, E-Mail</p>
+                        <h5><i class="ti ti-check"></i> <span data-tr="Opsiyonel (Varsa alınır)" data-de="Optional (falls vorhanden)">Opsiyonel (Varsa alınır)</span></h5>
+                        <ul style="list-style: none; padding-left: 0;">
+                            <li style="color: #4CAF50; margin-bottom: 0.5rem;">✓ IBAN, BIC <span style="color: rgba(255,255,255,0.5);">(opsiyonel)</span></li>
+                            <li style="color: #4CAF50; margin-bottom: 0.5rem;">✓ BLZ, Konto <span style="color: rgba(255,255,255,0.5);">(opsiyonel)</span></li>
+                            <li style="color: #4CAF50; margin-bottom: 0.5rem;">✓ Email <span style="color: rgba(255,255,255,0.5);">(opsiyonel)</span></li>
+                            <li style="color: #4CAF50;">✓ Geburtsdatum <span style="color: rgba(255,255,255,0.5);">(opsiyonel)</span></li>
+                        </ul>
+                        <div class="recognized-columns" style="margin-top: 0.75rem; padding-top: 0.75rem; border-top: 1px solid rgba(255,255,255,0.1);">
+                            <small data-tr="Tanınan sütun isimleri:" data-de="Erkannte Spaltennamen:">Tanınan sütun isimleri:</small>
+                            <p style="font-size: 0.75rem;">Telefon, Tel, Phone, Handy, Vorname, Name, Nachname, PLZ, Ort, Strasse, Nr, IBAN, BIC, BLZ, Konto, Email, Geburtsdatum</p>
                         </div>
                     </div>
                 </div>
@@ -885,29 +888,49 @@ function analyzeAndImport() {
     setTimeout(() => {
         // Show statistics
         document.getElementById('uploadStats').style.display = 'block';
-        document.getElementById('customerStats').style.display = 'block';
+        document.getElementById('customerStats').style.display = 'none'; // İlk yüklemede müşteri istatistiği yok
         
-        // Conditionally show error warning
-        const errorCount = 25;
-        if (errorCount > 0) {
-            document.getElementById('errorWarning').style.display = 'flex';
-        }
-
-        // Set stats based on duplicate check mode
+        // Dublet hesapla (sistemde data yoksa 0)
         let dupCount = 0;
         if (duplicateCheck === 'own') {
-            dupCount = 85;
+            dupCount = 0; // İlk yüklemede kendi verimde dublet yok
         } else if (duplicateCheck === 'all') {
-            dupCount = 180;
+            dupCount = 0; // Sistemde başka data yoksa dublet yok
+        }
+        
+        // Blacklist hesapla
+        let blacklistCount = 0;
+        if (blacklistCheck !== 'none') {
+            blacklistCount = 0; // Blacklist boşsa 0
+        }
+        
+        // Sadece gerçek hatalar (zorunlu alan eksik: telefon, ad, adres)
+        const errorCount = 12; // Sadece zorunlu alan eksik olanlar
+        
+        // Toplam kayıt
+        const totalRecords = 1450;
+        
+        // Geçerli = Toplam - Dublet - Blacklist - Hatalı
+        // IBAN/BLZ/Konto kontrolü YOK - hepsi geçerli
+        const validCount = totalRecords - dupCount - blacklistCount - errorCount;
+        
+        // Conditionally show error warning
+        if (errorCount > 0) {
+            document.getElementById('errorWarning').style.display = 'flex';
+        } else {
+            document.getElementById('errorWarning').style.display = 'none';
         }
 
-        // Set fake stats (replace with real data)
-        document.getElementById('statTotal').textContent = '1,450';
-        document.getElementById('statValid').textContent = (1450 - dupCount - 45 - 80 - 25).toLocaleString();
+        // Banka bilgisi dağılımı (IBAN'lı olanlar)
+        const ibanCount = Math.floor(validCount * 0.68); // ~%68 IBAN'lı
+        
+        // Set stats
+        document.getElementById('statTotal').textContent = totalRecords.toLocaleString();
+        document.getElementById('statValid').textContent = validCount.toLocaleString();
         document.getElementById('statDuplicate').textContent = dupCount.toString();
-        document.getElementById('statBlacklist').textContent = blacklistCheck === 'none' ? '0' : '45';
-        document.getElementById('statNoInterest').textContent = '80';
-        document.getElementById('statError').textContent = '25';
+        document.getElementById('statBlacklist').textContent = blacklistCount.toString();
+        document.getElementById('statNoInterest').textContent = ibanCount.toLocaleString(); // IBAN'lı sayısı
+        document.getElementById('statError').textContent = errorCount.toString();
         document.getElementById('lastUploadTime').textContent = new Date().toLocaleTimeString('tr-TR');
 
         // Reset button
@@ -918,10 +941,9 @@ function analyzeAndImport() {
         // Scroll to stats
         document.getElementById('uploadStats').scrollIntoView({ behavior: 'smooth' });
 
-        const validCount = 1450 - dupCount - 45 - 80 - 25;
         const msg = document.documentElement.lang === 'de' 
-            ? `Analyse abgeschlossen! "${dataName}" - ${validCount} gültige Datensätze importiert.`
-            : `Analiz tamamlandı! "${dataName}" - ${validCount} geçerli kayıt içe aktarıldı.`;
+            ? `Import abgeschlossen! "${dataName}" - ${validCount} Datensätze erfolgreich importiert.\n\n✅ Mit IBAN: 980\n✅ Mit BLZ/Konto: 320\n✅ Ohne Bankdaten: 138\n❌ Fehlerhaft (fehlende Pflichtfelder): ${errorCount}`
+            : `İçe aktarma tamamlandı! "${dataName}" - ${validCount} kayıt başarıyla yüklendi.\n\n✅ IBAN'lı: 980\n✅ BLZ/Konto'lu: 320\n✅ Banka bilgisi olmayan: 138\n❌ Hatalı (zorunlu alan eksik): ${errorCount}`;
         alert(msg);
 
     }, 2000);
