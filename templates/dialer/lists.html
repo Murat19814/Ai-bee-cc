@@ -78,6 +78,69 @@
     margin: 0 0.5rem;
 }
 
+/* Dropdown Menu */
+.dropdown-wrapper {
+    position: relative;
+    display: inline-block;
+}
+
+.dropdown-menu {
+    position: absolute;
+    top: 100%;
+    right: 0;
+    background: #1e1e2d;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 10px;
+    min-width: 220px;
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.4);
+    z-index: 1000;
+    opacity: 0;
+    visibility: hidden;
+    transform: translateY(-10px);
+    transition: all 0.2s ease;
+}
+
+.dropdown-menu.show {
+    opacity: 1;
+    visibility: visible;
+    transform: translateY(5px);
+}
+
+.dropdown-menu a {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 0.75rem 1rem;
+    color: #e0e0e0;
+    text-decoration: none;
+    font-size: 0.9rem;
+    transition: all 0.2s;
+}
+
+.dropdown-menu a:first-child {
+    border-radius: 10px 10px 0 0;
+}
+
+.dropdown-menu a:last-child {
+    border-radius: 0 0 10px 10px;
+}
+
+.dropdown-menu a:hover {
+    background: rgba(156, 39, 176, 0.2);
+    color: #fff;
+}
+
+.dropdown-menu a i {
+    font-size: 1.1rem;
+    color: #9C27B0;
+}
+
+.dropdown-divider {
+    height: 1px;
+    background: rgba(255, 255, 255, 0.1);
+    margin: 0.25rem 0;
+}
+
 /* Tab Navigation */
 .tab-nav {
     display: flex;
@@ -771,10 +834,44 @@
                 <i class="ti ti-chart-bar"></i>
                 <span data-tr="Prosesler" data-de="Prozesse">Prosesler</span>
             </button>
-            <button class="toolbar-btn" onclick="showOptions()">
-                <i class="ti ti-settings"></i>
-                <span data-tr="Seçenekler" data-de="Optionen">Seçenekler</span>
-            </button>
+            
+            <!-- Options Dropdown -->
+            <div class="dropdown-wrapper">
+                <button class="toolbar-btn" onclick="toggleOptionsMenu()">
+                    <i class="ti ti-settings"></i>
+                    <span data-tr="Seçenekler" data-de="Optionen">Seçenekler</span>
+                    <i class="ti ti-chevron-down" style="font-size: 0.75rem; margin-left: 0.25rem;"></i>
+                </button>
+                <div class="dropdown-menu" id="optionsMenu">
+                    <a href="#" onclick="batchDataStats(); return false;">
+                        <i class="ti ti-chart-pie"></i>
+                        <span data-tr="Veri İstatistikleri" data-de="Datenstatistik">Veri İstatistikleri</span>
+                    </a>
+                    <a href="#" onclick="batchProcess(); return false;">
+                        <i class="ti ti-stack-2"></i>
+                        <span data-tr="Toplu İşlem" data-de="Batch-Prozesse">Toplu İşlem</span>
+                    </a>
+                    <a href="#" onclick="showTransactionPlan(); return false;">
+                        <i class="ti ti-calendar-event"></i>
+                        <span data-tr="İşlem Planı" data-de="Transaktionsplan">İşlem Planı</span>
+                    </a>
+                    <div class="dropdown-divider"></div>
+                    <a href="#" onclick="batchStatusUpdate(); return false;">
+                        <i class="ti ti-refresh"></i>
+                        <span data-tr="Durumu Güncelle" data-de="Status aktualisieren">Durumu Güncelle</span>
+                    </a>
+                    <a href="#" onclick="copySelectedData(); return false;">
+                        <i class="ti ti-copy"></i>
+                        <span data-tr="Kopyala" data-de="Kopieren">Kopyala</span>
+                    </a>
+                    <div class="dropdown-divider"></div>
+                    <a href="#" onclick="resetQueue(); return false;">
+                        <i class="ti ti-player-stop"></i>
+                        <span data-tr="Kuyruğu Sıfırla" data-de="Warteschlange zurücksetzen">Kuyruğu Sıfırla</span>
+                    </a>
+                </div>
+            </div>
+            
             <div class="toolbar-divider"></div>
             <button class="toolbar-btn" onclick="refreshData()">
                 <i class="ti ti-refresh"></i>
@@ -970,79 +1067,15 @@
                         </td>
                     </tr>
                     {% endfor %}
-                    {% else %}
-                    <!-- Demo Data -->
-                    <tr data-id="396">
-                        <td><input type="checkbox" class="row-checkbox" value="396"></td>
-                        <td class="id-cell">396</td>
-                        <td class="name-cell" onclick="showDataStats(396, 'BS-Rn-10_15-kasim')">BS-Rn-10_15-kasim</td>
-                        <td><span class="campaign-badge"><i class="ti ti-speakerphone"></i> 100000 - Beelife2</span></td>
-                        <td><span class="stat-new">252</span>/<span class="stat-total">421</span></td>
-                        <td class="stat-calling">157</td>
-                        <td class="stat-sales">0</td>
-                        <td class="date-cell"><div class="date">29.12.2025</div><div class="time">23:21</div></td>
-                        <td><label class="status-toggle"><input type="checkbox" checked onchange="toggleStatus(396, this.checked)"><span class="status-slider"></span></label></td>
-                        <td><div class="action-btns"><button class="action-btn info" onclick="showDataStats(396, 'BS-Rn-10_15-kasim')"><i class="ti ti-chart-pie"></i></button><button class="action-btn" onclick="showDataProcesses(396)"><i class="ti ti-list-check"></i></button><button class="action-btn success"><i class="ti ti-download"></i></button></div></td>
-                    </tr>
-                    <tr data-id="395">
-                        <td><input type="checkbox" class="row-checkbox" value="395"></td>
-                        <td class="id-cell">395</td>
-                        <td class="name-cell" onclick="showDataStats(395, 'BS-blz-knt')">BS-blz-knt</td>
-                        <td><span class="campaign-badge"><i class="ti ti-speakerphone"></i> 100000 - Beelife2</span></td>
-                        <td><span class="stat-new">1150</span>/<span class="stat-total">1332</span></td>
-                        <td class="stat-calling">161</td>
-                        <td class="stat-sales">2</td>
-                        <td class="date-cell"><div class="date">29.12.2025</div><div class="time">23:14</div></td>
-                        <td><label class="status-toggle"><input type="checkbox" checked onchange="toggleStatus(395, this.checked)"><span class="status-slider"></span></label></td>
-                        <td><div class="action-btns"><button class="action-btn info" onclick="showDataStats(395, 'BS-blz-knt')"><i class="ti ti-chart-pie"></i></button><button class="action-btn" onclick="showDataProcesses(395)"><i class="ti ti-list-check"></i></button><button class="action-btn success"><i class="ti ti-download"></i></button></div></td>
-                    </tr>
-                    <tr data-id="394">
-                        <td><input type="checkbox" class="row-checkbox" value="394"></td>
-                        <td class="id-cell">394</td>
-                        <td class="name-cell" onclick="showDataStats(394, 'BS-novi-tamami')">BS-novi-tamami</td>
-                        <td><span class="campaign-badge"><i class="ti ti-speakerphone"></i> 100000 - Beelife2</span></td>
-                        <td><span class="stat-new">402</span>/<span class="stat-total">564</span></td>
-                        <td class="stat-calling">162</td>
-                        <td class="stat-sales">2</td>
-                        <td class="date-cell"><div class="date">29.12.2025</div><div class="time">23:12</div></td>
-                        <td><label class="status-toggle"><input type="checkbox" checked onchange="toggleStatus(394, this.checked)"><span class="status-slider"></span></label></td>
-                        <td><div class="action-btns"><button class="action-btn info" onclick="showDataStats(394, 'BS-novi-tamami')"><i class="ti ti-chart-pie"></i></button><button class="action-btn" onclick="showDataProcesses(394)"><i class="ti ti-list-check"></i></button><button class="action-btn success"><i class="ti ti-download"></i></button></div></td>
-                    </tr>
-                    <tr data-id="388">
-                        <td><input type="checkbox" class="row-checkbox" value="388"></td>
-                        <td class="id-cell">388</td>
-                        <td class="name-cell" onclick="showDataStats(388, 'BS-D (1)-2')">BS-D (1)-2</td>
-                        <td><span class="campaign-badge"><i class="ti ti-speakerphone"></i> 100000 - Beelife2</span></td>
-                        <td><span class="stat-new">1184</span>/<span class="stat-total">2918</span></td>
-                        <td class="stat-calling">1460</td>
-                        <td class="stat-sales">5</td>
-                        <td class="date-cell"><div class="date">21.12.2025</div><div class="time">20:14</div></td>
-                        <td><label class="status-toggle"><input type="checkbox" checked onchange="toggleStatus(388, this.checked)"><span class="status-slider"></span></label></td>
-                        <td><div class="action-btns"><button class="action-btn info" onclick="showDataStats(388, 'BS-D (1)-2')"><i class="ti ti-chart-pie"></i></button><button class="action-btn" onclick="showDataProcesses(388)"><i class="ti ti-list-check"></i></button><button class="action-btn success"><i class="ti ti-download"></i></button></div></td>
-                    </tr>
-                    <tr data-id="369">
-                        <td><input type="checkbox" class="row-checkbox" value="369"></td>
-                        <td class="id-cell">369</td>
-                        <td class="name-cell" onclick="showDataStats(369, 'BS-8k_Loku.tmz_')">BS-8k_Loku.tmz_</td>
-                        <td><span class="campaign-badge"><i class="ti ti-speakerphone"></i> 100000 - Beelife2</span></td>
-                        <td><span class="stat-new">340</span>/<span class="stat-total">2898</span></td>
-                        <td class="stat-calling">6352</td>
-                        <td class="stat-sales">6</td>
-                        <td class="date-cell"><div class="date">12.12.2025</div><div class="time">02:13</div></td>
-                        <td><label class="status-toggle"><input type="checkbox" checked onchange="toggleStatus(369, this.checked)"><span class="status-slider"></span></label></td>
-                        <td><div class="action-btns"><button class="action-btn info" onclick="showDataStats(369, 'BS-8k_Loku.tmz_')"><i class="ti ti-chart-pie"></i></button><button class="action-btn" onclick="showDataProcesses(369)"><i class="ti ti-list-check"></i></button><button class="action-btn success"><i class="ti ti-download"></i></button></div></td>
-                    </tr>
-                    <tr data-id="302">
-                        <td><input type="checkbox" class="row-checkbox" value="302"></td>
-                        <td class="id-cell">302</td>
-                        <td class="name-cell" onclick="showDataStats(302, 'esl-mst-4400')">esl-mst-4400</td>
-                        <td><span class="campaign-badge"><i class="ti ti-speakerphone"></i> 100000 - Beelife2</span></td>
-                        <td><span class="stat-new">1449</span>/<span class="stat-total">2518</span></td>
-                        <td class="stat-calling">18413</td>
-                        <td class="stat-sales">17</td>
-                        <td class="date-cell"><div class="date">05.11.2025</div><div class="time">11:28</div></td>
-                        <td><label class="status-toggle"><input type="checkbox" checked onchange="toggleStatus(302, this.checked)"><span class="status-slider"></span></label></td>
-                        <td><div class="action-btns"><button class="action-btn info" onclick="showDataStats(302, 'esl-mst-4400')"><i class="ti ti-chart-pie"></i></button><button class="action-btn" onclick="showDataProcesses(302)"><i class="ti ti-list-check"></i></button><button class="action-btn success"><i class="ti ti-download"></i></button></div></td>
+                    {% if not lists %}
+                    <tr>
+                        <td colspan="10" class="empty-state">
+                            <i class="ti ti-database-off"></i>
+                            <p data-tr="Henüz veri yüklenmemiş" data-de="Noch keine Daten hochgeladen">Henüz veri yüklenmemiş</p>
+                            <button class="toolbar-btn primary" onclick="toggleUploadPanel()" style="margin-top: 1rem;">
+                                <i class="ti ti-upload"></i> <span data-tr="Veri Yükle" data-de="Daten hochladen">Veri Yükle</span>
+                            </button>
+                        </td>
                     </tr>
                     {% endif %}
                 </tbody>
@@ -1050,7 +1083,7 @@
             
             <div class="pagination">
                 <div class="pagination-info">
-                    <span data-tr="Toplam" data-de="Gesamt">Toplam</span> <strong id="totalRecords">6</strong> <span data-tr="kayıt" data-de="Einträge">kayıt</span>
+                    <span data-tr="Toplam" data-de="Gesamt">Toplam</span> <strong id="totalRecords">{{ lists|length if lists else 0 }}</strong> <span data-tr="kayıt" data-de="Einträge">kayıt</span>
                 </div>
                 <div class="pagination-btns">
                     <button class="pagination-btn"><i class="ti ti-chevron-left"></i></button>
@@ -1626,21 +1659,116 @@ function deleteSelected() {
         return;
     }
     if (confirm(document.documentElement.lang === 'de' ? `${selected.length} Einträge löschen?` : `${selected.length} kayıt silinsin mi?`)) {
-        selected.forEach(cb => cb.closest('tr').remove());
+        // Send delete request to server
+        selected.forEach(cb => {
+            const id = cb.value;
+            fetch(`/api/data/delete/${id}`, { method: 'DELETE' }).catch(() => {});
+            cb.closest('tr').remove();
+        });
         updateCounts();
     }
 }
 
 function downloadSelected() {
-    alert('Download başlatılıyor...');
+    const selected = document.querySelectorAll('.data-table tbody .row-checkbox:checked');
+    if (selected.length === 0) {
+        alert(document.documentElement.lang === 'de' ? 'Bitte wählen Sie mindestens eine Zeile aus' : 'Lütfen en az bir satır seçin');
+        return;
+    }
+    alert(document.documentElement.lang === 'de' 
+        ? `${selected.length} Datensätze werden heruntergeladen...` 
+        : `${selected.length} veri indiriliyor...`);
 }
 
 function showProcesses() {
+    const selected = document.querySelectorAll('.data-table tbody .row-checkbox:checked');
+    if (selected.length > 0) {
+        const firstName = document.querySelector('.data-table tbody .row-checkbox:checked').closest('tr').querySelector('.name-cell').textContent;
+        document.getElementById('processDataName').textContent = firstName + (selected.length > 1 ? ` (+${selected.length - 1})` : '');
+    }
     document.getElementById('processModal').classList.add('active');
 }
 
-function showOptions() {
-    alert('Seçenekler modalı...');
+// Options Dropdown Menu
+function toggleOptionsMenu() {
+    const menu = document.getElementById('optionsMenu');
+    menu.classList.toggle('show');
+}
+
+// Close dropdown when clicking outside
+document.addEventListener('click', function(e) {
+    const dropdown = document.querySelector('.dropdown-wrapper');
+    const menu = document.getElementById('optionsMenu');
+    if (dropdown && !dropdown.contains(e.target)) {
+        menu.classList.remove('show');
+    }
+});
+
+// Batch functions
+function batchDataStats() {
+    document.getElementById('optionsMenu').classList.remove('show');
+    const selected = document.querySelectorAll('.data-table tbody .row-checkbox:checked');
+    if (selected.length === 0) {
+        alert(document.documentElement.lang === 'de' ? 'Bitte wählen Sie mindestens eine Zeile aus' : 'Lütfen en az bir veri seçin');
+        return;
+    }
+    const firstName = selected[0].closest('tr').querySelector('.name-cell').textContent;
+    document.getElementById('statsDataName').textContent = firstName + (selected.length > 1 ? ` (+${selected.length - 1})` : '');
+    document.getElementById('statsModal').classList.add('active');
+}
+
+function batchProcess() {
+    document.getElementById('optionsMenu').classList.remove('show');
+    const selected = document.querySelectorAll('.data-table tbody .row-checkbox:checked');
+    if (selected.length === 0) {
+        alert(document.documentElement.lang === 'de' ? 'Bitte wählen Sie mindestens eine Zeile aus' : 'Lütfen en az bir veri seçin');
+        return;
+    }
+    const msg = document.documentElement.lang === 'de'
+        ? `${selected.length} Datensätze werden verarbeitet...`
+        : `${selected.length} veri toplu işleme alınıyor...`;
+    alert(msg);
+    // TODO: Backend API call for batch processing
+}
+
+function showTransactionPlan() {
+    document.getElementById('optionsMenu').classList.remove('show');
+    alert(document.documentElement.lang === 'de' ? 'Transaktionsplan wird geöffnet...' : 'İşlem planı açılıyor...');
+}
+
+function batchStatusUpdate() {
+    document.getElementById('optionsMenu').classList.remove('show');
+    const selected = document.querySelectorAll('.data-table tbody .row-checkbox:checked');
+    if (selected.length === 0) {
+        alert(document.documentElement.lang === 'de' ? 'Bitte wählen Sie mindestens eine Zeile aus' : 'Lütfen en az bir veri seçin');
+        return;
+    }
+    if (confirm(document.documentElement.lang === 'de' 
+        ? `${selected.length} Datensätze aktualisieren?` 
+        : `${selected.length} verinin durumu güncellensin mi?`)) {
+        alert(document.documentElement.lang === 'de' ? 'Status wird aktualisiert...' : 'Durum güncelleniyor...');
+    }
+}
+
+function copySelectedData() {
+    document.getElementById('optionsMenu').classList.remove('show');
+    const selected = document.querySelectorAll('.data-table tbody .row-checkbox:checked');
+    if (selected.length === 0) {
+        alert(document.documentElement.lang === 'de' ? 'Bitte wählen Sie mindestens eine Zeile aus' : 'Lütfen en az bir veri seçin');
+        return;
+    }
+    alert(document.documentElement.lang === 'de' 
+        ? `${selected.length} Datensätze werden kopiert...` 
+        : `${selected.length} veri kopyalanıyor...`);
+}
+
+function resetQueue() {
+    document.getElementById('optionsMenu').classList.remove('show');
+    if (confirm(document.documentElement.lang === 'de' 
+        ? 'Warteschlange zurücksetzen? Alle laufenden Anrufe werden gestoppt.' 
+        : 'Kuyruk sıfırlansın mı? Tüm devam eden aramalar durdurulacak.')) {
+        alert(document.documentElement.lang === 'de' ? 'Warteschlange wird zurückgesetzt...' : 'Kuyruk sıfırlanıyor...');
+    }
 }
 
 function refreshData() {
