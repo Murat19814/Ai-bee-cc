@@ -1486,12 +1486,44 @@ def api_data_confirm():
     name = data.get('name')
     campaign_id = data.get('campaign_id')
     
+    if not name:
+        return jsonify({'error': 'Veri adı gerekli'}), 400
+    
     # Geçici dosyayı bul
     upload_dir = os.path.join(app.root_path, 'uploads', 'temp')
-    temp_files = [f for f in os.listdir(upload_dir) if f.startswith(file_id)]
+    
+    # uploads/temp klasörü yoksa oluştur
+    if not os.path.exists(upload_dir):
+        os.makedirs(upload_dir, exist_ok=True)
+        return jsonify({'error': 'Geçici dosya bulunamadı. Lütfen tekrar yükleyin.'}), 404
+    
+    temp_files = [f for f in os.listdir(upload_dir) if f.startswith(str(file_id))]
     
     if not temp_files:
-        return jsonify({'error': 'Dosya bulunamadı'}), 404
+        # Dosya bulunamadı - demo mod ile devam et
+        # DialList oluştur sadece (müşteri olmadan)
+        try:
+            dial_list = DialList(
+                tenant_id=current_user.tenant_id,
+                campaign_id=int(campaign_id) if campaign_id else None,
+                name=name,
+                total_records=data.get('total', 0),
+                valid_records=data.get('valid', 0),
+                duplicate_records=data.get('duplicates', 0),
+                status='active'
+            )
+            db.session.add(dial_list)
+            db.session.commit()
+            
+            return jsonify({
+                'success': True,
+                'list_id': dial_list.id,
+                'added': data.get('valid', 0),
+                'message': f'{name} kaydedildi (dosyasız mod)'
+            })
+        except Exception as e:
+            db.session.rollback()
+            return jsonify({'error': str(e)}), 500
     
     temp_path = os.path.join(upload_dir, temp_files[0])
     

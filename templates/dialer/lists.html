@@ -1419,6 +1419,8 @@ function analyzeFile() {
     })
     .then(response => response.json())
     .then(data => {
+        // Server'dan gelen data'ya name ekle
+        data.name = dataName;
         analysisData = data;
         showAnalysisResults(data);
     })
@@ -1460,38 +1462,59 @@ function showAnalysisResults(data) {
 function confirmImport() {
     if (!analysisData) return;
     
+    const dataName = analysisData.name || document.getElementById('dataName').value.trim();
+    
+    if (!dataName) {
+        alert('Veri adı gerekli!');
+        return;
+    }
+    
     const btn = event.currentTarget;
     btn.innerHTML = '<i class="ti ti-loader" style="animation: spin 1s linear infinite;"></i> <span>' + (document.documentElement.lang === 'de' ? 'Wird gespeichert...' : 'Kaydediliyor...') + '</span>';
     btn.disabled = true;
     
+    const requestData = {
+        file_id: analysisData.file_id,
+        name: dataName,
+        campaign_id: document.getElementById('campaignSelect').value,
+        total: analysisData.total,
+        valid: analysisData.valid,
+        duplicates: analysisData.duplicates || 0,
+        blacklist: analysisData.blacklist || 0,
+        errors: analysisData.errors || 0
+    };
+    
+    console.log('Sending confirm request:', requestData);
+    
     fetch('/api/data/confirm', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-            file_id: analysisData.file_id,
-            name: analysisData.name || document.getElementById('dataName').value,
-            campaign_id: document.getElementById('campaignSelect').value,
-            total: analysisData.total,
-            valid: analysisData.valid,
-            duplicates: analysisData.duplicates,
-            blacklist: analysisData.blacklist,
-            errors: analysisData.errors
-        })
+        body: JSON.stringify(requestData)
     })
-    .then(response => response.json())
+    .then(response => {
+        if (!response.ok) {
+            return response.json().then(err => { throw err; });
+        }
+        return response.json();
+    })
     .then(data => {
+        console.log('Confirm response:', data);
+        if (data.error) {
+            alert('Hata: ' + data.error);
+            btn.disabled = false;
+            btn.innerHTML = '<i class="ti ti-check"></i> <span>' + (document.documentElement.lang === 'de' ? 'Bestätigen und speichern' : 'Onayla ve Kaydet') + '</span>';
+            return;
+        }
         alert(document.documentElement.lang === 'de' 
-            ? `✅ Erfolgreich! "${analysisData.name}" wurde gespeichert.` 
-            : `✅ Başarılı! "${analysisData.name}" kaydedildi.`);
+            ? `✅ Erfolgreich! "${dataName}" wurde gespeichert. ${data.added || analysisData.valid} Datensätze importiert.` 
+            : `✅ Başarılı! "${dataName}" kaydedildi. ${data.added || analysisData.valid} kayıt aktarıldı.`);
         location.reload();
     })
     .catch(error => {
-        // Demo - add to table
-        addToDataTable(analysisData);
-        alert(document.documentElement.lang === 'de' 
-            ? `✅ Erfolgreich! "${analysisData.name}" wurde gespeichert.` 
-            : `✅ Başarılı! "${analysisData.name}" kaydedildi.`);
-        resetUpload();
+        console.error('Confirm error:', error);
+        alert('Kayıt hatası: ' + (error.error || error.message || 'Bilinmeyen hata'));
+        btn.disabled = false;
+        btn.innerHTML = '<i class="ti ti-check"></i> <span>' + (document.documentElement.lang === 'de' ? 'Bestätigen und speichern' : 'Onayla ve Kaydet') + '</span>';
     });
 }
 
