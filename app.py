@@ -1332,12 +1332,30 @@ def api_voip_stats():
 
 # ==================== CAMPAIGN ROUTES ====================
 
+def get_effective_tenant_id(explicit_tenant_id=None):
+    """Bestimme Tenant/CC Kontext. Super-Admin kann Tenant auswählen; sonst eigener Tenant."""
+    try:
+        if current_user.is_authenticated and current_user.is_super_admin:
+            if explicit_tenant_id is None:
+                explicit_tenant_id = (
+                    request.args.get('tenant_id')
+                    or request.form.get('tenant_id')
+                    or (request.get_json(silent=True) or {}).get('tenant_id')
+                )
+            if explicit_tenant_id:
+                return int(explicit_tenant_id)
+    except Exception:
+        pass
+    return getattr(current_user, 'tenant_id', None)
+
 @app.route('/campaigns')
 @login_required
 def campaigns():
     """Kampanya listesi"""
-    campaigns = Campaign.query.filter_by(tenant_id=current_user.tenant_id).order_by(Campaign.created_at.desc()).all()
-    return render_template('campaigns/list.html', campaigns=campaigns)
+    tenant_id = get_effective_tenant_id()
+    campaigns_list = Campaign.query.filter_by(tenant_id=tenant_id).order_by(Campaign.created_at.desc()).all()
+    tenants = Tenant.query.order_by(Tenant.name.asc()).all() if current_user.is_super_admin else None
+    return render_template('campaigns/list.html', campaigns=campaigns_list, tenants=tenants, selected_tenant_id=tenant_id)
 
 
 @app.route('/campaigns/new', methods=['GET', 'POST'])
@@ -1345,9 +1363,10 @@ def campaigns():
 @admin_required
 def campaign_new():
     """Yeni kampanya"""
+    tenant_id = get_effective_tenant_id()
     if request.method == 'POST':
         campaign = Campaign(
-            tenant_id=current_user.tenant_id,
+            tenant_id=tenant_id,
             project_id=request.form.get('project_id'),
             name=request.form.get('name'),
             description=request.form.get('description'),
@@ -1359,11 +1378,12 @@ def campaign_new():
         
         log_audit('create', 'campaign', campaign.id, f'Yeni kampanya oluşturuldu: {campaign.name}')
         flash(f'"{campaign.name}" kampanyası başarıyla oluşturuldu.', 'success')
-        return redirect(url_for('campaigns'))
+        return redirect(url_for('campaigns', tenant_id=tenant_id if current_user.is_super_admin else None))
     
-    projects = Project.query.filter_by(tenant_id=current_user.tenant_id, status='active').all()
-    queues = Queue.query.filter_by(tenant_id=current_user.tenant_id, status='active').all()
-    return render_template('campaigns/form.html', campaign=None, projects=projects, queues=queues)
+    projects = Project.query.filter_by(tenant_id=tenant_id, status='active').all()
+    queues = Queue.query.filter_by(tenant_id=tenant_id, status='active').all()
+    tenants = Tenant.query.order_by(Tenant.name.asc()).all() if current_user.is_super_admin else None
+    return render_template('campaigns/form.html', campaign=None, projects=projects, queues=queues, tenants=tenants, selected_tenant_id=tenant_id)
 
 
 @app.route('/campaigns/<int:id>')
@@ -1379,9 +1399,11 @@ def campaign_detail(id):
 @admin_required
 def dialer_lists():
     """Arama listeleri - DATENBANK"""
-    lists = DialList.query.filter_by(tenant_id=current_user.tenant_id).order_by(DialList.created_at.desc()).all()
-    campaigns = Campaign.query.filter_by(tenant_id=current_user.tenant_id, status='active').all()
-    return render_template('dialer/lists.html', lists=lists, campaigns=campaigns)
+    tenant_id = get_effective_tenant_id()
+    lists = DialList.query.filter_by(tenant_id=tenant_id).order_by(DialList.created_at.desc()).all()
+    campaigns = Campaign.query.filter_by(tenant_id=tenant_id, status='active').all()
+    tenants = Tenant.query.order_by(Tenant.name.asc()).all() if current_user.is_super_admin else None
+    return render_template('dialer/lists.html', lists=lists, campaigns=campaigns, tenants=tenants, selected_tenant_id=tenant_id)
 
 
 @app.route('/api/data/analyze', methods=['POST'])
@@ -1390,6 +1412,7 @@ def api_data_analyze():
     """Data dosyasını analiz et"""
     import os
     import uuid
+    tenant_id = get_effective_tenant_id(request.form.get('tenant_id'))
     
     if 'file' not in request.files:
         return jsonify({'error': 'Dosya bulunamadı'}), 400
@@ -1461,6 +1484,7 @@ def api_data_analyze():
             'success': True,
             'file_id': file_id,
             'filename': file.filename,
+            'tenant_id': tenant_id,
             'total': total,
             'valid': valid,
             'errors': errors,
@@ -1482,6 +1506,7 @@ def api_data_confirm():
     import pandas as pd
     
     data = request.get_json()
+    tenant_id = get_effective_tenant_id((data or {}).get('tenant_id'))
     file_id = data.get('file_id')
     name = data.get('name')
     campaign_id = data.get('campaign_id')
@@ -1506,12 +1531,12 @@ def api_data_confirm():
             # Campaign kontrolü
             valid_campaign_id = None
             if campaign_id:
-                campaign = Campaign.query.filter_by(id=int(campaign_id)).first()
+                campaign = Campaign.query.filter_by(id=int(campaign_id), tenant_id=tenant_id).first()
                 if campaign:
                     valid_campaign_id = campaign.id
             
             dial_list = DialList(
-                tenant_id=current_user.tenant_id,
+                tenant_id=tenant_id,
                 campaign_id=valid_campaign_id,
                 name=name,
                 total_records=data.get('total', 0),
@@ -1547,13 +1572,13 @@ def api_data_confirm():
         # Campaign kontrolü
         valid_campaign_id = None
         if campaign_id:
-            campaign = Campaign.query.filter_by(id=int(campaign_id)).first()
+            campaign = Campaign.query.filter_by(id=int(campaign_id), tenant_id=tenant_id).first()
             if campaign:
                 valid_campaign_id = campaign.id
         
         # DialList oluştur
         dial_list = DialList(
-            tenant_id=current_user.tenant_id,
+            tenant_id=tenant_id,
             campaign_id=valid_campaign_id,
             name=name,
             total_records=len(df),
@@ -1576,7 +1601,7 @@ def api_data_confirm():
                     continue
                 
                 customer = Customer(
-                    tenant_id=current_user.tenant_id,
+                    tenant_id=tenant_id,
                     project_id=dial_list.campaign.project_id if dial_list.campaign else None,
                     phone=phone,
                     first_name=str(row.get('vorname', row.get('name', ''))).strip(),
@@ -1595,7 +1620,7 @@ def api_data_confirm():
                 
                 # Lead de oluştur
                 lead = Lead(
-                    tenant_id=current_user.tenant_id,
+                    tenant_id=tenant_id,
                     dial_list_id=dial_list.id,
                     customer_id=customer.id,
                     phone=phone,

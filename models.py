@@ -687,6 +687,8 @@ class DialList(db.Model):
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
     
     leads = db.relationship('Lead', backref='dial_list', lazy='dynamic')
+    campaign = db.relationship('Campaign', backref='dial_lists', lazy=True, foreign_keys=[campaign_id])
+    project = db.relationship('Project', backref='dial_lists', lazy=True, foreign_keys=[project_id])
 
 
 class Lead(db.Model):

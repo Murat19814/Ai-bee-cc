@@ -8,10 +8,22 @@
         <h1 class="page-title">Kampanya Yönetimi</h1>
         <p class="page-subtitle">Outbound kampanyalarını yönetin</p>
     </div>
-    <a href="{{ url_for('campaign_new') }}" class="btn btn-primary">
-        <i class="ti ti-plus"></i>
-        Yeni Kampanya
-    </a>
+    <div style="display:flex; gap: .75rem; align-items:center; flex-wrap: wrap;">
+        {% if current_user.is_super_admin and tenants %}
+        <form method="get" action="{{ url_for('campaigns') }}" style="display:flex; gap:.5rem; align-items:center;">
+            <label style="color: var(--text-muted); font-size: .9rem;">CC</label>
+            <select name="tenant_id" onchange="this.form.submit()" style="min-width: 260px; padding: .45rem .6rem; border: 1px solid var(--border-color); border-radius: 8px; background: var(--card-bg); color: var(--text-color);">
+                {% for t in tenants %}
+                <option value="{{ t.id }}" {% if selected_tenant_id == t.id %}selected{% endif %}>{{ t.name }}</option>
+                {% endfor %}
+            </select>
+        </form>
+        {% endif %}
+        <a href="{{ url_for('campaign_new', tenant_id=selected_tenant_id if current_user.is_super_admin else None) }}" class="btn btn-primary">
+            <i class="ti ti-plus"></i>
+            Yeni Kampanya
+        </a>
+    </div>
 </div>
 
 <div class="card">
@@ -21,11 +33,10 @@
                 <thead>
                     <tr>
                         <th>Kampanya Adı</th>
-                        <th>Tip</th>
-                        <th>Dialer Modu</th>
-                        <th>Toplam Kayıt</th>
+                        <th>Dialer</th>
+                        <th>Toplam Lead</th>
                         <th>İletişim</th>
-                        <th>Başarılı</th>
+                        <th>Satış</th>
                         <th>Durum</th>
                         <th>İşlemler</th>
                     </tr>
@@ -34,25 +45,24 @@
                     {% for campaign in campaigns %}
                     <tr>
                         <td>{{ campaign.name }}</td>
-                        <td>{{ campaign.campaign_type }}</td>
-                        <td>{{ campaign.dialer_mode }}</td>
-                        <td>{{ campaign.total_records }}</td>
-                        <td>{{ campaign.contacted_records }}</td>
-                        <td>{{ campaign.successful_records }}</td>
+                        <td>{{ campaign.dialer_type }}</td>
+                        <td>{{ campaign.total_leads or 0 }}</td>
+                        <td>{{ campaign.contacted_leads or 0 }}</td>
+                        <td>{{ campaign.converted_leads or 0 }}</td>
                         <td>
                             <span class="badge badge-{% if campaign.status == 'active' %}success{% elif campaign.status == 'paused' %}warning{% else %}info{% endif %}">
                                 {{ campaign.status }}
                             </span>
                         </td>
                         <td>
-                            <button class="btn btn-ghost btn-sm">
+                            <a class="btn btn-ghost btn-sm" href="{{ url_for('campaign_detail', id=campaign.id) }}">
                                 <i class="ti ti-edit"></i>
-                            </button>
+                            </a>
                         </td>
                     </tr>
                     {% else %}
                     <tr>
-                        <td colspan="8" class="text-center text-muted">Henüz kampanya bulunmuyor</td>
+                        <td colspan="6" class="text-center text-muted">Henüz kampanya bulunmuyor</td>
                     </tr>
                     {% endfor %}
                 </tbody>

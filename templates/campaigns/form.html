@@ -13,6 +13,9 @@
 <div class="card" style="max-width: 900px;">
     <div class="card-body">
         <form method="POST">
+            {% if current_user.is_super_admin and selected_tenant_id %}
+            <input type="hidden" name="tenant_id" value="{{ selected_tenant_id }}">
+            {% endif %}
             <!-- Temel Bilgiler -->
             <h4 class="mb-3" data-tr="Temel Bilgiler" data-de="Grundinformationen">Temel Bilgiler</h4>
             

@@ -42,6 +42,38 @@
     flex-wrap: wrap;
 }
 
+.tenant-switch {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.35rem 0.5rem;
+    border: 1px solid var(--border-color);
+    background: var(--card-bg);
+    border-radius: 8px;
+}
+
+.tenant-switch label {
+    font-size: 0.85rem;
+    color: var(--text-muted);
+    margin: 0;
+    white-space: nowrap;
+}
+
+.tenant-switch select {
+    border: 1px solid var(--border-color);
+    background: transparent;
+    color: var(--text-color);
+    border-radius: 6px;
+    padding: 0.35rem 0.5rem;
+    font-size: 0.9rem;
+    min-width: 220px;
+}
+
+.tenant-switch select:focus {
+    outline: none;
+    border-color: var(--primary-color);
+}
+
 .toolbar-btn {
     display: flex;
     align-items: center;
@@ -812,6 +844,17 @@
         </div>
         
         <div class="toolbar">
+            {% if current_user.is_super_admin and tenants %}
+            <div class="tenant-switch">
+                <label data-tr="CC" data-de="CC">CC</label>
+                <select id="tenantSelect" onchange="switchTenant(this.value)">
+                    {% for t in tenants %}
+                    <option value="{{ t.id }}" {% if selected_tenant_id == t.id %}selected{% endif %}>{{ t.name }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            {% endif %}
+
             <button class="toolbar-btn primary" onclick="toggleUploadPanel()">
                 <i class="ti ti-upload"></i>
                 <span data-tr="Yeni Yükle" data-de="Neu hochladen">Yeni Yükle</span>
@@ -1323,8 +1366,15 @@
 {% block extra_js %}
 <script>
 // File handling
+const ACTIVE_TENANT_ID = {{ selected_tenant_id or current_user.tenant_id }};
 let selectedFile = null;
 let analysisData = null;
+
+function switchTenant(tenantId) {
+    const url = new URL(window.location.href);
+    url.searchParams.set('tenant_id', tenantId);
+    window.location.href = url.toString();
+}
 
 // Toggle upload panel
 function toggleUploadPanel() {
@@ -1408,6 +1458,7 @@ function analyzeFile() {
     const formData = new FormData();
     formData.append('file', selectedFile);
     formData.append('name', dataName);
+    formData.append('tenant_id', ACTIVE_TENANT_ID);
     formData.append('campaign_id', document.getElementById('campaignSelect').value);
     formData.append('duplicate_check', document.getElementById('duplicateCheck').value);
     formData.append('priority', document.getElementById('prioritySelect').value);
@@ -1473,6 +1524,7 @@ function confirmImport() {
     btn.disabled = true;
     
     const requestData = {
+        tenant_id: ACTIVE_TENANT_ID,
         file_id: analysisData.file_id,
         name: dataName,
         campaign_id: document.getElementById('campaignSelect').value,
@@ -1551,7 +1603,7 @@ function cancelImport() {
             fetch('/api/data/cancel', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ file_id: analysisData.file_id })
+                body: JSON.stringify({ tenant_id: ACTIVE_TENANT_ID, file_id: analysisData.file_id })
             }).catch(() => {});
         }
         resetUpload();
