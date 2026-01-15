@@ -3662,3 +3662,107 @@ def agent_complete_call():
     
     return jsonify({'success': True, 'message': 'Arama sonuclandirildi'})
 
+
+
+# ============================================
+# DIALER API ENDPOINTS
+# ============================================
+
+@app.route('/api/dialer/processes/<int:list_id>')
+@login_required
+def api_dialer_processes(list_id):
+    """Dial list proses durumlarini getir"""
+    from sqlalchemy import func
+    
+    dial_list = DialList.query.get_or_404(list_id)
+    
+    # Lead durumlarini say
+    statuses = db.session.query(
+        Lead.status, 
+        func.count(Lead.id)
+    ).filter(Lead.dial_list_id == list_id).group_by(Lead.status).all()
+    
+    total = sum(count for _, count in statuses)
+    
+    processes = []
+    status_names = {
+        'imported': 'Yuklendi (Beklemede)',
+        'new': 'Kuyrukta (Aranacak)',
+        'in_progress': 'Aramada',
+        'contacted': 'Ulasildi',
+        'converted': 'Satis Yapildi',
+        'callback': 'Geri Arama',
+        'closed': 'Kapandi',
+        'failed': 'Basarisiz'
+    }
+    
+    for status, count in statuses:
+        percentage = round((count / total * 100), 1) if total > 0 else 0
+        processes.append({
+            'status': status,
+            'name': status_names.get(status, status),
+            'count': count,
+            'percentage': percentage
+        })
+    
+    return jsonify({
+        'success': True,
+        'list_id': list_id,
+        'list_name': dial_list.name,
+        'total': total,
+        'processes': processes
+    })
+
+
+@app.route('/api/dialer/enqueue/<int:list_id>', methods=['POST'])
+@login_required
+def api_dialer_enqueue(list_id):
+    """Dial list leadlerini kuyruga al (imported -> new)"""
+    dial_list = DialList.query.get_or_404(list_id)
+    
+    # imported durumdaki leadleri new yap
+    updated = Lead.query.filter_by(
+        dial_list_id=list_id, 
+        status='imported'
+    ).update({'status': 'new'})
+    
+    db.session.commit()
+    
+    # Dial list istatistiklerini guncelle
+    new_count = Lead.query.filter_by(dial_list_id=list_id, status='new').count()
+    dial_list.new_records = new_count
+    db.session.commit()
+    
+    return jsonify({
+        'success': True,
+        'message': f'{updated} kayit kuyruga alindi',
+        'updated': updated,
+        'new_count': new_count
+    })
+
+
+@app.route('/api/dialer/stats/<int:list_id>')
+@login_required
+def api_dialer_stats(list_id):
+    """Dial list istatistiklerini getir"""
+    dial_list = DialList.query.get_or_404(list_id)
+    
+    total = Lead.query.filter_by(dial_list_id=list_id).count()
+    new_count = Lead.query.filter_by(dial_list_id=list_id, status='new').count()
+    in_progress = Lead.query.filter_by(dial_list_id=list_id, status='in_progress').count()
+    contacted = Lead.query.filter_by(dial_list_id=list_id, status='contacted').count()
+    converted = Lead.query.filter_by(dial_list_id=list_id, status='converted').count()
+    callback = Lead.query.filter_by(dial_list_id=list_id, status='callback').count()
+    
+    return jsonify({
+        'success': True,
+        'list_id': list_id,
+        'total': total,
+        'new': new_count,
+        'in_progress': in_progress,
+        'contacted': contacted,
+        'converted': converted,
+        'callback': callback,
+        'completion_rate': round((contacted + converted) / total * 100, 1) if total > 0 else 0
+    })
+
