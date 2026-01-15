@@ -3571,3 +3571,94 @@ if __name__ == '__main__':
         port=3000,
         debug=app.config['DEBUG']
     )
+
+@app.route('/api/agent/next-lead')
+@login_required
+def agent_get_next_lead():
+    """Sonraki musteri/lead'i getir"""
+    # Agent'in aktif kampanyasini kontrol et
+    campaign_id = request.cookies.get('active_campaign_id')
+    
+    if not campaign_id:
+        return jsonify({'success': False, 'message': 'Lutfen once bir kampanya secin'}), 400
+    
+    # Oncelik sirasi: callback > new
+    # Once callback olan leadleri kontrol et
+    lead = Lead.query.filter(
+        Lead.campaign_id == campaign_id,
+        Lead.status == 'callback',
+        Lead.callback_at <= datetime.utcnow()
+    ).order_by(Lead.priority.desc(), Lead.callback_at.asc()).first()
+    
+    # Callback yoksa new leadleri al
+    if not lead:
+        lead = Lead.query.filter(
+            Lead.campaign_id == campaign_id,
+            Lead.status == 'new'
+        ).order_by(Lead.priority.desc(), Lead.created_at.asc()).first()
+    
+    if not lead:
+        return jsonify({'success': False, 'message': 'Aranacak musteri kalmadi'}), 404
+    
+    # Lead'i in_progress yap ve agent'a ata
+    lead.status = 'in_progress'
+    lead.assigned_agent_id = current_user.id
+    lead.last_attempt_at = datetime.utcnow()
+    db.session.commit()
+    
+    # Musteri bilgilerini dondur
+    return jsonify({
+        'success': True,
+        'lead': {
+            'id': lead.id,
+            'phone': lead.phone[:4] + '****' + lead.phone[-2:] if lead.phone else '',
+            'full_phone': lead.phone,
+            'first_name': lead.first_name or '',
+            'last_name': lead.last_name or '',
+            'full_name': f"{lead.first_name or ''} {lead.last_name or ''}".strip(),
+            'email': lead.email or '',
+            'company': lead.company or '',
+            'custom_data': lead.custom_data or {},
+            'attempts': lead.attempts,
+            'status': lead.status
+        }
+    })
+
+
+@app.route('/api/agent/complete-call', methods=['POST'])
+@login_required
+def agent_complete_call():
+    """Aramayi tamamla ve sonuclandir"""
+    data = request.get_json()
+    lead_id = data.get('lead_id')
+    disposition = data.get('disposition')  # sale_ok, no_interest, callback, wrong_number, no_answer
+    notes = data.get('notes', '')
+    callback_date = data.get('callback_date')
+    callback_time = data.get('callback_time')
+    
+    lead = Lead.query.get(lead_id)
+    if not lead:
+        return jsonify({'success': False, 'message': 'Lead bulunamadi'}), 404
+    
+    # Lead durumunu guncelle
+    lead.attempts += 1
+    lead.last_attempt_at = datetime.utcnow()
+    
+    if disposition == 'sale_ok':
+        lead.status = 'converted'
+    elif disposition == 'callback':
+        lead.status = 'callback'
+        if callback_date and callback_time:
+            lead.callback_at = datetime.strptime(f'{callback_date} {callback_time}', '%Y-%m-%d %H:%M')
+    elif disposition in ['no_interest', 'wrong_number', 'blacklist']:
+        lead.status = 'closed'
+    elif disposition == 'no_answer':
+        lead.status = 'new' if lead.attempts < 5 else 'failed'
+    else:
+        lead.status = 'contacted'
+    
+    lead.notes = notes
+    db.session.commit()
+    
+    return jsonify({'success': True, 'message': 'Arama sonuclandirildi'})
+
