@@ -1,4 +1,4 @@
-"""
+﻿"""
 AI BEE CC - Enterprise Multi-Tenant Call Center Platform
 Ana Uygulama Dosyası
 """
@@ -3553,234 +3553,19 @@ def provisioning_quota_edit(tenant_id):
 
 # ==================== STARTUP ====================
 
-if __name__ == '__main__':
-    # Gerekli klasörleri oluştur
-    os.makedirs(app.config['UPLOAD_FOLDER'], exist_ok=True)
-    os.makedirs(app.config['RECORDINGS_FOLDER'], exist_ok=True)
-    os.makedirs('logs', exist_ok=True)
-    
-    # Veritabanı tablolarını oluştur ve ilk verileri ekle
-    with app.app_context():
-        db.create_all()
-        create_initial_data()
-    
-    # Uygulamayı başlat
-    socketio.run(
-        app,
-        host='0.0.0.0',
-        port=3000,
-        debug=app.config['DEBUG']
-    )
-
-@app.route('/api/agent/next-lead')
-@login_required
-def agent_get_next_lead():
-    """Sonraki musteri/lead'i getir"""
-    # Agent'in aktif kampanyasini kontrol et
-    campaign_id = request.cookies.get('active_campaign_id')
-    
-    if not campaign_id:
-        return jsonify({'success': False, 'message': 'Lutfen once bir kampanya secin'}), 400
-    
-    # Oncelik sirasi: callback > new
-    # Once callback olan leadleri kontrol et
-    lead = Lead.query.filter(
-        Lead.campaign_id == campaign_id,
-        Lead.status == 'callback',
-        Lead.callback_at <= datetime.utcnow()
-    ).order_by(Lead.priority.desc(), Lead.callback_at.asc()).first()
-    
-    # Callback yoksa new leadleri al
-    if not lead:
-        lead = Lead.query.filter(
-            Lead.campaign_id == campaign_id,
-            Lead.status == 'new'
-        ).order_by(Lead.priority.desc(), Lead.created_at.asc()).first()
-    
-    if not lead:
-        return jsonify({'success': False, 'message': 'Aranacak musteri kalmadi'}), 404
-    
-    # Lead'i in_progress yap ve agent'a ata
-    lead.status = 'in_progress'
-    lead.assigned_agent_id = current_user.id
-    lead.last_attempt_at = datetime.utcnow()
-    db.session.commit()
-    
-    # Musteri bilgilerini dondur
-    return jsonify({
-        'success': True,
-        'lead': {
-            'id': lead.id,
-            'phone': lead.phone[:4] + '****' + lead.phone[-2:] if lead.phone else '',
-            'full_phone': lead.phone,
-            'first_name': lead.first_name or '',
-            'last_name': lead.last_name or '',
-            'full_name': f"{lead.first_name or ''} {lead.last_name or ''}".strip(),
-            'email': lead.email or '',
-            'company': lead.company or '',
-            'custom_data': lead.custom_data or {},
-            'attempts': lead.attempts,
-            'status': lead.status
-        }
-    })
-
-
-@app.route('/api/agent/complete-call', methods=['POST'])
-@login_required
-def agent_complete_call():
-    """Aramayi tamamla ve sonuclandir"""
-    data = request.get_json()
-    lead_id = data.get('lead_id')
-    disposition = data.get('disposition')  # sale_ok, no_interest, callback, wrong_number, no_answer
-    notes = data.get('notes', '')
-    callback_date = data.get('callback_date')
-    callback_time = data.get('callback_time')
-    
-    lead = Lead.query.get(lead_id)
-    if not lead:
-        return jsonify({'success': False, 'message': 'Lead bulunamadi'}), 404
-    
-    # Lead durumunu guncelle
-    lead.attempts += 1
-    lead.last_attempt_at = datetime.utcnow()
-    
-    if disposition == 'sale_ok':
-        lead.status = 'converted'
-    elif disposition == 'callback':
-        lead.status = 'callback'
-        if callback_date and callback_time:
-            lead.callback_at = datetime.strptime(f'{callback_date} {callback_time}', '%Y-%m-%d %H:%M')
-    elif disposition in ['no_interest', 'wrong_number', 'blacklist']:
-        lead.status = 'closed'
-    elif disposition == 'no_answer':
-        lead.status = 'new' if lead.attempts < 5 else 'failed'
-    else:
-        lead.status = 'contacted'
-    
-    lead.notes = notes
-    db.session.commit()
-    
-    return jsonify({'success': True, 'message': 'Arama sonuclandirildi'})
-
-
 
 # ============================================
 # DIALER API ENDPOINTS
 # ============================================
 
-@app.route('/api/dialer/processes/<int:list_id>')
-@login_required
-def api_dialer_processes(list_id):
-    """Dial list proses durumlarini getir"""
-    from sqlalchemy import func
-    
-    dial_list = DialList.query.get_or_404(list_id)
-    
-    # Lead durumlarini say
-    statuses = db.session.query(
-        Lead.status, 
-        func.count(Lead.id)
-    ).filter(Lead.dial_list_id == list_id).group_by(Lead.status).all()
-    
-    total = sum(count for _, count in statuses)
-    
-    processes = []
-    status_names = {
-        'imported': 'Yuklendi (Beklemede)',
-        'new': 'Kuyrukta (Aranacak)',
-        'in_progress': 'Aramada',
-        'contacted': 'Ulasildi',
-        'converted': 'Satis Yapildi',
-        'callback': 'Geri Arama',
-        'closed': 'Kapandi',
-        'failed': 'Basarisiz'
-    }
-    
-    for status, count in statuses:
-        percentage = round((count / total * 100), 1) if total > 0 else 0
-        processes.append({
-            'status': status,
-            'name': status_names.get(status, status),
-            'count': count,
-            'percentage': percentage
-        })
-    
-    return jsonify({
-        'success': True,
-        'list_id': list_id,
-        'list_name': dial_list.name,
-        'total': total,
-        'processes': processes
-    })
-
-
-@app.route('/api/dialer/enqueue/<int:list_id>', methods=['POST'])
-@login_required
-def api_dialer_enqueue(list_id):
-    """Dial list leadlerini kuyruga al (imported -> new)"""
-    dial_list = DialList.query.get_or_404(list_id)
-    
-    # imported durumdaki leadleri new yap
-    updated = Lead.query.filter_by(
-        dial_list_id=list_id, 
-        status='imported'
-    ).update({'status': 'new'})
-    
-    db.session.commit()
-    
-    # Dial list istatistiklerini guncelle
-    new_count = Lead.query.filter_by(dial_list_id=list_id, status='new').count()
-    dial_list.new_records = new_count
-    db.session.commit()
-    
-    return jsonify({
-        'success': True,
-        'message': f'{updated} kayit kuyruga alindi',
-        'updated': updated,
-        'new_count': new_count
-    })
-
-
-@app.route('/api/dialer/stats/<int:list_id>')
-@login_required
-def api_dialer_stats(list_id):
-    """Dial list istatistiklerini getir"""
-    dial_list = DialList.query.get_or_404(list_id)
-    
-    total = Lead.query.filter_by(dial_list_id=list_id).count()
-    new_count = Lead.query.filter_by(dial_list_id=list_id, status='new').count()
-    in_progress = Lead.query.filter_by(dial_list_id=list_id, status='in_progress').count()
-    contacted = Lead.query.filter_by(dial_list_id=list_id, status='contacted').count()
-    converted = Lead.query.filter_by(dial_list_id=list_id, status='converted').count()
-    callback = Lead.query.filter_by(dial_list_id=list_id, status='callback').count()
-    
-    return jsonify({
-        'success': True,
-        'list_id': list_id,
-        'total': total,
-        'new': new_count,
-        'in_progress': in_progress,
-        'contacted': contacted,
-        'converted': converted,
-        'callback': callback,
-        'completion_rate': round((contacted + converted) / total * 100, 1) if total > 0 else 0
-    })
-
-
-
-# ============================================
-# DIALER API - FRONTEND ILE UYUMLU
-# ============================================
-
 @app.route('/api/dialer/lists/<int:list_id>/process-stats')
 @login_required
 def api_dialer_list_process_stats(list_id):
-    """Dial list proses istatistiklerini getir (frontend uyumlu)"""
+    """Dial list proses istatistiklerini getir"""
     from sqlalchemy import func
     
     dial_list = DialList.query.get_or_404(list_id)
     
-    # Lead durumlarini say
     statuses = db.session.query(
         Lead.status, 
         func.count(Lead.id)
@@ -3827,7 +3612,6 @@ def api_dialer_list_enqueue(list_id):
     """Dial list leadlerini kuyruga al (imported -> new)"""
     dial_list = DialList.query.get_or_404(list_id)
     
-    # imported durumdaki leadleri new yap
     updated = Lead.query.filter_by(
         dial_list_id=list_id, 
         status='imported'
@@ -3835,7 +3619,6 @@ def api_dialer_list_enqueue(list_id):
     
     db.session.commit()
     
-    # Dial list new_records guncelle
     new_count = Lead.query.filter_by(dial_list_id=list_id, status='new').count()
     
     return jsonify({
@@ -3845,3 +3628,54 @@ def api_dialer_list_enqueue(list_id):
         'new_count': new_count
     })
 
+
+@app.route('/api/dialer/lists/<int:list_id>/stats')
+@login_required
+def api_dialer_list_stats(list_id):
+    """Dial list gercek istatistiklerini getir (demo degil)"""
+    dial_list = DialList.query.get_or_404(list_id)
+    
+    total = Lead.query.filter_by(dial_list_id=list_id).count()
+    new_count = Lead.query.filter_by(dial_list_id=list_id, status='new').count()
+    imported = Lead.query.filter_by(dial_list_id=list_id, status='imported').count()
+    in_progress = Lead.query.filter_by(dial_list_id=list_id, status='in_progress').count()
+    contacted = Lead.query.filter_by(dial_list_id=list_id, status='contacted').count()
+    converted = Lead.query.filter_by(dial_list_id=list_id, status='converted').count()
+    callback = Lead.query.filter_by(dial_list_id=list_id, status='callback').count()
+    no_answer = Lead.query.filter_by(dial_list_id=list_id, status='no_answer').count()
+    closed = Lead.query.filter_by(dial_list_id=list_id, status='closed').count()
+    
+    # Gercek call sayilari
+    from models import Call
+    total_calls = Call.query.filter(Call.lead_id.in_(
+        db.session.query(Lead.id).filter(Lead.dial_list_id == list_id)
+    )).count() if total > 0 else 0
+    
+    return jsonify({
+        'success': True,
+        'list_id': list_id,
+        'list_name': dial_list.name,
+        'total_records': total,
+        'imported': imported,
+        'new': new_count,
+        'in_progress': in_progress,
+        'contacted': contacted,
+        'converted': converted,
+        'callback': callback,
+        'no_answer': no_answer,
+        'closed': closed,
+        'total_calls': total_calls,
+        'contacted_rate': round(contacted / total * 100, 1) if total > 0 else 0,
+        'conversion_rate': round(converted / contacted * 100, 1) if contacted > 0 else 0
+    })
+
+
+# ============================================
+# MAIN
+# ============================================
+
+if __name__ == '__main__':
+    with app.app_context():
+        db.create_all()
+        create_initial_data()
+    socketio.run(app, host='0.0.0.0', port=3000, debug=True)
