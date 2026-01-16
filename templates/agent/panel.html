@@ -652,56 +652,264 @@ body {
     font-family: 'Monaco', monospace;
 }
 
-/* Break Overlay */
+/* Break Overlay - Computer Screen Style */
 .break-overlay {
     position: fixed;
     inset: 0;
-    background: rgba(0,0,0,0.9);
+    background: linear-gradient(180deg, #0a0a12 0%, #12121f 50%, #0a0a12 100%);
     display: none;
     flex-direction: column;
     align-items: center;
     justify-content: center;
-    z-index: 1000;
+    z-index: 9999;
+}
+
+.break-overlay::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: 
+        repeating-linear-gradient(
+            0deg,
+            transparent,
+            transparent 2px,
+            rgba(0,0,0,0.1) 2px,
+            rgba(0,0,0,0.1) 4px
+        );
+    pointer-events: none;
+    animation: scanlines 0.5s linear infinite;
+}
+
+@keyframes scanlines {
+    0% { background-position: 0 0; }
+    100% { background-position: 0 4px; }
 }
 
 .break-overlay.active { display: flex; }
 
+/* Monitor Frame */
+.monitor-frame {
+    position: relative;
+    background: linear-gradient(145deg, #2a2a3a 0%, #1a1a28 100%);
+    border-radius: 30px;
+    padding: 25px;
+    box-shadow: 
+        0 0 0 3px #3a3a4a,
+        0 30px 60px rgba(0,0,0,0.7),
+        inset 0 2px 0 rgba(255,255,255,0.1);
+}
+
+.monitor-screen {
+    background: linear-gradient(180deg, #0f0f1a 0%, #1a1a2e 100%);
+    border-radius: 15px;
+    padding: 3rem 4rem;
+    min-width: 500px;
+    min-height: 350px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+    border: 2px solid #2a2a3a;
+    box-shadow: inset 0 0 50px rgba(0,0,0,0.5);
+}
+
+.monitor-screen::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 50%;
+    background: linear-gradient(180deg, rgba(255,255,255,0.03) 0%, transparent 100%);
+    border-radius: 15px 15px 0 0;
+    pointer-events: none;
+}
+
+/* Monitor Stand */
+.monitor-stand {
+    width: 80px;
+    height: 50px;
+    background: linear-gradient(180deg, #2a2a3a 0%, #1a1a28 100%);
+    margin: 0 auto;
+    border-radius: 0 0 10px 10px;
+}
+
+.monitor-base {
+    width: 180px;
+    height: 15px;
+    background: linear-gradient(180deg, #3a3a4a 0%, #2a2a3a 100%);
+    margin: 0 auto;
+    border-radius: 10px;
+    box-shadow: 0 5px 15px rgba(0,0,0,0.5);
+}
+
+/* Break Content */
 .break-content {
     text-align: center;
+    position: relative;
+    z-index: 1;
+}
+
+.break-status-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 0.75rem 1.5rem;
+    border-radius: 50px;
+    margin-bottom: 1.5rem;
+    font-weight: 600;
+    font-size: 1rem;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+}
+
+.break-status-badge.mola {
+    background: rgba(245, 158, 11, 0.2);
+    border: 2px solid var(--warning);
+    color: var(--warning);
+}
+
+.break-status-badge.egitim {
+    background: rgba(59, 130, 246, 0.2);
+    border: 2px solid var(--info);
+    color: var(--info);
+}
+
+.break-status-badge.acw {
+    background: rgba(168, 85, 247, 0.2);
+    border: 2px solid var(--purple);
+    color: var(--purple);
+}
+
+.break-status-badge i {
+    font-size: 1.2rem;
 }
 
 .break-content .break-icon {
-    font-size: 5rem;
-    margin-bottom: 1.5rem;
+    font-size: 6rem;
+    margin-bottom: 1rem;
+    animation: float 3s ease-in-out infinite;
 }
 
-.break-content .break-icon.mola { color: var(--warning); }
-.break-content .break-icon.egitim { color: var(--info); }
-.break-content .break-icon.acw { color: var(--purple); }
+@keyframes float {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-10px); }
+}
+
+.break-content .break-icon.mola { color: var(--warning); text-shadow: 0 0 30px rgba(245, 158, 11, 0.5); }
+.break-content .break-icon.egitim { color: var(--info); text-shadow: 0 0 30px rgba(59, 130, 246, 0.5); }
+.break-content .break-icon.acw { color: var(--purple); text-shadow: 0 0 30px rgba(168, 85, 247, 0.5); }
 
 .break-content h2 {
-    font-size: 2rem;
+    font-size: 1.75rem;
     color: var(--text-primary);
+    margin-bottom: 0.5rem;
+    font-weight: 600;
+}
+
+.break-content .break-subtitle {
+    color: var(--text-secondary);
+    font-size: 0.95rem;
+    margin-bottom: 2rem;
+}
+
+/* Big Timer */
+.break-timer-box {
+    background: rgba(0,0,0,0.4);
+    border: 2px solid rgba(245, 166, 35, 0.3);
+    border-radius: 20px;
+    padding: 1.5rem 3rem;
+    margin-bottom: 2rem;
+}
+
+.break-timer-label {
+    font-size: 0.75rem;
+    color: var(--text-secondary);
+    text-transform: uppercase;
+    letter-spacing: 2px;
     margin-bottom: 0.5rem;
 }
 
 .break-content .break-timer {
-    font-size: 4rem;
+    font-size: 5rem;
     font-weight: 700;
-    font-family: 'Monaco', monospace;
+    font-family: 'Monaco', 'Consolas', monospace;
     color: var(--primary);
-    margin: 2rem 0;
+    text-shadow: 0 0 20px rgba(245, 166, 35, 0.5);
+    letter-spacing: 5px;
+}
+
+/* Stats Row */
+.break-stats {
+    display: flex;
+    gap: 2rem;
+    margin-bottom: 2rem;
+    padding: 1rem;
+    background: rgba(0,0,0,0.3);
+    border-radius: 12px;
+}
+
+.break-stat {
+    text-align: center;
+}
+
+.break-stat-value {
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: var(--primary);
+}
+
+.break-stat-label {
+    font-size: 0.7rem;
+    color: var(--text-secondary);
+    text-transform: uppercase;
 }
 
 .break-content .btn-end-break {
-    background: var(--success);
+    background: linear-gradient(135deg, var(--success) 0%, #16a34a 100%);
     color: white;
     border: none;
-    padding: 1rem 3rem;
-    border-radius: 12px;
+    padding: 1.25rem 3.5rem;
+    border-radius: 15px;
     font-size: 1.1rem;
-    font-weight: 600;
+    font-weight: 700;
     cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.75rem;
+    transition: all 0.3s;
+    box-shadow: 0 10px 30px rgba(34, 197, 94, 0.3);
+}
+
+.break-content .btn-end-break:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 15px 40px rgba(34, 197, 94, 0.4);
+}
+
+.break-content .btn-end-break i {
+    font-size: 1.3rem;
+}
+
+/* Power LED */
+.monitor-led {
+    position: absolute;
+    bottom: 15px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    animation: led-blink 2s ease-in-out infinite;
+}
+
+.monitor-led.mola { background: var(--warning); box-shadow: 0 0 10px var(--warning); }
+.monitor-led.egitim { background: var(--info); box-shadow: 0 0 10px var(--info); }
+.monitor-led.acw { background: var(--purple); box-shadow: 0 0 10px var(--purple); }
+
+@keyframes led-blink {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.4; }
 }
 
 /* Keypad Modal */
@@ -1427,13 +1635,51 @@ body {
     </div>
 </div>
 
-<!-- Break Overlay -->
+<!-- Break Overlay - Computer Screen -->
 <div class="break-overlay" id="breakOverlay">
-    <div class="break-content">
-        <i class="break-icon mola ti ti-coffee" id="breakIcon"></i>
-        <h2 id="breakTitle">Mola</h2>
-        <div class="break-timer" id="breakTimer">00:00:00</div>
-        <button class="btn-end-break" onclick="endBreak()">Molayı Bitir</button>
+    <div class="monitor-frame">
+        <div class="monitor-screen">
+            <div class="break-content">
+                <div class="break-status-badge mola" id="breakBadge">
+                    <i class="ti ti-coffee"></i>
+                    <span id="breakBadgeText">MOLA</span>
+                </div>
+                
+                <i class="break-icon mola ti ti-coffee" id="breakIcon"></i>
+                
+                <h2 id="breakTitle">Sistemden Ayrıldınız</h2>
+                <p class="break-subtitle" id="breakSubtitle">Mola süreniz sayılıyor...</p>
+                
+                <div class="break-timer-box">
+                    <div class="break-timer-label">Geçen Süre</div>
+                    <div class="break-timer" id="breakTimer">00:00:00</div>
+                </div>
+                
+                <div class="break-stats">
+                    <div class="break-stat">
+                        <div class="break-stat-value" id="breakStatCalls">0</div>
+                        <div class="break-stat-label">Bugünkü Çağrı</div>
+                    </div>
+                    <div class="break-stat">
+                        <div class="break-stat-value" id="breakStatTalk">00:00</div>
+                        <div class="break-stat-label">Konuşma Süresi</div>
+                    </div>
+                    <div class="break-stat">
+                        <div class="break-stat-value" id="breakStatSales">0</div>
+                        <div class="break-stat-label">Satış</div>
+                    </div>
+                </div>
+                
+                <button class="btn-end-break" onclick="endBreak()">
+                    <i class="ti ti-player-play"></i>
+                    Çalışmaya Devam Et
+                </button>
+            </div>
+            
+            <div class="monitor-led mola" id="monitorLed"></div>
+        </div>
+        <div class="monitor-stand"></div>
+        <div class="monitor-base"></div>
     </div>
 </div>
 
@@ -1631,17 +1877,47 @@ function startStatusTimer() {
 function showBreakOverlay(status, label) {
     const overlay = document.getElementById('breakOverlay');
     const icon = document.getElementById('breakIcon');
+    const badge = document.getElementById('breakBadge');
+    const badgeText = document.getElementById('breakBadgeText');
     const title = document.getElementById('breakTitle');
+    const subtitle = document.getElementById('breakSubtitle');
+    const led = document.getElementById('monitorLed');
     
+    // İkon güncelle
     icon.className = 'break-icon ti ' + (statusIcons[status] || 'ti-coffee');
     icon.classList.add(status);
-    title.textContent = label;
+    
+    // Badge güncelle
+    badge.className = 'break-status-badge ' + status;
+    badge.querySelector('i').className = 'ti ' + (statusIcons[status] || 'ti-coffee');
+    badgeText.textContent = label.toUpperCase();
+    
+    // LED güncelle
+    led.className = 'monitor-led ' + status;
+    
+    // Başlık ve alt başlık güncelle
+    const statusMessages = {
+        'mola': { title: 'Mola Zamanı', subtitle: 'Dinlenme süreniz sayılıyor...' },
+        'egitim': { title: 'Eğitim Modunda', subtitle: 'Eğitim süreniz kaydediliyor...' },
+        'acw': { title: 'After Call Work', subtitle: 'İşlem sonrası çalışma süresi...' }
+    };
+    
+    const msg = statusMessages[status] || { title: 'Sistemden Ayrıldınız', subtitle: 'Süre sayılıyor...' };
+    title.textContent = msg.title;
+    subtitle.textContent = msg.subtitle;
+    
+    // İstatistikleri güncelle
+    document.getElementById('breakStatCalls').textContent = document.getElementById('statCalls')?.textContent || '0';
+    document.getElementById('breakStatSales').textContent = document.getElementById('statSales')?.textContent || '0';
+    document.getElementById('breakStatTalk').textContent = document.getElementById('statTalkTime')?.textContent || '00:00';
     
     overlay.classList.add('active');
+    document.body.style.overflow = 'hidden';
 }
 
 function hideBreakOverlay() {
     document.getElementById('breakOverlay').classList.remove('active');
+    document.body.style.overflow = '';
 }
 
 function endBreak() {
