@@ -307,11 +307,10 @@ body {
 /* Customer Form */
 .form-section {
     flex: 1;
-    background: var(--bg-card);
+    background: linear-gradient(135deg, #1e2a4a 0%, #243352 100%);
     border-radius: 20px;
     padding: 1.5rem;
-    border: 1px solid rgba(245, 166, 35, 0.15);
-    position: relative;
+    border: 1px solid rgba(245, 166, 35, 0.2);
     overflow: hidden;
 }
 
@@ -373,24 +372,29 @@ body {
 
 .field label {
     display: block;
-    font-size: 0.7rem;
-    color: var(--text-secondary);
+    font-size: 0.75rem;
+    color: rgba(255,255,255,0.7);
     text-transform: uppercase;
     letter-spacing: 0.5px;
-    margin-bottom: 0.35rem;
+    margin-bottom: 0.4rem;
+    font-weight: 500;
 }
 
 .field input,
 .field select,
 .field textarea {
     width: 100%;
-    background: var(--bg-input);
-    border: 1px solid rgba(255,255,255,0.1);
+    background: rgba(255,255,255,0.08);
+    border: 1px solid rgba(255,255,255,0.15);
     border-radius: 8px;
     padding: 0.65rem 0.875rem;
-    color: var(--text-primary);
+    color: #ffffff;
     font-size: 0.9rem;
     transition: all 0.2s;
+}
+
+.field input::placeholder {
+    color: rgba(255,255,255,0.4);
 }
 
 .field input:focus,
@@ -401,35 +405,6 @@ body {
     box-shadow: 0 0 0 3px rgba(245, 166, 35, 0.15);
 }
 
-/* No Call Overlay */
-.no-call-overlay {
-    position: absolute;
-    inset: 0;
-    background: rgba(22, 33, 62, 0.97);
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    z-index: 10;
-    border-radius: 20px;
-}
-
-.no-call-overlay i {
-    font-size: 4rem;
-    color: var(--text-secondary);
-    margin-bottom: 1rem;
-}
-
-.no-call-overlay h4 {
-    color: var(--text-secondary);
-    font-size: 1.1rem;
-}
-
-.no-call-overlay p {
-    color: var(--text-secondary);
-    font-size: 0.9rem;
-    opacity: 0.7;
-}
 
 /* === RIGHT PANEL - QC STATS === */
 .right-panel {
@@ -956,12 +931,6 @@ body {
 
         <!-- Customer Form -->
         <div class="form-section">
-            <div class="no-call-overlay" id="noCallOverlay">
-                <i class="ti ti-phone-off"></i>
-                <h4>Kein aktiver Anruf</h4>
-                <p>Drücken Sie "Start" um zu beginnen</p>
-            </div>
-            
             <div class="form-header">
                 <h3><i class="ti ti-user"></i> Kundendaten</h3>
                 <button class="btn-save" onclick="saveCustomer()">
@@ -1216,7 +1185,6 @@ function startCall() {
                 currentLead = data.lead;
                 showLead(data.lead);
                 startTimer();
-                document.getElementById('noCallOverlay').style.display = 'none';
                 document.getElementById('btnStart').style.display = 'none';
                 document.getElementById('btnEnd').style.display = 'flex';
             } else {
@@ -1306,7 +1274,6 @@ function resetState() {
     document.getElementById('callTimer').textContent = '00:00:00';
     document.getElementById('displayPhone').textContent = '---';
     document.getElementById('displayName').textContent = '- -';
-    document.getElementById('noCallOverlay').style.display = 'flex';
     document.getElementById('btnStart').style.display = 'flex';
     document.getElementById('btnStart').disabled = false;
     document.getElementById('btnEnd').style.display = 'none';
