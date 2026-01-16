@@ -3880,54 +3880,11 @@ def provisioning_quota_edit(tenant_id):
 # ============================================
 # DIALER API ENDPOINTS
 # ============================================
-
-@app.route('/api/dialer/lists/<int:list_id>/process-stats')
-@login_required
-def api_dialer_list_process_stats(list_id):
-    """Dial list proses istatistiklerini getir"""
-    from sqlalchemy import func
-    
-    dial_list = DialList.query.get_or_404(list_id)
-    
-    statuses = db.session.query(
-        Lead.status, 
-        func.count(Lead.id)
-    ).filter(Lead.dial_list_id == list_id).group_by(Lead.status).all()
-    
-    total = sum(count for _, count in statuses)
-    
-    status_labels = {
-        'imported': {'tr': 'Yuklendi (Beklemede)', 'de': 'Importiert (Wartend)'},
-        'new': {'tr': 'Kuyrukta (Aranacak)', 'de': 'In Warteschlange'},
-        'in_progress': {'tr': 'Aramada', 'de': 'Im Anruf'},
-        'contacted': {'tr': 'Ulasildi', 'de': 'Kontaktiert'},
-        'converted': {'tr': 'Satis Yapildi', 'de': 'Verkauft'},
-        'callback': {'tr': 'Geri Arama', 'de': 'Rueckruf'},
-        'closed': {'tr': 'Kapandi', 'de': 'Geschlossen'},
-        'failed': {'tr': 'Basarisiz', 'de': 'Fehlgeschlagen'},
-        'no_answer': {'tr': 'Cevap Yok', 'de': 'Keine Antwort'},
-        'no_interest': {'tr': 'Ilgilenmiyor', 'de': 'Kein Interesse'}
-    }
-    
-    items = []
-    for status, count in statuses:
-        labels = status_labels.get(status, {'tr': status, 'de': status})
-        percentage = round((count / total * 100), 1) if total > 0 else 0
-        items.append({
-            'key': status,
-            'label_tr': labels['tr'],
-            'label_de': labels['de'],
-            'count': count,
-            'percent': percentage
-        })
-    
-    return jsonify({
-        'success': True,
-        'list_id': list_id,
-        'total_leads': total,
-        'items': items
-    })
-
+#
+# NOTE: `/api/dialer/lists/<int:list_id>/process-stats` endpoint is defined earlier
+# (with admin_required + tenant scoping). A duplicate definition here caused
+# gunicorn boot failure:
+#   AssertionError: View function mapping is overwriting an existing endpoint function: api_dialer_list_process_stats
 
 @app.route('/api/dialer/lists/<int:list_id>/enqueue', methods=['POST'])
 @login_required
