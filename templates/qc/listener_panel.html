@@ -560,14 +560,7 @@
                             </span>
                             <span class="audio-duration" id="systemDuration">00:00</span>
                         </div>
-                        <div class="audio-controls">
-                            <button class="play-btn" onclick="toggleAudio('system')">
-                                <i class="ti ti-player-play" id="systemPlayIcon"></i>
-                            </button>
-                            <div class="audio-progress">
-                                <div class="audio-progress-bar" id="systemProgress"></div>
-                            </div>
-                        </div>
+                        <audio id="audioSystem" controls style="width: 100%; margin-top: 0.75rem;"></audio>
                     </div>
                     
                     <!-- Agent Recording -->
@@ -578,14 +571,7 @@
                             </span>
                             <span class="audio-duration" id="agentDuration">00:00</span>
                         </div>
-                        <div class="audio-controls">
-                            <button class="play-btn" onclick="toggleAudio('agent')">
-                                <i class="ti ti-player-play" id="agentPlayIcon"></i>
-                            </button>
-                            <div class="audio-progress">
-                                <div class="audio-progress-bar" id="agentProgress"></div>
-                            </div>
-                        </div>
+                        <audio id="audioAgent" controls style="width: 100%; margin-top: 0.75rem;"></audio>
                     </div>
                 </div>
 
@@ -628,19 +614,29 @@
 {% block extra_js %}
 <script>
 let currentRecordingId = null;
-let audioPlaying = { system: false, agent: false };
+
+function fmtDuration(sec) {
+    sec = parseInt(sec || 0, 10);
+    const m = String(Math.floor(sec / 60)).padStart(2, '0');
+    const s = String(sec % 60).padStart(2, '0');
+    return `${m}:${s}`;
+}
+
+function fmtDate(iso) {
+    if (!iso) return '-';
+    const d = new Date(iso);
+    return d.toLocaleString('tr-TR', { day:'2-digit', month:'2-digit', year:'numeric', hour:'2-digit', minute:'2-digit' });
+}
 
 // Filter recordings
-function filterRecordings(filter) {
+async function filterRecordings(filter) {
     document.querySelectorAll('.filter-btn').forEach(btn => btn.classList.remove('active'));
     event.target.classList.add('active');
-    
-    // TODO: API call to filter recordings
-    console.log('Filter:', filter);
+    await loadRecordings(filter);
 }
 
 // Select recording
-function selectRecording(recordingId) {
+async function selectRecording(recordingId) {
     currentRecordingId = recordingId;
     
     // Update UI
@@ -651,51 +647,42 @@ function selectRecording(recordingId) {
     document.getElementById('emptyDetail').style.display = 'none';
     document.getElementById('customerDetail').style.display = 'block';
     
-    // TODO: Load actual data from API
-    // For now, show demo data
-    document.getElementById('customerName').textContent = 'Max Mustermann';
-    document.getElementById('customerPhone').textContent = '+49 176 *** ** 45';
-    document.getElementById('agentInitials').textContent = 'TK';
-    document.getElementById('agentName').textContent = 'Tuncay Karaca';
-    document.getElementById('agentTeam').textContent = 'EMS - Europe Mega Service';
-    document.getElementById('callDate').textContent = '03.01.2026 14:32';
-    document.getElementById('callDuration').textContent = '05:42';
-    document.getElementById('projectName').textContent = 'EMS';
-    document.getElementById('callResult').textContent = 'SALE';
-    document.getElementById('systemDuration').textContent = '05:42';
-    document.getElementById('agentDuration').textContent = '02:15';
-}
+    const res = await fetch(`/api/qc/recordings/${recordingId}`);
+    const data = await res.json();
+    if (!data.success) return;
 
-// Toggle audio playback
-function toggleAudio(type) {
-    audioPlaying[type] = !audioPlaying[type];
-    const icon = document.getElementById(`${type}PlayIcon`);
-    icon.className = audioPlaying[type] ? 'ti ti-player-pause' : 'ti ti-player-play';
-    
-    // Simulate progress
-    if (audioPlaying[type]) {
-        simulateProgress(type);
-    }
-}
+    document.getElementById('customerName').textContent = data.customer?.name || '-';
+    document.getElementById('customerPhone').textContent = data.customer?.phone || '-';
+    document.getElementById('agentInitials').textContent = (data.agent?.name || '-').split(' ').map(x => x[0]).slice(0,2).join('').toUpperCase();
+    document.getElementById('agentName').textContent = data.agent?.name || '-';
+    document.getElementById('agentTeam').textContent = data.context?.campaign || data.context?.project || '-';
+    document.getElementById('callDate').textContent = fmtDate(data.call?.started_at);
+    document.getElementById('callDuration').textContent = fmtDuration(data.call?.duration_sec);
+    document.getElementById('projectName').textContent = data.context?.project || '-';
+    document.getElementById('callResult').textContent = (data.call?.disposition || '-').toUpperCase();
 
-function simulateProgress(type) {
-    let progress = 0;
-    const interval = setInterval(() => {
-        if (!audioPlaying[type] || progress >= 100) {
-            clearInterval(interval);
-            if (progress >= 100) {
-                audioPlaying[type] = false;
-                document.getElementById(`${type}PlayIcon`).className = 'ti ti-player-play';
-            }
-            return;
-        }
-        progress += 1;
-        document.getElementById(`${type}Progress`).style.width = progress + '%';
-    }, 100);
+    document.getElementById('systemDuration').textContent = fmtDuration(data.recordings?.system?.duration_sec || data.call?.duration_sec);
+    document.getElementById('agentDuration').textContent = fmtDuration(data.recordings?.agent?.duration_sec || 0);
+
+    const sysUrl = data.recordings?.system?.url;
+    const agUrl = data.recordings?.agent?.url;
+
+    const sysAudio = document.getElementById('audioSystem');
+    const agAudio = document.getElementById('audioAgent');
+
+    sysAudio.src = sysUrl || '';
+    sysAudio.style.opacity = sysUrl ? '1' : '0.5';
+    sysAudio.disabled = !sysUrl;
+
+    agAudio.src = agUrl || '';
+    agAudio.style.opacity = agUrl ? '1' : '0.5';
+    agAudio.disabled = !agUrl;
+
+    document.getElementById('qcNotes').value = data.call?.notes_qc || '';
 }
 
 // QC Action
-function qcAction(action) {
+async function qcAction(action) {
     if (!currentRecordingId) return;
     
     const lang = document.documentElement.lang || 'tr';
@@ -707,41 +694,57 @@ function qcAction(action) {
         storno: { tr: 'QC Storno olarak işaretlendi! Satış iptal edildi.', de: 'Als QC Storno markiert! Verkauf storniert.' }
     };
     
-    // Disable buttons during processing
     document.querySelectorAll('.qc-btn').forEach(btn => btn.disabled = true);
-    
-    // Simulate API call
-    setTimeout(() => {
+
+    const resp = await fetch(`/api/qc/recordings/${currentRecordingId}/evaluate`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ action, note: notes })
+    });
+    const data = await resp.json();
+    if (!data.success) {
+        alert(data.error || 'Fehler');
+    } else {
         alert(messages[action][lang]);
-        
-        // Mark as reviewed
-        document.querySelector(`[data-recording-id="${currentRecordingId}"]`)?.classList.add('reviewed');
-        
-        // Update status badge
-        const statusEl = document.querySelector(`[data-recording-id="${currentRecordingId}"] .recording-status`);
-        if (statusEl) {
-            statusEl.className = `recording-status ${action}`;
-            statusEl.textContent = action.toUpperCase();
-        }
-        
-        // Re-enable buttons
-        document.querySelectorAll('.qc-btn').forEach(btn => btn.disabled = false);
-        
-        // Clear notes
-        document.getElementById('qcNotes').value = '';
-        
-        // Update stats
-        updateStats();
-    }, 500);
+        await loadRecordings(document.querySelector('.filter-btn.active')?.getAttribute('onclick')?.match(/'([^']+)'/)?.[1] || 'pending');
+    }
+
+    document.querySelectorAll('.qc-btn').forEach(btn => btn.disabled = false);
 }
 
-// Update stats
-function updateStats() {
-    // TODO: Get actual stats from API
-    document.getElementById('statOk').textContent = 
-        parseInt(document.getElementById('statOk').textContent) + 1;
-    document.getElementById('statPending').textContent = 
-        Math.max(0, parseInt(document.getElementById('statPending').textContent) - 1);
+async function loadRecordings(filter = 'pending') {
+    const res = await fetch(`/api/qc/recordings?filter=${encodeURIComponent(filter)}`);
+    const data = await res.json();
+    if (!data.success) return;
+
+    const recs = data.recordings || [];
+    const listHtml = recs.map(rec => `
+        <div class="recording-item ${rec.status !== 'pending' ? 'reviewed' : ''}" data-recording-id="${rec.id}" onclick="selectRecording(${rec.id})">
+            <div class="recording-header">
+                <span class="recording-id">#CALL-${rec.id}</span>
+                <span class="recording-status ${rec.status === 'passed' ? 'ok' : rec.status}">${(rec.status || 'pending').toUpperCase()}</span>
+            </div>
+            <div class="recording-info">
+                <span><i class="ti ti-user"></i> ${rec.customer || '-'}</span>
+                <span><i class="ti ti-headset"></i> ${rec.agent || '-'}</span>
+                <span><i class="ti ti-clock"></i> ${fmtDate(rec.time)}</span>
+                <span><i class="ti ti-player-play"></i> ${fmtDuration(rec.duration_sec)}</span>
+            </div>
+        </div>
+    `).join('');
+
+    document.getElementById('recordingList').innerHTML = listHtml || `
+        <div class="empty-state">
+            <i class="ti ti-headphones-off"></i>
+            <p data-tr="Henüz kayıt yok" data-de="Noch keine Aufnahmen">Henüz kayıt yok</p>
+        </div>`;
+
+    const s = data.stats || {};
+    document.getElementById('statTotal').textContent = s.total || 0;
+    document.getElementById('statPending').textContent = s.pending || 0;
+    document.getElementById('statOk').textContent = s.ok || 0;
+    document.getElementById('statTermin').textContent = s.termin || 0;
+    document.getElementById('statStorno').textContent = s.storno || 0;
 }
 
 // Refresh list
@@ -751,33 +754,7 @@ function refreshList() {
 
 // Initialize
 document.addEventListener('DOMContentLoaded', function() {
-    // Load demo recordings for now
-    const demoRecordings = [
-        { id: 1, customer: 'Max Mustermann', agent: 'Tuncay K.', time: '14:32', duration: '05:42', status: 'pending' },
-        { id: 2, customer: 'Hans Schmidt', agent: 'Aslı A.', time: '14:15', duration: '03:18', status: 'pending' },
-        { id: 3, customer: 'Lisa Weber', agent: 'Erdoğan Ç.', time: '13:45', duration: '04:55', status: 'pending' },
-    ];
-    
-    const listHtml = demoRecordings.map(rec => `
-        <div class="recording-item" data-recording-id="${rec.id}" onclick="selectRecording(${rec.id})">
-            <div class="recording-header">
-                <span class="recording-id">#REC-${rec.id}</span>
-                <span class="recording-status ${rec.status}">${rec.status.toUpperCase()}</span>
-            </div>
-            <div class="recording-info">
-                <span><i class="ti ti-user"></i> ${rec.customer}</span>
-                <span><i class="ti ti-headset"></i> ${rec.agent}</span>
-                <span><i class="ti ti-clock"></i> ${rec.time}</span>
-                <span><i class="ti ti-player-play"></i> ${rec.duration}</span>
-            </div>
-        </div>
-    `).join('');
-    
-    document.getElementById('recordingList').innerHTML = listHtml || document.getElementById('recordingList').innerHTML;
-    
-    // Update stats
-    document.getElementById('statTotal').textContent = demoRecordings.length;
-    document.getElementById('statPending').textContent = demoRecordings.filter(r => r.status === 'pending').length;
+    loadRecordings('pending');
 });
 </script>
 {% endblock %}

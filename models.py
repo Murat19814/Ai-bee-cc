@@ -1051,6 +1051,9 @@ class Call(db.Model):
     
     # QA Durumu
     qa_status = db.Column(db.String(20))  # pending, passed, failed
+    qa_note = db.Column(db.Text)  # QC Dinleme Notu / Bemerkung
+    qa_reviewed_by_id = db.Column(db.Integer, db.ForeignKey('users.id'))
+    qa_reviewed_at = db.Column(db.DateTime)
     
     # Transfer bilgileri
     transferred_from_id = db.Column(db.Integer, db.ForeignKey('users.id'))
@@ -1098,6 +1101,9 @@ class CallRecording(db.Model):
     # Maskeleme
     is_masked = db.Column(db.Boolean, default=False)
     masked_file_path = db.Column(db.String(500))
+    
+    # Recording türü (system vs agent recording)
+    recording_role = db.Column(db.String(20), default='system')  # system, agent
     
     # Saklama
     retention_until = db.Column(db.DateTime)

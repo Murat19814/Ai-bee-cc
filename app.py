@@ -6,7 +6,7 @@ Ana Uygulama Dosyası
 import os
 from datetime import datetime
 from functools import wraps
-from flask import Flask, render_template, redirect, url_for, flash, request, jsonify, abort
+from flask import Flask, render_template, redirect, url_for, flash, request, jsonify, abort, send_file
 from flask_login import LoginManager, login_user, logout_user, login_required, current_user
 from flask_socketio import SocketIO, emit, join_room, leave_room
 from flask_cors import CORS
@@ -74,6 +74,33 @@ login_manager.login_message_category = 'warning'
 
 # Veritabanını başlat
 init_db(app)
+
+# Minimal schema auto-upgrade for new QC fields (safe for SQLite/Postgres)
+def ensure_db_schema():
+    try:
+        from sqlalchemy import inspect, text
+        insp = inspect(db.engine)
+
+        if insp.has_table('calls'):
+            call_cols = {c['name'] for c in insp.get_columns('calls')}
+            with db.engine.begin() as conn:
+                if 'qa_note' not in call_cols:
+                    conn.execute(text("ALTER TABLE calls ADD COLUMN qa_note TEXT"))
+                if 'qa_reviewed_by_id' not in call_cols:
+                    conn.execute(text("ALTER TABLE calls ADD COLUMN qa_reviewed_by_id INTEGER"))
+                if 'qa_reviewed_at' not in call_cols:
+                    conn.execute(text("ALTER TABLE calls ADD COLUMN qa_reviewed_at TIMESTAMP"))
+
+        if insp.has_table('call_recordings'):
+            rec_cols = {c['name'] for c in insp.get_columns('call_recordings')}
+            if 'recording_role' not in rec_cols:
+                with db.engine.begin() as conn:
+                    conn.execute(text("ALTER TABLE call_recordings ADD COLUMN recording_role VARCHAR(20)"))
+    except Exception:
+        # Don't block app boot; schema can be migrated manually if needed
+        pass
+
+ensure_db_schema()
 
 
 @login_manager.user_loader
@@ -348,6 +375,220 @@ def qc_listener_panel():
         return redirect(url_for('dashboard'))
     
     return render_template('qc/listener_panel.html')
+
+
+# ==================== QC LISTENER API ====================
+
+def _qc_allowed():
+    return current_user.role in ['qc_listener', 'supervisor', 'admin', 'super_admin']
+
+
+@app.route('/api/qc/recordings')
+@login_required
+def api_qc_recordings():
+    """QC: Liste der zu prüfenden Calls (mit Recording)"""
+    if not _qc_allowed():
+        abort(403)
+
+    filt = (request.args.get('filter') or 'pending').lower()
+
+    q = Call.query.filter(Call.tenant_id == current_user.tenant_id).join(CallRecording)
+
+    # Filter by QC status
+    if filt == 'pending':
+        q = q.filter((Call.qa_status.is_(None)) | (Call.qa_status == '') | (Call.qa_status == 'pending'))
+    elif filt == 'ok':
+        q = q.filter(Call.qa_status == 'passed')
+    elif filt == 'termin':
+        q = q.filter(Call.qa_status == 'termin')
+    elif filt == 'storno':
+        q = q.filter(Call.qa_status == 'storno')
+    elif filt == 'all':
+        pass
+    else:
+        filt = 'pending'
+        q = q.filter((Call.qa_status.is_(None)) | (Call.qa_status == '') | (Call.qa_status == 'pending'))
+
+    calls = q.order_by(Call.started_at.desc()).limit(300).all()
+
+    def norm_status(s):
+        return s if s else 'pending'
+
+    recordings = []
+    for c in calls:
+        customer = Customer.query.get(c.customer_id) if c.customer_id else None
+        lead = Lead.query.get(c.lead_id) if c.lead_id else None
+        agent = User.query.get(c.agent_id) if c.agent_id else None
+
+        cust_name = (customer.full_name if customer else None) or (
+            (f"{lead.first_name or ''} {lead.last_name or ''}".strip()) if lead else ''
+        ) or '-'
+
+        started = c.started_at or c.created_at
+        recordings.append({
+            'id': c.id,
+            'status': norm_status(c.qa_status),
+            'customer': cust_name,
+            'agent': (agent.full_name if agent else '-') if c.agent_id else '-',
+            'time': started.isoformat() if started else None,
+            'duration_sec': int(c.talk_duration or c.total_duration or 0),
+            'disposition': c.disposition or '',
+        })
+
+    # Stats for cards (tenant-wide, recordings only)
+    all_calls = Call.query.filter(Call.tenant_id == current_user.tenant_id).join(CallRecording).all()
+    stats = {
+        'total': len(all_calls),
+        'pending': sum(1 for c in all_calls if (c.qa_status is None or c.qa_status == '' or c.qa_status == 'pending')),
+        'ok': sum(1 for c in all_calls if c.qa_status == 'passed'),
+        'termin': sum(1 for c in all_calls if c.qa_status == 'termin'),
+        'storno': sum(1 for c in all_calls if c.qa_status == 'storno'),
+    }
+
+    return jsonify({'success': True, 'filter': filt, 'recordings': recordings, 'stats': stats})
+
+
+@app.route('/api/qc/recordings/<int:call_id>')
+@login_required
+def api_qc_recording_detail(call_id):
+    """QC: Detaildaten für einen Call inkl. Kunden + Recording URLs"""
+    if not _qc_allowed():
+        abort(403)
+
+    call = Call.query.filter_by(id=call_id, tenant_id=current_user.tenant_id).first_or_404()
+    recs = CallRecording.query.filter_by(call_id=call.id).order_by(CallRecording.created_at.asc()).all()
+
+    # Pick system/agent recordings (best-effort)
+    system_rec = next((r for r in recs if (r.recording_role or 'system') == 'system'), recs[0] if recs else None)
+    agent_rec = next((r for r in recs if (r.recording_role or '') == 'agent'), None)
+
+    customer = Customer.query.get(call.customer_id) if call.customer_id else None
+    lead = Lead.query.get(call.lead_id) if call.lead_id else None
+    agent = User.query.get(call.agent_id) if call.agent_id else None
+    campaign = Campaign.query.get(call.campaign_id) if call.campaign_id else None
+    project = Project.query.get(call.project_id) if call.project_id else (Project.query.get(campaign.project_id) if campaign else None)
+
+    cust_name = (customer.full_name if customer else None) or (
+        (f"{lead.first_name or ''} {lead.last_name or ''}".strip()) if lead else ''
+    ) or '-'
+
+    phone = (customer.phone if customer else None) or (lead.phone if lead else None) or '-'
+    email = (customer.email if customer else None) or (lead.email if lead else None) or ''
+
+    started = call.started_at or call.created_at
+    duration_sec = int(call.talk_duration or call.total_duration or 0)
+
+    return jsonify({
+        'success': True,
+        'call': {
+            'id': call.id,
+            'status': call.qa_status or 'pending',
+            'disposition': call.disposition or '',
+            'notes_agent': call.agent_note or '',
+            'notes_qc': call.qa_note or '',
+            'started_at': started.isoformat() if started else None,
+            'duration_sec': duration_sec,
+        },
+        'customer': {
+            'name': cust_name,
+            'phone': phone,
+            'email': email,
+            'custom_data': (lead.custom_data if lead else {}) or {},
+        },
+        'agent': {
+            'id': agent.id if agent else None,
+            'name': agent.full_name if agent else '-',
+        },
+        'context': {
+            'project': project.name if project else '',
+            'campaign': campaign.name if campaign else '',
+        },
+        'recordings': {
+            'system': {
+                'id': system_rec.id if system_rec else None,
+                'url': url_for('serve_recording', recording_id=system_rec.id) if system_rec else None,
+                'duration_sec': int(system_rec.duration or 0) if system_rec else 0,
+            },
+            'agent': {
+                'id': agent_rec.id if agent_rec else None,
+                'url': url_for('serve_recording', recording_id=agent_rec.id) if agent_rec else None,
+                'duration_sec': int(agent_rec.duration or 0) if agent_rec else 0,
+            }
+        }
+    })
+
+
+@app.route('/api/qc/recordings/<int:call_id>/evaluate', methods=['POST'])
+@login_required
+def api_qc_recording_evaluate(call_id):
+    """QC: Bewertung speichern und an Agent zurückmelden"""
+    if not _qc_allowed():
+        abort(403)
+
+    call = Call.query.filter_by(id=call_id, tenant_id=current_user.tenant_id).first_or_404()
+    data = request.get_json(silent=True) or {}
+    action = (data.get('action') or '').lower()
+    note = (data.get('note') or '').strip()
+
+    status_map = {
+        'ok': 'passed',
+        'termin': 'termin',
+        'storno': 'storno',
+    }
+    if action not in status_map:
+        return jsonify({'success': False, 'error': 'Invalid action'}), 400
+
+    call.qa_status = status_map[action]
+    call.qa_note = note
+    call.qa_reviewed_by_id = current_user.id
+    call.qa_reviewed_at = datetime.utcnow()
+    db.session.commit()
+
+    # Notification to agent (only for termin/storno)
+    if call.agent_id and action in ['termin', 'storno']:
+        title = 'QC Termin' if action == 'termin' else 'QC Storno'
+        msg = note or ('Bitte Kunde erneut kontaktieren.' if action == 'termin' else 'Storno-Info verfügbar.')
+        n = Notification(
+            tenant_id=current_user.tenant_id,
+            user_id=call.agent_id,
+            type='qc_result',
+            title=title,
+            message=msg,
+            link_type='call',
+            link_id=call.id
+        )
+        db.session.add(n)
+        db.session.commit()
+        try:
+            socketio.emit('new_notification', {'title': title, 'message': msg}, room=f'tenant_{current_user.tenant_id}')
+        except Exception:
+            pass
+
+    return jsonify({'success': True, 'qa_status': call.qa_status})
+
+
+@app.route('/recordings/<int:recording_id>')
+@login_required
+def serve_recording(recording_id):
+    """Secure recording streaming for authorized roles"""
+    rec = CallRecording.query.get_or_404(recording_id)
+    call = Call.query.get(rec.call_id)
+    if not call or call.tenant_id != current_user.tenant_id:
+        abort(404)
+
+    # Agents can only access their own calls
+    if current_user.role == 'agent' and call.agent_id != current_user.id:
+        abort(403)
+
+    # Allow QC/admin/supervisor
+    if current_user.role not in ['agent', 'qc_listener', 'supervisor', 'admin', 'super_admin']:
+        abort(403)
+
+    path = rec.file_path
+    # If masked and agent, serve masked
+    if current_user.role == 'agent' and rec.is_masked and rec.masked_file_path:
+        path = rec.masked_file_path
+    return send_file(path, as_attachment=False, conditional=True)
 
 
 @app.route('/logout')
@@ -2331,6 +2572,33 @@ def api_agent_save_customer():
     except Exception as e:
         db.session.rollback()
         return jsonify({'success': False, 'error': str(e)})
+
+
+@app.route('/api/agent/lead/<int:lead_id>')
+@login_required
+def api_agent_get_lead(lead_id):
+    """Agent için lead detayı (QC Termin geri dönüşlerinde paneli doldurmak için)"""
+    lead = Lead.query.filter_by(id=lead_id, tenant_id=current_user.tenant_id).first_or_404()
+
+    # Agent sadece kendi lead'lerini veya kendi aradığı lead'leri görebilsin
+    if current_user.role == 'agent':
+        allowed = (lead.assigned_agent_id == current_user.id) or (
+            Call.query.filter_by(tenant_id=current_user.tenant_id, lead_id=lead.id, agent_id=current_user.id).first() is not None
+        )
+        if not allowed:
+            abort(403)
+
+    return jsonify({
+        'success': True,
+        'lead': {
+            'id': lead.id,
+            'first_name': lead.first_name,
+            'last_name': lead.last_name,
+            'phone': lead.phone,
+            'email': lead.email,
+            'custom_data': lead.custom_data or {}
+        }
+    })
 
 
 @app.route('/api/agent/qc-stats')

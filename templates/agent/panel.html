@@ -2137,7 +2137,14 @@ function openCustomerList(type) {
                         <span class="customer-phone">${c.phone||'-'}</span>
                     </div>
                     <div class="bemerkung"><strong>QM:</strong> ${c.bemerkung||'Keine Bemerkung'}</div>
-                    <button class="btn-call" onclick="callFromList('${c.phone}')"><i class="ti ti-phone"></i> Anrufen</button>
+                    ${type === 'qc_termin' ? `
+                        <div style="display:flex; gap:.5rem; margin-top:.5rem; flex-wrap:wrap;">
+                            <button class="btn-call" onclick="openLeadFromList(${c.id})"><i class="ti ti-id"></i> Panel öffnen</button>
+                            <button class="btn-call" onclick="callFromList('${c.phone}')"><i class="ti ti-phone"></i> Anrufen</button>
+                        </div>
+                    ` : `
+                        <button class="btn-call" style="opacity:.7; cursor:not-allowed;" disabled><i class="ti ti-lock"></i> Kein Rückruf</button>
+                    `}
                 </div>
             `).join('');
         } else {
@@ -2153,6 +2160,16 @@ function closeCustomerModal() { document.getElementById('customerModal').classLi
 function callFromList(phone) {
     closeCustomerModal();
     document.getElementById('manualNum').value = phone;
+}
+
+function openLeadFromList(leadId) {
+    closeCustomerModal();
+    fetch(`/api/agent/lead/${leadId}`).then(r => r.json()).then(data => {
+        if (data.success && data.lead) {
+            currentLead = data.lead;
+            showLead(data.lead);
+        }
+    }).catch(() => {});
 }
 
 function manualCall() {
