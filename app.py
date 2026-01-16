@@ -3080,6 +3080,8 @@ def ai_packages():
 @login_required
 def reports():
     """Raporlar ana sayfa"""
+    if current_user.role == 'agent':
+        abort(403)
     return render_template('reports/index.html')
 
 
@@ -3087,6 +3089,8 @@ def reports():
 @login_required
 def report_agent_performance():
     """Agent performans raporu"""
+    if current_user.role == 'agent':
+        abort(403)
     agents = User.query.filter_by(tenant_id=current_user.tenant_id, role='agent').all()
     return render_template('reports/agent_performance.html', agents=agents)
 
@@ -3095,6 +3099,8 @@ def report_agent_performance():
 @login_required
 def report_campaign():
     """Kampanya raporu"""
+    if current_user.role == 'agent':
+        abort(403)
     campaigns = Campaign.query.filter_by(tenant_id=current_user.tenant_id).all()
     return render_template('reports/campaign.html', campaigns=campaigns)
 
@@ -3103,6 +3109,8 @@ def report_campaign():
 @login_required
 def report_sla():
     """SLA raporu"""
+    if current_user.role == 'agent':
+        abort(403)
     queues = Queue.query.filter_by(tenant_id=current_user.tenant_id).all()
     return render_template('reports/sla.html', queues=queues)
 
@@ -3111,6 +3119,8 @@ def report_sla():
 @login_required
 def report_quality():
     """Kalite raporu"""
+    if current_user.role == 'agent':
+        abort(403)
     return render_template('reports/quality.html')
 
 

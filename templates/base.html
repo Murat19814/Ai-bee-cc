@@ -255,6 +255,7 @@
                 </div>
                 {% endif %}
                 
+                {% if current_user.role != 'agent' %}
                 <!-- Raporlar -->
                 <div class="nav-group">
                     <button class="nav-group-toggle" data-target="reports-menu">
@@ -277,6 +278,7 @@
                         </a>
                     </div>
                 </div>
+                {% endif %}
                 
                 {% if current_user.role == 'admin' or current_user.is_super_admin %}
                 <!-- Yönetim -->
