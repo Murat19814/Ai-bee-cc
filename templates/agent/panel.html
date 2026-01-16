@@ -17,6 +17,8 @@
     --danger: #ef4444;
     --warning: #f59e0b;
     --info: #3b82f6;
+    --purple: #a855f7;
+    --cyan: #06b6d4;
 }
 
 body {
@@ -32,7 +34,7 @@ body {
 
 /* === LEFT PANEL === */
 .left-panel {
-    width: 280px;
+    width: 300px;
     display: flex;
     flex-direction: column;
     gap: 1rem;
@@ -45,32 +47,99 @@ body {
     border: 1px solid rgba(245, 166, 35, 0.2);
 }
 
-.status-indicator {
-    display: flex;
-    align-items: center;
-    gap: 0.5rem;
-    padding: 0.6rem 1rem;
-    background: rgba(34, 197, 94, 0.15);
-    border: 1px solid rgba(34, 197, 94, 0.3);
-    border-radius: 25px;
-    color: var(--success);
-    font-weight: 600;
-    font-size: 0.85rem;
+/* Status Dropdown */
+.status-dropdown {
+    position: relative;
     margin-bottom: 1.5rem;
 }
 
-.status-indicator .dot {
-    width: 8px;
-    height: 8px;
-    background: var(--success);
-    border-radius: 50%;
-    animation: blink 1.5s infinite;
+.status-current {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 0.75rem 1rem;
+    background: var(--bg-input);
+    border: 2px solid var(--success);
+    border-radius: 12px;
+    cursor: pointer;
+    transition: all 0.2s;
 }
 
-@keyframes blink {
-    0%, 100% { opacity: 1; }
-    50% { opacity: 0.3; }
+.status-current:hover {
+    background: rgba(255,255,255,0.05);
 }
+
+.status-current .dot {
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    background: var(--success);
+}
+
+.status-current .text {
+    flex: 1;
+    font-weight: 600;
+    color: var(--text-primary);
+}
+
+.status-current .timer {
+    font-family: 'Monaco', monospace;
+    font-size: 0.85rem;
+    color: var(--text-secondary);
+}
+
+.status-current i {
+    color: var(--text-secondary);
+}
+
+.status-menu {
+    position: absolute;
+    top: 100%;
+    left: 0;
+    right: 0;
+    background: var(--bg-card);
+    border: 1px solid rgba(255,255,255,0.1);
+    border-radius: 12px;
+    margin-top: 0.5rem;
+    padding: 0.5rem;
+    z-index: 100;
+    display: none;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+}
+
+.status-menu.active { display: block; }
+
+.status-option {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 0.75rem 1rem;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.status-option:hover {
+    background: rgba(255,255,255,0.05);
+}
+
+.status-option .dot {
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+}
+
+.status-option .text {
+    color: var(--text-primary);
+    font-weight: 500;
+}
+
+/* Status Colors */
+.status-musait .dot { background: var(--success); }
+.status-mesgul .dot { background: var(--danger); }
+.status-mola .dot { background: var(--warning); }
+.status-egitim .dot { background: var(--info); }
+.status-acw .dot { background: var(--purple); }
 
 .call-display {
     text-align: center;
@@ -112,7 +181,7 @@ body {
     display: flex;
     justify-content: center;
     gap: 0.75rem;
-    margin-bottom: 1.5rem;
+    margin-bottom: 1rem;
 }
 
 .ctrl-btn {
@@ -138,15 +207,13 @@ body {
     50% { transform: scale(1.1); }
 }
 
-/* Recording Status */
 .recording-status {
     display: flex;
     align-items: center;
     justify-content: center;
-    gap: 0.5rem;
+    gap: 1rem;
     font-size: 0.75rem;
-    color: var(--text-secondary);
-    margin-top: 0.5rem;
+    margin-bottom: 1rem;
 }
 
 .recording-status .sys-rec {
@@ -165,7 +232,7 @@ body {
 }
 
 .recording-status .agent-rec {
-    display: flex;
+    display: none;
     align-items: center;
     gap: 0.3rem;
     color: var(--danger);
@@ -180,82 +247,9 @@ body {
     animation: blink 1s infinite;
 }
 
-/* Keypad Modal */
-.keypad-modal {
-    position: fixed;
-    inset: 0;
-    background: rgba(0,0,0,0.7);
-    display: none;
-    align-items: center;
-    justify-content: center;
-    z-index: 1000;
-}
-
-.keypad-modal.active { display: flex; }
-
-.keypad-box {
-    background: var(--bg-card);
-    border-radius: 20px;
-    padding: 1.5rem;
-    border: 1px solid rgba(245, 166, 35, 0.3);
-    width: 280px;
-}
-
-.keypad-display {
-    background: var(--bg-input);
-    border-radius: 10px;
-    padding: 1rem;
-    text-align: center;
-    font-size: 1.5rem;
-    font-family: 'Monaco', monospace;
-    color: var(--primary);
-    margin-bottom: 1rem;
-    min-height: 50px;
-    letter-spacing: 2px;
-}
-
-.keypad-grid {
-    display: grid;
-    grid-template-columns: repeat(3, 1fr);
-    gap: 0.5rem;
-}
-
-.keypad-btn {
-    background: var(--bg-input);
-    border: 1px solid rgba(255,255,255,0.1);
-    border-radius: 12px;
-    padding: 1rem;
-    font-size: 1.5rem;
-    font-weight: 600;
-    color: var(--text-primary);
-    cursor: pointer;
-    transition: all 0.2s;
-}
-
-.keypad-btn:hover {
-    background: var(--primary);
-    color: #1a1a1a;
-}
-
-.keypad-btn.call {
-    background: var(--success);
-    color: white;
-}
-
-.keypad-btn.end {
-    background: var(--danger);
-    color: white;
-}
-
-.keypad-close {
-    width: 100%;
-    margin-top: 1rem;
-    padding: 0.75rem;
-    background: rgba(255,255,255,0.1);
-    border: none;
-    border-radius: 10px;
-    color: var(--text-secondary);
-    cursor: pointer;
+@keyframes blink {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.3; }
 }
 
 .action-buttons {
@@ -288,11 +282,6 @@ body {
     background: linear-gradient(135deg, var(--danger) 0%, #dc2626 100%);
     color: white;
     display: none;
-}
-
-.action-btn.pause {
-    background: linear-gradient(135deg, var(--warning) 0%, #d97706 100%);
-    color: white;
 }
 
 .action-btn.calendar {
@@ -353,39 +342,69 @@ body {
     gap: 1rem;
 }
 
-/* Stats Row */
-.stats-row {
+/* Detailed Stats */
+.stats-grid {
     display: grid;
-    grid-template-columns: repeat(4, 1fr);
-    gap: 1rem;
+    grid-template-columns: repeat(6, 1fr);
+    gap: 0.75rem;
 }
 
 .stat-card {
     background: var(--bg-card);
-    border-radius: 16px;
-    padding: 1.25rem;
-    border-left: 4px solid var(--primary);
+    border-radius: 14px;
+    padding: 1rem;
+    border-left: 3px solid var(--primary);
     transition: all 0.2s;
 }
 
 .stat-card:hover {
-    transform: translateY(-3px);
-    box-shadow: 0 10px 30px rgba(245, 166, 35, 0.1);
+    transform: translateY(-2px);
+    box-shadow: 0 8px 25px rgba(0,0,0,0.3);
+}
+
+.stat-card .icon {
+    width: 36px;
+    height: 36px;
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.1rem;
+    margin-bottom: 0.5rem;
 }
 
 .stat-card .value {
-    font-size: 2rem;
+    font-size: 1.5rem;
     font-weight: 700;
-    color: var(--primary);
+    color: var(--text-primary);
+    font-family: 'Monaco', monospace;
 }
 
 .stat-card .label {
-    font-size: 0.8rem;
+    font-size: 0.7rem;
     color: var(--text-secondary);
     text-transform: uppercase;
     letter-spacing: 0.5px;
     margin-top: 0.25rem;
 }
+
+.stat-card.calls { border-color: var(--info); }
+.stat-card.calls .icon { background: rgba(59, 130, 246, 0.15); color: var(--info); }
+
+.stat-card.talk { border-color: var(--success); }
+.stat-card.talk .icon { background: rgba(34, 197, 94, 0.15); color: var(--success); }
+
+.stat-card.sales { border-color: var(--primary); }
+.stat-card.sales .icon { background: rgba(245, 166, 35, 0.15); color: var(--primary); }
+
+.stat-card.break { border-color: var(--warning); }
+.stat-card.break .icon { background: rgba(245, 158, 11, 0.15); color: var(--warning); }
+
+.stat-card.login { border-color: var(--cyan); }
+.stat-card.login .icon { background: rgba(6, 182, 212, 0.15); color: var(--cyan); }
+
+.stat-card.callback { border-color: var(--purple); }
+.stat-card.callback .icon { background: rgba(168, 85, 247, 0.15); color: var(--purple); }
 
 /* Lotto Section */
 .lotto-row {
@@ -523,7 +542,6 @@ body {
     color: rgba(255,255,255,0.4);
 }
 
-/* Select dropdown options */
 .field select option {
     background: #1a2744;
     color: #ffffff;
@@ -538,8 +556,7 @@ body {
     box-shadow: 0 0 0 3px rgba(245, 166, 35, 0.15);
 }
 
-
-/* === RIGHT PANEL - QC STATS === */
+/* === RIGHT PANEL === */
 .right-panel {
     width: 220px;
     display: flex;
@@ -580,9 +597,7 @@ body {
     border: 1px solid transparent;
 }
 
-.qc-stat-card:hover {
-    transform: translateX(3px);
-}
+.qc-stat-card:hover { transform: translateX(3px); }
 
 .qc-stat-card .info {
     display: flex;
@@ -590,51 +605,21 @@ body {
     gap: 0.5rem;
 }
 
-.qc-stat-card .info i {
-    font-size: 1rem;
-}
+.qc-stat-card .info i { font-size: 1rem; }
+.qc-stat-card .info span { font-weight: 600; font-size: 0.85rem; }
+.qc-stat-card .count { font-size: 1.5rem; font-weight: 700; }
 
-.qc-stat-card .info span {
-    font-weight: 600;
-    font-size: 0.85rem;
-}
+.qc-stat-card.qc-ok { background: rgba(34, 197, 94, 0.1); border-color: rgba(34, 197, 94, 0.3); }
+.qc-stat-card.qc-ok .info, .qc-stat-card.qc-ok .count { color: var(--success); }
 
-.qc-stat-card .count {
-    font-size: 1.5rem;
-    font-weight: 700;
-}
+.qc-stat-card.qc-termin { background: rgba(59, 130, 246, 0.1); border-color: rgba(59, 130, 246, 0.3); }
+.qc-stat-card.qc-termin .info, .qc-stat-card.qc-termin .count { color: var(--info); }
 
-/* QC OK - Yeşil */
-.qc-stat-card.qc-ok {
-    background: rgba(34, 197, 94, 0.1);
-    border-color: rgba(34, 197, 94, 0.3);
-}
-.qc-stat-card.qc-ok .info { color: var(--success); }
-.qc-stat-card.qc-ok .count { color: var(--success); }
+.qc-stat-card.storno { background: rgba(239, 68, 68, 0.15); border-color: rgba(239, 68, 68, 0.4); }
+.qc-stat-card.storno .info, .qc-stat-card.storno .count { color: var(--danger); }
 
-/* QC TERMIN - Mavi */
-.qc-stat-card.qc-termin {
-    background: rgba(59, 130, 246, 0.1);
-    border-color: rgba(59, 130, 246, 0.3);
-}
-.qc-stat-card.qc-termin .info { color: var(--info); }
-.qc-stat-card.qc-termin .count { color: var(--info); }
-
-/* STORNO - Kırmızı */
-.qc-stat-card.storno {
-    background: rgba(239, 68, 68, 0.15);
-    border-color: rgba(239, 68, 68, 0.4);
-}
-.qc-stat-card.storno .info { color: var(--danger); }
-.qc-stat-card.storno .count { color: var(--danger); }
-
-/* QC NE - Turuncu */
-.qc-stat-card.qc-ne {
-    background: rgba(245, 158, 11, 0.1);
-    border-color: rgba(245, 158, 11, 0.3);
-}
-.qc-stat-card.qc-ne .info { color: var(--warning); }
-.qc-stat-card.qc-ne .count { color: var(--warning); }
+.qc-stat-card.qc-ne { background: rgba(245, 158, 11, 0.1); border-color: rgba(245, 158, 11, 0.3); }
+.qc-stat-card.qc-ne .info, .qc-stat-card.qc-ne .count { color: var(--warning); }
 
 /* AI Panel */
 .ai-section {
@@ -667,7 +652,126 @@ body {
     font-family: 'Monaco', monospace;
 }
 
-/* Customer List Modal */
+/* Break Overlay */
+.break-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.9);
+    display: none;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    z-index: 1000;
+}
+
+.break-overlay.active { display: flex; }
+
+.break-content {
+    text-align: center;
+}
+
+.break-content .break-icon {
+    font-size: 5rem;
+    margin-bottom: 1.5rem;
+}
+
+.break-content .break-icon.mola { color: var(--warning); }
+.break-content .break-icon.egitim { color: var(--info); }
+.break-content .break-icon.acw { color: var(--purple); }
+
+.break-content h2 {
+    font-size: 2rem;
+    color: var(--text-primary);
+    margin-bottom: 0.5rem;
+}
+
+.break-content .break-timer {
+    font-size: 4rem;
+    font-weight: 700;
+    font-family: 'Monaco', monospace;
+    color: var(--primary);
+    margin: 2rem 0;
+}
+
+.break-content .btn-end-break {
+    background: var(--success);
+    color: white;
+    border: none;
+    padding: 1rem 3rem;
+    border-radius: 12px;
+    font-size: 1.1rem;
+    font-weight: 600;
+    cursor: pointer;
+}
+
+/* Keypad Modal */
+.keypad-modal {
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.7);
+    display: none;
+    align-items: center;
+    justify-content: center;
+    z-index: 1000;
+}
+
+.keypad-modal.active { display: flex; }
+
+.keypad-box {
+    background: var(--bg-card);
+    border-radius: 20px;
+    padding: 1.5rem;
+    border: 1px solid rgba(245, 166, 35, 0.3);
+    width: 280px;
+}
+
+.keypad-display {
+    background: var(--bg-input);
+    border-radius: 10px;
+    padding: 1rem;
+    text-align: center;
+    font-size: 1.5rem;
+    font-family: 'Monaco', monospace;
+    color: var(--primary);
+    margin-bottom: 1rem;
+    min-height: 50px;
+}
+
+.keypad-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 0.5rem;
+}
+
+.keypad-btn {
+    background: var(--bg-input);
+    border: 1px solid rgba(255,255,255,0.1);
+    border-radius: 12px;
+    padding: 1rem;
+    font-size: 1.5rem;
+    font-weight: 600;
+    color: var(--text-primary);
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.keypad-btn:hover {
+    background: var(--primary);
+    color: #1a1a1a;
+}
+
+.keypad-close {
+    width: 100%;
+    margin-top: 1rem;
+    padding: 0.75rem;
+    background: rgba(255,255,255,0.1);
+    border: none;
+    border-radius: 10px;
+    color: var(--text-secondary);
+    cursor: pointer;
+}
+
+/* Customer Modal */
 .customer-modal {
     position: fixed;
     inset: 0;
@@ -703,13 +807,6 @@ body {
 .customer-modal-header h3 {
     color: var(--text-primary);
     font-size: 1.1rem;
-    display: flex;
-    align-items: center;
-    gap: 0.5rem;
-}
-
-.customer-modal-header h3 i {
-    color: var(--primary);
 }
 
 .customer-modal-header .close {
@@ -729,61 +826,33 @@ body {
 .customer-list-item {
     background: var(--bg-input);
     border-radius: 12px;
-    padding: 1rem 1.25rem;
+    padding: 1rem;
     margin-bottom: 0.75rem;
     border: 1px solid rgba(255,255,255,0.05);
     cursor: pointer;
-    transition: all 0.2s;
 }
 
 .customer-list-item:hover {
     border-color: var(--primary);
-    background: rgba(245, 166, 35, 0.05);
-}
-
-.customer-list-item .customer-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 0.75rem;
 }
 
 .customer-list-item .customer-name {
     font-weight: 600;
     color: var(--text-primary);
-    font-size: 1rem;
 }
 
 .customer-list-item .customer-phone {
-    font-family: 'Monaco', monospace;
     color: var(--primary);
-    font-size: 0.9rem;
+    font-family: 'Monaco', monospace;
 }
 
 .customer-list-item .bemerkung {
     background: rgba(0,0,0,0.3);
     border-radius: 8px;
-    padding: 0.75rem 1rem;
+    padding: 0.75rem;
     margin-top: 0.5rem;
-}
-
-.customer-list-item .bemerkung-label {
-    font-size: 0.7rem;
-    color: var(--text-secondary);
-    text-transform: uppercase;
-    margin-bottom: 0.35rem;
-}
-
-.customer-list-item .bemerkung-text {
     color: var(--text-primary);
     font-size: 0.9rem;
-    line-height: 1.5;
-}
-
-.customer-list-item .customer-date {
-    font-size: 0.75rem;
-    color: var(--text-secondary);
-    margin-top: 0.5rem;
 }
 
 .customer-list-item .btn-call {
@@ -794,22 +863,7 @@ body {
     border-radius: 8px;
     font-weight: 600;
     cursor: pointer;
-    margin-top: 0.75rem;
-    display: inline-flex;
-    align-items: center;
-    gap: 0.5rem;
-}
-
-.empty-list {
-    text-align: center;
-    padding: 3rem;
-    color: var(--text-secondary);
-}
-
-.empty-list i {
-    font-size: 3rem;
-    margin-bottom: 1rem;
-    display: block;
+    margin-top: 0.5rem;
 }
 
 /* Disposition Modal */
@@ -842,18 +896,8 @@ body {
     align-items: center;
 }
 
-.modal-header h3 {
-    color: #1a1a1a;
-    font-weight: 700;
-}
-
-.modal-header .close {
-    background: none;
-    border: none;
-    color: #1a1a1a;
-    font-size: 1.5rem;
-    cursor: pointer;
-}
+.modal-header h3 { color: #1a1a1a; font-weight: 700; }
+.modal-header .close { background: none; border: none; color: #1a1a1a; font-size: 1.5rem; cursor: pointer; }
 
 .modal-tabs {
     display: flex;
@@ -876,9 +920,7 @@ body {
     border-bottom-color: var(--primary);
 }
 
-.modal-body {
-    padding: 1.5rem;
-}
+.modal-body { padding: 1.5rem; }
 
 .disposition-grid {
     display: grid;
@@ -903,18 +945,11 @@ body {
     border-radius: 10px;
     cursor: pointer;
     margin-bottom: 0.5rem;
-    transition: all 0.2s;
     color: var(--text-primary);
 }
 
-.disposition-item:hover {
-    border-color: var(--primary);
-}
-
-.disposition-item.selected {
-    border-color: var(--primary);
-    background: rgba(245, 166, 35, 0.1);
-}
+.disposition-item:hover { border-color: var(--primary); }
+.disposition-item.selected { border-color: var(--primary); background: rgba(245, 166, 35, 0.1); }
 
 .disposition-item .circle {
     width: 18px;
@@ -945,7 +980,6 @@ body {
     cursor: pointer;
 }
 
-/* Termin Panel */
 .termin-panel { display: none; }
 .termin-panel.active { display: block; }
 
@@ -971,11 +1005,6 @@ body {
     color: var(--info);
     cursor: pointer;
     text-align: center;
-    font-size: 0.85rem;
-}
-
-.quick-time:hover {
-    border-color: var(--info);
 }
 </style>
 {% endblock %}
@@ -985,16 +1014,43 @@ body {
     <!-- LEFT PANEL -->
     <div class="left-panel">
         <div class="call-box">
-            <div class="status-indicator" id="statusBadge">
-                <span class="dot"></span>
-                Status: Bereit
-    </div>
+            <!-- Status Dropdown -->
+            <div class="status-dropdown">
+                <div class="status-current" onclick="toggleStatusMenu()">
+                    <span class="dot" id="statusDot"></span>
+                    <span class="text" id="statusText">Müsait</span>
+                    <span class="timer" id="statusTimer">00:00:00</span>
+                    <i class="ti ti-chevron-down"></i>
+                </div>
+                <div class="status-menu" id="statusMenu">
+                    <div class="status-option status-musait" onclick="changeStatus('musait', 'Müsait')">
+                        <span class="dot"></span>
+                        <span class="text">Müsait</span>
+                    </div>
+                    <div class="status-option status-mesgul" onclick="changeStatus('mesgul', 'Meşgul')">
+                        <span class="dot"></span>
+                        <span class="text">Meşgul</span>
+                    </div>
+                    <div class="status-option status-mola" onclick="changeStatus('mola', 'Mola')">
+                        <span class="dot"></span>
+                        <span class="text">Mola</span>
+                    </div>
+                    <div class="status-option status-egitim" onclick="changeStatus('egitim', 'Eğitim')">
+                        <span class="dot"></span>
+                        <span class="text">Eğitim</span>
+                    </div>
+                    <div class="status-option status-acw" onclick="changeStatus('acw', 'ACW')">
+                        <span class="dot"></span>
+                        <span class="text">ACW</span>
+                    </div>
+                </div>
+            </div>
             
             <div class="call-display">
                 <div class="label"><i class="ti ti-phone"></i> Anrufinformationen</div>
                 <div class="phone" id="displayPhone">---</div>
                 <div class="name" id="displayName">- -</div>
-        </div>
+            </div>
             
             <div class="timer" id="callTimer">00:00:00</div>
             
@@ -1002,22 +1058,19 @@ body {
                 <button class="ctrl-btn mute" onclick="toggleMute()" title="Mikrofon"><i class="ti ti-microphone"></i></button>
                 <button class="ctrl-btn record" id="btnAgentRec" onclick="toggleAgentRecording()" title="Agent Recording"><i class="ti ti-circle-filled"></i></button>
                 <button class="ctrl-btn keypad" onclick="openKeypad()" title="Numpad"><i class="ti ti-grid-dots"></i></button>
-    </div>
+            </div>
             
-            <div class="recording-status" id="recordingStatus">
+            <div class="recording-status">
                 <span class="sys-rec">System Rec</span>
-                <span class="agent-rec" id="agentRecStatus" style="display: none;">Agent Rec</span>
-</div>
-
+                <span class="agent-rec" id="agentRecStatus">Agent Rec</span>
+            </div>
+            
             <div class="action-buttons">
                 <button class="action-btn start" id="btnStart" onclick="startCall()">
                     <i class="ti ti-player-play-filled"></i> Start
                 </button>
                 <button class="action-btn end" id="btnEnd" onclick="openModal()">
                     <i class="ti ti-power"></i> Anruf Beenden
-                </button>
-                <button class="action-btn pause" onclick="togglePause()">
-                    <i class="ti ti-player-pause-filled"></i> Pause
                 </button>
                 <button class="action-btn calendar">
                     <i class="ti ti-calendar"></i> Kalender
@@ -1030,31 +1083,45 @@ body {
             <div class="input-group">
                 <input type="text" id="manualNum" placeholder="Nummer eingeben...">
                 <button onclick="manualCall()"><i class="ti ti-phone"></i></button>
-    </div>
             </div>
         </div>
+    </div>
 
     <!-- MAIN PANEL -->
     <div class="main-panel">
-        <!-- Stats -->
-        <div class="stats-row">
-            <div class="stat-card">
+        <!-- Detailed Stats -->
+        <div class="stats-grid">
+            <div class="stat-card calls">
+                <div class="icon"><i class="ti ti-phone-call"></i></div>
                 <div class="value" id="statCalls">0</div>
-                <div class="label">Anrufe Heute</div>
-    </div>
-            <div class="stat-card">
+                <div class="label">Anrufe</div>
+            </div>
+            <div class="stat-card talk">
+                <div class="icon"><i class="ti ti-clock"></i></div>
+                <div class="value" id="statTalkTime">00:00</div>
+                <div class="label">Gesprächszeit</div>
+            </div>
+            <div class="stat-card sales">
+                <div class="icon"><i class="ti ti-shopping-cart"></i></div>
                 <div class="value" id="statSales">0</div>
                 <div class="label">Verkäufe</div>
             </div>
-            <div class="stat-card">
-                <div class="value" id="statCallbacks">0</div>
-                <div class="label">Wiedervorlage</div>
-        </div>
-            <div class="stat-card">
-                <div class="value" id="statPause">00:00</div>
+            <div class="stat-card break">
+                <div class="icon"><i class="ti ti-coffee"></i></div>
+                <div class="value" id="statBreakTime">00:00</div>
                 <div class="label">Pausenzeit</div>
-    </div>
             </div>
+            <div class="stat-card login">
+                <div class="icon"><i class="ti ti-login"></i></div>
+                <div class="value" id="statLoginTime">--:--</div>
+                <div class="label">Login</div>
+            </div>
+            <div class="stat-card callback">
+                <div class="icon"><i class="ti ti-phone-incoming"></i></div>
+                <div class="value" id="statCallbacks">0</div>
+                <div class="label">Rückruf</div>
+            </div>
+        </div>
 
         <!-- Lotto Numbers -->
         <div class="lotto-row">
@@ -1065,7 +1132,7 @@ body {
             <div class="lotto-box"><div class="header">5</div><input type="text" maxlength="2"></div>
             <div class="lotto-box"><div class="header">6</div><input type="text" maxlength="2"></div>
             <div class="lotto-box"><div class="header">7</div><input type="text" maxlength="2"></div>
-</div>
+        </div>
 
         <!-- Customer Form -->
         <div class="form-section">
@@ -1074,19 +1141,19 @@ body {
                 <button class="btn-save" onclick="saveCustomer()">
                     <i class="ti ti-device-floppy"></i> Speichern
                 </button>
-                </div>
-                
+            </div>
+            
             <div class="form-grid">
                 <div class="form-column">
                     <h4>Persönliche Daten</h4>
                     <div class="field">
                         <label>Anrede</label>
                         <select id="fAnrede"><option value="">Bitte wählen</option><option>Herr</option><option>Frau</option></select>
-                            </div>
+                    </div>
                     <div class="form-row">
                         <div class="field"><label>Vorname</label><input type="text" id="fVorname"></div>
                         <div class="field"><label>Nachname</label><input type="text" id="fNachname"></div>
-                            </div>
+                    </div>
                     <div class="field"><label>Geburtsdatum</label><input type="date" id="fGeburt"></div>
                     <div class="form-row">
                         <div class="field"><label>Straße</label><input type="text" id="fStrasse"></div>
@@ -1098,8 +1165,8 @@ body {
                     </div>
                     <div class="field"><label>Telefon</label><input type="text" id="fTelefon"></div>
                     <div class="field"><label>E-Mail</label><input type="email" id="fEmail"></div>
-                        </div>
-                        
+                </div>
+                
                 <div class="form-column">
                     <h4>Bankdaten</h4>
                     <div class="field"><label>Kontoinhaber</label><input type="text" id="fKonto"></div>
@@ -1109,77 +1176,53 @@ body {
                     <div class="field">
                         <label>Abbuchung</label>
                         <select id="fAbbuchung"><option value="">Bitte wählen</option><option>Monatlich</option><option>Quartal</option><option>Jährlich</option></select>
-                                </div>
+                    </div>
                     <div class="field"><label>Notiz</label><textarea id="fNotiz" rows="3"></textarea></div>
-                                </div>
-                                </div>
-                                </div>
-                            </div>
+                </div>
+            </div>
+        </div>
+    </div>
 
-    <!-- RIGHT PANEL - QC STATS -->
+    <!-- RIGHT PANEL -->
     <div class="right-panel">
         <div class="qc-stats-section">
             <h4>QC Statistiken</h4>
             <div class="qc-stat-cards">
-                <!-- QC OK - Sadece istatistik -->
                 <div class="qc-stat-card qc-ok">
-                    <div class="info">
-                        <i class="ti ti-check"></i>
-                        <span>QC OK</span>
-                    </div>
+                    <div class="info"><i class="ti ti-check"></i><span>QC OK</span></div>
                     <div class="count" id="countQcOk">0</div>
-                        </div>
-                        
-                <!-- QC TERMIN - Tıklanınca liste açılır -->
-                <div class="qc-stat-card qc-termin" onclick="openCustomerList('qc_termin')">
-                    <div class="info">
-                        <i class="ti ti-calendar"></i>
-                        <span>QC Termin</span>
-                            </div>
-                    <div class="count" id="countQcTermin">0</div>
-                        </div>
-                        
-                <!-- STORNO - Tıklanınca liste açılır (Kırmızı) -->
-                <div class="qc-stat-card storno" onclick="openCustomerList('storno')">
-                    <div class="info">
-                        <i class="ti ti-x"></i>
-                        <span>Storno</span>
-                        </div>
-                    <div class="count" id="countStorno">0</div>
-                    </div>
-                
-                <!-- QC NE - Sadece istatistik -->
-                <div class="qc-stat-card qc-ne">
-                    <div class="info">
-                        <i class="ti ti-phone-off"></i>
-                        <span>QC NE</span>
                 </div>
+                <div class="qc-stat-card qc-termin" onclick="openCustomerList('qc_termin')">
+                    <div class="info"><i class="ti ti-calendar"></i><span>QC Termin</span></div>
+                    <div class="count" id="countQcTermin">0</div>
+                </div>
+                <div class="qc-stat-card storno" onclick="openCustomerList('storno')">
+                    <div class="info"><i class="ti ti-x"></i><span>Storno</span></div>
+                    <div class="count" id="countStorno">0</div>
+                </div>
+                <div class="qc-stat-card qc-ne">
+                    <div class="info"><i class="ti ti-phone-off"></i><span>QC NE</span></div>
                     <div class="count" id="countQcNe">0</div>
-            </div>
-        </div>
-    </div>
-    
-        <div class="ai-section">
-            <h4><i class="ti ti-robot"></i> AI Transkription</h4>
-            <div class="transcription" id="transcription">
-                Transkription startet mit dem Anruf...
-            </div>
                 </div>
             </div>
         </div>
         
-<!-- Customer List Modal (QC Termin / Storno) -->
-<div class="customer-modal" id="customerModal">
-    <div class="customer-modal-content">
-        <div class="customer-modal-header">
-            <h3 id="customerModalTitle"><i class="ti ti-users"></i> Kunden</h3>
-            <button class="close" onclick="closeCustomerModal()">&times;</button>
-            </div>
-        <div class="customer-modal-body" id="customerListBody">
-            <!-- Customer list will be loaded here -->
-                </div>
-            </div>
+        <div class="ai-section">
+            <h4><i class="ti ti-robot"></i> AI Transkription</h4>
+            <div class="transcription" id="transcription">Transkription startet mit dem Anruf...</div>
         </div>
+    </div>
+</div>
+
+<!-- Break Overlay -->
+<div class="break-overlay" id="breakOverlay">
+    <div class="break-content">
+        <i class="break-icon mola ti ti-coffee" id="breakIcon"></i>
+        <h2 id="breakTitle">Mola</h2>
+        <div class="break-timer" id="breakTimer">00:00:00</div>
+        <button class="btn-end-break" onclick="endBreak()">Molayı Bitir</button>
+    </div>
+</div>
 
 <!-- Keypad Modal -->
 <div class="keypad-modal" id="keypadModal">
@@ -1203,26 +1246,34 @@ body {
     </div>
 </div>
 
+<!-- Customer Modal -->
+<div class="customer-modal" id="customerModal">
+    <div class="customer-modal-content">
+        <div class="customer-modal-header">
+            <h3 id="customerModalTitle"><i class="ti ti-users"></i> Kunden</h3>
+            <button class="close" onclick="closeCustomerModal()">&times;</button>
+        </div>
+        <div class="customer-modal-body" id="customerListBody"></div>
+    </div>
+</div>
+
 <!-- Disposition Modal -->
 <div class="modal-overlay" id="modal">
     <div class="modal-box">
-            <div class="modal-header">
+        <div class="modal-header">
             <h3><i class="ti ti-clipboard-list"></i> Anrufergebnis</h3>
             <button class="close" onclick="closeModal()">&times;</button>
-            </div>
-        
+        </div>
         <div class="modal-tabs">
             <button class="modal-tab active" onclick="showTab('beenden')">Anruf Beenden</button>
             <button class="modal-tab" onclick="showTab('termin')">Wiedervorlage</button>
         </div>
-        
-            <div class="modal-body">
+        <div class="modal-body">
             <div id="tabBeenden">
                 <div class="field" style="margin-bottom: 1rem;">
                     <label>Gesprächsnotiz</label>
                     <textarea id="modalNotes" rows="2" placeholder="Notizen..."></textarea>
                 </div>
-                
                 <div class="disposition-grid">
                     <div class="disposition-col">
                         <h5>Negativ</h5>
@@ -1230,17 +1281,16 @@ body {
                         <div class="disposition-item" onclick="selectDispo(this, 'blacklist')"><span class="circle"></span> Blacklist</div>
                         <div class="disposition-item" onclick="selectDispo(this, 'nicht_erreicht')"><span class="circle"></span> Nicht Erreicht</div>
                         <div class="disposition-item" onclick="selectDispo(this, 'ab')"><span class="circle"></span> Anrufbeantworter</div>
-                </div>
+                    </div>
                     <div class="disposition-col">
                         <h5>Positiv</h5>
                         <div class="disposition-item" onclick="selectDispo(this, 'verkauf_ok')"><span class="circle"></span> Verkauf OK</div>
                         <div class="disposition-item" onclick="selectDispo(this, 'kein_interesse')"><span class="circle"></span> Kein Interesse</div>
                         <div class="disposition-item" onclick="selectDispo(this, 'aufleger')"><span class="circle"></span> Aufleger</div>
                         <div class="disposition-item" onclick="selectDispo(this, 'drohung')"><span class="circle"></span> Drohung</div>
+                    </div>
+                </div>
             </div>
-            </div>
-        </div>
-            
             <div id="tabTermin" class="termin-panel">
                 <div class="termin-row">
                     <div class="field"><label>Datum</label><input type="date" id="tDatum"></div>
@@ -1253,9 +1303,8 @@ body {
                     <button class="quick-time" onclick="setTime(60)">1 Stunde</button>
                     <button class="quick-time" onclick="setTime(1440)">24 Stunden</button>
                 </div>
-    </div>
-</div>
-
+            </div>
+        </div>
         <div class="modal-footer">
             <button class="btn-save" onclick="saveResult()"><i class="ti ti-device-floppy"></i> Speichern</button>
         </div>
@@ -1263,78 +1312,138 @@ body {
 </div>
 
 <script>
+// State
 let currentLead = null;
 let timerInt = null;
 let selectedDispo = null;
+let isAgentRecording = false;
 
-// Load QC Stats
-function loadQcStats() {
-    fetch('/api/agent/qc-stats')
-        .then(r => r.json())
-        .then(data => {
-            document.getElementById('countQcOk').textContent = data.qc_ok || 0;
-            document.getElementById('countQcTermin').textContent = data.qc_termin || 0;
-            document.getElementById('countStorno').textContent = data.storno || 0;
-            document.getElementById('countQcNe').textContent = data.qc_ne || 0;
-        })
-        .catch(() => {});
+// Status & Time Tracking
+let currentStatus = 'musait';
+let statusStartTime = Date.now();
+let statusTimerInt = null;
+let loginTime = new Date();
+let totalBreakTime = 0;
+let totalTalkTime = 0;
+
+// Status Colors
+const statusColors = {
+    musait: { bg: 'rgba(34, 197, 94, 0.15)', border: 'rgba(34, 197, 94, 0.3)', dot: '#22c55e' },
+    mesgul: { bg: 'rgba(239, 68, 68, 0.15)', border: 'rgba(239, 68, 68, 0.3)', dot: '#ef4444' },
+    mola: { bg: 'rgba(245, 158, 11, 0.15)', border: 'rgba(245, 158, 11, 0.3)', dot: '#f59e0b' },
+    egitim: { bg: 'rgba(59, 130, 246, 0.15)', border: 'rgba(59, 130, 246, 0.3)', dot: '#3b82f6' },
+    acw: { bg: 'rgba(168, 85, 247, 0.15)', border: 'rgba(168, 85, 247, 0.3)', dot: '#a855f7' }
+};
+
+const statusIcons = {
+    mola: 'ti-coffee',
+    egitim: 'ti-school',
+    acw: 'ti-clipboard-text'
+};
+
+// Initialize
+document.addEventListener('DOMContentLoaded', () => {
+    loginTime = new Date();
+    document.getElementById('statLoginTime').textContent = loginTime.toLocaleTimeString('de-DE', {hour: '2-digit', minute: '2-digit'});
+    
+    startStatusTimer();
+    updateStats();
+    loadQcStats();
+    
+    // Close dropdown on outside click
+    document.addEventListener('click', (e) => {
+        if (!e.target.closest('.status-dropdown')) {
+            document.getElementById('statusMenu').classList.remove('active');
+        }
+    });
+});
+
+// Status Functions
+function toggleStatusMenu() {
+    document.getElementById('statusMenu').classList.toggle('active');
 }
 
-// Open Customer List Modal
-function openCustomerList(type) {
-    const modal = document.getElementById('customerModal');
-    const title = document.getElementById('customerModalTitle');
-    const body = document.getElementById('customerListBody');
-    
-    if (type === 'qc_termin') {
-        title.innerHTML = '<i class="ti ti-calendar" style="color: var(--info);"></i> QC Termin - Kunden';
-    } else if (type === 'storno') {
-        title.innerHTML = '<i class="ti ti-x" style="color: var(--danger);"></i> Storno - Kunden';
+function changeStatus(status, label) {
+    // Calculate time spent in previous status
+    const timeSpent = Date.now() - statusStartTime;
+    if (currentStatus === 'mola' || currentStatus === 'egitim' || currentStatus === 'acw') {
+        totalBreakTime += timeSpent;
+        updateBreakTimeDisplay();
     }
     
-    body.innerHTML = '<div class="empty-list"><i class="ti ti-loader"></i>Laden...</div>';
-    modal.classList.add('active');
+    currentStatus = status;
+    statusStartTime = Date.now();
     
-    fetch(`/api/agent/qc-customers/${type}`)
-        .then(r => r.json())
-        .then(data => {
-            if (data.customers && data.customers.length > 0) {
-                body.innerHTML = data.customers.map(c => `
-                    <div class="customer-list-item">
-                        <div class="customer-header">
-                            <span class="customer-name">${c.first_name || ''} ${c.last_name || ''}</span>
-                            <span class="customer-phone">${c.phone || '-'}</span>
-                        </div>
-                        <div class="bemerkung">
-                            <div class="bemerkung-label">QM Bemerkung</div>
-                            <div class="bemerkung-text">${c.bemerkung || 'Keine Bemerkung'}</div>
-                        </div>
-                        <div class="customer-date">Datum: ${c.date || '-'}</div>
-                        <button class="btn-call" onclick="callFromList('${c.phone}', ${c.id})">
-                            <i class="ti ti-phone"></i> Anrufen
-                        </button>
-                    </div>
-                `).join('');
-            } else {
-                body.innerHTML = '<div class="empty-list"><i class="ti ti-inbox-off"></i>Keine Kunden gefunden</div>';
-            }
-        })
-        .catch(() => {
-            body.innerHTML = '<div class="empty-list"><i class="ti ti-alert-circle"></i>Fehler beim Laden</div>';
-        });
+    // Update UI
+    const colors = statusColors[status];
+    const current = document.querySelector('.status-current');
+    current.style.background = colors.bg;
+    current.style.borderColor = colors.border;
+    document.getElementById('statusDot').style.background = colors.dot;
+    document.getElementById('statusText').textContent = label;
+    document.getElementById('statusTimer').textContent = '00:00:00';
+    
+    document.getElementById('statusMenu').classList.remove('active');
+    
+    // Show break overlay for break statuses
+    if (status === 'mola' || status === 'egitim' || status === 'acw') {
+        showBreakOverlay(status, label);
+    } else {
+        hideBreakOverlay();
+    }
+    
+    // Send to server
+    fetch('/api/agent/status', {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({ status: status })
+    }).catch(err => console.log('Status update error:', err));
 }
 
-function closeCustomerModal() {
-    document.getElementById('customerModal').classList.remove('active');
+function startStatusTimer() {
+    statusTimerInt = setInterval(() => {
+        const elapsed = Math.floor((Date.now() - statusStartTime) / 1000);
+        const h = String(Math.floor(elapsed/3600)).padStart(2,'0');
+        const m = String(Math.floor((elapsed%3600)/60)).padStart(2,'0');
+        const s = String(elapsed%60).padStart(2,'0');
+        document.getElementById('statusTimer').textContent = `${h}:${m}:${s}`;
+        
+        // Update break timer if in break
+        if (document.getElementById('breakOverlay').classList.contains('active')) {
+            document.getElementById('breakTimer').textContent = `${h}:${m}:${s}`;
+        }
+    }, 1000);
 }
 
-function callFromList(phone, leadId) {
-    closeCustomerModal();
-    document.getElementById('manualNum').value = phone;
-    // Trigger manual call or load lead
-    alert('Anruf zu: ' + phone);
+function showBreakOverlay(status, label) {
+    const overlay = document.getElementById('breakOverlay');
+    const icon = document.getElementById('breakIcon');
+    const title = document.getElementById('breakTitle');
+    
+    icon.className = 'break-icon ti ' + (statusIcons[status] || 'ti-coffee');
+    icon.classList.add(status);
+    title.textContent = label;
+    
+    overlay.classList.add('active');
 }
 
+function hideBreakOverlay() {
+    document.getElementById('breakOverlay').classList.remove('active');
+}
+
+function endBreak() {
+    changeStatus('musait', 'Müsait');
+}
+
+function updateBreakTimeDisplay() {
+    const totalSecs = Math.floor(totalBreakTime / 1000);
+    const h = Math.floor(totalSecs / 3600);
+    const m = Math.floor((totalSecs % 3600) / 60);
+    document.getElementById('statBreakTime').textContent = 
+        (h > 0 ? h + ':' : '') + String(m).padStart(2, '0') + ':' + String(totalSecs % 60).padStart(2, '0');
+}
+
+// Call Functions
 function startCall() {
     document.getElementById('btnStart').disabled = true;
     
@@ -1344,13 +1453,18 @@ function startCall() {
             if (data.success) {
                 currentLead = data.lead;
                 showLead(data.lead);
-                startTimer();
+                startCallTimer();
+                changeStatus('mesgul', 'Meşgul');
                 document.getElementById('btnStart').style.display = 'none';
                 document.getElementById('btnEnd').style.display = 'flex';
             } else {
                 alert(data.message || 'Kein Kunde');
                 document.getElementById('btnStart').disabled = false;
             }
+        })
+        .catch(err => {
+            console.error(err);
+            document.getElementById('btnStart').disabled = false;
         });
 }
 
@@ -1369,16 +1483,17 @@ function showLead(lead) {
     }
 }
 
-function startTimer() {
-    let start = Date.now();
+let callStartTime = null;
+
+function startCallTimer() {
+    callStartTime = Date.now();
     timerInt = setInterval(() => {
-        let s = Math.floor((Date.now() - start) / 1000);
-        let h = String(Math.floor(s/3600)).padStart(2,'0');
-        let m = String(Math.floor((s%3600)/60)).padStart(2,'0');
-        let sec = String(s%60).padStart(2,'0');
+        const s = Math.floor((Date.now() - callStartTime) / 1000);
+        const h = String(Math.floor(s/3600)).padStart(2,'0');
+        const m = String(Math.floor((s%3600)/60)).padStart(2,'0');
+        const sec = String(s%60).padStart(2,'0');
         document.getElementById('callTimer').textContent = h+':'+m+':'+sec;
     }, 1000);
-    document.getElementById('statusBadge').innerHTML = '<span class="dot" style="background:var(--warning)"></span> Status: Im Gespräch';
 }
 
 function openModal() { document.getElementById('modal').classList.add('active'); }
@@ -1399,7 +1514,7 @@ function selectDispo(el, dispo) {
 }
 
 function setTime(mins) {
-    let d = new Date();
+    const d = new Date();
     d.setMinutes(d.getMinutes() + mins);
     document.getElementById('tDatum').value = d.toISOString().split('T')[0];
     document.getElementById('tZeit').value = d.toTimeString().slice(0,5);
@@ -1407,12 +1522,15 @@ function setTime(mins) {
 
 function saveResult() {
     if (!currentLead) return;
-    let notes = document.getElementById('modalNotes').value;
-    let dispo = selectedDispo || 'unknown';
-    saveToServer(dispo, notes);
-}
+    const notes = document.getElementById('modalNotes').value;
+    const dispo = selectedDispo || 'unknown';
     
-function saveToServer(dispo, notes) {
+    // Add talk time
+    if (callStartTime) {
+        totalTalkTime += Date.now() - callStartTime;
+        updateTalkTimeDisplay();
+    }
+    
     fetch('/api/agent/complete-call', {
         method: 'POST',
         headers: {'Content-Type': 'application/json'},
@@ -1420,24 +1538,35 @@ function saveToServer(dispo, notes) {
     }).then(r => r.json()).then(data => {
         if (data.success) {
             closeModal();
-            resetState();
+            resetCallState();
             updateStats();
             loadQcStats();
         }
     });
 }
 
-function resetState() {
+function updateTalkTimeDisplay() {
+    const totalSecs = Math.floor(totalTalkTime / 1000);
+    const m = Math.floor(totalSecs / 60);
+    const s = totalSecs % 60;
+    document.getElementById('statTalkTime').textContent = String(m).padStart(2, '0') + ':' + String(s).padStart(2, '0');
+}
+
+function resetCallState() {
     currentLead = null;
     selectedDispo = null;
+    callStartTime = null;
     if (timerInt) clearInterval(timerInt);
+    
     document.getElementById('callTimer').textContent = '00:00:00';
     document.getElementById('displayPhone').textContent = '---';
     document.getElementById('displayName').textContent = '- -';
     document.getElementById('btnStart').style.display = 'flex';
     document.getElementById('btnStart').disabled = false;
     document.getElementById('btnEnd').style.display = 'none';
-    document.getElementById('statusBadge').innerHTML = '<span class="dot"></span> Status: Bereit';
+    
+    changeStatus('musait', 'Müsait');
+    
     document.querySelectorAll('.form-column input, .form-column textarea, .form-column select').forEach(el => el.value = '');
 }
 
@@ -1465,12 +1594,69 @@ function updateStats() {
     }).catch(() => {});
 }
 
+function loadQcStats() {
+    fetch('/api/agent/qc-stats').then(r => r.json()).then(data => {
+        document.getElementById('countQcOk').textContent = data.qc_ok || 0;
+        document.getElementById('countQcTermin').textContent = data.qc_termin || 0;
+        document.getElementById('countStorno').textContent = data.storno || 0;
+        document.getElementById('countQcNe').textContent = data.qc_ne || 0;
+    }).catch(() => {});
+}
+
+// Customer List Modal
+function openCustomerList(type) {
+    const modal = document.getElementById('customerModal');
+    document.getElementById('customerModalTitle').innerHTML = type === 'qc_termin' 
+        ? '<i class="ti ti-calendar" style="color: var(--info);"></i> QC Termin' 
+        : '<i class="ti ti-x" style="color: var(--danger);"></i> Storno';
+    document.getElementById('customerListBody').innerHTML = '<p style="text-align:center; color: var(--text-secondary);">Laden...</p>';
+    modal.classList.add('active');
+    
+    fetch(`/api/agent/qc-customers/${type}`).then(r => r.json()).then(data => {
+        if (data.customers?.length) {
+            document.getElementById('customerListBody').innerHTML = data.customers.map(c => `
+                <div class="customer-list-item">
+                    <div style="display:flex; justify-content:space-between;">
+                        <span class="customer-name">${c.first_name||''} ${c.last_name||''}</span>
+                        <span class="customer-phone">${c.phone||'-'}</span>
+                    </div>
+                    <div class="bemerkung"><strong>QM:</strong> ${c.bemerkung||'Keine Bemerkung'}</div>
+                    <button class="btn-call" onclick="callFromList('${c.phone}')"><i class="ti ti-phone"></i> Anrufen</button>
+                </div>
+            `).join('');
+        } else {
+            document.getElementById('customerListBody').innerHTML = '<p style="text-align:center; color: var(--text-secondary);">Keine Kunden</p>';
+        }
+    }).catch(() => {
+        document.getElementById('customerListBody').innerHTML = '<p style="text-align:center; color: var(--danger);">Fehler</p>';
+    });
+}
+
+function closeCustomerModal() { document.getElementById('customerModal').classList.remove('active'); }
+
+function callFromList(phone) {
+    closeCustomerModal();
+    document.getElementById('manualNum').value = phone;
+}
+
 function manualCall() {
     const num = document.getElementById('manualNum').value;
     if (num) alert('Anruf zu: ' + num);
 }
 
-function togglePause() {}
+// Recording
+function toggleAgentRecording() {
+    const btn = document.getElementById('btnAgentRec');
+    isAgentRecording = !isAgentRecording;
+    
+    if (isAgentRecording) {
+        btn.classList.add('recording');
+        document.getElementById('agentRecStatus').style.display = 'flex';
+    } else {
+        btn.classList.remove('recording');
+        document.getElementById('agentRecStatus').style.display = 'none';
+    }
+}
 
 function toggleMute() {
     const btn = document.querySelector('.ctrl-btn.mute');
@@ -1486,71 +1672,10 @@ function toggleMute() {
     }
 }
 
-// Agent Recording
-let isAgentRecording = false;
-
-function toggleAgentRecording() {
-    const btn = document.getElementById('btnAgentRec');
-    const status = document.getElementById('agentRecStatus');
-    
-    isAgentRecording = !isAgentRecording;
-    
-    if (isAgentRecording) {
-        btn.classList.add('recording');
-        status.style.display = 'flex';
-        // Start agent recording via API
-        if (currentLead) {
-            fetch('/api/agent/start-recording', {
-                method: 'POST',
-                headers: {'Content-Type': 'application/json'},
-                body: JSON.stringify({ lead_id: currentLead.id, type: 'agent' })
-            });
-        }
-    } else {
-        btn.classList.remove('recording');
-        status.style.display = 'none';
-        // Stop agent recording via API
-        if (currentLead) {
-            fetch('/api/agent/stop-recording', {
-                method: 'POST',
-                headers: {'Content-Type': 'application/json'},
-                body: JSON.stringify({ lead_id: currentLead.id, type: 'agent' })
-            });
-        }
-    }
-}
-
-// Keypad Functions
+// Keypad
 let keypadInput = '';
-
-function openKeypad() {
-    document.getElementById('keypadModal').classList.add('active');
-    keypadInput = '';
-    document.getElementById('keypadDisplay').textContent = '';
-}
-
-function closeKeypad() {
-    document.getElementById('keypadModal').classList.remove('active');
-}
-
-function pressKey(key) {
-    keypadInput += key;
-    document.getElementById('keypadDisplay').textContent = keypadInput;
-    
-    // Send DTMF tone via API if in call
-    if (currentLead) {
-        fetch('/api/agent/send-dtmf', {
-        method: 'POST',
-        headers: {'Content-Type': 'application/json'},
-            body: JSON.stringify({ digit: key })
-        });
-    }
-}
-
-document.addEventListener('DOMContentLoaded', () => {
-    updateStats();
-    loadQcStats();
-});
+function openKeypad() { document.getElementById('keypadModal').classList.add('active'); keypadInput = ''; document.getElementById('keypadDisplay').textContent = ''; }
+function closeKeypad() { document.getElementById('keypadModal').classList.remove('active'); }
+function pressKey(key) { keypadInput += key; document.getElementById('keypadDisplay').textContent = keypadInput; }
 </script>
 {% endblock %}
-
