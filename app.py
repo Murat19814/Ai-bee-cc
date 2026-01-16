@@ -195,10 +195,18 @@ def inject_globals():
     """Tüm template'lere global değişkenler ekle"""
     notifications = []
     if current_user.is_authenticated:
-        notifications = Notification.query.filter_by(
-            user_id=current_user.id, 
-            is_read=False
-        ).order_by(Notification.created_at.desc()).limit(10).all()
+        try:
+            notifications = Notification.query.filter_by(
+                user_id=current_user.id, 
+                is_read=False
+            ).order_by(Notification.created_at.desc()).limit(10).all()
+        except Exception as e:
+            # Transaction hatası varsa rollback yap
+            try:
+                db.session.rollback()
+            except:
+                pass
+            notifications = []
     
     return {
         'app_name': app.config.get('APP_NAME', 'AI BEE CC'),
