@@ -1912,11 +1912,17 @@ function showBreakOverlay(status, label) {
     document.getElementById('breakStatTalk').textContent = document.getElementById('statTalkTime')?.textContent || '00:00';
     
     overlay.classList.add('active');
+    // Robust fallback: force visible even if CSS is overridden/cached
+    overlay.style.display = 'flex';
+    overlay.style.pointerEvents = 'auto';
     document.body.style.overflow = 'hidden';
 }
 
 function hideBreakOverlay() {
-    document.getElementById('breakOverlay').classList.remove('active');
+    const overlay = document.getElementById('breakOverlay');
+    overlay.classList.remove('active');
+    overlay.style.display = 'none';
+    overlay.style.pointerEvents = 'none';
     document.body.style.overflow = '';
 }
 
