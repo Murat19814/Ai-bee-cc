@@ -464,10 +464,10 @@
                     </div>
                     {% endif %}
                     
-                    <!-- Notifications -->
-                    <button class="header-btn notification-btn">
+                    <!-- Notifications (agent panel wires this up) -->
+                    <button class="header-btn notification-btn" type="button" onclick="window.toggleNotifications && window.toggleNotifications()">
                         <i class="ti ti-bell"></i>
-                        <span class="notification-badge">3</span>
+                        <span class="notification-badge" id="notifBadge"></span>
                     </button>
                     
                     <!-- User Avatar -->

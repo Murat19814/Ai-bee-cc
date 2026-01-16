@@ -2116,6 +2116,13 @@ def agent_status_update():
     return jsonify({'success': True, 'status': status})
 
 
+# Backwards/Frontend compatibility: some pages call /api/agent/status (see static/js/main.js)
+@app.route('/api/agent/status', methods=['POST'])
+@login_required
+def api_agent_status_update():
+    return agent_status_update()
+
+
 @app.route('/agent/disposition', methods=['POST'])
 @login_required
 def agent_save_disposition():

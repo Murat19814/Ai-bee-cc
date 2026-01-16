@@ -714,6 +714,26 @@ body {
     box-shadow: inset 0 0 50px rgba(0,0,0,0.5);
 }
 
+@media (max-width: 640px) {
+    .monitor-screen {
+        min-width: auto;
+        width: 92vw;
+        padding: 2rem 1.25rem;
+        min-height: 320px;
+    }
+    .break-content .break-timer {
+        font-size: 3.2rem;
+        letter-spacing: 3px;
+    }
+    .break-stats {
+        gap: 1rem;
+        padding: 0.75rem;
+    }
+    .break-content h2 {
+        font-size: 1.35rem;
+    }
+}
+
 .monitor-screen::before {
     content: '';
     position: absolute;
@@ -1216,62 +1236,10 @@ body {
 }
 
 /* === NOTIFICATIONS === */
-.notification-bell {
-    position: fixed;
-    top: 1rem;
-    right: 1rem;
-    z-index: 999;
-}
-
-.bell-btn {
-    position: relative;
-    width: 50px;
-    height: 50px;
-    border-radius: 50%;
-    background: var(--bg-card);
-    border: 2px solid rgba(245, 166, 35, 0.3);
-    color: var(--primary);
-    cursor: pointer;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 1.3rem;
-    transition: all 0.3s;
-}
-
-.bell-btn:hover {
-    background: var(--primary);
-    color: #1a1a1a;
-}
-
-.bell-btn .badge {
-    position: absolute;
-    top: -5px;
-    right: -5px;
-    background: var(--danger);
-    color: white;
-    font-size: 0.7rem;
-    font-weight: 700;
-    width: 22px;
-    height: 22px;
-    border-radius: 50%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    animation: pulse-badge 2s infinite;
-}
-
-@keyframes pulse-badge {
-    0%, 100% { transform: scale(1); }
-    50% { transform: scale(1.1); }
-}
-
-.bell-btn .badge:empty { display: none; }
-
 .notification-dropdown {
-    position: absolute;
-    top: 60px;
-    right: 0;
+    position: fixed;
+    top: 70px;
+    right: 1rem;
     width: 360px;
     background: var(--bg-card);
     border: 1px solid rgba(245, 166, 35, 0.3);
@@ -1279,6 +1247,7 @@ body {
     box-shadow: 0 20px 50px rgba(0,0,0,0.5);
     display: none;
     overflow: hidden;
+    z-index: 3000;
 }
 
 .notification-dropdown.active { display: block; }
@@ -1402,22 +1371,16 @@ body {
 {% endblock %}
 
 {% block content %}
-<!-- Notification Bell -->
-<div class="notification-bell">
-    <button class="bell-btn" onclick="toggleNotifications()">
-        <i class="ti ti-bell"></i>
-        <span class="badge" id="notifBadge"></span>
-    </button>
-    <div class="notification-dropdown" id="notifDropdown">
-        <div class="notification-header">
-            <h4><i class="ti ti-bell-ringing"></i> Benachrichtigungen</h4>
-            <button class="mark-read" onclick="markAllRead()">Alle gelesen</button>
-        </div>
-        <div class="notification-list" id="notifList">
-            <div class="notification-empty">
-                <i class="ti ti-bell-off"></i>
-                <p>Keine Benachrichtigungen</p>
-            </div>
+<!-- Notifications (uses header bell in base.html) -->
+<div class="notification-dropdown" id="notifDropdown">
+    <div class="notification-header">
+        <h4><i class="ti ti-bell-ringing"></i> Benachrichtigungen</h4>
+        <button class="mark-read" onclick="markAllRead()">Alle gelesen</button>
+    </div>
+    <div class="notification-list" id="notifList">
+        <div class="notification-empty">
+            <i class="ti ti-bell-off"></i>
+            <p>Keine Benachrichtigungen</p>
         </div>
     </div>
 </div>
@@ -1785,6 +1748,33 @@ let loginTime = new Date();
 let totalBreakTime = 0;
 let totalTalkTime = 0;
 
+function normalizeStatus(status) {
+    const map = {
+        available: 'musait',
+        busy: 'mesgul',
+        break: 'mola',
+        training: 'egitim',
+        after_call_work: 'acw'
+    };
+    return map[status] || status;
+}
+
+function statusLabelFor(status) {
+    const map = {
+        musait: 'Müsait',
+        mesgul: 'Meşgul',
+        mola: 'Mola',
+        egitim: 'Eğitim',
+        acw: 'ACW',
+        available: 'Müsait',
+        busy: 'Meşgul',
+        break: 'Mola',
+        training: 'Eğitim',
+        after_call_work: 'ACW'
+    };
+    return map[status] || status;
+}
+
 // Status Colors
 const statusColors = {
     musait: { bg: 'rgba(34, 197, 94, 0.15)', border: 'rgba(34, 197, 94, 0.3)', dot: '#22c55e' },
@@ -1800,6 +1790,13 @@ const statusIcons = {
     acw: 'ti-clipboard-text'
 };
 
+// Alias colors for base header statuses
+statusColors.available = statusColors.musait;
+statusColors.busy = statusColors.mesgul;
+statusColors.break = statusColors.mola;
+statusColors.training = statusColors.egitim;
+statusColors.after_call_work = statusColors.acw;
+
 // Initialize
 document.addEventListener('DOMContentLoaded', () => {
     loginTime = new Date();
@@ -1808,6 +1805,20 @@ document.addEventListener('DOMContentLoaded', () => {
     startStatusTimer();
     updateStats();
     loadQcStats();
+    loadNotifications();
+    
+    // If header status dropdown exists, wire it to our overlay + timer
+    const headerSelect = document.getElementById('agentStatus');
+    if (headerSelect) {
+        headerSelect.addEventListener('change', function() {
+            const s = this.value;
+            changeStatus(s, statusLabelFor(s));
+        });
+        // On load, reflect current header status into overlay if needed
+        if (headerSelect.value) {
+            changeStatus(headerSelect.value, statusLabelFor(headerSelect.value));
+        }
+    }
     
     // Close dropdown on outside click
     document.addEventListener('click', (e) => {
@@ -1823,6 +1834,10 @@ function toggleStatusMenu() {
 }
 
 function changeStatus(status, label) {
+    // Support base header statuses
+    const normalized = normalizeStatus(status);
+    label = label || statusLabelFor(status);
+
     // Calculate time spent in previous status
     const timeSpent = Date.now() - statusStartTime;
     if (currentStatus === 'mola' || currentStatus === 'egitim' || currentStatus === 'acw') {
@@ -1830,11 +1845,11 @@ function changeStatus(status, label) {
         updateBreakTimeDisplay();
     }
     
-    currentStatus = status;
+    currentStatus = normalized;
     statusStartTime = Date.now();
     
     // Update UI
-    const colors = statusColors[status];
+    const colors = statusColors[normalized] || statusColors.musait;
     const current = document.querySelector('.status-current');
     current.style.background = colors.bg;
     current.style.borderColor = colors.border;
@@ -1845,8 +1860,8 @@ function changeStatus(status, label) {
     document.getElementById('statusMenu').classList.remove('active');
     
     // Show break overlay for break statuses
-    if (status === 'mola' || status === 'egitim' || status === 'acw') {
-        showBreakOverlay(status, label);
+    if (normalized === 'mola' || normalized === 'egitim' || normalized === 'acw') {
+        showBreakOverlay(normalized, label);
     } else {
         hideBreakOverlay();
     }
@@ -1857,6 +1872,12 @@ function changeStatus(status, label) {
         headers: {'Content-Type': 'application/json'},
         body: JSON.stringify({ status: status })
     }).catch(err => console.log('Status update error:', err));
+
+    // Keep header select in sync (if exists)
+    const headerSelect = document.getElementById('agentStatus');
+    if (headerSelect && headerSelect.value !== status) {
+        headerSelect.value = status;
+    }
 }
 
 function startStatusTimer() {
@@ -2228,7 +2249,8 @@ function renderNotifications() {
 }
 
 function updateBadge(count) {
-    const badge = document.getElementById('notifBadge');
+    const badge = document.getElementById('notifBadge'); // header badge (base.html)
+    if (!badge) return;
     badge.textContent = count > 0 ? (count > 9 ? '9+' : count) : '';
 }
 
@@ -2301,9 +2323,12 @@ function escapeHtml(text) {
 
 // Close notification dropdown when clicking outside
 document.addEventListener('click', function(e) {
-    const bell = document.querySelector('.notification-bell');
-    if (bell && !bell.contains(e.target)) {
-        document.getElementById('notifDropdown').classList.remove('active');
+    const dropdown = document.getElementById('notifDropdown');
+    const btn = document.querySelector('.notification-btn');
+    if (!dropdown) return;
+    if (dropdown.classList.contains('active')) {
+        if (btn && (btn.contains(e.target) || dropdown.contains(e.target))) return;
+        dropdown.classList.remove('active');
     }
 });
 
