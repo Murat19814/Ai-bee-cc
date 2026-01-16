@@ -382,7 +382,10 @@ def qc_listener_panel():
         flash('Bu sayfaya erişim yetkiniz yok.', 'danger')
         return redirect(url_for('dashboard'))
     
-    return render_template('qc/listener_panel.html')
+    # Agent listesini al
+    agents = User.query.filter_by(role='agent', is_active=True).order_by(User.full_name).all()
+    
+    return render_template('qc/listener_panel.html', agents=agents)
 
 
 # ==================== QC LISTENER API ====================
@@ -399,6 +402,10 @@ def api_qc_recordings():
         abort(403)
 
     filt = (request.args.get('filter') or 'pending').lower()
+    agent_id = request.args.get('agent_id', '').strip()
+    date_start = request.args.get('date_start', '').strip()
+    date_end = request.args.get('date_end', '').strip()
+    sort_by = request.args.get('sort', 'date_desc').strip()
 
     q = Call.query.filter(Call.tenant_id == current_user.tenant_id).join(CallRecording)
 
@@ -417,12 +424,47 @@ def api_qc_recordings():
         filt = 'pending'
         q = q.filter((Call.qa_status.is_(None)) | (Call.qa_status == '') | (Call.qa_status == 'pending'))
 
-    calls = q.order_by(Call.started_at.desc()).limit(300).all()
+    # Filter by agent
+    if agent_id:
+        try:
+            q = q.filter(Call.agent_id == int(agent_id))
+        except ValueError:
+            pass
+
+    # Filter by date range
+    if date_start:
+        try:
+            from datetime import datetime as dt
+            start_date = dt.strptime(date_start, '%Y-%m-%d')
+            q = q.filter(Call.started_at >= start_date)
+        except ValueError:
+            pass
+
+    if date_end:
+        try:
+            from datetime import datetime as dt, timedelta
+            end_date = dt.strptime(date_end, '%Y-%m-%d') + timedelta(days=1)
+            q = q.filter(Call.started_at < end_date)
+        except ValueError:
+            pass
+
+    # Sorting
+    if sort_by == 'date_asc':
+        q = q.order_by(Call.started_at.asc())
+    elif sort_by == 'duration_desc':
+        q = q.order_by(Call.talk_duration.desc().nullslast())
+    elif sort_by == 'duration_asc':
+        q = q.order_by(Call.talk_duration.asc().nullsfirst())
+    else:  # date_desc (default)
+        q = q.order_by(Call.started_at.desc())
+
+    calls = q.limit(500).all()
 
     def norm_status(s):
         return s if s else 'pending'
 
     recordings = []
+    total_duration = 0
     for c in calls:
         customer = Customer.query.get(c.customer_id) if c.customer_id else None
         lead = Lead.query.get(c.lead_id) if c.lead_id else None
@@ -433,13 +475,16 @@ def api_qc_recordings():
         ) or '-'
 
         started = c.started_at or c.created_at
+        duration = int(c.talk_duration or c.total_duration or 0)
+        total_duration += duration
+        
         recordings.append({
             'id': c.id,
             'status': norm_status(c.qa_status),
             'customer': cust_name,
             'agent': (agent.full_name if agent else '-') if c.agent_id else '-',
             'time': started.isoformat() if started else None,
-            'duration_sec': int(c.talk_duration or c.total_duration or 0),
+            'duration_sec': duration,
             'disposition': c.disposition or '',
         })
 
@@ -451,6 +496,7 @@ def api_qc_recordings():
         'ok': sum(1 for c in all_calls if c.qa_status == 'passed'),
         'termin': sum(1 for c in all_calls if c.qa_status == 'termin'),
         'storno': sum(1 for c in all_calls if c.qa_status == 'storno'),
+        'total_duration_sec': total_duration,
     }
 
     return jsonify({'success': True, 'filter': filt, 'recordings': recordings, 'stats': stats})

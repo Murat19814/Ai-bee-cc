@@ -4,294 +4,790 @@
 
 {% block extra_css %}
 <style>
-.qc-panel { padding: 1.5rem; }
+:root {
+    --qc-primary: #10b981;
+    --qc-primary-dark: #059669;
+    --qc-secondary: #6366f1;
+    --qc-warning: #f59e0b;
+    --qc-danger: #ef4444;
+    --qc-purple: #8b5cf6;
+    --qc-bg: linear-gradient(135deg, #0f172a 0%, #1e293b 50%, #0f172a 100%);
+    --qc-card: rgba(30, 41, 59, 0.8);
+    --qc-glass: rgba(255,255,255,0.05);
+}
 
-/* Stats Grid */
-.qc-stats-grid {
+/* ==================== BREAK OVERLAY ==================== */
+.qc-break-overlay {
+    position: fixed;
+    top: 0; left: 0; right: 0; bottom: 0;
+    background: linear-gradient(135deg, #0f172a 0%, #1e1e2e 100%);
+    z-index: 99999;
+    display: none;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    pointer-events: auto;
+}
+
+.qc-break-overlay.visible {
+    display: flex !important;
+}
+
+.monitor-frame {
+    background: linear-gradient(145deg, #2d2d3a, #1a1a24);
+    border-radius: 24px;
+    padding: 40px;
+    box-shadow: 
+        0 0 0 8px #3d3d4a,
+        0 0 0 12px #1a1a24,
+        0 30px 60px rgba(0,0,0,0.5),
+        inset 0 2px 0 rgba(255,255,255,0.1);
+    position: relative;
+    max-width: 700px;
+    width: 90%;
+}
+
+.monitor-screen {
+    background: linear-gradient(180deg, #0a0a12 0%, #12121a 100%);
+    border-radius: 12px;
+    padding: 3rem;
+    position: relative;
+    overflow: hidden;
+    border: 2px solid #333;
+}
+
+.monitor-screen::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0; bottom: 0;
+    background: repeating-linear-gradient(
+        0deg,
+        rgba(0,0,0,0.1) 0px,
+        rgba(0,0,0,0.1) 1px,
+        transparent 1px,
+        transparent 2px
+    );
+    pointer-events: none;
+    opacity: 0.3;
+}
+
+.break-status-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 0.75rem 1.5rem;
+    background: linear-gradient(135deg, var(--qc-warning), #d97706);
+    border-radius: 30px;
+    font-weight: 700;
+    font-size: 1.1rem;
+    color: white;
+    margin-bottom: 2rem;
+    animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+    0%, 100% { box-shadow: 0 0 0 0 rgba(245, 158, 11, 0.4); }
+    50% { box-shadow: 0 0 0 15px rgba(245, 158, 11, 0); }
+}
+
+.break-timer {
+    font-family: 'JetBrains Mono', 'Fira Code', monospace;
+    font-size: 5rem;
+    font-weight: 800;
+    color: var(--qc-primary);
+    text-shadow: 0 0 30px rgba(16, 185, 129, 0.5);
+    margin: 1rem 0 2rem;
+    letter-spacing: 4px;
+}
+
+.break-stats-grid {
     display: grid;
-    grid-template-columns: repeat(5, 1fr);
+    grid-template-columns: repeat(4, 1fr);
+    gap: 1rem;
+    margin-top: 2rem;
+}
+
+.break-stat-item {
+    background: rgba(255,255,255,0.05);
+    border-radius: 12px;
+    padding: 1rem;
+    text-align: center;
+    border: 1px solid rgba(255,255,255,0.1);
+}
+
+.break-stat-value {
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: var(--qc-primary);
+}
+
+.break-stat-label {
+    font-size: 0.75rem;
+    color: rgba(255,255,255,0.6);
+    margin-top: 0.25rem;
+}
+
+.break-end-btn {
+    margin-top: 2rem;
+    padding: 1rem 3rem;
+    background: linear-gradient(135deg, var(--qc-primary), var(--qc-primary-dark));
+    border: none;
+    border-radius: 12px;
+    color: white;
+    font-size: 1.1rem;
+    font-weight: 700;
+    cursor: pointer;
+    transition: all 0.3s;
+}
+
+.break-end-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 10px 30px rgba(16, 185, 129, 0.3);
+}
+
+/* ==================== MAIN LAYOUT ==================== */
+.qc-main-container {
+    min-height: 100vh;
+    background: var(--qc-bg);
+    padding: 1.5rem;
+}
+
+/* Header */
+.qc-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 2rem;
+    padding: 1.5rem 2rem;
+    background: var(--qc-card);
+    border-radius: 20px;
+    backdrop-filter: blur(20px);
+    border: 1px solid rgba(255,255,255,0.1);
+}
+
+.qc-header-left {
+    display: flex;
+    align-items: center;
+    gap: 1.5rem;
+}
+
+.qc-logo {
+    width: 56px;
+    height: 56px;
+    background: linear-gradient(135deg, var(--qc-primary), var(--qc-secondary));
+    border-radius: 16px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.75rem;
+    color: white;
+    box-shadow: 0 8px 20px rgba(16, 185, 129, 0.3);
+}
+
+.qc-title-section h1 {
+    font-size: 1.75rem;
+    font-weight: 800;
+    color: white;
+    margin: 0;
+    background: linear-gradient(135deg, #fff, #94a3b8);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+}
+
+.qc-title-section p {
+    color: rgba(255,255,255,0.6);
+    margin: 0.25rem 0 0;
+    font-size: 0.9rem;
+}
+
+.qc-header-right {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+}
+
+/* Status Selector */
+.qc-status-selector {
+    position: relative;
+}
+
+.qc-status-btn {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 0.75rem 1.25rem;
+    background: var(--qc-glass);
+    border: 1px solid rgba(255,255,255,0.15);
+    border-radius: 12px;
+    color: white;
+    cursor: pointer;
+    font-weight: 600;
+    transition: all 0.3s;
+}
+
+.qc-status-btn:hover {
+    background: rgba(255,255,255,0.1);
+}
+
+.status-indicator {
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    background: var(--qc-primary);
+    animation: statusPulse 2s infinite;
+}
+
+@keyframes statusPulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.5; }
+}
+
+.status-indicator.mola { background: var(--qc-warning); }
+.status-indicator.egitim { background: var(--qc-secondary); }
+.status-indicator.toplanti { background: var(--qc-purple); }
+
+.qc-status-dropdown {
+    position: absolute;
+    top: 100%;
+    right: 0;
+    margin-top: 0.5rem;
+    background: #1e293b;
+    border: 1px solid rgba(255,255,255,0.1);
+    border-radius: 12px;
+    padding: 0.5rem;
+    min-width: 180px;
+    z-index: 1000;
+    display: none;
+    box-shadow: 0 20px 40px rgba(0,0,0,0.4);
+}
+
+.qc-status-dropdown.show { display: block; }
+
+.qc-status-option {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 0.75rem 1rem;
+    border-radius: 8px;
+    color: white;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.qc-status-option:hover {
+    background: rgba(255,255,255,0.1);
+}
+
+.qc-user-info {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    padding: 0.75rem 1.25rem;
+    background: var(--qc-glass);
+    border-radius: 12px;
+    border: 1px solid rgba(255,255,255,0.1);
+}
+
+.qc-user-avatar {
+    width: 40px;
+    height: 40px;
+    border-radius: 12px;
+    background: linear-gradient(135deg, var(--qc-secondary), var(--qc-purple));
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-weight: 700;
+}
+
+.qc-user-name {
+    color: white;
+    font-weight: 600;
+}
+
+.qc-user-role {
+    color: var(--qc-primary);
+    font-size: 0.8rem;
+    font-weight: 600;
+}
+
+/* Stats Cards */
+.qc-stats-row {
+    display: grid;
+    grid-template-columns: repeat(6, 1fr);
     gap: 1rem;
     margin-bottom: 2rem;
 }
 
 .qc-stat-card {
-    background: white;
+    background: var(--qc-card);
     border-radius: 16px;
     padding: 1.5rem;
     text-align: center;
-    box-shadow: 0 4px 20px rgba(0,0,0,0.06);
-    border-top: 4px solid #ddd;
-    transition: transform 0.2s;
+    border: 1px solid rgba(255,255,255,0.1);
+    transition: all 0.3s;
+    position: relative;
+    overflow: hidden;
 }
 
-.qc-stat-card:hover { transform: translateY(-3px); }
-.qc-stat-card.total { border-top-color: #2196F3; }
-.qc-stat-card.pending { border-top-color: #FF9800; }
-.qc-stat-card.ok { border-top-color: #4CAF50; }
-.qc-stat-card.termin { border-top-color: #9C27B0; }
-.qc-stat-card.storno { border-top-color: #f44336; }
+.qc-stat-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 4px;
+    background: linear-gradient(90deg, var(--stat-color), transparent);
+}
+
+.qc-stat-card:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 15px 40px rgba(0,0,0,0.3);
+}
+
+.qc-stat-card.total { --stat-color: #3b82f6; }
+.qc-stat-card.pending { --stat-color: #f59e0b; }
+.qc-stat-card.ok { --stat-color: #10b981; }
+.qc-stat-card.termin { --stat-color: #8b5cf6; }
+.qc-stat-card.storno { --stat-color: #ef4444; }
+.qc-stat-card.time { --stat-color: #06b6d4; }
+
+.qc-stat-icon {
+    width: 48px;
+    height: 48px;
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto 1rem;
+    font-size: 1.5rem;
+    color: white;
+}
+
+.qc-stat-card.total .qc-stat-icon { background: linear-gradient(135deg, #3b82f6, #1d4ed8); }
+.qc-stat-card.pending .qc-stat-icon { background: linear-gradient(135deg, #f59e0b, #d97706); }
+.qc-stat-card.ok .qc-stat-icon { background: linear-gradient(135deg, #10b981, #059669); }
+.qc-stat-card.termin .qc-stat-icon { background: linear-gradient(135deg, #8b5cf6, #7c3aed); }
+.qc-stat-card.storno .qc-stat-icon { background: linear-gradient(135deg, #ef4444, #dc2626); }
+.qc-stat-card.time .qc-stat-icon { background: linear-gradient(135deg, #06b6d4, #0891b2); }
 
 .qc-stat-value {
-    font-size: 2.5rem;
+    font-size: 2rem;
     font-weight: 800;
+    color: white;
     font-family: var(--font-display);
 }
 
-.qc-stat-card.total .qc-stat-value { color: #2196F3; }
-.qc-stat-card.pending .qc-stat-value { color: #FF9800; }
-.qc-stat-card.ok .qc-stat-value { color: #4CAF50; }
-.qc-stat-card.termin .qc-stat-value { color: #9C27B0; }
-.qc-stat-card.storno .qc-stat-value { color: #f44336; }
-
 .qc-stat-label {
+    color: rgba(255,255,255,0.6);
     font-size: 0.85rem;
-    color: #666;
     margin-top: 0.25rem;
+}
+
+/* Filter Panel */
+.qc-filter-panel {
+    background: var(--qc-card);
+    border-radius: 16px;
+    padding: 1.5rem;
+    margin-bottom: 2rem;
+    border: 1px solid rgba(255,255,255,0.1);
+}
+
+.qc-filter-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1rem;
+    align-items: center;
+}
+
+.qc-filter-group {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.qc-filter-label {
+    font-size: 0.75rem;
+    color: rgba(255,255,255,0.6);
+    text-transform: uppercase;
+    letter-spacing: 1px;
+}
+
+.qc-filter-select, .qc-filter-input {
+    padding: 0.75rem 1rem;
+    background: rgba(255,255,255,0.05);
+    border: 1px solid rgba(255,255,255,0.15);
+    border-radius: 10px;
+    color: white;
+    font-size: 0.9rem;
+    min-width: 180px;
+}
+
+.qc-filter-select:focus, .qc-filter-input:focus {
+    outline: none;
+    border-color: var(--qc-primary);
+    box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.2);
+}
+
+.qc-filter-select option {
+    background: #1e293b;
+    color: white;
+}
+
+.qc-filter-btn {
+    padding: 0.75rem 1.5rem;
+    background: linear-gradient(135deg, var(--qc-primary), var(--qc-primary-dark));
+    border: none;
+    border-radius: 10px;
+    color: white;
+    font-weight: 600;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    transition: all 0.3s;
+}
+
+.qc-filter-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 20px rgba(16, 185, 129, 0.3);
+}
+
+.qc-filter-btn.secondary {
+    background: rgba(255,255,255,0.1);
 }
 
 /* Main Content Grid */
 .qc-content-grid {
     display: grid;
-    grid-template-columns: 1fr 400px;
+    grid-template-columns: 1fr 450px;
     gap: 1.5rem;
 }
 
 /* Recording List */
-.recording-list-panel {
-    background: white;
-    border-radius: 16px;
-    box-shadow: 0 4px 20px rgba(0,0,0,0.06);
+.qc-list-panel {
+    background: var(--qc-card);
+    border-radius: 20px;
+    border: 1px solid rgba(255,255,255,0.1);
     overflow: hidden;
 }
 
-.panel-header {
-    padding: 1rem 1.5rem;
-    background: linear-gradient(135deg, #4CAF50, #388E3C);
-    color: white;
+.qc-list-header {
     display: flex;
     justify-content: space-between;
     align-items: center;
+    padding: 1.25rem 1.5rem;
+    background: linear-gradient(135deg, var(--qc-primary), var(--qc-secondary));
 }
 
-.panel-title {
-    font-weight: 700;
+.qc-list-title {
     display: flex;
     align-items: center;
+    gap: 0.75rem;
+    color: white;
+    font-weight: 700;
+    font-size: 1.1rem;
+}
+
+.qc-list-actions {
+    display: flex;
     gap: 0.5rem;
 }
 
-.panel-body {
-    padding: 0;
-}
-
-/* Recording Item */
-.recording-item {
-    padding: 1rem 1.5rem;
-    border-bottom: 1px solid #eee;
+.qc-list-action-btn {
+    padding: 0.5rem 0.75rem;
+    background: rgba(255,255,255,0.2);
+    border: none;
+    border-radius: 8px;
+    color: white;
     cursor: pointer;
     transition: all 0.2s;
 }
 
-.recording-item:hover {
-    background: #f8f9fa;
+.qc-list-action-btn:hover {
+    background: rgba(255,255,255,0.3);
 }
 
-.recording-item.active {
-    background: #E8F5E9;
-    border-left: 4px solid #4CAF50;
+/* Tab Filter */
+.qc-tab-filter {
+    display: flex;
+    padding: 1rem;
+    gap: 0.5rem;
+    background: rgba(0,0,0,0.2);
+    border-bottom: 1px solid rgba(255,255,255,0.05);
 }
 
-.recording-item.reviewed {
-    opacity: 0.6;
+.qc-tab-btn {
+    padding: 0.6rem 1.2rem;
+    background: transparent;
+    border: 1px solid rgba(255,255,255,0.1);
+    border-radius: 8px;
+    color: rgba(255,255,255,0.7);
+    font-weight: 600;
+    font-size: 0.85rem;
+    cursor: pointer;
+    transition: all 0.2s;
 }
 
-.recording-header {
+.qc-tab-btn:hover {
+    background: rgba(255,255,255,0.05);
+    color: white;
+}
+
+.qc-tab-btn.active {
+    background: var(--qc-primary);
+    color: white;
+    border-color: var(--qc-primary);
+}
+
+/* Recording Items */
+.qc-list-body {
+    max-height: 600px;
+    overflow-y: auto;
+}
+
+.qc-recording-item {
+    padding: 1.25rem 1.5rem;
+    border-bottom: 1px solid rgba(255,255,255,0.05);
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.qc-recording-item:hover {
+    background: rgba(255,255,255,0.03);
+}
+
+.qc-recording-item.active {
+    background: rgba(16, 185, 129, 0.1);
+    border-left: 4px solid var(--qc-primary);
+}
+
+.qc-recording-top {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    margin-bottom: 0.5rem;
+    margin-bottom: 0.75rem;
 }
 
-.recording-id {
+.qc-recording-id {
     font-weight: 700;
-    color: #333;
+    color: white;
+    font-size: 1rem;
 }
 
-.recording-status {
-    padding: 0.25rem 0.75rem;
+.qc-recording-badge {
+    padding: 0.3rem 0.75rem;
     border-radius: 20px;
-    font-size: 0.75rem;
-    font-weight: 600;
+    font-size: 0.7rem;
+    font-weight: 700;
+    text-transform: uppercase;
 }
 
-.recording-status.pending { background: #FFF3E0; color: #FF9800; }
-.recording-status.ok { background: #E8F5E9; color: #4CAF50; }
-.recording-status.termin { background: #F3E5F5; color: #9C27B0; }
-.recording-status.storno { background: #FFEBEE; color: #f44336; }
+.qc-recording-badge.pending { background: rgba(245, 158, 11, 0.2); color: #f59e0b; }
+.qc-recording-badge.ok { background: rgba(16, 185, 129, 0.2); color: #10b981; }
+.qc-recording-badge.termin { background: rgba(139, 92, 246, 0.2); color: #8b5cf6; }
+.qc-recording-badge.storno { background: rgba(239, 68, 68, 0.2); color: #ef4444; }
 
-.recording-info {
-    display: flex;
-    gap: 1.5rem;
-    font-size: 0.85rem;
-    color: #666;
+.qc-recording-details {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 1rem;
 }
 
-.recording-info span {
+.qc-recording-detail {
     display: flex;
-    align-items: center;
+    flex-direction: column;
     gap: 0.25rem;
 }
 
-/* Customer Detail Panel */
-.customer-detail-panel {
-    background: white;
-    border-radius: 16px;
-    box-shadow: 0 4px 20px rgba(0,0,0,0.06);
+.qc-recording-detail-label {
+    font-size: 0.7rem;
+    color: rgba(255,255,255,0.5);
+    text-transform: uppercase;
+}
+
+.qc-recording-detail-value {
+    font-size: 0.85rem;
+    color: rgba(255,255,255,0.9);
+    font-weight: 500;
+}
+
+.qc-recording-detail-value.duration {
+    font-family: 'JetBrains Mono', monospace;
+    color: var(--qc-primary);
+    font-weight: 700;
+}
+
+/* Detail Panel */
+.qc-detail-panel {
+    background: var(--qc-card);
+    border-radius: 20px;
+    border: 1px solid rgba(255,255,255,0.1);
     overflow: hidden;
     position: sticky;
     top: 1rem;
 }
 
-.customer-header {
-    padding: 1rem 1.5rem;
-    background: linear-gradient(135deg, #667eea, #764ba2);
-    color: white;
-}
-
-.customer-name {
-    font-size: 1.25rem;
-    font-weight: 700;
-    margin-bottom: 0.25rem;
-}
-
-.customer-phone {
-    opacity: 0.9;
-    font-size: 0.9rem;
-}
-
-.customer-body {
+.qc-detail-header {
     padding: 1.5rem;
+    background: linear-gradient(135deg, #6366f1, #8b5cf6);
+    position: relative;
 }
 
-/* Info Grid */
-.info-grid {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 1rem;
-    margin-bottom: 1.5rem;
-}
-
-.info-item {
-    background: #f8f9fa;
-    padding: 0.75rem;
-    border-radius: 10px;
-}
-
-.info-label {
-    font-size: 0.75rem;
-    color: #888;
+.qc-customer-name {
+    font-size: 1.5rem;
+    font-weight: 800;
+    color: white;
     margin-bottom: 0.25rem;
 }
 
-.info-value {
-    font-weight: 600;
-    color: #333;
-}
-
-/* Audio Players */
-.audio-section {
-    margin-bottom: 1.5rem;
-}
-
-.audio-title {
-    font-weight: 700;
-    font-size: 0.9rem;
-    margin-bottom: 0.75rem;
+.qc-customer-phone {
+    color: rgba(255,255,255,0.8);
+    font-size: 1rem;
     display: flex;
     align-items: center;
     gap: 0.5rem;
 }
 
-.audio-title i {
-    color: #4CAF50;
+.qc-detail-body {
+    padding: 1.5rem;
 }
 
-.audio-player-card {
-    background: #f8f9fa;
+/* Agent Card */
+.qc-agent-card {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    padding: 1rem;
+    background: rgba(255,255,255,0.05);
+    border-radius: 12px;
+    margin-bottom: 1.5rem;
+    border: 1px solid rgba(255,255,255,0.1);
+}
+
+.qc-agent-avatar {
+    width: 48px;
+    height: 48px;
+    border-radius: 12px;
+    background: linear-gradient(135deg, var(--qc-warning), #d97706);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-weight: 700;
+    font-size: 1.1rem;
+}
+
+.qc-agent-name {
+    color: white;
+    font-weight: 600;
+    font-size: 1rem;
+}
+
+.qc-agent-team {
+    color: rgba(255,255,255,0.6);
+    font-size: 0.85rem;
+}
+
+/* Info Grid */
+.qc-info-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 1rem;
+    margin-bottom: 1.5rem;
+}
+
+.qc-info-item {
+    background: rgba(255,255,255,0.03);
+    padding: 1rem;
+    border-radius: 12px;
+    border: 1px solid rgba(255,255,255,0.05);
+}
+
+.qc-info-label {
+    font-size: 0.75rem;
+    color: rgba(255,255,255,0.5);
+    margin-bottom: 0.25rem;
+    text-transform: uppercase;
+}
+
+.qc-info-value {
+    font-weight: 600;
+    color: white;
+    font-size: 0.95rem;
+}
+
+.qc-info-value.duration {
+    font-family: 'JetBrains Mono', monospace;
+    color: var(--qc-primary);
+    font-size: 1.1rem;
+}
+
+/* Audio Section */
+.qc-audio-section {
+    margin-bottom: 1.5rem;
+}
+
+.qc-audio-title {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    color: white;
+    font-weight: 700;
+    margin-bottom: 1rem;
+}
+
+.qc-audio-title i {
+    color: var(--qc-primary);
+}
+
+.qc-audio-card {
+    background: rgba(255,255,255,0.03);
     border-radius: 12px;
     padding: 1rem;
     margin-bottom: 0.75rem;
+    border: 1px solid rgba(255,255,255,0.05);
 }
 
-.audio-player-header {
+.qc-audio-header {
     display: flex;
     justify-content: space-between;
     align-items: center;
     margin-bottom: 0.75rem;
 }
 
-.audio-type {
+.qc-audio-type {
     font-weight: 600;
     font-size: 0.85rem;
-}
-
-.audio-type.system { color: #2196F3; }
-.audio-type.agent { color: #9C27B0; }
-
-.audio-duration {
-    font-size: 0.8rem;
-    color: #666;
-}
-
-.audio-controls {
     display: flex;
     align-items: center;
-    gap: 0.75rem;
+    gap: 0.5rem;
 }
 
-.play-btn {
-    width: 40px;
+.qc-audio-type.system { color: #3b82f6; }
+.qc-audio-type.agent { color: #8b5cf6; }
+
+.qc-audio-duration {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.85rem;
+    color: rgba(255,255,255,0.6);
+}
+
+.qc-audio-card audio {
+    width: 100%;
     height: 40px;
-    border-radius: 50%;
-    border: none;
-    background: linear-gradient(135deg, #4CAF50, #388E3C);
-    color: white;
-    cursor: pointer;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 1.25rem;
-    transition: all 0.2s;
+    border-radius: 8px;
 }
 
-.play-btn:hover {
-    transform: scale(1.1);
-}
-
-.audio-progress {
-    flex: 1;
-    height: 6px;
-    background: #ddd;
-    border-radius: 3px;
-    overflow: hidden;
-}
-
-.audio-progress-bar {
-    height: 100%;
-    background: linear-gradient(90deg, #4CAF50, #8BC34A);
-    width: 0%;
-    transition: width 0.1s;
-}
-
-/* QC Action Buttons */
-.qc-actions {
+/* QC Actions */
+.qc-action-buttons {
     display: grid;
     grid-template-columns: repeat(3, 1fr);
     gap: 0.75rem;
     margin-bottom: 1rem;
 }
 
-.qc-btn {
+.qc-action-btn {
     padding: 1rem;
     border: none;
     border-radius: 12px;
@@ -301,310 +797,413 @@
     flex-direction: column;
     align-items: center;
     gap: 0.5rem;
-    transition: all 0.2s;
+    transition: all 0.3s;
 }
 
-.qc-btn i {
+.qc-action-btn i {
     font-size: 1.5rem;
 }
 
-.qc-btn.ok {
-    background: linear-gradient(135deg, #4CAF50, #388E3C);
+.qc-action-btn.ok {
+    background: linear-gradient(135deg, var(--qc-primary), var(--qc-primary-dark));
     color: white;
 }
 
-.qc-btn.termin {
-    background: linear-gradient(135deg, #9C27B0, #7B1FA2);
+.qc-action-btn.termin {
+    background: linear-gradient(135deg, var(--qc-purple), #7c3aed);
     color: white;
 }
 
-.qc-btn.storno {
-    background: linear-gradient(135deg, #f44336, #D32F2F);
+.qc-action-btn.storno {
+    background: linear-gradient(135deg, var(--qc-danger), #dc2626);
     color: white;
 }
 
-.qc-btn:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+.qc-action-btn:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 10px 25px rgba(0,0,0,0.3);
 }
 
-.qc-btn:disabled {
+.qc-action-btn:disabled {
     opacity: 0.5;
     cursor: not-allowed;
     transform: none;
 }
 
-/* Notes Section */
-.notes-section {
-    margin-top: 1rem;
-}
-
-.notes-textarea {
+/* Notes */
+.qc-notes-section textarea {
     width: 100%;
-    padding: 0.75rem;
-    border: 2px solid #e0e0e0;
-    border-radius: 10px;
+    padding: 1rem;
+    background: rgba(255,255,255,0.05);
+    border: 1px solid rgba(255,255,255,0.1);
+    border-radius: 12px;
+    color: white;
+    font-family: inherit;
     resize: vertical;
     min-height: 80px;
-    font-family: inherit;
 }
 
-.notes-textarea:focus {
+.qc-notes-section textarea:focus {
     outline: none;
-    border-color: #4CAF50;
+    border-color: var(--qc-primary);
+}
+
+.qc-notes-section textarea::placeholder {
+    color: rgba(255,255,255,0.4);
 }
 
 /* Empty State */
-.empty-state {
+.qc-empty-state {
     text-align: center;
-    padding: 3rem;
-    color: #888;
+    padding: 4rem 2rem;
+    color: rgba(255,255,255,0.5);
 }
 
-.empty-state i {
+.qc-empty-state i {
     font-size: 4rem;
     opacity: 0.3;
     margin-bottom: 1rem;
 }
 
-/* Filter Bar */
-.filter-bar {
-    display: flex;
-    gap: 1rem;
-    padding: 1rem 1.5rem;
-    background: #f8f9fa;
-    border-bottom: 1px solid #eee;
-}
-
-.filter-btn {
-    padding: 0.5rem 1rem;
-    border: 2px solid #e0e0e0;
-    border-radius: 20px;
-    background: white;
-    cursor: pointer;
-    font-weight: 600;
-    font-size: 0.85rem;
-    transition: all 0.2s;
-}
-
-.filter-btn:hover {
-    border-color: #4CAF50;
-}
-
-.filter-btn.active {
-    background: #4CAF50;
+.qc-empty-state h3 {
     color: white;
-    border-color: #4CAF50;
+    margin-bottom: 0.5rem;
 }
 
-/* Agent Info */
-.agent-info-bar {
-    display: flex;
-    align-items: center;
-    gap: 0.75rem;
-    padding: 0.75rem;
-    background: #E3F2FD;
-    border-radius: 10px;
-    margin-bottom: 1rem;
+/* Scrollbar */
+.qc-list-body::-webkit-scrollbar {
+    width: 6px;
 }
 
-.agent-avatar {
-    width: 36px;
-    height: 36px;
-    border-radius: 50%;
-    background: linear-gradient(135deg, #667eea, #764ba2);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    color: white;
-    font-weight: 700;
-    font-size: 0.85rem;
+.qc-list-body::-webkit-scrollbar-track {
+    background: transparent;
 }
 
-.agent-details {
-    flex: 1;
+.qc-list-body::-webkit-scrollbar-thumb {
+    background: rgba(255,255,255,0.2);
+    border-radius: 3px;
 }
 
-.agent-name {
-    font-weight: 600;
-    font-size: 0.9rem;
-}
-
-.agent-team {
-    font-size: 0.75rem;
-    color: #666;
+/* Responsive */
+@media (max-width: 1200px) {
+    .qc-content-grid {
+        grid-template-columns: 1fr;
+    }
+    
+    .qc-stats-row {
+        grid-template-columns: repeat(3, 1fr);
+    }
 }
 </style>
 {% endblock %}
 
 {% block content %}
-<div class="qc-panel">
-    <div class="page-header">
-        <div>
-            <h1 class="page-title">
-                <i class="ti ti-headphones" style="color: #4CAF50;"></i>
-                <span data-tr="QC Dinleme Paneli" data-de="QC Anhörungspanel">QC Dinleme Paneli</span>
-            </h1>
-            <p class="page-subtitle" data-tr="Ses kayıtlarını dinle ve değerlendir" data-de="Aufnahmen anhören und bewerten">Ses kayıtlarını dinle ve değerlendir</p>
-        </div>
-        <div class="page-header-actions">
-            <span style="background: #E8F5E9; padding: 0.5rem 1rem; border-radius: 20px; color: #2E7D32; font-weight: 600;">
-                <i class="ti ti-user"></i> {{ current_user.full_name if current_user else 'QC Listener' }}
-            </span>
+<!-- Break Overlay -->
+<div class="qc-break-overlay" id="breakOverlay">
+    <div class="monitor-frame">
+        <div class="monitor-screen">
+            <div class="break-status-badge">
+                <i class="ti ti-coffee"></i>
+                <span id="breakStatusText">Mola</span>
+            </div>
+            
+            <div class="break-timer" id="breakTimer">00:00:00</div>
+            
+            <p style="color: rgba(255,255,255,0.6); margin-bottom: 2rem;">
+                Sisteme geri dönmek için aşağıdaki butona tıklayın
+            </p>
+            
+            <div class="break-stats-grid">
+                <div class="break-stat-item">
+                    <div class="break-stat-value" id="breakStatReviewed">0</div>
+                    <div class="break-stat-label">İncelenen</div>
+                </div>
+                <div class="break-stat-item">
+                    <div class="break-stat-value" id="breakStatOk">0</div>
+                    <div class="break-stat-label">QC OK</div>
+                </div>
+                <div class="break-stat-item">
+                    <div class="break-stat-value" id="breakStatTermin">0</div>
+                    <div class="break-stat-label">Termin</div>
+                </div>
+                <div class="break-stat-item">
+                    <div class="break-stat-value" id="breakStatStorno">0</div>
+                    <div class="break-stat-label">Storno</div>
+                </div>
+            </div>
+            
+            <button class="break-end-btn" onclick="endBreak()">
+                <i class="ti ti-player-play"></i> Çalışmaya Devam Et
+            </button>
         </div>
     </div>
+</div>
 
-    <!-- Stats -->
-    <div class="qc-stats-grid">
+<div class="qc-main-container">
+    <!-- Header -->
+    <div class="qc-header">
+        <div class="qc-header-left">
+            <div class="qc-logo">
+                <i class="ti ti-headphones"></i>
+            </div>
+            <div class="qc-title-section">
+                <h1>QC Dinleme Paneli</h1>
+                <p>Ses kayıtlarını dinle ve değerlendir</p>
+            </div>
+        </div>
+        
+        <div class="qc-header-right">
+            <!-- Status Selector -->
+            <div class="qc-status-selector">
+                <button class="qc-status-btn" onclick="toggleStatusDropdown()">
+                    <span class="status-indicator" id="currentStatusIndicator"></span>
+                    <span id="currentStatusText">Müsait</span>
+                    <i class="ti ti-chevron-down"></i>
+                </button>
+                <div class="qc-status-dropdown" id="statusDropdown">
+                    <div class="qc-status-option" onclick="changeStatus('musait')">
+                        <span class="status-indicator"></span> Müsait
+                    </div>
+                    <div class="qc-status-option" onclick="changeStatus('mola')">
+                        <span class="status-indicator mola"></span> Mola
+                    </div>
+                    <div class="qc-status-option" onclick="changeStatus('egitim')">
+                        <span class="status-indicator egitim"></span> Eğitim
+                    </div>
+                    <div class="qc-status-option" onclick="changeStatus('toplanti')">
+                        <span class="status-indicator toplanti"></span> Toplantı
+                    </div>
+                </div>
+            </div>
+            
+            <!-- User Info -->
+            <div class="qc-user-info">
+                <div class="qc-user-avatar">
+                    {{ (current_user.full_name or 'Q')[0] }}
+                </div>
+                <div>
+                    <div class="qc-user-name">{{ current_user.full_name if current_user else 'QC Listener' }}</div>
+                    <div class="qc-user-role">QC LISTENER</div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Stats Row -->
+    <div class="qc-stats-row">
         <div class="qc-stat-card total">
+            <div class="qc-stat-icon"><i class="ti ti-files"></i></div>
             <div class="qc-stat-value" id="statTotal">0</div>
-            <div class="qc-stat-label" data-tr="Toplam Kayıt" data-de="Gesamtaufnahmen">Toplam Kayıt</div>
+            <div class="qc-stat-label">Toplam Kayıt</div>
         </div>
         <div class="qc-stat-card pending">
+            <div class="qc-stat-icon"><i class="ti ti-clock"></i></div>
             <div class="qc-stat-value" id="statPending">0</div>
-            <div class="qc-stat-label" data-tr="Bekleyen" data-de="Ausstehend">Bekleyen</div>
+            <div class="qc-stat-label">Bekleyen</div>
         </div>
         <div class="qc-stat-card ok">
+            <div class="qc-stat-icon"><i class="ti ti-check"></i></div>
             <div class="qc-stat-value" id="statOk">0</div>
-            <div class="qc-stat-label" data-tr="QC OK" data-de="QC OK">QC OK</div>
+            <div class="qc-stat-label">QC OK</div>
         </div>
         <div class="qc-stat-card termin">
+            <div class="qc-stat-icon"><i class="ti ti-phone-call"></i></div>
             <div class="qc-stat-value" id="statTermin">0</div>
-            <div class="qc-stat-label" data-tr="QC Termin" data-de="QC Termin">QC Termin</div>
+            <div class="qc-stat-label">QC Termin</div>
         </div>
         <div class="qc-stat-card storno">
+            <div class="qc-stat-icon"><i class="ti ti-x"></i></div>
             <div class="qc-stat-value" id="statStorno">0</div>
-            <div class="qc-stat-label" data-tr="QC Storno" data-de="QC Storno">QC Storno</div>
+            <div class="qc-stat-label">QC Storno</div>
+        </div>
+        <div class="qc-stat-card time">
+            <div class="qc-stat-icon"><i class="ti ti-clock-hour-4"></i></div>
+            <div class="qc-stat-value" id="statTotalTime">00:00</div>
+            <div class="qc-stat-label">Toplam Dinleme</div>
         </div>
     </div>
-
-    <!-- Main Content -->
-    <div class="qc-content-grid">
-        <!-- Recording List -->
-        <div class="recording-list-panel">
-            <div class="panel-header">
-                <div class="panel-title">
-                    <i class="ti ti-list"></i>
-                    <span data-tr="Değerlendirilecek Kayıtlar" data-de="Zu bewertende Aufnahmen">Değerlendirilecek Kayıtlar</span>
-                </div>
-                <button class="btn btn-sm" style="background: rgba(255,255,255,0.2); color: white;" onclick="refreshList()">
-                    <i class="ti ti-refresh"></i>
+    
+    <!-- Filter Panel -->
+    <div class="qc-filter-panel">
+        <div class="qc-filter-row">
+            <div class="qc-filter-group">
+                <label class="qc-filter-label">Agent</label>
+                <select class="qc-filter-select" id="filterAgent">
+                    <option value="">Tüm Agentler</option>
+                    {% for agent in agents %}
+                    <option value="{{ agent.id }}">{{ agent.full_name }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            
+            <div class="qc-filter-group">
+                <label class="qc-filter-label">Başlangıç Tarihi</label>
+                <input type="date" class="qc-filter-input" id="filterDateStart">
+            </div>
+            
+            <div class="qc-filter-group">
+                <label class="qc-filter-label">Bitiş Tarihi</label>
+                <input type="date" class="qc-filter-input" id="filterDateEnd">
+            </div>
+            
+            <div class="qc-filter-group">
+                <label class="qc-filter-label">Sıralama</label>
+                <select class="qc-filter-select" id="filterSort">
+                    <option value="date_desc">Tarih (Yeni → Eski)</option>
+                    <option value="date_asc">Tarih (Eski → Yeni)</option>
+                    <option value="duration_desc">Süre (Uzun → Kısa)</option>
+                    <option value="duration_asc">Süre (Kısa → Uzun)</option>
+                </select>
+            </div>
+            
+            <div class="qc-filter-group" style="align-self: flex-end;">
+                <button class="qc-filter-btn" onclick="applyFilters()">
+                    <i class="ti ti-filter"></i> Filtrele
                 </button>
             </div>
             
-            <div class="filter-bar">
-                <button class="filter-btn active" onclick="filterRecordings('all')" data-tr="Tümü" data-de="Alle">Tümü</button>
-                <button class="filter-btn" onclick="filterRecordings('pending')" data-tr="Bekleyen" data-de="Ausstehend">Bekleyen</button>
-                <button class="filter-btn" onclick="filterRecordings('ok')" data-tr="OK" data-de="OK">OK</button>
-                <button class="filter-btn" onclick="filterRecordings('termin')" data-tr="Termin" data-de="Termin">Termin</button>
-                <button class="filter-btn" onclick="filterRecordings('storno')" data-tr="Storno" data-de="Storno">Storno</button>
-            </div>
-            
-            <div class="panel-body" id="recordingList">
-                <!-- Recording items will be loaded here -->
-                <div class="empty-state">
-                    <i class="ti ti-headphones-off"></i>
-                    <p data-tr="Henüz kayıt yok" data-de="Noch keine Aufnahmen">Henüz kayıt yok</p>
-                </div>
+            <div class="qc-filter-group" style="align-self: flex-end;">
+                <button class="qc-filter-btn secondary" onclick="resetFilters()">
+                    <i class="ti ti-refresh"></i> Sıfırla
+                </button>
             </div>
         </div>
-
-        <!-- Customer Detail -->
-        <div class="customer-detail-panel" id="customerDetail" style="display: none;">
-            <div class="customer-header">
-                <div class="customer-name" id="customerName">-</div>
-                <div class="customer-phone" id="customerPhone">-</div>
+    </div>
+    
+    <!-- Main Content -->
+    <div class="qc-content-grid">
+        <!-- Recording List -->
+        <div class="qc-list-panel">
+            <div class="qc-list-header">
+                <div class="qc-list-title">
+                    <i class="ti ti-list"></i>
+                    <span>Değerlendirilecek Kayıtlar</span>
+                </div>
+                <div class="qc-list-actions">
+                    <button class="qc-list-action-btn" onclick="refreshList()">
+                        <i class="ti ti-refresh"></i>
+                    </button>
+                    <button class="qc-list-action-btn" onclick="exportList()">
+                        <i class="ti ti-download"></i>
+                    </button>
+                </div>
             </div>
-            <div class="customer-body">
-                <!-- Agent Info -->
-                <div class="agent-info-bar">
-                    <div class="agent-avatar" id="agentInitials">-</div>
-                    <div class="agent-details">
-                        <div class="agent-name" id="agentName">-</div>
-                        <div class="agent-team" id="agentTeam">-</div>
-                    </div>
-                </div>
-
-                <!-- Customer Info Grid -->
-                <div class="info-grid">
-                    <div class="info-item">
-                        <div class="info-label" data-tr="Tarih" data-de="Datum">Tarih</div>
-                        <div class="info-value" id="callDate">-</div>
-                    </div>
-                    <div class="info-item">
-                        <div class="info-label" data-tr="Süre" data-de="Dauer">Süre</div>
-                        <div class="info-value" id="callDuration">-</div>
-                    </div>
-                    <div class="info-item">
-                        <div class="info-label" data-tr="Proje" data-de="Projekt">Proje</div>
-                        <div class="info-value" id="projectName">-</div>
-                    </div>
-                    <div class="info-item">
-                        <div class="info-label" data-tr="Sonuç" data-de="Ergebnis">Sonuç</div>
-                        <div class="info-value" id="callResult">-</div>
-                    </div>
-                </div>
-
-                <!-- Audio Players -->
-                <div class="audio-section">
-                    <div class="audio-title">
-                        <i class="ti ti-volume"></i>
-                        <span data-tr="Ses Kayıtları" data-de="Aufnahmen">Ses Kayıtları</span>
-                    </div>
-                    
-                    <!-- System Recording -->
-                    <div class="audio-player-card">
-                        <div class="audio-player-header">
-                            <span class="audio-type system">
-                                <i class="ti ti-phone"></i> System Recording
-                            </span>
-                            <span class="audio-duration" id="systemDuration">00:00</span>
-                        </div>
-                        <audio id="audioSystem" controls style="width: 100%; margin-top: 0.75rem;"></audio>
-                    </div>
-                    
-                    <!-- Agent Recording -->
-                    <div class="audio-player-card">
-                        <div class="audio-player-header">
-                            <span class="audio-type agent">
-                                <i class="ti ti-microphone"></i> Agent Recording
-                            </span>
-                            <span class="audio-duration" id="agentDuration">00:00</span>
-                        </div>
-                        <audio id="audioAgent" controls style="width: 100%; margin-top: 0.75rem;"></audio>
-                    </div>
-                </div>
-
-                <!-- QC Actions -->
-                <div class="qc-actions">
-                    <button class="qc-btn ok" onclick="qcAction('ok')" id="btnQcOk">
-                        <i class="ti ti-check"></i>
-                        <span>QC OK</span>
-                    </button>
-                    <button class="qc-btn termin" onclick="qcAction('termin')" id="btnQcTermin">
-                        <i class="ti ti-phone-call"></i>
-                        <span>QC TERMİN</span>
-                    </button>
-                    <button class="qc-btn storno" onclick="qcAction('storno')" id="btnQcStorno">
-                        <i class="ti ti-x"></i>
-                        <span>QC STORNO</span>
-                    </button>
-                </div>
-
-                <!-- Notes -->
-                <div class="notes-section">
-                    <label class="info-label" data-tr="Notlar" data-de="Notizen">Notlar</label>
-                    <textarea class="notes-textarea" id="qcNotes" placeholder="QC notu ekle..." data-tr-placeholder="QC notu ekle..." data-de-placeholder="QC-Notiz hinzufügen..."></textarea>
+            
+            <div class="qc-tab-filter">
+                <button class="qc-tab-btn active" data-filter="all" onclick="filterByStatus('all', this)">Tümü</button>
+                <button class="qc-tab-btn" data-filter="pending" onclick="filterByStatus('pending', this)">Bekleyen</button>
+                <button class="qc-tab-btn" data-filter="ok" onclick="filterByStatus('ok', this)">OK</button>
+                <button class="qc-tab-btn" data-filter="termin" onclick="filterByStatus('termin', this)">Termin</button>
+                <button class="qc-tab-btn" data-filter="storno" onclick="filterByStatus('storno', this)">Storno</button>
+            </div>
+            
+            <div class="qc-list-body" id="recordingList">
+                <div class="qc-empty-state">
+                    <i class="ti ti-headphones-off"></i>
+                    <h3>Henüz kayıt yok</h3>
+                    <p>Filtreleri değiştirerek kayıt arayabilirsiniz</p>
                 </div>
             </div>
         </div>
         
-        <!-- Empty State for Detail -->
-        <div class="customer-detail-panel" id="emptyDetail">
-            <div class="empty-state" style="padding: 4rem;">
+        <!-- Detail Panel -->
+        <div class="qc-detail-panel" id="detailPanel" style="display: none;">
+            <div class="qc-detail-header">
+                <div class="qc-customer-name" id="customerName">-</div>
+                <div class="qc-customer-phone">
+                    <i class="ti ti-phone"></i>
+                    <span id="customerPhone">-</span>
+                </div>
+            </div>
+            
+            <div class="qc-detail-body">
+                <!-- Agent Card -->
+                <div class="qc-agent-card">
+                    <div class="qc-agent-avatar" id="agentInitials">-</div>
+                    <div>
+                        <div class="qc-agent-name" id="agentName">-</div>
+                        <div class="qc-agent-team" id="agentTeam">-</div>
+                    </div>
+                </div>
+                
+                <!-- Info Grid -->
+                <div class="qc-info-grid">
+                    <div class="qc-info-item">
+                        <div class="qc-info-label">Tarih / Saat</div>
+                        <div class="qc-info-value" id="callDate">-</div>
+                    </div>
+                    <div class="qc-info-item">
+                        <div class="qc-info-label">Süre</div>
+                        <div class="qc-info-value duration" id="callDuration">00:00:00</div>
+                    </div>
+                    <div class="qc-info-item">
+                        <div class="qc-info-label">Proje</div>
+                        <div class="qc-info-value" id="projectName">-</div>
+                    </div>
+                    <div class="qc-info-item">
+                        <div class="qc-info-label">Sonuç</div>
+                        <div class="qc-info-value" id="callResult">-</div>
+                    </div>
+                </div>
+                
+                <!-- Audio Section -->
+                <div class="qc-audio-section">
+                    <div class="qc-audio-title">
+                        <i class="ti ti-volume"></i>
+                        <span>Ses Kayıtları</span>
+                    </div>
+                    
+                    <div class="qc-audio-card">
+                        <div class="qc-audio-header">
+                            <span class="qc-audio-type system">
+                                <i class="ti ti-phone"></i> System Recording
+                            </span>
+                            <span class="qc-audio-duration" id="systemDuration">00:00:00</span>
+                        </div>
+                        <audio id="audioSystem" controls></audio>
+                    </div>
+                    
+                    <div class="qc-audio-card">
+                        <div class="qc-audio-header">
+                            <span class="qc-audio-type agent">
+                                <i class="ti ti-microphone"></i> Agent Recording
+                            </span>
+                            <span class="qc-audio-duration" id="agentDuration">00:00:00</span>
+                        </div>
+                        <audio id="audioAgent" controls></audio>
+                    </div>
+                </div>
+                
+                <!-- QC Actions -->
+                <div class="qc-action-buttons">
+                    <button class="qc-action-btn ok" onclick="qcAction('ok')" id="btnQcOk">
+                        <i class="ti ti-check"></i>
+                        <span>QC OK</span>
+                    </button>
+                    <button class="qc-action-btn termin" onclick="qcAction('termin')" id="btnQcTermin">
+                        <i class="ti ti-phone-call"></i>
+                        <span>QC TERMİN</span>
+                    </button>
+                    <button class="qc-action-btn storno" onclick="qcAction('storno')" id="btnQcStorno">
+                        <i class="ti ti-x"></i>
+                        <span>QC STORNO</span>
+                    </button>
+                </div>
+                
+                <!-- Notes -->
+                <div class="qc-notes-section">
+                    <label class="qc-info-label">Notlar / Bemerkung</label>
+                    <textarea id="qcNotes" placeholder="QC notu ekle..."></textarea>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Empty Detail State -->
+        <div class="qc-detail-panel" id="emptyDetail">
+            <div class="qc-empty-state">
                 <i class="ti ti-click"></i>
-                <h3 data-tr="Kayıt Seçin" data-de="Aufnahme auswählen">Kayıt Seçin</h3>
-                <p data-tr="Dinlemek için soldaki listeden bir kayıt seçin" data-de="Wählen Sie eine Aufnahme aus der Liste links">Dinlemek için soldaki listeden bir kayıt seçin</p>
+                <h3>Kayıt Seçin</h3>
+                <p>Dinlemek için soldaki listeden bir kayıt seçin</p>
             </div>
         </div>
     </div>
@@ -614,8 +1213,21 @@
 {% block extra_js %}
 <script>
 let currentRecordingId = null;
+let currentFilter = 'all';
+let breakStartTime = null;
+let breakTimerInterval = null;
+let myStats = { reviewed: 0, ok: 0, termin: 0, storno: 0 };
 
+// ==================== UTILITY FUNCTIONS ====================
 function fmtDuration(sec) {
+    sec = parseInt(sec || 0, 10);
+    const h = String(Math.floor(sec / 3600)).padStart(2, '0');
+    const m = String(Math.floor((sec % 3600) / 60)).padStart(2, '0');
+    const s = String(sec % 60).padStart(2, '0');
+    return `${h}:${m}:${s}`;
+}
+
+function fmtDurationShort(sec) {
     sec = parseInt(sec || 0, 10);
     const m = String(Math.floor(sec / 60)).padStart(2, '0');
     const s = String(sec % 60).padStart(2, '0');
@@ -625,137 +1237,321 @@ function fmtDuration(sec) {
 function fmtDate(iso) {
     if (!iso) return '-';
     const d = new Date(iso);
-    return d.toLocaleString('tr-TR', { day:'2-digit', month:'2-digit', year:'numeric', hour:'2-digit', minute:'2-digit' });
+    return d.toLocaleString('tr-TR', { 
+        day: '2-digit', 
+        month: '2-digit', 
+        year: 'numeric', 
+        hour: '2-digit', 
+        minute: '2-digit',
+        second: '2-digit'
+    });
 }
 
-// Filter recordings
-async function filterRecordings(filter) {
-    document.querySelectorAll('.filter-btn').forEach(btn => btn.classList.remove('active'));
-    event.target.classList.add('active');
-    await loadRecordings(filter);
+// ==================== STATUS MANAGEMENT ====================
+function toggleStatusDropdown() {
+    document.getElementById('statusDropdown').classList.toggle('show');
 }
 
-// Select recording
+function changeStatus(status) {
+    document.getElementById('statusDropdown').classList.remove('show');
+    
+    const statusTexts = {
+        'musait': 'Müsait',
+        'mola': 'Mola',
+        'egitim': 'Eğitim',
+        'toplanti': 'Toplantı'
+    };
+    
+    document.getElementById('currentStatusText').textContent = statusTexts[status];
+    const indicator = document.getElementById('currentStatusIndicator');
+    indicator.className = 'status-indicator';
+    if (status !== 'musait') indicator.classList.add(status);
+    
+    // Show break overlay for non-working statuses
+    if (['mola', 'egitim', 'toplanti'].includes(status)) {
+        showBreakOverlay(status, statusTexts[status]);
+    }
+    
+    // Update backend
+    fetch('/api/agent/status', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ status: status })
+    });
+}
+
+function showBreakOverlay(status, text) {
+    const overlay = document.getElementById('breakOverlay');
+    document.getElementById('breakStatusText').textContent = text;
+    
+    // Update break stats
+    document.getElementById('breakStatReviewed').textContent = myStats.reviewed;
+    document.getElementById('breakStatOk').textContent = myStats.ok;
+    document.getElementById('breakStatTermin').textContent = myStats.termin;
+    document.getElementById('breakStatStorno').textContent = myStats.storno;
+    
+    breakStartTime = Date.now();
+    overlay.classList.add('visible');
+    
+    breakTimerInterval = setInterval(() => {
+        const elapsed = Math.floor((Date.now() - breakStartTime) / 1000);
+        document.getElementById('breakTimer').textContent = fmtDuration(elapsed);
+    }, 1000);
+}
+
+function endBreak() {
+    const overlay = document.getElementById('breakOverlay');
+    overlay.classList.remove('visible');
+    
+    if (breakTimerInterval) {
+        clearInterval(breakTimerInterval);
+        breakTimerInterval = null;
+    }
+    
+    changeStatus('musait');
+}
+
+// Close dropdown when clicking outside
+document.addEventListener('click', function(e) {
+    if (!e.target.closest('.qc-status-selector')) {
+        document.getElementById('statusDropdown').classList.remove('show');
+    }
+});
+
+// ==================== FILTER FUNCTIONS ====================
+function filterByStatus(status, btn) {
+    currentFilter = status;
+    document.querySelectorAll('.qc-tab-btn').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    loadRecordings();
+}
+
+function applyFilters() {
+    loadRecordings();
+}
+
+function resetFilters() {
+    document.getElementById('filterAgent').value = '';
+    document.getElementById('filterDateStart').value = '';
+    document.getElementById('filterDateEnd').value = '';
+    document.getElementById('filterSort').value = 'date_desc';
+    currentFilter = 'all';
+    document.querySelectorAll('.qc-tab-btn').forEach(b => b.classList.remove('active'));
+    document.querySelector('.qc-tab-btn[data-filter="all"]').classList.add('active');
+    loadRecordings();
+}
+
+// ==================== RECORDING FUNCTIONS ====================
+async function loadRecordings() {
+    const agentId = document.getElementById('filterAgent').value;
+    const dateStart = document.getElementById('filterDateStart').value;
+    const dateEnd = document.getElementById('filterDateEnd').value;
+    const sort = document.getElementById('filterSort').value;
+    
+    const params = new URLSearchParams({
+        filter: currentFilter,
+        agent_id: agentId,
+        date_start: dateStart,
+        date_end: dateEnd,
+        sort: sort
+    });
+    
+    try {
+        const res = await fetch(`/api/qc/recordings?${params}`);
+        const data = await res.json();
+        
+        if (!data.success) {
+            console.error('Failed to load recordings');
+            return;
+        }
+        
+        renderRecordingList(data.recordings || []);
+        updateStats(data.stats || {});
+    } catch (e) {
+        console.error('Error loading recordings:', e);
+    }
+}
+
+function renderRecordingList(recordings) {
+    const container = document.getElementById('recordingList');
+    
+    if (!recordings.length) {
+        container.innerHTML = `
+            <div class="qc-empty-state">
+                <i class="ti ti-headphones-off"></i>
+                <h3>Kayıt bulunamadı</h3>
+                <p>Filtreleri değiştirerek tekrar deneyin</p>
+            </div>`;
+        return;
+    }
+    
+    container.innerHTML = recordings.map(rec => `
+        <div class="qc-recording-item ${rec.id == currentRecordingId ? 'active' : ''}" 
+             data-id="${rec.id}" onclick="selectRecording(${rec.id})">
+            <div class="qc-recording-top">
+                <span class="qc-recording-id">#CALL-${rec.id}</span>
+                <span class="qc-recording-badge ${rec.status === 'passed' ? 'ok' : (rec.status || 'pending')}">
+                    ${(rec.status === 'passed' ? 'OK' : (rec.status || 'BEKLEYEN')).toUpperCase()}
+                </span>
+            </div>
+            <div class="qc-recording-details">
+                <div class="qc-recording-detail">
+                    <div class="qc-recording-detail-label">Müşteri</div>
+                    <div class="qc-recording-detail-value">${rec.customer || '-'}</div>
+                </div>
+                <div class="qc-recording-detail">
+                    <div class="qc-recording-detail-label">Agent</div>
+                    <div class="qc-recording-detail-value">${rec.agent || '-'}</div>
+                </div>
+                <div class="qc-recording-detail">
+                    <div class="qc-recording-detail-label">Tarih</div>
+                    <div class="qc-recording-detail-value">${fmtDate(rec.time)}</div>
+                </div>
+                <div class="qc-recording-detail">
+                    <div class="qc-recording-detail-label">Süre</div>
+                    <div class="qc-recording-detail-value duration">${fmtDuration(rec.duration_sec)}</div>
+                </div>
+            </div>
+        </div>
+    `).join('');
+}
+
+function updateStats(stats) {
+    document.getElementById('statTotal').textContent = stats.total || 0;
+    document.getElementById('statPending').textContent = stats.pending || 0;
+    document.getElementById('statOk').textContent = stats.ok || 0;
+    document.getElementById('statTermin').textContent = stats.termin || 0;
+    document.getElementById('statStorno').textContent = stats.storno || 0;
+    
+    // Calculate total listening time
+    const totalMinutes = stats.total_duration_sec ? Math.floor(stats.total_duration_sec / 60) : 0;
+    document.getElementById('statTotalTime').textContent = fmtDurationShort(stats.total_duration_sec || 0);
+}
+
 async function selectRecording(recordingId) {
     currentRecordingId = recordingId;
     
     // Update UI
-    document.querySelectorAll('.recording-item').forEach(item => item.classList.remove('active'));
-    document.querySelector(`[data-recording-id="${recordingId}"]`)?.classList.add('active');
+    document.querySelectorAll('.qc-recording-item').forEach(item => {
+        item.classList.toggle('active', item.dataset.id == recordingId);
+    });
     
-    // Show detail panel
     document.getElementById('emptyDetail').style.display = 'none';
-    document.getElementById('customerDetail').style.display = 'block';
+    document.getElementById('detailPanel').style.display = 'block';
     
-    const res = await fetch(`/api/qc/recordings/${recordingId}`);
-    const data = await res.json();
-    if (!data.success) return;
-
-    document.getElementById('customerName').textContent = data.customer?.name || '-';
-    document.getElementById('customerPhone').textContent = data.customer?.phone || '-';
-    document.getElementById('agentInitials').textContent = (data.agent?.name || '-').split(' ').map(x => x[0]).slice(0,2).join('').toUpperCase();
-    document.getElementById('agentName').textContent = data.agent?.name || '-';
-    document.getElementById('agentTeam').textContent = data.context?.campaign || data.context?.project || '-';
-    document.getElementById('callDate').textContent = fmtDate(data.call?.started_at);
-    document.getElementById('callDuration').textContent = fmtDuration(data.call?.duration_sec);
-    document.getElementById('projectName').textContent = data.context?.project || '-';
-    document.getElementById('callResult').textContent = (data.call?.disposition || '-').toUpperCase();
-
-    document.getElementById('systemDuration').textContent = fmtDuration(data.recordings?.system?.duration_sec || data.call?.duration_sec);
-    document.getElementById('agentDuration').textContent = fmtDuration(data.recordings?.agent?.duration_sec || 0);
-
-    const sysUrl = data.recordings?.system?.url;
-    const agUrl = data.recordings?.agent?.url;
-
-    const sysAudio = document.getElementById('audioSystem');
-    const agAudio = document.getElementById('audioAgent');
-
-    sysAudio.src = sysUrl || '';
-    sysAudio.style.opacity = sysUrl ? '1' : '0.5';
-    sysAudio.disabled = !sysUrl;
-
-    agAudio.src = agUrl || '';
-    agAudio.style.opacity = agUrl ? '1' : '0.5';
-    agAudio.disabled = !agUrl;
-
-    document.getElementById('qcNotes').value = data.call?.notes_qc || '';
+    try {
+        const res = await fetch(`/api/qc/recordings/${recordingId}`);
+        const data = await res.json();
+        
+        if (!data.success) return;
+        
+        // Populate detail panel
+        document.getElementById('customerName').textContent = data.customer?.name || '-';
+        document.getElementById('customerPhone').textContent = data.customer?.phone || '-';
+        
+        const agentName = data.agent?.name || '-';
+        document.getElementById('agentInitials').textContent = agentName.split(' ').map(x => x[0]).slice(0,2).join('').toUpperCase();
+        document.getElementById('agentName').textContent = agentName;
+        document.getElementById('agentTeam').textContent = data.context?.campaign || data.context?.project || '-';
+        
+        document.getElementById('callDate').textContent = fmtDate(data.call?.started_at);
+        document.getElementById('callDuration').textContent = fmtDuration(data.call?.duration_sec);
+        document.getElementById('projectName').textContent = data.context?.project || '-';
+        document.getElementById('callResult').textContent = (data.call?.disposition || '-').toUpperCase();
+        
+        // Audio
+        const sysRec = data.recordings?.system;
+        const agRec = data.recordings?.agent;
+        
+        document.getElementById('systemDuration').textContent = fmtDuration(sysRec?.duration_sec || data.call?.duration_sec);
+        document.getElementById('agentDuration').textContent = fmtDuration(agRec?.duration_sec || 0);
+        
+        const sysAudio = document.getElementById('audioSystem');
+        const agAudio = document.getElementById('audioAgent');
+        
+        sysAudio.src = sysRec?.url || '';
+        sysAudio.style.opacity = sysRec?.url ? '1' : '0.5';
+        
+        agAudio.src = agRec?.url || '';
+        agAudio.style.opacity = agRec?.url ? '1' : '0.5';
+        
+        document.getElementById('qcNotes').value = data.call?.notes_qc || '';
+        
+    } catch (e) {
+        console.error('Error loading recording:', e);
+    }
 }
 
-// QC Action
 async function qcAction(action) {
     if (!currentRecordingId) return;
     
-    const lang = document.documentElement.lang || 'tr';
     const notes = document.getElementById('qcNotes').value;
     
-    const messages = {
-        ok: { tr: 'QC OK olarak işaretlendi!', de: 'Als QC OK markiert!' },
-        termin: { tr: 'QC Termin olarak işaretlendi! Agent bilgilendirilecek.', de: 'Als QC Termin markiert! Agent wird informiert.' },
-        storno: { tr: 'QC Storno olarak işaretlendi! Satış iptal edildi.', de: 'Als QC Storno markiert! Verkauf storniert.' }
-    };
+    // Disable buttons
+    document.querySelectorAll('.qc-action-btn').forEach(btn => btn.disabled = true);
     
-    document.querySelectorAll('.qc-btn').forEach(btn => btn.disabled = true);
-
-    const resp = await fetch(`/api/qc/recordings/${currentRecordingId}/evaluate`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ action, note: notes })
-    });
-    const data = await resp.json();
-    if (!data.success) {
-        alert(data.error || 'Fehler');
-    } else {
-        alert(messages[action][lang]);
-        await loadRecordings(document.querySelector('.filter-btn.active')?.getAttribute('onclick')?.match(/'([^']+)'/)?.[1] || 'pending');
+    try {
+        const resp = await fetch(`/api/qc/recordings/${currentRecordingId}/evaluate`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ action, note: notes })
+        });
+        
+        const data = await resp.json();
+        
+        if (!data.success) {
+            alert(data.error || 'Hata oluştu!');
+        } else {
+            // Update my stats
+            myStats.reviewed++;
+            if (action === 'ok') myStats.ok++;
+            else if (action === 'termin') myStats.termin++;
+            else if (action === 'storno') myStats.storno++;
+            
+            const messages = {
+                ok: 'QC OK olarak işaretlendi!',
+                termin: 'QC Termin olarak işaretlendi! Agent bilgilendirilecek.',
+                storno: 'QC Storno olarak işaretlendi! Satış iptal edildi.'
+            };
+            alert(messages[action]);
+            
+            // Reload list
+            await loadRecordings();
+            
+            // Reset detail panel
+            document.getElementById('detailPanel').style.display = 'none';
+            document.getElementById('emptyDetail').style.display = 'block';
+            currentRecordingId = null;
+        }
+    } catch (e) {
+        console.error('Error:', e);
+        alert('Bir hata oluştu!');
     }
-
-    document.querySelectorAll('.qc-btn').forEach(btn => btn.disabled = false);
+    
+    // Re-enable buttons
+    document.querySelectorAll('.qc-action-btn').forEach(btn => btn.disabled = false);
 }
 
-async function loadRecordings(filter = 'pending') {
-    const res = await fetch(`/api/qc/recordings?filter=${encodeURIComponent(filter)}`);
-    const data = await res.json();
-    if (!data.success) return;
-
-    const recs = data.recordings || [];
-    const listHtml = recs.map(rec => `
-        <div class="recording-item ${rec.status !== 'pending' ? 'reviewed' : ''}" data-recording-id="${rec.id}" onclick="selectRecording(${rec.id})">
-            <div class="recording-header">
-                <span class="recording-id">#CALL-${rec.id}</span>
-                <span class="recording-status ${rec.status === 'passed' ? 'ok' : rec.status}">${(rec.status || 'pending').toUpperCase()}</span>
-            </div>
-            <div class="recording-info">
-                <span><i class="ti ti-user"></i> ${rec.customer || '-'}</span>
-                <span><i class="ti ti-headset"></i> ${rec.agent || '-'}</span>
-                <span><i class="ti ti-clock"></i> ${fmtDate(rec.time)}</span>
-                <span><i class="ti ti-player-play"></i> ${fmtDuration(rec.duration_sec)}</span>
-            </div>
-        </div>
-    `).join('');
-
-    document.getElementById('recordingList').innerHTML = listHtml || `
-        <div class="empty-state">
-            <i class="ti ti-headphones-off"></i>
-            <p data-tr="Henüz kayıt yok" data-de="Noch keine Aufnahmen">Henüz kayıt yok</p>
-        </div>`;
-
-    const s = data.stats || {};
-    document.getElementById('statTotal').textContent = s.total || 0;
-    document.getElementById('statPending').textContent = s.pending || 0;
-    document.getElementById('statOk').textContent = s.ok || 0;
-    document.getElementById('statTermin').textContent = s.termin || 0;
-    document.getElementById('statStorno').textContent = s.storno || 0;
-}
-
-// Refresh list
 function refreshList() {
-    location.reload();
+    loadRecordings();
 }
 
-// Initialize
+function exportList() {
+    // Export functionality
+    alert('Export özelliği yakında eklenecek!');
+}
+
+// ==================== INITIALIZE ====================
 document.addEventListener('DOMContentLoaded', function() {
-    loadRecordings('pending');
+    // Set default dates (last 7 days)
+    const today = new Date();
+    const lastWeek = new Date(today);
+    lastWeek.setDate(lastWeek.getDate() - 7);
+    
+    document.getElementById('filterDateEnd').value = today.toISOString().split('T')[0];
+    document.getElementById('filterDateStart').value = lastWeek.toISOString().split('T')[0];
+    
+    loadRecordings();
 });
 </script>
 {% endblock %}
-

@@ -255,7 +255,7 @@
                 </div>
                 {% endif %}
                 
-                {% if current_user.role != 'agent' %}
+                {% if current_user.role not in ['agent', 'qc_listener'] %}
                 <!-- Raporlar -->
                 <div class="nav-group">
                     <button class="nav-group-toggle" data-target="reports-menu">
