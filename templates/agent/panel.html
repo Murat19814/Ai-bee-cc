@@ -129,8 +129,134 @@ body {
 
 .ctrl-btn:hover { transform: scale(1.1); }
 .ctrl-btn.mute { background: var(--bg-input); color: var(--text-primary); }
-.ctrl-btn.record { background: var(--danger); color: white; }
+.ctrl-btn.record { background: var(--bg-input); color: var(--text-primary); }
+.ctrl-btn.record.recording { background: var(--danger); color: white; animation: pulse-rec 1s infinite; }
 .ctrl-btn.keypad { background: var(--bg-input); color: var(--text-primary); }
+
+@keyframes pulse-rec {
+    0%, 100% { transform: scale(1); }
+    50% { transform: scale(1.1); }
+}
+
+/* Recording Status */
+.recording-status {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    font-size: 0.75rem;
+    color: var(--text-secondary);
+    margin-top: 0.5rem;
+}
+
+.recording-status .sys-rec {
+    display: flex;
+    align-items: center;
+    gap: 0.3rem;
+    color: var(--success);
+}
+
+.recording-status .sys-rec::before {
+    content: '';
+    width: 6px;
+    height: 6px;
+    background: var(--success);
+    border-radius: 50%;
+}
+
+.recording-status .agent-rec {
+    display: flex;
+    align-items: center;
+    gap: 0.3rem;
+    color: var(--danger);
+}
+
+.recording-status .agent-rec::before {
+    content: '';
+    width: 6px;
+    height: 6px;
+    background: var(--danger);
+    border-radius: 50%;
+    animation: blink 1s infinite;
+}
+
+/* Keypad Modal */
+.keypad-modal {
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.7);
+    display: none;
+    align-items: center;
+    justify-content: center;
+    z-index: 1000;
+}
+
+.keypad-modal.active { display: flex; }
+
+.keypad-box {
+    background: var(--bg-card);
+    border-radius: 20px;
+    padding: 1.5rem;
+    border: 1px solid rgba(245, 166, 35, 0.3);
+    width: 280px;
+}
+
+.keypad-display {
+    background: var(--bg-input);
+    border-radius: 10px;
+    padding: 1rem;
+    text-align: center;
+    font-size: 1.5rem;
+    font-family: 'Monaco', monospace;
+    color: var(--primary);
+    margin-bottom: 1rem;
+    min-height: 50px;
+    letter-spacing: 2px;
+}
+
+.keypad-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 0.5rem;
+}
+
+.keypad-btn {
+    background: var(--bg-input);
+    border: 1px solid rgba(255,255,255,0.1);
+    border-radius: 12px;
+    padding: 1rem;
+    font-size: 1.5rem;
+    font-weight: 600;
+    color: var(--text-primary);
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.keypad-btn:hover {
+    background: var(--primary);
+    color: #1a1a1a;
+}
+
+.keypad-btn.call {
+    background: var(--success);
+    color: white;
+}
+
+.keypad-btn.end {
+    background: var(--danger);
+    color: white;
+}
+
+.keypad-close {
+    width: 100%;
+    margin-top: 1rem;
+    padding: 0.75rem;
+    background: rgba(255,255,255,0.1);
+    border: none;
+    border-radius: 10px;
+    color: var(--text-secondary);
+    cursor: pointer;
+}
 
 .action-buttons {
     display: flex;
@@ -395,6 +521,13 @@ body {
 
 .field input::placeholder {
     color: rgba(255,255,255,0.4);
+}
+
+/* Select dropdown options */
+.field select option {
+    background: #1a2744;
+    color: #ffffff;
+    padding: 0.5rem;
 }
 
 .field input:focus,
@@ -855,22 +988,27 @@ body {
             <div class="status-indicator" id="statusBadge">
                 <span class="dot"></span>
                 Status: Bereit
-            </div>
+    </div>
             
             <div class="call-display">
                 <div class="label"><i class="ti ti-phone"></i> Anrufinformationen</div>
                 <div class="phone" id="displayPhone">---</div>
                 <div class="name" id="displayName">- -</div>
-            </div>
+        </div>
             
             <div class="timer" id="callTimer">00:00:00</div>
             
             <div class="call-controls">
-                <button class="ctrl-btn mute" onclick="toggleMute()"><i class="ti ti-microphone"></i></button>
-                <button class="ctrl-btn record"><i class="ti ti-circle-filled"></i></button>
-                <button class="ctrl-btn keypad"><i class="ti ti-grid-dots"></i></button>
-            </div>
+                <button class="ctrl-btn mute" onclick="toggleMute()" title="Mikrofon"><i class="ti ti-microphone"></i></button>
+                <button class="ctrl-btn record" id="btnAgentRec" onclick="toggleAgentRecording()" title="Agent Recording"><i class="ti ti-circle-filled"></i></button>
+                <button class="ctrl-btn keypad" onclick="openKeypad()" title="Numpad"><i class="ti ti-grid-dots"></i></button>
+    </div>
             
+            <div class="recording-status" id="recordingStatus">
+                <span class="sys-rec">System Rec</span>
+                <span class="agent-rec" id="agentRecStatus" style="display: none;">Agent Rec</span>
+</div>
+
             <div class="action-buttons">
                 <button class="action-btn start" id="btnStart" onclick="startCall()">
                     <i class="ti ti-player-play-filled"></i> Start
@@ -892,9 +1030,9 @@ body {
             <div class="input-group">
                 <input type="text" id="manualNum" placeholder="Nummer eingeben...">
                 <button onclick="manualCall()"><i class="ti ti-phone"></i></button>
+    </div>
             </div>
         </div>
-    </div>
 
     <!-- MAIN PANEL -->
     <div class="main-panel">
@@ -903,7 +1041,7 @@ body {
             <div class="stat-card">
                 <div class="value" id="statCalls">0</div>
                 <div class="label">Anrufe Heute</div>
-            </div>
+    </div>
             <div class="stat-card">
                 <div class="value" id="statSales">0</div>
                 <div class="label">Verkäufe</div>
@@ -911,12 +1049,12 @@ body {
             <div class="stat-card">
                 <div class="value" id="statCallbacks">0</div>
                 <div class="label">Wiedervorlage</div>
-            </div>
+        </div>
             <div class="stat-card">
                 <div class="value" id="statPause">00:00</div>
                 <div class="label">Pausenzeit</div>
+    </div>
             </div>
-        </div>
 
         <!-- Lotto Numbers -->
         <div class="lotto-row">
@@ -927,7 +1065,7 @@ body {
             <div class="lotto-box"><div class="header">5</div><input type="text" maxlength="2"></div>
             <div class="lotto-box"><div class="header">6</div><input type="text" maxlength="2"></div>
             <div class="lotto-box"><div class="header">7</div><input type="text" maxlength="2"></div>
-        </div>
+</div>
 
         <!-- Customer Form -->
         <div class="form-section">
@@ -936,19 +1074,19 @@ body {
                 <button class="btn-save" onclick="saveCustomer()">
                     <i class="ti ti-device-floppy"></i> Speichern
                 </button>
-            </div>
-            
+                </div>
+                
             <div class="form-grid">
                 <div class="form-column">
                     <h4>Persönliche Daten</h4>
                     <div class="field">
                         <label>Anrede</label>
                         <select id="fAnrede"><option value="">Bitte wählen</option><option>Herr</option><option>Frau</option></select>
-                    </div>
+                            </div>
                     <div class="form-row">
                         <div class="field"><label>Vorname</label><input type="text" id="fVorname"></div>
                         <div class="field"><label>Nachname</label><input type="text" id="fNachname"></div>
-                    </div>
+                            </div>
                     <div class="field"><label>Geburtsdatum</label><input type="date" id="fGeburt"></div>
                     <div class="form-row">
                         <div class="field"><label>Straße</label><input type="text" id="fStrasse"></div>
@@ -960,8 +1098,8 @@ body {
                     </div>
                     <div class="field"><label>Telefon</label><input type="text" id="fTelefon"></div>
                     <div class="field"><label>E-Mail</label><input type="email" id="fEmail"></div>
-                </div>
-                
+                        </div>
+                        
                 <div class="form-column">
                     <h4>Bankdaten</h4>
                     <div class="field"><label>Kontoinhaber</label><input type="text" id="fKonto"></div>
@@ -971,12 +1109,12 @@ body {
                     <div class="field">
                         <label>Abbuchung</label>
                         <select id="fAbbuchung"><option value="">Bitte wählen</option><option>Monatlich</option><option>Quartal</option><option>Jährlich</option></select>
-                    </div>
+                                </div>
                     <div class="field"><label>Notiz</label><textarea id="fNotiz" rows="3"></textarea></div>
-                </div>
-            </div>
-        </div>
-    </div>
+                                </div>
+                                </div>
+                                </div>
+                            </div>
 
     <!-- RIGHT PANEL - QC STATS -->
     <div class="right-panel">
@@ -990,73 +1128,95 @@ body {
                         <span>QC OK</span>
                     </div>
                     <div class="count" id="countQcOk">0</div>
-                </div>
-                
+                        </div>
+                        
                 <!-- QC TERMIN - Tıklanınca liste açılır -->
                 <div class="qc-stat-card qc-termin" onclick="openCustomerList('qc_termin')">
                     <div class="info">
                         <i class="ti ti-calendar"></i>
                         <span>QC Termin</span>
-                    </div>
+                            </div>
                     <div class="count" id="countQcTermin">0</div>
-                </div>
-                
+                        </div>
+                        
                 <!-- STORNO - Tıklanınca liste açılır (Kırmızı) -->
                 <div class="qc-stat-card storno" onclick="openCustomerList('storno')">
                     <div class="info">
                         <i class="ti ti-x"></i>
                         <span>Storno</span>
-                    </div>
+                        </div>
                     <div class="count" id="countStorno">0</div>
-                </div>
+                    </div>
                 
                 <!-- QC NE - Sadece istatistik -->
                 <div class="qc-stat-card qc-ne">
                     <div class="info">
                         <i class="ti ti-phone-off"></i>
                         <span>QC NE</span>
-                    </div>
-                    <div class="count" id="countQcNe">0</div>
                 </div>
+                    <div class="count" id="countQcNe">0</div>
             </div>
         </div>
-        
+    </div>
+    
         <div class="ai-section">
             <h4><i class="ti ti-robot"></i> AI Transkription</h4>
             <div class="transcription" id="transcription">
                 Transkription startet mit dem Anruf...
             </div>
+                </div>
+            </div>
         </div>
-    </div>
-</div>
-
+        
 <!-- Customer List Modal (QC Termin / Storno) -->
 <div class="customer-modal" id="customerModal">
     <div class="customer-modal-content">
         <div class="customer-modal-header">
             <h3 id="customerModalTitle"><i class="ti ti-users"></i> Kunden</h3>
             <button class="close" onclick="closeCustomerModal()">&times;</button>
-        </div>
+            </div>
         <div class="customer-modal-body" id="customerListBody">
             <!-- Customer list will be loaded here -->
+                </div>
+            </div>
         </div>
+
+<!-- Keypad Modal -->
+<div class="keypad-modal" id="keypadModal">
+    <div class="keypad-box">
+        <div class="keypad-display" id="keypadDisplay"></div>
+        <div class="keypad-grid">
+            <button class="keypad-btn" onclick="pressKey('1')">1</button>
+            <button class="keypad-btn" onclick="pressKey('2')">2</button>
+            <button class="keypad-btn" onclick="pressKey('3')">3</button>
+            <button class="keypad-btn" onclick="pressKey('4')">4</button>
+            <button class="keypad-btn" onclick="pressKey('5')">5</button>
+            <button class="keypad-btn" onclick="pressKey('6')">6</button>
+            <button class="keypad-btn" onclick="pressKey('7')">7</button>
+            <button class="keypad-btn" onclick="pressKey('8')">8</button>
+            <button class="keypad-btn" onclick="pressKey('9')">9</button>
+            <button class="keypad-btn" onclick="pressKey('*')">*</button>
+            <button class="keypad-btn" onclick="pressKey('0')">0</button>
+            <button class="keypad-btn" onclick="pressKey('#')">#</button>
+        </div>
+        <button class="keypad-close" onclick="closeKeypad()">Schließen</button>
     </div>
 </div>
 
 <!-- Disposition Modal -->
 <div class="modal-overlay" id="modal">
     <div class="modal-box">
-        <div class="modal-header">
+            <div class="modal-header">
             <h3><i class="ti ti-clipboard-list"></i> Anrufergebnis</h3>
             <button class="close" onclick="closeModal()">&times;</button>
-        </div>
+            </div>
         
         <div class="modal-tabs">
             <button class="modal-tab active" onclick="showTab('beenden')">Anruf Beenden</button>
             <button class="modal-tab" onclick="showTab('termin')">Wiedervorlage</button>
         </div>
         
-        <div class="modal-body">
+            <div class="modal-body">
             <div id="tabBeenden">
                 <div class="field" style="margin-bottom: 1rem;">
                     <label>Gesprächsnotiz</label>
@@ -1070,16 +1230,16 @@ body {
                         <div class="disposition-item" onclick="selectDispo(this, 'blacklist')"><span class="circle"></span> Blacklist</div>
                         <div class="disposition-item" onclick="selectDispo(this, 'nicht_erreicht')"><span class="circle"></span> Nicht Erreicht</div>
                         <div class="disposition-item" onclick="selectDispo(this, 'ab')"><span class="circle"></span> Anrufbeantworter</div>
-                    </div>
+                </div>
                     <div class="disposition-col">
                         <h5>Positiv</h5>
                         <div class="disposition-item" onclick="selectDispo(this, 'verkauf_ok')"><span class="circle"></span> Verkauf OK</div>
                         <div class="disposition-item" onclick="selectDispo(this, 'kein_interesse')"><span class="circle"></span> Kein Interesse</div>
                         <div class="disposition-item" onclick="selectDispo(this, 'aufleger')"><span class="circle"></span> Aufleger</div>
                         <div class="disposition-item" onclick="selectDispo(this, 'drohung')"><span class="circle"></span> Drohung</div>
-                    </div>
-                </div>
             </div>
+            </div>
+        </div>
             
             <div id="tabTermin" class="termin-panel">
                 <div class="termin-row">
@@ -1093,9 +1253,9 @@ body {
                     <button class="quick-time" onclick="setTime(60)">1 Stunde</button>
                     <button class="quick-time" onclick="setTime(1440)">24 Stunden</button>
                 </div>
-            </div>
-        </div>
-        
+    </div>
+</div>
+
         <div class="modal-footer">
             <button class="btn-save" onclick="saveResult()"><i class="ti ti-device-floppy"></i> Speichern</button>
         </div>
@@ -1251,7 +1411,7 @@ function saveResult() {
     let dispo = selectedDispo || 'unknown';
     saveToServer(dispo, notes);
 }
-
+    
 function saveToServer(dispo, notes) {
     fetch('/api/agent/complete-call', {
         method: 'POST',
@@ -1311,7 +1471,81 @@ function manualCall() {
 }
 
 function togglePause() {}
-function toggleMute() {}
+
+function toggleMute() {
+    const btn = document.querySelector('.ctrl-btn.mute');
+    btn.classList.toggle('muted');
+    if (btn.classList.contains('muted')) {
+        btn.innerHTML = '<i class="ti ti-microphone-off"></i>';
+        btn.style.background = 'var(--danger)';
+        btn.style.color = 'white';
+    } else {
+        btn.innerHTML = '<i class="ti ti-microphone"></i>';
+        btn.style.background = 'var(--bg-input)';
+        btn.style.color = 'var(--text-primary)';
+    }
+}
+
+// Agent Recording
+let isAgentRecording = false;
+
+function toggleAgentRecording() {
+    const btn = document.getElementById('btnAgentRec');
+    const status = document.getElementById('agentRecStatus');
+    
+    isAgentRecording = !isAgentRecording;
+    
+    if (isAgentRecording) {
+        btn.classList.add('recording');
+        status.style.display = 'flex';
+        // Start agent recording via API
+        if (currentLead) {
+            fetch('/api/agent/start-recording', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({ lead_id: currentLead.id, type: 'agent' })
+            });
+        }
+    } else {
+        btn.classList.remove('recording');
+        status.style.display = 'none';
+        // Stop agent recording via API
+        if (currentLead) {
+            fetch('/api/agent/stop-recording', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({ lead_id: currentLead.id, type: 'agent' })
+            });
+        }
+    }
+}
+
+// Keypad Functions
+let keypadInput = '';
+
+function openKeypad() {
+    document.getElementById('keypadModal').classList.add('active');
+    keypadInput = '';
+    document.getElementById('keypadDisplay').textContent = '';
+}
+
+function closeKeypad() {
+    document.getElementById('keypadModal').classList.remove('active');
+}
+
+function pressKey(key) {
+    keypadInput += key;
+    document.getElementById('keypadDisplay').textContent = keypadInput;
+    
+    // Send DTMF tone via API if in call
+    if (currentLead) {
+        fetch('/api/agent/send-dtmf', {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({ digit: key })
+        });
+    }
+}
 
 document.addEventListener('DOMContentLoaded', () => {
     updateStats();
@@ -1319,3 +1553,4 @@ document.addEventListener('DOMContentLoaded', () => {
 });
 </script>
 {% endblock %}
+
