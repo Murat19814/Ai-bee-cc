@@ -823,7 +823,27 @@
 {% endblock %}
 
 {% block extra_js %}
+<!-- JsSIP Library -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jssip/3.10.0/jssip.min.js"></script>
+
+<!-- Hidden Audio Elements for WebRTC -->
+<audio id="remoteAudio" autoplay playsinline></audio>
+<audio id="localAudio" autoplay muted playsinline></audio>
+
 <script>
+// ==================== JsSIP CONFIGURATION ====================
+const SIP_CONFIG = {
+    uri: 'sip:1001@ai-bee-cc.com',
+    password: 'agent1001!',
+    ws_servers: 'wss://ai-bee-cc.com:8089/ws',
+    display_name: 'Agent 1001'
+};
+
+// JsSIP User Agent
+let ua = null;
+let currentSession = null;
+let localStream = null;
+
 // Softphone State Management
 let currentState = 'idle';
 let callStartTime = null;
@@ -832,21 +852,74 @@ let isMuted = false;
 let isOnHold = false;
 let isRecording = true;
 
-// Add digit to number input
-function addDigit(digit) {
-    const input = document.getElementById('phoneNumber');
-    input.value += digit;
-    // Play DTMF tone
-    playDTMF(digit);
+// ==================== JSSIP INITIALIZATION ====================
+function initJsSIP() {
+    console.log('JsSIP başlatılıyor...');
+    
+    const socket = new JsSIP.WebSocketInterface(SIP_CONFIG.ws_servers);
+    
+    const configuration = {
+        sockets: [socket],
+        uri: SIP_CONFIG.uri,
+        password: SIP_CONFIG.password,
+        display_name: SIP_CONFIG.display_name,
+        register: true,
+        session_timers: false
+    };
+    
+    ua = new JsSIP.UA(configuration);
+    
+    // UA Events
+    ua.on('connecting', () => {
+        console.log('WSS bağlanıyor...');
+        updateConnectionStatus('connecting', 'Bağlanıyor...');
+    });
+    
+    ua.on('connected', () => {
+        console.log('WSS bağlandı');
+    });
+    
+    ua.on('disconnected', () => {
+        console.log('WSS bağlantısı kesildi');
+        updateConnectionStatus('disconnected', 'Bağlantı Kesildi');
+    });
+    
+    ua.on('registered', () => {
+        console.log('SIP kayıt başarılı!');
+        updateConnectionStatus('connected', 'Kayıtlı');
+    });
+    
+    ua.on('unregistered', () => {
+        console.log('SIP kayıt silindi');
+        updateConnectionStatus('disconnected', 'Kayıtsız');
+    });
+    
+    ua.on('registrationFailed', (e) => {
+        console.error('SIP kayıt hatası:', e.cause);
+        updateConnectionStatus('disconnected', 'Kayıt Hatası');
+    });
+    
+    // Incoming call
+    ua.on('newRTCSession', (data) => {
+        const session = data.session;
+        
+        if (session.direction === 'incoming') {
+            console.log('Gelen arama:', data.request.from.uri.user);
+            handleIncomingCall(session, data.request);
+        }
+    });
+    
+    ua.start();
 }
 
-// Play DTMF tone
-function playDTMF(digit) {
-    // WebRTC DTMF implementation would go here
-    console.log('DTMF:', digit);
+// ==================== CONNECTION STATUS ====================
+function updateConnectionStatus(status, text) {
+    const statusEl = document.getElementById('connectionStatus');
+    statusEl.className = 'connection-status ' + status;
+    statusEl.innerHTML = '<span class="dot"></span><span>' + text + '</span>';
 }
 
-// Make outbound call
+// ==================== OUTBOUND CALL ====================
 function makeCall() {
     const number = document.getElementById('phoneNumber').value;
     if (!number) {
@@ -854,23 +927,127 @@ function makeCall() {
         return;
     }
     
+    if (!ua || !ua.isRegistered()) {
+        alert('SIP bağlantısı yok! Lütfen bekleyin veya sayfayı yenileyin.');
+        return;
+    }
+    
+    console.log('Arama yapılıyor:', number);
+    
     // Show calling state
     document.getElementById('idleState').style.display = 'none';
     document.getElementById('inCallState').style.display = 'block';
     document.getElementById('callNumber').textContent = number;
+    document.getElementById('callName').textContent = number;
     document.getElementById('callStatus').textContent = 'Arıyor...';
+    document.getElementById('callStatus').className = 'call-status ringing';
     
-    // Simulate call connection
-    setTimeout(() => {
-        document.getElementById('callStatus').textContent = 'Bağlı';
-        startCallTimer();
-    }, 2000);
+    // Call options
+    const options = {
+        mediaConstraints: { audio: true, video: false },
+        pcConfig: {
+            iceServers: [
+                { urls: 'stun:stun.l.google.com:19302' }
+            ]
+        }
+    };
+    
+    // Make the call
+    currentSession = ua.call('sip:' + number + '@ai-bee-cc.com', options);
+    setupSessionEvents(currentSession);
     
     currentState = 'calling';
 }
 
+// ==================== SESSION EVENTS ====================
+function setupSessionEvents(session) {
+    session.on('connecting', () => {
+        console.log('Arama bağlanıyor...');
+    });
+    
+    session.on('progress', () => {
+        console.log('Çalıyor...');
+        document.getElementById('callStatus').textContent = 'Çalıyor...';
+    });
+    
+    session.on('accepted', () => {
+        console.log('Arama kabul edildi');
+        document.getElementById('callStatus').textContent = 'Bağlı';
+        document.getElementById('callStatus').className = 'call-status connected';
+        startCallTimer();
+        currentState = 'inCall';
+    });
+    
+    session.on('confirmed', () => {
+        console.log('Arama onaylandı');
+    });
+    
+    session.on('ended', () => {
+        console.log('Arama sonlandı');
+        cleanupCall();
+    });
+    
+    session.on('failed', (e) => {
+        console.error('Arama başarısız:', e.cause);
+        alert('Arama başarısız: ' + e.cause);
+        cleanupCall();
+    });
+    
+    // Handle remote stream (CRITICAL FOR AUDIO!)
+    session.on('peerconnection', (e) => {
+        console.log('PeerConnection oluşturuldu');
+        
+        e.peerconnection.ontrack = (event) => {
+            console.log('Remote track alındı:', event.track.kind);
+            
+            if (event.track.kind === 'audio') {
+                const remoteAudio = document.getElementById('remoteAudio');
+                remoteAudio.srcObject = event.streams[0];
+                remoteAudio.play().then(() => {
+                    console.log('Remote audio çalıyor!');
+                }).catch(err => {
+                    console.error('Audio play hatası:', err);
+                });
+            }
+        };
+        
+        // Alternative: onaddstream (older browsers)
+        e.peerconnection.onaddstream = (event) => {
+            console.log('Remote stream eklendi (onaddstream)');
+            const remoteAudio = document.getElementById('remoteAudio');
+            remoteAudio.srcObject = event.stream;
+            remoteAudio.play().catch(err => console.error('Audio play hatası:', err));
+        };
+    });
+}
+
+// ==================== INCOMING CALL ====================
+function handleIncomingCall(session, request) {
+    currentSession = session;
+    
+    const callerNumber = request.from.uri.user;
+    const callerName = request.from.display_name || 'Bilinmeyen';
+    
+    document.getElementById('idleState').style.display = 'none';
+    document.getElementById('incomingState').style.display = 'block';
+    document.getElementById('incomingName').textContent = callerName;
+    document.getElementById('incomingNumber').textContent = callerNumber;
+    
+    currentState = 'incoming';
+    
+    setupSessionEvents(session);
+}
+
 // Answer incoming call
 function answerCall() {
+    if (!currentSession) return;
+    
+    const options = {
+        mediaConstraints: { audio: true, video: false }
+    };
+    
+    currentSession.answer(options);
+    
     document.getElementById('incomingState').style.display = 'none';
     document.getElementById('inCallState').style.display = 'block';
     
@@ -879,6 +1056,8 @@ function answerCall() {
     
     document.getElementById('callName').textContent = name;
     document.getElementById('callNumber').textContent = number;
+    document.getElementById('callStatus').textContent = 'Bağlı';
+    document.getElementById('callStatus').className = 'call-status connected';
     
     startCallTimer();
     currentState = 'inCall';
@@ -886,33 +1065,89 @@ function answerCall() {
 
 // Reject incoming call
 function rejectCall() {
-    document.getElementById('incomingState').style.display = 'none';
-    document.getElementById('idleState').style.display = 'block';
-    currentState = 'idle';
+    if (currentSession) {
+        currentSession.terminate();
+    }
+    cleanupCall();
 }
 
 // End call
 function endCall() {
+    if (currentSession) {
+        currentSession.terminate();
+    }
+    cleanupCall();
+}
+
+// Cleanup after call
+function cleanupCall() {
     stopCallTimer();
+    currentSession = null;
+    
     document.getElementById('inCallState').style.display = 'none';
+    document.getElementById('incomingState').style.display = 'none';
     document.getElementById('idleState').style.display = 'block';
     document.getElementById('phoneNumber').value = '';
-    currentState = 'idle';
     
-    // Reset controls
+    // Stop remote audio
+    const remoteAudio = document.getElementById('remoteAudio');
+    remoteAudio.srcObject = null;
+    
+    currentState = 'idle';
     isMuted = false;
     isOnHold = false;
     document.getElementById('muteBtn').classList.remove('active');
     document.getElementById('holdBtn').classList.remove('active');
 }
 
-// Start call timer
+// ==================== CALL CONTROLS ====================
+// Toggle mute
+function toggleMute() {
+    if (!currentSession) return;
+    
+    isMuted = !isMuted;
+    
+    if (isMuted) {
+        currentSession.mute({ audio: true });
+    } else {
+        currentSession.unmute({ audio: true });
+    }
+    
+    const btn = document.getElementById('muteBtn');
+    btn.classList.toggle('active', isMuted);
+    btn.querySelector('i').className = isMuted ? 'ti ti-microphone-off' : 'ti ti-microphone';
+}
+
+// Toggle hold
+function toggleHold() {
+    if (!currentSession) return;
+    
+    isOnHold = !isOnHold;
+    
+    if (isOnHold) {
+        currentSession.hold();
+    } else {
+        currentSession.unhold();
+    }
+    
+    const btn = document.getElementById('holdBtn');
+    btn.classList.toggle('active', isOnHold);
+    document.getElementById('callStatus').textContent = isOnHold ? 'Beklemede' : 'Bağlı';
+}
+
+// Send DTMF
+function sendDTMF(digit) {
+    if (currentSession) {
+        currentSession.sendDTMF(digit);
+    }
+}
+
+// ==================== TIMER ====================
 function startCallTimer() {
     callStartTime = new Date();
     callTimerInterval = setInterval(updateCallTimer, 1000);
 }
 
-// Stop call timer
 function stopCallTimer() {
     if (callTimerInterval) {
         clearInterval(callTimerInterval);
@@ -921,7 +1156,6 @@ function stopCallTimer() {
     document.getElementById('callTimer').textContent = '00:00';
 }
 
-// Update call timer display
 function updateCallTimer() {
     if (!callStartTime) return;
     
@@ -933,20 +1167,15 @@ function updateCallTimer() {
         String(minutes).padStart(2, '0') + ':' + String(seconds).padStart(2, '0');
 }
 
-// Toggle mute
-function toggleMute() {
-    isMuted = !isMuted;
-    const btn = document.getElementById('muteBtn');
-    btn.classList.toggle('active', isMuted);
-    btn.querySelector('i').className = isMuted ? 'ti ti-microphone-off' : 'ti ti-microphone';
-}
-
-// Toggle hold
-function toggleHold() {
-    isOnHold = !isOnHold;
-    const btn = document.getElementById('holdBtn');
-    btn.classList.toggle('active', isOnHold);
-    document.getElementById('callStatus').textContent = isOnHold ? 'Beklemede' : 'Bağlı';
+// ==================== UI HELPERS ====================
+// Add digit to number input
+function addDigit(digit) {
+    const input = document.getElementById('phoneNumber');
+    input.value += digit;
+    // Send DTMF if in call
+    if (currentState === 'inCall') {
+        sendDTMF(digit);
+    }
 }
 
 // Toggle record
@@ -960,13 +1189,14 @@ function toggleRecord() {
 function toggleDialpad() {
     const btn = document.getElementById('dialpadBtn');
     btn.classList.toggle('active');
-    // Show/hide in-call dialpad
 }
 
 // Transfer call
 function transferCall() {
+    if (!currentSession) return;
     const number = prompt('Transfer edilecek numara/extension:');
     if (number) {
+        currentSession.refer('sip:' + number + '@ai-bee-cc.com');
         alert('Çağrı ' + number + ' numarasına transfer ediliyor...');
     }
 }
@@ -1007,7 +1237,14 @@ function callBack(number) {
 
 // Test audio
 function testAudio() {
-    alert('Ses testi yapılıyor... Kulaklığınızdan bir test sesi duyacaksınız.');
+    // Test remote audio element
+    const testUrl = 'data:audio/wav;base64,UklGRnoGAABXQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YQoGAACBhYqFbF1aWGRvcICMlJugnp2dm5mXlZORj42LiYeGhIKBf359e3p5eHd2dXV0c3NycnFxcXBwcHBwcHBwcQ==';
+    const audio = new Audio(testUrl);
+    audio.play().then(() => {
+        alert('Ses sistemi çalışıyor! Eğer ses duymadıysanız hoparlör ayarlarınızı kontrol edin.');
+    }).catch(err => {
+        alert('Ses çalınamadı: ' + err.message);
+    });
 }
 
 // Volume controls
@@ -1017,23 +1254,16 @@ document.getElementById('micVolume').addEventListener('input', function() {
 
 document.getElementById('speakerVolume').addEventListener('input', function() {
     document.getElementById('speakerVolumeValue').textContent = this.value + '%';
+    // Apply to remote audio
+    const remoteAudio = document.getElementById('remoteAudio');
+    if (remoteAudio) {
+        remoteAudio.volume = this.value / 100;
+    }
 });
 
 document.getElementById('ringtoneVolume').addEventListener('input', function() {
     document.getElementById('ringtoneVolumeValue').textContent = this.value + '%';
 });
-
-// Simulate incoming call (for demo)
-function simulateIncomingCall() {
-    document.getElementById('idleState').style.display = 'none';
-    document.getElementById('incomingState').style.display = 'block';
-    document.getElementById('incomingName').textContent = 'ABC Şirket';
-    document.getElementById('incomingNumber').textContent = '+90 532 XXX XX45';
-    currentState = 'incoming';
-    
-    // Play ringtone
-    // audio.play();
-}
 
 // Keyboard shortcuts
 document.addEventListener('keydown', function(e) {
@@ -1046,19 +1276,17 @@ document.addEventListener('keydown', function(e) {
     }
 });
 
-// WebRTC initialization (placeholder)
-async function initWebRTC() {
+// Device enumeration
+async function enumerateDevices() {
     try {
         const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
         console.log('Mikrofon erişimi alındı');
         
-        // Enumerate devices
         const devices = await navigator.mediaDevices.enumerateDevices();
         const audioInputs = devices.filter(d => d.kind === 'audioinput');
-        const audioOutputs = devices.filter(d => d.kind === 'audiooutput');
         
-        // Populate device selects
         const micSelect = document.getElementById('microphoneSelect');
+        micSelect.innerHTML = '';
         audioInputs.forEach(device => {
             const option = document.createElement('option');
             option.value = device.deviceId;
@@ -1066,17 +1294,46 @@ async function initWebRTC() {
             micSelect.appendChild(option);
         });
         
+        // Release the stream
+        stream.getTracks().forEach(track => track.stop());
+        
     } catch (err) {
-        console.error('Mikrofon erişimi hatası:', err);
-        document.getElementById('connectionStatus').className = 'connection-status disconnected';
-        document.getElementById('connectionStatus').innerHTML = '<span class="dot"></span><span>Bağlantı Hatası</span>';
+        console.error('Cihaz erişimi hatası:', err);
     }
 }
 
-// Initialize
-initWebRTC();
+// ==================== INITIALIZATION ====================
+document.addEventListener('DOMContentLoaded', function() {
+    console.log('Softphone başlatılıyor...');
+    
+    // Check for JsSIP
+    if (typeof JsSIP === 'undefined') {
+        console.error('JsSIP yüklenemedi!');
+        updateConnectionStatus('disconnected', 'JsSIP Hatası');
+        return;
+    }
+    
+    // Enable JsSIP debugging
+    JsSIP.debug.enable('JsSIP:*');
+    
+    // Enumerate audio devices
+    enumerateDevices();
+    
+    // Initialize JsSIP
+    initJsSIP();
+});
 </script>
 {% endblock %}
+
+
+
+
+
+
+
+
+
+
 
 
 
