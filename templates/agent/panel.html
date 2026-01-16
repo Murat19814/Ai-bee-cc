@@ -1006,10 +1006,223 @@ body {
     cursor: pointer;
     text-align: center;
 }
+
+/* === NOTIFICATIONS === */
+.notification-bell {
+    position: fixed;
+    top: 1rem;
+    right: 1rem;
+    z-index: 999;
+}
+
+.bell-btn {
+    position: relative;
+    width: 50px;
+    height: 50px;
+    border-radius: 50%;
+    background: var(--bg-card);
+    border: 2px solid rgba(245, 166, 35, 0.3);
+    color: var(--primary);
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.3rem;
+    transition: all 0.3s;
+}
+
+.bell-btn:hover {
+    background: var(--primary);
+    color: #1a1a1a;
+}
+
+.bell-btn .badge {
+    position: absolute;
+    top: -5px;
+    right: -5px;
+    background: var(--danger);
+    color: white;
+    font-size: 0.7rem;
+    font-weight: 700;
+    width: 22px;
+    height: 22px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    animation: pulse-badge 2s infinite;
+}
+
+@keyframes pulse-badge {
+    0%, 100% { transform: scale(1); }
+    50% { transform: scale(1.1); }
+}
+
+.bell-btn .badge:empty { display: none; }
+
+.notification-dropdown {
+    position: absolute;
+    top: 60px;
+    right: 0;
+    width: 360px;
+    background: var(--bg-card);
+    border: 1px solid rgba(245, 166, 35, 0.3);
+    border-radius: 16px;
+    box-shadow: 0 20px 50px rgba(0,0,0,0.5);
+    display: none;
+    overflow: hidden;
+}
+
+.notification-dropdown.active { display: block; }
+
+.notification-header {
+    padding: 1rem 1.25rem;
+    background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.notification-header h4 {
+    color: #1a1a1a;
+    font-weight: 700;
+    font-size: 0.95rem;
+}
+
+.notification-header .mark-read {
+    background: rgba(0,0,0,0.2);
+    border: none;
+    color: #1a1a1a;
+    padding: 0.4rem 0.8rem;
+    border-radius: 8px;
+    font-size: 0.75rem;
+    cursor: pointer;
+}
+
+.notification-list {
+    max-height: 400px;
+    overflow-y: auto;
+}
+
+.notification-item {
+    padding: 1rem 1.25rem;
+    border-bottom: 1px solid rgba(255,255,255,0.05);
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.notification-item:hover { background: rgba(255,255,255,0.03); }
+
+.notification-item.unread {
+    background: rgba(245, 166, 35, 0.05);
+    border-left: 3px solid var(--primary);
+}
+
+.notification-item .notif-title {
+    font-weight: 600;
+    color: var(--text-primary);
+    margin-bottom: 0.25rem;
+    font-size: 0.9rem;
+}
+
+.notification-item .notif-message {
+    color: var(--text-secondary);
+    font-size: 0.8rem;
+    line-height: 1.4;
+}
+
+.notification-item .notif-time {
+    font-size: 0.7rem;
+    color: var(--primary);
+    margin-top: 0.5rem;
+}
+
+.notification-empty {
+    padding: 3rem 1rem;
+    text-align: center;
+    color: var(--text-secondary);
+}
+
+.notification-empty i {
+    font-size: 3rem;
+    margin-bottom: 1rem;
+    opacity: 0.3;
+}
+
+/* Notification Toast */
+.notification-toast {
+    position: fixed;
+    top: 80px;
+    right: 1rem;
+    width: 320px;
+    background: var(--bg-card);
+    border: 1px solid var(--primary);
+    border-radius: 12px;
+    padding: 1rem;
+    box-shadow: 0 10px 40px rgba(0,0,0,0.5);
+    z-index: 2000;
+    transform: translateX(120%);
+    transition: transform 0.3s ease;
+}
+
+.notification-toast.show { transform: translateX(0); }
+
+.notification-toast .toast-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 0.5rem;
+}
+
+.notification-toast .toast-title {
+    font-weight: 600;
+    color: var(--primary);
+}
+
+.notification-toast .toast-close {
+    background: none;
+    border: none;
+    color: var(--text-secondary);
+    cursor: pointer;
+}
+
+.notification-toast .toast-message {
+    color: var(--text-primary);
+    font-size: 0.9rem;
+}
 </style>
 {% endblock %}
 
 {% block content %}
+<!-- Notification Bell -->
+<div class="notification-bell">
+    <button class="bell-btn" onclick="toggleNotifications()">
+        <i class="ti ti-bell"></i>
+        <span class="badge" id="notifBadge"></span>
+    </button>
+    <div class="notification-dropdown" id="notifDropdown">
+        <div class="notification-header">
+            <h4><i class="ti ti-bell-ringing"></i> Benachrichtigungen</h4>
+            <button class="mark-read" onclick="markAllRead()">Alle gelesen</button>
+        </div>
+        <div class="notification-list" id="notifList">
+            <div class="notification-empty">
+                <i class="ti ti-bell-off"></i>
+                <p>Keine Benachrichtigungen</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Notification Toast -->
+<div class="notification-toast" id="notifToast">
+    <div class="toast-header">
+        <span class="toast-title" id="toastTitle"></span>
+        <button class="toast-close" onclick="hideToast()"><i class="ti ti-x"></i></button>
+    </div>
+    <div class="toast-message" id="toastMessage"></div>
+</div>
+
 <div class="agent-wrapper">
     <!-- LEFT PANEL -->
     <div class="left-panel">
@@ -1677,5 +1890,143 @@ let keypadInput = '';
 function openKeypad() { document.getElementById('keypadModal').classList.add('active'); keypadInput = ''; document.getElementById('keypadDisplay').textContent = ''; }
 function closeKeypad() { document.getElementById('keypadModal').classList.remove('active'); }
 function pressKey(key) { keypadInput += key; document.getElementById('keypadDisplay').textContent = keypadInput; }
+
+// ============================================
+// NOTIFICATION SYSTEM
+// ============================================
+let notifications = [];
+let lastNotifId = 0;
+
+function toggleNotifications() {
+    const dropdown = document.getElementById('notifDropdown');
+    dropdown.classList.toggle('active');
+    if (dropdown.classList.contains('active')) {
+        loadNotifications();
+    }
+}
+
+function loadNotifications() {
+    fetch('/api/agent/notifications')
+        .then(r => r.json())
+        .then(data => {
+            notifications = data.notifications || [];
+            renderNotifications();
+            updateBadge(data.unread_count || 0);
+            
+            // Check for new notifications (for toast)
+            if (notifications.length > 0 && notifications[0].id > lastNotifId && lastNotifId > 0) {
+                showToast(notifications[0].title, notifications[0].message);
+            }
+            if (notifications.length > 0) {
+                lastNotifId = notifications[0].id;
+            }
+        })
+        .catch(() => {});
+}
+
+function renderNotifications() {
+    const list = document.getElementById('notifList');
+    
+    if (notifications.length === 0) {
+        list.innerHTML = `
+            <div class="notification-empty">
+                <i class="ti ti-bell-off"></i>
+                <p>Keine Benachrichtigungen</p>
+            </div>`;
+        return;
+    }
+    
+    list.innerHTML = notifications.map(n => `
+        <div class="notification-item ${n.read ? '' : 'unread'}" onclick="readNotification(${n.id})">
+            <div class="notif-title">${escapeHtml(n.title)}</div>
+            <div class="notif-message">${escapeHtml(n.message || '')}</div>
+            <div class="notif-time">${formatTime(n.created_at)}</div>
+        </div>
+    `).join('');
+}
+
+function updateBadge(count) {
+    const badge = document.getElementById('notifBadge');
+    badge.textContent = count > 0 ? (count > 9 ? '9+' : count) : '';
+}
+
+function readNotification(id) {
+    fetch('/api/agent/notifications/read', {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({ ids: [id] })
+    }).then(() => {
+        const notif = notifications.find(n => n.id === id);
+        if (notif) notif.read = true;
+        renderNotifications();
+        const unread = notifications.filter(n => !n.read).length;
+        updateBadge(unread);
+    });
+}
+
+function markAllRead() {
+    const ids = notifications.filter(n => !n.read).map(n => n.id);
+    if (ids.length === 0) return;
+    
+    fetch('/api/agent/notifications/read', {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({ ids: ids })
+    }).then(() => {
+        notifications.forEach(n => n.read = true);
+        renderNotifications();
+        updateBadge(0);
+    });
+}
+
+function showToast(title, message) {
+    const toast = document.getElementById('notifToast');
+    document.getElementById('toastTitle').textContent = title;
+    document.getElementById('toastMessage').textContent = message;
+    toast.classList.add('show');
+    
+    // Play sound
+    try {
+        const audio = new Audio('/static/sounds/notification.mp3');
+        audio.volume = 0.5;
+        audio.play().catch(() => {});
+    } catch(e) {}
+    
+    setTimeout(() => toast.classList.remove('show'), 5000);
+}
+
+function hideToast() {
+    document.getElementById('notifToast').classList.remove('show');
+}
+
+function formatTime(isoString) {
+    const date = new Date(isoString);
+    const now = new Date();
+    const diff = Math.floor((now - date) / 1000);
+    
+    if (diff < 60) return 'Gerade eben';
+    if (diff < 3600) return Math.floor(diff / 60) + ' Min.';
+    if (diff < 86400) return Math.floor(diff / 3600) + ' Std.';
+    return date.toLocaleDateString('de-DE', { day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' });
+}
+
+function escapeHtml(text) {
+    if (!text) return '';
+    const div = document.createElement('div');
+    div.textContent = text;
+    return div.innerHTML;
+}
+
+// Close notification dropdown when clicking outside
+document.addEventListener('click', function(e) {
+    const bell = document.querySelector('.notification-bell');
+    if (bell && !bell.contains(e.target)) {
+        document.getElementById('notifDropdown').classList.remove('active');
+    }
+});
+
+// Load notifications periodically
+setInterval(loadNotifications, 30000); // Every 30 seconds
+loadNotifications(); // Initial load
 </script>
 {% endblock %}

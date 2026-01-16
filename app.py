@@ -2200,6 +2200,240 @@ def agent_get_stats():
     return jsonify(stats)
 
 
+@app.route('/api/agent/next-lead')
+@login_required
+def api_agent_next_lead():
+    """Agent için sonraki lead'i getir"""
+    try:
+        campaign_id = session.get('active_campaign_id')
+        if not campaign_id:
+            return jsonify({'success': False, 'message': 'Keine aktive Kampagne'})
+        
+        # Callback'leri önce kontrol et
+        callback_lead = Lead.query.filter(
+            Lead.campaign_id == campaign_id,
+            Lead.assigned_agent_id == current_user.id,
+            Lead.status == 'callback',
+            Lead.callback_at <= datetime.utcnow()
+        ).first()
+        
+        if callback_lead:
+            lead = callback_lead
+        else:
+            # Normal lead al
+            lead = Lead.query.filter(
+                Lead.campaign_id == campaign_id,
+                Lead.status == 'new',
+                Lead.assigned_agent_id.is_(None)
+            ).first()
+            
+            if lead:
+                lead.assigned_agent_id = current_user.id
+                lead.status = 'in_progress'
+                db.session.commit()
+        
+        if not lead:
+            return jsonify({'success': False, 'message': 'Keine weiteren Kunden'})
+        
+        # Lead verilerini hazırla
+        lead_data = {
+            'id': lead.id,
+            'first_name': lead.first_name,
+            'last_name': lead.last_name,
+            'phone': lead.phone,
+            'email': lead.email,
+            'custom_data': lead.custom_data or {}
+        }
+        
+        return jsonify({'success': True, 'lead': lead_data})
+    except Exception as e:
+        return jsonify({'success': False, 'message': str(e)})
+
+
+@app.route('/api/agent/complete-call', methods=['POST'])
+@login_required
+def api_agent_complete_call():
+    """Çağrıyı tamamla ve sonucu kaydet"""
+    try:
+        data = request.get_json()
+        lead_id = data.get('lead_id')
+        disposition = data.get('disposition')
+        notes = data.get('notes', '')
+        
+        lead = Lead.query.get(lead_id)
+        if not lead:
+            return jsonify({'success': False, 'error': 'Lead nicht gefunden'})
+        
+        # Call kaydı oluştur
+        call = Call(
+            lead_id=lead_id,
+            agent_id=current_user.id,
+            campaign_id=session.get('active_campaign_id'),
+            started_at=datetime.utcnow() - timedelta(seconds=int(data.get('duration', 0))),
+            ended_at=datetime.utcnow(),
+            disposition=disposition,
+            agent_note=notes,
+            talk_duration=int(data.get('duration', 0))
+        )
+        db.session.add(call)
+        
+        # Lead durumunu güncelle
+        if disposition == 'sale_ok':
+            lead.status = 'converted'
+        elif disposition == 'callback':
+            lead.status = 'callback'
+        elif disposition == 'storno':
+            lead.status = 'storno'
+        elif disposition in ['no_interest', 'wrong_number', 'blacklist']:
+            lead.status = 'closed'
+        else:
+            lead.status = 'contacted'
+        
+        db.session.commit()
+        return jsonify({'success': True})
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({'success': False, 'error': str(e)})
+
+
+@app.route('/api/agent/save-customer', methods=['POST'])
+@login_required
+def api_agent_save_customer():
+    """Lead bilgilerini güncelle"""
+    try:
+        data = request.get_json()
+        lead_id = data.get('lead_id')
+        
+        lead = Lead.query.get(lead_id)
+        if not lead:
+            return jsonify({'success': False, 'error': 'Lead nicht gefunden'})
+        
+        lead.first_name = data.get('first_name', lead.first_name)
+        lead.last_name = data.get('last_name', lead.last_name)
+        lead.phone = data.get('phone', lead.phone)
+        lead.email = data.get('email', lead.email)
+        
+        # Custom data güncelle
+        custom_data = lead.custom_data or {}
+        if data.get('iban'):
+            custom_data['iban'] = data.get('iban')
+        lead.custom_data = custom_data
+        
+        db.session.commit()
+        return jsonify({'success': True})
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({'success': False, 'error': str(e)})
+
+
+@app.route('/api/agent/qc-stats')
+@login_required
+def api_agent_qc_stats():
+    """Agent QC istatistikleri"""
+    try:
+        today = datetime.now().replace(hour=0, minute=0, second=0, microsecond=0)
+        
+        today_calls = Call.query.filter(
+            Call.agent_id == current_user.id,
+            Call.started_at >= today
+        ).all()
+        
+        stats = {
+            'qc_ok': sum(1 for c in today_calls if c.qa_status == 'passed'),
+            'qc_termin': sum(1 for c in today_calls if c.qa_status == 'termin' or (c.lead and c.lead.status == 'callback')),
+            'storno': sum(1 for c in today_calls if c.disposition == 'storno' or c.qa_status == 'storno'),
+            'qc_ne': sum(1 for c in today_calls if c.qa_status == 'failed' or c.qa_status == 'ne')
+        }
+        
+        return jsonify(stats)
+    except Exception as e:
+        return jsonify({'qc_ok': 0, 'qc_termin': 0, 'storno': 0, 'qc_ne': 0})
+
+
+@app.route('/api/agent/qc-customers/<status_type>')
+@login_required
+def api_agent_qc_customers(status_type):
+    """QC durumuna göre müşteri listesi"""
+    try:
+        today = datetime.now().replace(hour=0, minute=0, second=0, microsecond=0)
+        
+        # Status tipine göre filtrele
+        calls = Call.query.filter(
+            Call.agent_id == current_user.id,
+            Call.started_at >= today
+        )
+        
+        if status_type == 'qc_termin':
+            calls = calls.filter((Call.qa_status == 'termin') | (Call.disposition == 'callback'))
+        elif status_type == 'storno':
+            calls = calls.filter((Call.qa_status == 'storno') | (Call.disposition == 'storno'))
+        elif status_type == 'qc_ok':
+            calls = calls.filter(Call.qa_status == 'passed')
+        elif status_type == 'qc_ne':
+            calls = calls.filter((Call.qa_status == 'failed') | (Call.qa_status == 'ne'))
+        
+        calls = calls.all()
+        
+        customers = []
+        for call in calls:
+            if call.lead:
+                customers.append({
+                    'id': call.lead.id,
+                    'first_name': call.lead.first_name,
+                    'last_name': call.lead.last_name,
+                    'phone': call.lead.phone,
+                    'bemerkung': call.agent_note or call.qa_note or ''
+                })
+        
+        return jsonify({'customers': customers})
+    except Exception as e:
+        return jsonify({'customers': [], 'error': str(e)})
+
+
+@app.route('/api/agent/notifications')
+@login_required
+def api_agent_notifications():
+    """Agent bildirimleri"""
+    try:
+        notifications = Notification.query.filter(
+            Notification.user_id == current_user.id,
+            Notification.tenant_id == current_user.tenant_id,
+            Notification.created_at >= datetime.utcnow() - timedelta(hours=24)
+        ).order_by(Notification.created_at.desc()).limit(20).all()
+        
+        return jsonify({
+            'notifications': [{
+                'id': n.id,
+                'title': n.title,
+                'message': n.message,
+                'type': n.type,
+                'created_at': n.created_at.isoformat(),
+                'read': n.is_read
+            } for n in notifications],
+            'unread_count': sum(1 for n in notifications if not n.is_read)
+        })
+    except Exception as e:
+        return jsonify({'notifications': [], 'unread_count': 0})
+
+
+@app.route('/api/agent/notifications/read', methods=['POST'])
+@login_required
+def api_agent_mark_notifications_read():
+    """Bildirimleri okundu işaretle"""
+    try:
+        notification_ids = request.get_json().get('ids', [])
+        
+        Notification.query.filter(
+            Notification.id.in_(notification_ids),
+            Notification.user_id == current_user.id
+        ).update({'is_read': True}, synchronize_session=False)
+        
+        db.session.commit()
+        return jsonify({'success': True})
+    except Exception as e:
+        return jsonify({'success': False, 'error': str(e)})
+
+
 @app.route('/agent/call/<int:customer_id>')
 @login_required
 def agent_call_card(customer_id):
