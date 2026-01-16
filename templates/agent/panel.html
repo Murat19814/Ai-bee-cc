@@ -1,349 +1,1550 @@
 ﻿{% extends "base.html" %}
 
-{% block title %}Agent Paneli - AI BEE CC{% endblock %}
+{% block title %}Agent Panel - AI BEE CC{% endblock %}
+
+{% block extra_css %}
+<style>
+:root {
+    --agent-primary: #F5A623;
+    --agent-primary-dark: #E09612;
+    --agent-success: #00C853;
+    --agent-warning: #FF9800;
+    --agent-danger: #F44336;
+    --agent-info: #2196F3;
+    --agent-purple: #9C27B0;
+    --agent-cyan: #00BCD4;
+    --agent-bg: #0F1419;
+    --agent-card: #1A2332;
+    --agent-card-hover: #243447;
+    --agent-border: rgba(255,255,255,0.08);
+    --agent-text: #E7E9EA;
+    --agent-text-muted: #8899A6;
+}
+
+.agent-container {
+    display: grid;
+    grid-template-columns: 280px 1fr 320px;
+    gap: 1rem;
+    height: calc(100vh - 80px);
+    padding: 1rem;
+    background: var(--agent-bg);
+}
+
+/* === TOP STATS BAR === */
+.stats-bar {
+    grid-column: 1 / -1;
+    display: grid;
+    grid-template-columns: repeat(6, 1fr);
+    gap: 0.75rem;
+}
+
+.stat-box {
+    border-radius: 12px;
+    padding: 1rem 1.25rem;
+    color: white;
+    position: relative;
+    overflow: hidden;
+}
+
+.stat-box::before {
+    content: '';
+    position: absolute;
+    top: 0; right: 0;
+    width: 80px; height: 80px;
+    background: rgba(255,255,255,0.1);
+    border-radius: 50%;
+    transform: translate(30%, -30%);
+}
+
+.stat-box.blue { background: linear-gradient(135deg, #1976D2 0%, #1565C0 100%); }
+.stat-box.green { background: linear-gradient(135deg, #2E7D32 0%, #1B5E20 100%); }
+.stat-box.red { background: linear-gradient(135deg, #C62828 0%, #B71C1C 100%); }
+.stat-box.orange { background: linear-gradient(135deg, #EF6C00 0%, #E65100 100%); }
+.stat-box.purple { background: linear-gradient(135deg, #7B1FA2 0%, #6A1B9A 100%); }
+.stat-box.teal { background: linear-gradient(135deg, #00838F 0%, #006064 100%); }
+
+.stat-box .stat-value {
+    font-size: 2rem;
+    font-weight: 700;
+    line-height: 1;
+}
+
+.stat-box .stat-label {
+    font-size: 0.75rem;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    opacity: 0.9;
+    margin-top: 0.25rem;
+}
+
+.stat-box .stat-sublabel {
+    font-size: 0.65rem;
+    opacity: 0.7;
+    margin-top: 0.25rem;
+}
+
+/* === LEFT SIDEBAR === */
+.left-sidebar {
+    background: var(--agent-card);
+    border-radius: 16px;
+    padding: 1.25rem;
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+}
+
+.status-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.5rem 1rem;
+    background: rgba(0,200,83,0.15);
+    border: 1px solid rgba(0,200,83,0.3);
+    border-radius: 20px;
+    color: var(--agent-success);
+    font-weight: 600;
+    font-size: 0.85rem;
+}
+
+.status-badge::before {
+    content: '';
+    width: 8px; height: 8px;
+    background: var(--agent-success);
+    border-radius: 50%;
+    animation: pulse-dot 1.5s infinite;
+}
+
+@keyframes pulse-dot {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.4; }
+}
+
+.call-info-panel {
+    background: rgba(255,255,255,0.03);
+    border-radius: 12px;
+    padding: 1rem;
+    text-align: center;
+}
+
+.call-info-panel .phone-number {
+    font-size: 1.1rem;
+    font-weight: 600;
+    color: var(--agent-primary);
+    font-family: 'JetBrains Mono', monospace;
+}
+
+.call-info-panel .phone-masked {
+    font-size: 0.9rem;
+    color: var(--agent-text-muted);
+    font-family: 'JetBrains Mono', monospace;
+}
+
+.call-timer-display {
+    font-size: 2.5rem;
+    font-weight: 700;
+    font-family: 'JetBrains Mono', monospace;
+    color: var(--agent-text);
+    margin: 0.5rem 0;
+}
+
+.call-controls {
+    display: flex;
+    gap: 0.5rem;
+    justify-content: center;
+    margin-top: 0.5rem;
+}
+
+.call-controls button {
+    width: 40px; height: 40px;
+    border-radius: 50%;
+    border: none;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1rem;
+    transition: all 0.2s;
+}
+
+.call-controls button:hover { transform: scale(1.1); }
+.call-controls .btn-mic { background: var(--agent-card-hover); color: var(--agent-text); }
+.call-controls .btn-rec { background: var(--agent-danger); color: white; }
+
+/* Action Buttons */
+.action-buttons {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.action-btn {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 0.875rem 1rem;
+    border-radius: 10px;
+    border: none;
+    cursor: pointer;
+    font-weight: 600;
+    font-size: 0.9rem;
+    transition: all 0.2s;
+    text-align: left;
+}
+
+.action-btn i { font-size: 1.1rem; }
+
+.action-btn.primary {
+    background: linear-gradient(135deg, var(--agent-success) 0%, #00A847 100%);
+    color: white;
+}
+
+.action-btn.warning {
+    background: linear-gradient(135deg, var(--agent-warning) 0%, #F57C00 100%);
+    color: white;
+}
+
+.action-btn.info {
+    background: linear-gradient(135deg, var(--agent-info) 0%, #1976D2 100%);
+    color: white;
+}
+
+.action-btn.secondary {
+    background: var(--agent-card-hover);
+    color: var(--agent-text);
+    border: 1px solid var(--agent-border);
+}
+
+.action-btn.danger {
+    background: linear-gradient(135deg, var(--agent-danger) 0%, #D32F2F 100%);
+    color: white;
+}
+
+.action-btn:hover { transform: translateX(4px); }
+
+/* Manual Call Input */
+.manual-call-section {
+    margin-top: auto;
+}
+
+.manual-call-section label {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 0.85rem;
+    color: var(--agent-text-muted);
+    margin-bottom: 0.5rem;
+}
+
+.manual-call-input {
+    display: flex;
+    gap: 0.5rem;
+}
+
+.manual-call-input input {
+    flex: 1;
+    background: var(--agent-card-hover);
+    border: 1px solid var(--agent-border);
+    border-radius: 8px;
+    padding: 0.75rem 1rem;
+    color: var(--agent-text);
+    font-family: 'JetBrains Mono', monospace;
+}
+
+.manual-call-input input::placeholder { color: var(--agent-text-muted); }
+
+.manual-call-input button {
+    background: var(--agent-info);
+    border: none;
+    border-radius: 8px;
+    padding: 0 1rem;
+    color: white;
+    cursor: pointer;
+}
+
+/* IBAN Control */
+.iban-control {
+    background: rgba(255,255,255,0.03);
+    border-radius: 10px;
+    padding: 0.75rem;
+    margin-top: 0.5rem;
+}
+
+.iban-control summary {
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 0.85rem;
+    color: var(--agent-text-muted);
+}
+
+.iban-control input {
+    width: 100%;
+    margin-top: 0.5rem;
+    background: var(--agent-card-hover);
+    border: 1px solid var(--agent-border);
+    border-radius: 6px;
+    padding: 0.5rem;
+    color: var(--agent-text);
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.85rem;
+}
+
+/* === MAIN CONTENT === */
+.main-content {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+    overflow-y: auto;
+}
+
+/* Tabs */
+.content-tabs {
+    display: flex;
+    gap: 0.25rem;
+    background: var(--agent-card);
+    padding: 0.25rem;
+    border-radius: 12px;
+}
+
+.content-tab {
+    padding: 0.75rem 1.25rem;
+    border-radius: 10px;
+    border: none;
+    background: transparent;
+    color: var(--agent-text-muted);
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.content-tab:hover { color: var(--agent-text); }
+.content-tab.active {
+    background: var(--agent-primary);
+    color: #1a1a1a;
+}
+
+.content-tab .badge {
+    background: rgba(255,255,255,0.2);
+    padding: 0.15rem 0.5rem;
+    border-radius: 10px;
+    font-size: 0.75rem;
+}
+
+/* Lotto Numbers */
+.lotto-section {
+    background: var(--agent-card);
+    border-radius: 12px;
+    padding: 1rem;
+}
+
+.lotto-grid {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    gap: 0.5rem;
+}
+
+.lotto-box {
+    background: linear-gradient(135deg, var(--agent-cyan) 0%, #0097A7 100%);
+    border-radius: 8px;
+    overflow: hidden;
+}
+
+.lotto-box .lotto-header {
+    background: rgba(0,0,0,0.2);
+    padding: 0.35rem 0.5rem;
+    font-size: 0.7rem;
+    font-weight: 600;
+    color: white;
+}
+
+.lotto-box input {
+    width: 100%;
+    border: none;
+    background: rgba(255,255,255,0.95);
+    padding: 0.75rem 0.5rem;
+    text-align: center;
+    font-size: 1.1rem;
+    font-weight: 600;
+    font-family: 'JetBrains Mono', monospace;
+}
+
+/* Customer Form */
+.customer-form-section {
+    flex: 1;
+    background: var(--agent-card);
+    border-radius: 12px;
+    padding: 1.25rem;
+    overflow-y: auto;
+}
+
+.form-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1rem;
+    padding-bottom: 0.75rem;
+    border-bottom: 1px solid var(--agent-border);
+}
+
+.form-header h3 {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 1rem;
+    color: var(--agent-text);
+}
+
+.form-actions {
+    display: flex;
+    gap: 0.5rem;
+}
+
+.form-actions button {
+    padding: 0.5rem 1rem;
+    border-radius: 8px;
+    border: none;
+    font-weight: 600;
+    cursor: pointer;
+    font-size: 0.85rem;
+}
+
+.btn-save {
+    background: var(--agent-info);
+    color: white;
+}
+
+.btn-annuf {
+    background: var(--agent-success);
+    color: white;
+}
+
+.form-columns {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1.5rem;
+}
+
+.form-column h4 {
+    font-size: 0.8rem;
+    text-transform: uppercase;
+    color: var(--agent-primary);
+    margin-bottom: 1rem;
+    padding-bottom: 0.5rem;
+    border-bottom: 2px solid var(--agent-primary);
+}
+
+.form-group {
+    margin-bottom: 0.875rem;
+}
+
+.form-group label {
+    display: block;
+    font-size: 0.75rem;
+    color: var(--agent-text-muted);
+    margin-bottom: 0.35rem;
+    text-transform: uppercase;
+    letter-spacing: 0.3px;
+}
+
+.form-group label.required::after {
+    content: ' *';
+    color: var(--agent-danger);
+}
+
+.form-group input,
+.form-group select,
+.form-group textarea {
+    width: 100%;
+    background: var(--agent-card-hover);
+    border: 1px solid var(--agent-border);
+    border-radius: 8px;
+    padding: 0.65rem 0.875rem;
+    color: var(--agent-text);
+    font-size: 0.9rem;
+    transition: all 0.2s;
+}
+
+.form-group input:focus,
+.form-group select:focus,
+.form-group textarea:focus {
+    border-color: var(--agent-primary);
+    outline: none;
+    box-shadow: 0 0 0 3px rgba(245, 166, 35, 0.1);
+}
+
+.form-group input::placeholder { color: var(--agent-text-muted); }
+
+.form-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 0.75rem;
+}
+
+/* === RIGHT SIDEBAR - QC PANEL === */
+.right-sidebar {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+}
+
+.qc-panel {
+    background: var(--agent-card);
+    border-radius: 16px;
+    padding: 1.25rem;
+}
+
+.qc-panel h3 {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 0.9rem;
+    color: var(--agent-text);
+    margin-bottom: 1rem;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.qc-buttons {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.qc-btn {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 1rem 1.25rem;
+    border-radius: 12px;
+    border: 2px solid transparent;
+    cursor: pointer;
+    font-weight: 600;
+    font-size: 0.95rem;
+    transition: all 0.2s;
+    text-align: left;
+}
+
+.qc-btn i { font-size: 1.25rem; }
+
+.qc-btn:hover { transform: translateY(-2px); }
+
+.qc-btn.qc-ok {
+    background: linear-gradient(135deg, #2E7D32 0%, #1B5E20 100%);
+    color: white;
+}
+
+.qc-btn.qc-termin {
+    background: linear-gradient(135deg, #1565C0 0%, #0D47A1 100%);
+    color: white;
+}
+
+.qc-btn.qc-storno {
+    background: linear-gradient(135deg, #EF6C00 0%, #E65100 100%);
+    color: white;
+}
+
+.qc-btn.qc-ne {
+    background: linear-gradient(135deg, #C62828 0%, #B71C1C 100%);
+    color: white;
+}
+
+/* AI Panel */
+.ai-panel {
+    background: var(--agent-card);
+    border-radius: 16px;
+    padding: 1.25rem;
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+}
+
+.ai-panel h3 {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 0.9rem;
+    color: var(--agent-primary);
+    margin-bottom: 1rem;
+}
+
+.ai-panel h3 i {
+    font-size: 1.25rem;
+}
+
+.transcription-box {
+    flex: 1;
+    background: rgba(0,0,0,0.3);
+    border-radius: 10px;
+    padding: 1rem;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.85rem;
+    color: var(--agent-text-muted);
+    line-height: 1.6;
+    overflow-y: auto;
+    max-height: 200px;
+}
+
+.transcription-box .speaker-agent {
+    color: var(--agent-info);
+}
+
+.transcription-box .speaker-customer {
+    color: var(--agent-success);
+}
+
+.ai-suggestions {
+    margin-top: 1rem;
+    padding-top: 1rem;
+    border-top: 1px solid var(--agent-border);
+}
+
+.ai-suggestion-item {
+    display: flex;
+    align-items: flex-start;
+    gap: 0.5rem;
+    padding: 0.5rem;
+    background: rgba(245, 166, 35, 0.1);
+    border-radius: 8px;
+    margin-bottom: 0.5rem;
+    font-size: 0.85rem;
+    color: var(--agent-text);
+}
+
+.ai-suggestion-item i {
+    color: var(--agent-primary);
+    margin-top: 0.1rem;
+}
+
+/* Disposition Modal */
+.modal-disposition {
+    position: fixed;
+    top: 0; left: 0; right: 0; bottom: 0;
+    background: rgba(0,0,0,0.8);
+    display: none;
+    align-items: center;
+    justify-content: center;
+    z-index: 1000;
+}
+
+.modal-disposition.active { display: flex; }
+
+.modal-disposition-content {
+    background: var(--agent-card);
+    border-radius: 16px;
+    width: 90%;
+    max-width: 900px;
+    max-height: 90vh;
+    overflow: hidden;
+}
+
+.modal-header-custom {
+    background: linear-gradient(135deg, var(--agent-primary) 0%, var(--agent-primary-dark) 100%);
+    padding: 1rem 1.5rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.modal-header-custom h3 {
+    color: #1a1a1a;
+    font-weight: 700;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.modal-header-custom .close-btn {
+    background: none;
+    border: none;
+    color: #1a1a1a;
+    font-size: 1.5rem;
+    cursor: pointer;
+}
+
+.modal-tabs {
+    display: flex;
+    border-bottom: 1px solid var(--agent-border);
+}
+
+.modal-tab {
+    padding: 1rem 1.5rem;
+    background: none;
+    border: none;
+    color: var(--agent-text-muted);
+    font-weight: 600;
+    cursor: pointer;
+    border-bottom: 2px solid transparent;
+    transition: all 0.2s;
+}
+
+.modal-tab:hover { color: var(--agent-text); }
+.modal-tab.active {
+    color: var(--agent-primary);
+    border-bottom-color: var(--agent-primary);
+}
+
+.modal-body-custom {
+    padding: 1.5rem;
+}
+
+.disposition-options {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1rem;
+}
+
+.disposition-column h4 {
+    font-size: 0.8rem;
+    color: var(--agent-text-muted);
+    text-transform: uppercase;
+    margin-bottom: 0.75rem;
+}
+
+.disposition-option {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 0.875rem 1rem;
+    background: var(--agent-card-hover);
+    border: 2px solid transparent;
+    border-radius: 10px;
+    cursor: pointer;
+    transition: all 0.2s;
+    margin-bottom: 0.5rem;
+}
+
+.disposition-option:hover {
+    border-color: var(--agent-primary);
+}
+
+.disposition-option.selected {
+    border-color: var(--agent-primary);
+    background: rgba(245, 166, 35, 0.1);
+}
+
+.disposition-option input { display: none; }
+
+.disposition-option .radio-custom {
+    width: 20px; height: 20px;
+    border: 2px solid var(--agent-text-muted);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.disposition-option.selected .radio-custom {
+    border-color: var(--agent-primary);
+    background: var(--agent-primary);
+}
+
+.disposition-option.selected .radio-custom::after {
+    content: '';
+    width: 8px; height: 8px;
+    background: #1a1a1a;
+    border-radius: 50%;
+}
+
+.notes-textarea {
+    width: 100%;
+    height: 80px;
+    background: var(--agent-card-hover);
+    border: 1px solid var(--agent-border);
+    border-radius: 10px;
+    padding: 1rem;
+    color: var(--agent-text);
+    resize: none;
+    margin-top: 1rem;
+}
+
+.modal-footer-custom {
+    padding: 1rem 1.5rem;
+    background: rgba(0,0,0,0.2);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.footer-checkboxes {
+    display: flex;
+    gap: 1.5rem;
+}
+
+.footer-checkboxes label {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    color: var(--agent-text-muted);
+    font-size: 0.9rem;
+    cursor: pointer;
+}
+
+.footer-checkboxes input[type="checkbox"] {
+    width: 18px; height: 18px;
+    accent-color: var(--agent-primary);
+}
+
+.btn-save-modal {
+    background: linear-gradient(135deg, var(--agent-info) 0%, #1976D2 100%);
+    color: white;
+    border: none;
+    padding: 0.75rem 2rem;
+    border-radius: 10px;
+    font-weight: 600;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+/* Termin Tab Content */
+.termin-content {
+    display: none;
+}
+
+.termin-content.active { display: block; }
+
+.termin-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1rem;
+    margin-bottom: 1rem;
+}
+
+.termin-quick-options {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 0.75rem;
+    margin-top: 1rem;
+}
+
+.quick-option {
+    padding: 0.875rem;
+    background: var(--agent-card-hover);
+    border: 2px solid transparent;
+    border-radius: 10px;
+    cursor: pointer;
+    text-align: center;
+    color: var(--agent-info);
+    font-weight: 500;
+    transition: all 0.2s;
+}
+
+.quick-option:hover {
+    border-color: var(--agent-info);
+}
+
+/* No Call State */
+.no-call-overlay {
+    position: absolute;
+    top: 0; left: 0; right: 0; bottom: 0;
+    background: rgba(15, 20, 25, 0.9);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    z-index: 10;
+    border-radius: 12px;
+}
+
+.no-call-overlay i {
+    font-size: 4rem;
+    color: var(--agent-text-muted);
+    margin-bottom: 1rem;
+}
+
+.no-call-overlay h4 {
+    color: var(--agent-text-muted);
+    margin-bottom: 0.5rem;
+}
+
+.no-call-overlay p {
+    color: var(--agent-text-muted);
+    font-size: 0.9rem;
+}
+
+/* Responsive */
+@media (max-width: 1400px) {
+    .agent-container {
+        grid-template-columns: 260px 1fr 280px;
+    }
+}
+
+@media (max-width: 1200px) {
+    .agent-container {
+        grid-template-columns: 1fr;
+    }
+    
+    .stats-bar {
+        grid-template-columns: repeat(3, 1fr);
+    }
+}
+</style>
+{% endblock %}
 
 {% block content %}
-<div class="page-header">
-    <div class="page-header-content">
-        <h1 class="page-title">
-            <i class="ti ti-headset"></i>
-            Agent Paneli
-        </h1>
-        <p class="page-subtitle">Hos geldin, {{ current_user.full_name or current_user.username }}</p>
-    </div>
-    <div class="page-header-actions">
-        <div class="agent-status-selector">
-            <select class="form-control" id="agentStatus" onchange="changeStatus(this.value)">
-                <option value="available" {% if current_user.status == 'available' %}selected{% endif %}>Musait</option>
-                <option value="busy" {% if current_user.status == 'busy' %}selected{% endif %}>Mesgul</option>
-                <option value="break" {% if current_user.status == 'break' %}selected{% endif %}>Mola</option>
-                <option value="wrap_up" {% if current_user.status == 'wrap_up' %}selected{% endif %}>Islem Sonrasi</option>
-            </select>
+<div class="agent-container">
+    <!-- TOP STATS BAR -->
+    <div class="stats-bar">
+        <div class="stat-box blue">
+            <div class="stat-value" id="statCalls">0</div>
+            <div class="stat-label">ANRUFZAHL</div>
+            <div class="stat-sublabel">Diesen Monat: <span id="statCallsMonth">0</span></div>
+        </div>
+        <div class="stat-box green">
+            <div class="stat-value" id="statQcOk">0</div>
+            <div class="stat-label">Q.C. OK</div>
+            <div class="stat-sublabel">Diesen Monat: <span id="statQcOkMonth">0</span></div>
+        </div>
+        <div class="stat-box red">
+            <div class="stat-value" id="statStorno">0</div>
+            <div class="stat-label">Verkauf Storniert</div>
+            <div class="stat-sublabel">Diesen Monat: <span id="statStornoMonth">0</span></div>
+        </div>
+        <div class="stat-box orange">
+            <div class="stat-value" id="statPause">00:00:00</div>
+            <div class="stat-label">PAUSENZEIT</div>
+            <div class="stat-sublabel">O.M.: 00:00:00</div>
+        </div>
+        <div class="stat-box purple">
+            <div class="stat-value" id="statCallback">0</div>
+            <div class="stat-label">WIEDERVORLAGE</div>
+            <div class="stat-sublabel">Im Anruf: <span id="statInCall">0</span></div>
+        </div>
+        <div class="stat-box teal">
+            <div class="stat-value" id="statTotal">0</div>
+            <div class="stat-label">GESAMTVERKÄUFE</div>
+            <div class="stat-sublabel">Diesen Monat: <span id="statTotalMonth">0</span></div>
         </div>
     </div>
-</div>
 
-<div class="row">
-    <div class="col-md-3">
-        <div class="stat-card">
-            <div class="stat-icon"><i class="ti ti-phone-call"></i></div>
-            <div class="stat-content">
-                <div class="stat-value" id="statCalls">0</div>
-                <div class="stat-label">Bugunku Cagrilar</div>
-            </div>
+    <!-- LEFT SIDEBAR -->
+    <div class="left-sidebar">
+        <div class="status-badge" id="agentStatusBadge">
+            Status: Bereit
         </div>
-    </div>
-    <div class="col-md-3">
-        <div class="stat-card success">
-            <div class="stat-icon"><i class="ti ti-shopping-cart"></i></div>
-            <div class="stat-content">
-                <div class="stat-value" id="statSales">0</div>
-                <div class="stat-label">Bugunku Satis</div>
+        
+        <div class="call-info-panel">
+            <div class="call-label" style="font-size: 0.8rem; color: var(--agent-text-muted);">
+                <i class="ti ti-phone"></i> Anrufinformationen
             </div>
-        </div>
-    </div>
-    <div class="col-md-3">
-        <div class="stat-card warning">
-            <div class="stat-icon"><i class="ti ti-clock"></i></div>
-            <div class="stat-content">
-                <div class="stat-value" id="statCallbacks">0</div>
-                <div class="stat-label">Geri Arama</div>
-            </div>
-        </div>
-    </div>
-    <div class="col-md-3">
-        <div class="stat-card info">
-            <div class="stat-icon"><i class="ti ti-target"></i></div>
-            <div class="stat-content">
-                <div class="stat-value" id="statQa">--%</div>
-                <div class="stat-label">QA Skoru</div>
-            </div>
-        </div>
-    </div>
-</div>
-
-<!-- Aktif Cagri Alani -->
-<div class="row mt-4">
-    <div class="col-md-8">
-        <div class="card">
-            <div class="card-header d-flex justify-content-between align-items-center">
-                <h3 class="card-title"><i class="ti ti-phone"></i> Aktif Cagri</h3>
-                <button class="btn btn-primary btn-lg" id="btnStartCall" onclick="getNextLead()">
-                    <i class="ti ti-phone-plus"></i> Arama Baslat
+            <div class="phone-number" id="displayPhone">---</div>
+            <div class="phone-masked" id="displayPhoneMasked">--- ---</div>
+            <div style="color: var(--agent-text-muted); font-size: 0.85rem;" id="displayCustomerName">- -</div>
+            <div class="call-timer-display" id="callTimer">00:00:00</div>
+            <div class="call-controls">
+                <button class="btn-mic" onclick="toggleMute()" title="Mikrofon">
+                    <i class="ti ti-microphone"></i>
+                </button>
+                <button class="btn-rec" onclick="toggleRecord()" title="Aufnahme">
+                    <i class="ti ti-circle-filled"></i>
+                </button>
+                <button class="btn-mic" title="Numpad">
+                    <i class="ti ti-grid-dots"></i>
                 </button>
             </div>
-            <div class="card-body">
-                <!-- Bekleme Durumu -->
-                <div class="no-call-state" id="noCallState">
-                    <i class="ti ti-phone-off" style="font-size: 4rem; color: var(--text-muted);"></i>
-                    <h4 style="color: var(--text-muted); margin-top: 1rem;">Aktif cagri yok</h4>
-                    <p style="color: var(--text-muted);">Arama Baslat butonuna basin</p>
+        </div>
+
+        <div class="action-buttons">
+            <button class="action-btn primary" id="btnStart" onclick="startCall()">
+                <i class="ti ti-player-play-filled"></i>
+                Start
+            </button>
+            <button class="action-btn danger" id="btnEndCall" onclick="openDispositionModal()" style="display: none;">
+                <i class="ti ti-power"></i>
+                Anruf Beenden
+            </button>
+            <button class="action-btn warning" onclick="togglePause()">
+                <i class="ti ti-player-pause-filled"></i>
+                Pause
+            </button>
+            <button class="action-btn info" onclick="openCalendar()">
+                <i class="ti ti-calendar-event"></i>
+                In Kalender speichern
+            </button>
+        </div>
+
+        <div class="manual-call-section">
+            <label><i class="ti ti-phone-call"></i> Manueller Anruf</label>
+            <div class="manual-call-input">
+                <input type="text" id="manualNumber" placeholder="Nummer Eingeben">
+                <button onclick="manualCall()"><i class="ti ti-phone"></i></button>
+            </div>
+            
+            <details class="iban-control">
+                <summary><i class="ti ti-credit-card"></i> IBAN Kontrolle</summary>
+                <div style="display: flex; gap: 0.5rem; margin-top: 0.5rem;">
+                    <input type="text" id="ibanCheck" placeholder="IBAN Eingeben">
+                    <button onclick="checkIBAN()" style="background: var(--agent-info); border: none; border-radius: 6px; padding: 0 0.75rem; color: white; cursor: pointer;">
+                        <i class="ti ti-arrow-right"></i>
+                    </button>
                 </div>
-                
-                <!-- Aktif Cagri Bilgileri -->
-                <div class="active-call-state" id="activeCallState" style="display: none;">
-                    <div class="customer-card">
-                        <div class="customer-header">
-                            <div class="customer-avatar" id="customerAvatar">--</div>
-                            <div class="customer-info">
-                                <h2 id="customerName">Musteri Adi</h2>
-                                <div class="customer-phone" id="customerPhone">+49 *** **** **</div>
-                            </div>
-                            <div class="call-timer">
-                                <div class="timer-display" id="callTimer">00:00</div>
-                                <div class="call-status" id="callStatus">Baglaniyor...</div>
-                            </div>
+            </details>
+        </div>
+    </div>
+
+    <!-- MAIN CONTENT -->
+    <div class="main-content">
+        <!-- Tabs -->
+        <div class="content-tabs">
+            <button class="content-tab active" onclick="switchTab('display')">
+                <i class="ti ti-layout-dashboard"></i> Agenten Display
+            </button>
+            <button class="content-tab" onclick="switchTab('old')">
+                Alte Verkäufe
+            </button>
+            <button class="content-tab" onclick="switchTab('sales')">
+                Verkäufe
+            </button>
+            <button class="content-tab" onclick="switchTab('status')">
+                <i class="ti ti-headphones"></i> Verkaufsstatus <span class="badge">0</span>
+            </button>
+            <button class="content-tab" onclick="switchTab('waiting')">
+                wartende Anrufe
+            </button>
+        </div>
+
+        <!-- Lotto Numbers -->
+        <div class="lotto-section">
+            <div class="lotto-grid">
+                <div class="lotto-box">
+                    <div class="lotto-header">1</div>
+                    <input type="text" id="lotto1" maxlength="2">
+                </div>
+                <div class="lotto-box">
+                    <div class="lotto-header">2</div>
+                    <input type="text" id="lotto2" maxlength="2">
+                </div>
+                <div class="lotto-box">
+                    <div class="lotto-header">3</div>
+                    <input type="text" id="lotto3" maxlength="2">
+                </div>
+                <div class="lotto-box">
+                    <div class="lotto-header">4</div>
+                    <input type="text" id="lotto4" maxlength="2">
+                </div>
+                <div class="lotto-box">
+                    <div class="lotto-header">5</div>
+                    <input type="text" id="lotto5" maxlength="2">
+                </div>
+                <div class="lotto-box">
+                    <div class="lotto-header">6</div>
+                    <input type="text" id="lotto6" maxlength="2">
+                </div>
+                <div class="lotto-box" style="background: linear-gradient(135deg, #E91E63 0%, #C2185B 100%);">
+                    <div class="lotto-header">7</div>
+                    <input type="text" id="lotto7" maxlength="2">
+                </div>
+            </div>
+        </div>
+
+        <!-- Customer Form -->
+        <div class="customer-form-section" id="customerFormSection" style="position: relative;">
+            <div class="no-call-overlay" id="noCallOverlay">
+                <i class="ti ti-phone-off"></i>
+                <h4>Kein aktiver Anruf</h4>
+                <p>Drücken Sie "Start" um einen Anruf zu beginnen</p>
+            </div>
+            
+            <div class="form-header">
+                <h3><i class="ti ti-user-edit"></i> Kundendaten</h3>
+                <div class="form-actions">
+                    <button class="btn-save" onclick="saveCustomer()">
+                        <i class="ti ti-device-floppy"></i> Speichern
+                    </button>
+                    <button class="btn-annuf" id="btnAnnuf" onclick="openDispositionModal()">
+                        <i class="ti ti-check"></i> Annuf (1)
+                    </button>
+                </div>
+            </div>
+
+            <div class="form-columns">
+                <!-- Left Column - Personal Info -->
+                <div class="form-column">
+                    <h4>Persönliche Daten</h4>
+                    
+                    <div class="form-group">
+                        <label class="required">Anrede</label>
+                        <select id="formAnrede">
+                            <option value="">Bitte wählen...</option>
+                            <option value="Herr">Herr</option>
+                            <option value="Frau">Frau</option>
+                        </select>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label class="required">Name</label>
+                        <input type="text" id="formName" placeholder="-">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label class="required">Nachname</label>
+                        <input type="text" id="formNachname" placeholder="-">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label>Geburts Datum</label>
+                        <textarea id="formGeburt" rows="1" placeholder=""></textarea>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label class="required">Strasse</label>
+                        <input type="text" id="formStrasse" placeholder="">
+                    </div>
+                    
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label class="required">Hausnummer</label>
+                            <input type="text" id="formHausnr" placeholder="">
                         </div>
-                        
-                        <div class="customer-details">
-                            <div class="detail-grid">
-                                <div class="detail-item">
-                                    <div class="detail-label">E-posta</div>
-                                    <div class="detail-value" id="customerEmail">-</div>
-                                </div>
-                                <div class="detail-item">
-                                    <div class="detail-label">Sirket</div>
-                                    <div class="detail-value" id="customerCompany">-</div>
-                                </div>
-                                <div class="detail-item">
-                                    <div class="detail-label">Adres</div>
-                                    <div class="detail-value" id="customerAddress">-</div>
-                                </div>
-                                <div class="detail-item">
-                                    <div class="detail-label">IBAN</div>
-                                    <div class="detail-value masked" id="customerIban">****</div>
-                                </div>
-                            </div>
+                        <div class="form-group">
+                            <label class="required">Postleizahl</label>
+                            <input type="text" id="formPLZ" placeholder="">
                         </div>
-                        
-                        <!-- Disposition Butonlari -->
-                        <div class="disposition-buttons">
-                            <h4><i class="ti ti-clipboard-check"></i> Arama Sonucu</h4>
-                            <div class="disposition-grid">
-                                <button class="btn btn-success btn-lg disposition-btn" onclick="completeCall('sale_ok')">
-                                    <i class="ti ti-check"></i> SATIS OK
-                                </button>
-                                <button class="btn btn-warning btn-lg disposition-btn" onclick="showCallbackModal()">
-                                    <i class="ti ti-clock"></i> GERI ARAMA
-                                </button>
-                                <button class="btn btn-secondary btn-lg disposition-btn" onclick="completeCall('no_answer')">
-                                    <i class="ti ti-phone-off"></i> CEVAP YOK
-                                </button>
-                                <button class="btn btn-danger btn-lg disposition-btn" onclick="completeCall('no_interest')">
-                                    <i class="ti ti-x"></i> ILGILENMIYOR
-                                </button>
-                                <button class="btn btn-dark btn-lg disposition-btn" onclick="completeCall('wrong_number')">
-                                    <i class="ti ti-phone-x"></i> YANLIS NUMARA
-                                </button>
-                                <button class="btn btn-outline-danger btn-lg disposition-btn" onclick="completeCall('blacklist')">
-                                    <i class="ti ti-ban"></i> KARA LISTE
-                                </button>
-                            </div>
-                        </div>
-                        
-                        <!-- Notlar -->
-                        <div class="notes-section mt-3">
-                            <label class="form-label">Notlar</label>
-                            <textarea class="form-control" id="callNotes" rows="2" placeholder="Cagri ile ilgili notlariniz..."></textarea>
-                        </div>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label class="required">Ort</label>
+                        <input type="text" id="formOrt" placeholder="">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label class="required">Telefon Nummer</label>
+                        <input type="text" id="formTelefon" placeholder="">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label class="required">Telefon Nummer 2</label>
+                        <input type="text" id="formTelefon2" placeholder="">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label class="required">Mail</label>
+                        <input type="email" id="formMail" placeholder="">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label>Text Field</label>
+                        <textarea id="formTextField" rows="2" placeholder=""></textarea>
+                    </div>
+                </div>
+
+                <!-- Right Column - Bank Info -->
+                <div class="form-column">
+                    <h4>Bankdaten</h4>
+                    
+                    <div class="form-group">
+                        <label>Kontoinhaber</label>
+                        <input type="text" id="formKontoinhaber" placeholder="">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label>Bankname</label>
+                        <input type="text" id="formBankname" placeholder="">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label>BLZ</label>
+                        <input type="text" id="formBLZ" placeholder="">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label>Kontonummer</label>
+                        <input type="text" id="formKontonummer" placeholder="">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label class="required">IBAN</label>
+                        <input type="text" id="formIBAN" placeholder="">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label>BIC</label>
+                        <input type="text" id="formBIC" placeholder="">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label>Notiz</label>
+                        <textarea id="formNotiz" rows="3" placeholder=""></textarea>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label>Abbuchungen</label>
+                        <select id="formAbbuchungen">
+                            <option value="">Bitte wählen...</option>
+                            <option value="monatlich">Monatlich</option>
+                            <option value="quartal">Quartal</option>
+                            <option value="jaehrlich">Jährlich</option>
+                        </select>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label>Spielperiode</label>
+                        <select id="formSpielperiode">
+                            <option value="">Bitte wählen...</option>
+                            <option value="1">1 Jahr</option>
+                            <option value="2">2 Jahre</option>
+                            <option value="5">5 Jahre</option>
+                        </select>
                     </div>
                 </div>
             </div>
         </div>
     </div>
-    
-    <div class="col-md-4">
-        <div class="card">
-            <div class="card-header">
-                <h3 class="card-title"><i class="ti ti-robot"></i> AI Asistan</h3>
+
+    <!-- RIGHT SIDEBAR -->
+    <div class="right-sidebar">
+        <!-- QC Panel -->
+        <div class="qc-panel">
+            <h3><i class="ti ti-clipboard-check"></i> Anrufergebnis</h3>
+            <div class="qc-buttons">
+                <button class="qc-btn qc-ok" onclick="quickDisposition('qc_ok')">
+                    <i class="ti ti-check"></i>
+                    QC OK
+                </button>
+                <button class="qc-btn qc-termin" onclick="quickDisposition('qc_termin')">
+                    <i class="ti ti-calendar-event"></i>
+                    QC TERMIN
+                </button>
+                <button class="qc-btn qc-storno" onclick="quickDisposition('storno')">
+                    <i class="ti ti-x"></i>
+                    STORNO
+                </button>
+                <button class="qc-btn qc-ne" onclick="quickDisposition('qc_ne')">
+                    <i class="ti ti-phone-off"></i>
+                    QC NE
+                </button>
             </div>
-            <div class="card-body">
-                <div class="ai-suggestions" id="aiSuggestions">
-                    <p style="color: var(--text-muted); text-align: center;">
-                        <i class="ti ti-brain" style="font-size: 2rem;"></i><br>
-                        Cagri basladiginda AI onerileri burada gorunecek
-                    </p>
+        </div>
+
+        <!-- AI Panel -->
+        <div class="ai-panel">
+            <h3><i class="ti ti-robot"></i> AI Transkription</h3>
+            <div class="transcription-box" id="transcriptionBox">
+                <p style="color: var(--agent-text-muted); text-align: center;">
+                    <i class="ti ti-microphone" style="font-size: 2rem; display: block; margin-bottom: 0.5rem;"></i>
+                    Transkription startet wenn der Anruf beginnt...
+                </p>
+            </div>
+            <div class="ai-suggestions" id="aiSuggestions">
+                <div class="ai-suggestion-item">
+                    <i class="ti ti-bulb"></i>
+                    <span>AI-Vorschläge erscheinen hier während des Gesprächs</span>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Disposition Modal -->
+<div class="modal-disposition" id="dispositionModal">
+    <div class="modal-disposition-content">
+        <div class="modal-header-custom">
+            <h3><i class="ti ti-clipboard-list"></i> Anrufergebnis</h3>
+            <button class="close-btn" onclick="closeDispositionModal()">&times;</button>
+        </div>
+        
+        <div class="modal-tabs">
+            <button class="modal-tab active" onclick="switchModalTab('beenden')">Anruf Beenden</button>
+            <button class="modal-tab" onclick="switchModalTab('termin')">Wiedervorlage</button>
+        </div>
+        
+        <div class="modal-body-custom">
+            <!-- Anruf Beenden Tab -->
+            <div class="termin-content active" id="tabBeenden">
+                <label style="display: block; margin-bottom: 0.75rem; color: var(--agent-text-muted);">Gesprächsnotiz</label>
+                <textarea class="notes-textarea" id="modalNotes" placeholder="Notizen zum Gespräch..."></textarea>
+                
+                <div class="disposition-options" style="margin-top: 1.5rem;">
+                    <div class="disposition-column">
+                        <h4>Negativ</h4>
+                        <label class="disposition-option" onclick="selectDisposition(this, 'falsche_nummer')">
+                            <input type="radio" name="disposition">
+                            <span class="radio-custom"></span>
+                            Falsche Nummer
+                        </label>
+                        <label class="disposition-option" onclick="selectDisposition(this, 'blacklist')">
+                            <input type="radio" name="disposition">
+                            <span class="radio-custom"></span>
+                            Blacklist
+                        </label>
+                        <label class="disposition-option" onclick="selectDisposition(this, 'nicht_erreicht')">
+                            <input type="radio" name="disposition">
+                            <span class="radio-custom"></span>
+                            Nicht Erreicht
+                        </label>
+                        <label class="disposition-option" onclick="selectDisposition(this, 'anrufbeantworter')">
+                            <input type="radio" name="disposition">
+                            <span class="radio-custom"></span>
+                            Agent Anrufbeantworter
+                        </label>
+                        <label class="disposition-option" onclick="selectDisposition(this, 'hartz4')">
+                            <input type="radio" name="disposition">
+                            <span class="radio-custom"></span>
+                            Hartz 4
+                        </label>
+                    </div>
+                    <div class="disposition-column">
+                        <h4>Positiv</h4>
+                        <label class="disposition-option" onclick="selectDisposition(this, 'verkauf_ok')">
+                            <input type="radio" name="disposition">
+                            <span class="radio-custom"></span>
+                            VERKAUF OK
+                        </label>
+                        <label class="disposition-option" onclick="selectDisposition(this, 'kein_interesse')">
+                            <input type="radio" name="disposition">
+                            <span class="radio-custom"></span>
+                            Kein Interesse
+                        </label>
+                        <label class="disposition-option" onclick="selectDisposition(this, 'aufleger')">
+                            <input type="radio" name="disposition">
+                            <span class="radio-custom"></span>
+                            Aufleger
+                        </label>
+                        <label class="disposition-option" onclick="selectDisposition(this, 'drohung')">
+                            <input type="radio" name="disposition">
+                            <span class="radio-custom"></span>
+                            Drohung
+                        </label>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Wiedervorlage Tab -->
+            <div class="termin-content" id="tabTermin">
+                <div class="termin-row">
+                    <div class="form-group">
+                        <label>Termin Datum</label>
+                        <input type="date" id="terminDatum">
+                    </div>
+                    <div class="form-group">
+                        <label>Termin Uhrzeit</label>
+                        <input type="time" id="terminUhrzeit">
+                    </div>
+                </div>
+                
+                <div class="form-group">
+                    <label>Wichtigkeitsstatus</label>
+                    <select id="terminWichtigkeit">
+                        <option value="">Bitte Auswählen</option>
+                        <option value="hoch">Hoch</option>
+                        <option value="mittel">Mittel</option>
+                        <option value="niedrig">Niedrig</option>
+                    </select>
+                </div>
+                
+                <div class="form-group">
+                    <label>Terminnotiz</label>
+                    <textarea class="notes-textarea" id="terminNotiz" placeholder="Notizen zum Termin..."></textarea>
+                </div>
+                
+                <div class="termin-quick-options">
+                    <button class="quick-option" onclick="setQuickTermin(15)">15 Minuten später anrufen</button>
+                    <button class="quick-option" onclick="setQuickTermin(30)">30 Minuten später anrufen</button>
+                    <button class="quick-option" onclick="setQuickTermin(60)">1 Stunde später anrufen</button>
+                    <button class="quick-option" onclick="setQuickTermin(1440)">24 Stunden später anrufen</button>
+                </div>
+                
+                <div style="text-align: right; margin-top: 1rem;">
+                    <button style="background: none; border: none; color: var(--agent-danger); cursor: pointer;">
+                        <i class="ti ti-trash"></i> Auswahl löschen
+                    </button>
                 </div>
             </div>
         </div>
         
-        <div class="card mt-3">
-            <div class="card-header">
-                <h3 class="card-title"><i class="ti ti-script"></i> Script</h3>
+        <div class="modal-footer-custom">
+            <div class="footer-checkboxes">
+                <label>
+                    <input type="checkbox" id="chkPause"> Pause
+                </label>
+                <label>
+                    <input type="checkbox" id="chkSystemPause"> System Pause
+                </label>
+                <label>
+                    <input type="checkbox" id="chkLogout"> Kampagne Logout
+                </label>
             </div>
-            <div class="card-body">
-                <div class="script-content" id="scriptContent">
-                    <p style="color: var(--text-muted);">Cagri basladiginda script burada gorunecek</p>
-                </div>
-            </div>
+            <button class="btn-save-modal" onclick="saveDisposition()">
+                <i class="ti ti-device-floppy"></i> Speichern
+            </button>
         </div>
     </div>
 </div>
-
-<!-- Geri Arama Modal -->
-<div class="modal fade" id="callbackModal" tabindex="-1">
-    <div class="modal-dialog">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title"><i class="ti ti-clock"></i> Geri Arama Planla</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-            </div>
-            <div class="modal-body">
-                <div class="mb-3">
-                    <label class="form-label">Tarih</label>
-                    <input type="date" class="form-control" id="callbackDate">
-                </div>
-                <div class="mb-3">
-                    <label class="form-label">Saat</label>
-                    <input type="time" class="form-control" id="callbackTime">
-                </div>
-            </div>
-            <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Iptal</button>
-                <button type="button" class="btn btn-primary" onclick="saveCallback()">Kaydet</button>
-            </div>
-        </div>
-    </div>
-</div>
-
-<style>
-.agent-status-selector select {
-    background: var(--bg-card);
-    border: 2px solid var(--primary);
-    color: var(--text-primary);
-    padding: 0.5rem 1rem;
-    border-radius: 8px;
-    font-weight: 600;
-}
-.no-call-state { text-align: center; padding: 3rem; }
-.customer-card { background: #fff; border-radius: 16px; overflow: hidden; box-shadow: 0 4px 20px rgba(0,0,0,0.1); }
-.customer-header { background: linear-gradient(135deg, #f7b731 0%, #f5a623 100%); padding: 1.5rem 2rem; color: #333; display: flex; align-items: center; gap: 1.5rem; }
-.customer-avatar { width: 70px; height: 70px; border-radius: 50%; background: rgba(255,255,255,0.8); display: flex; align-items: center; justify-content: center; font-size: 1.5rem; font-weight: 700; }
-.customer-info h2 { font-size: 1.5rem; margin-bottom: 0.25rem; }
-.customer-phone { font-family: monospace; font-size: 1.2rem; letter-spacing: 1px; }
-.call-timer { margin-left: auto; text-align: center; }
-.timer-display { font-size: 2.5rem; font-weight: 700; font-family: monospace; }
-.call-status { font-size: 0.85rem; }
-.customer-details { padding: 1.5rem 2rem; }
-.detail-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 1rem; }
-.detail-item { padding: 1rem; background: #f8f9fa; border-radius: 12px; }
-.detail-label { font-size: 0.75rem; color: #888; text-transform: uppercase; margin-bottom: 0.25rem; }
-.detail-value { font-weight: 600; color: #333; }
-.detail-value.masked { font-family: monospace; letter-spacing: 2px; color: #666; }
-.disposition-buttons { padding: 1.5rem 2rem; border-top: 1px solid #eee; }
-.disposition-buttons h4 { margin-bottom: 1rem; color: #333; }
-.disposition-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 0.75rem; }
-.disposition-btn { padding: 1rem; font-weight: 600; }
-.notes-section { padding: 0 2rem 1.5rem; }
-#btnStartCall { animation: pulse 2s infinite; }
-@keyframes pulse { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.05); } }
-</style>
 
 <script>
 let currentLead = null;
 let callStartTime = null;
 let timerInterval = null;
+let pauseStartTime = null;
+let pauseInterval = null;
+let selectedDisposition = null;
 
-function getNextLead() {
-    document.getElementById('btnStartCall').disabled = true;
-    document.getElementById('btnStartCall').innerHTML = '<i class="ti ti-loader"></i> Yukleniyor...';
+// Initialize
+document.addEventListener('DOMContentLoaded', () => {
+    updateStats();
+    setInterval(updateStats, 30000);
+});
+
+function startCall() {
+    document.getElementById('btnStart').disabled = true;
+    document.getElementById('btnStart').innerHTML = '<i class="ti ti-loader"></i> Laden...';
     
     fetch('/api/agent/next-lead')
         .then(r => r.json())
         .then(data => {
             if (data.success) {
                 currentLead = data.lead;
-                showCustomerCard(data.lead);
+                showCustomerData(data.lead);
                 startCallTimer();
+                document.getElementById('noCallOverlay').style.display = 'none';
+                document.getElementById('btnStart').style.display = 'none';
+                document.getElementById('btnEndCall').style.display = 'flex';
             } else {
-                alert(data.message || 'Musteri bulunamadi');
-                document.getElementById('btnStartCall').disabled = false;
-                document.getElementById('btnStartCall').innerHTML = '<i class="ti ti-phone-plus"></i> Arama Baslat';
+                alert(data.message || 'Kein Kunde verfügbar');
+                resetStartButton();
             }
         })
         .catch(err => {
-            alert('Hata: ' + err.message);
-            document.getElementById('btnStartCall').disabled = false;
-            document.getElementById('btnStartCall').innerHTML = '<i class="ti ti-phone-plus"></i> Arama Baslat';
+            alert('Fehler: ' + err.message);
+            resetStartButton();
         });
 }
 
-function showCustomerCard(lead) {
-    document.getElementById('noCallState').style.display = 'none';
-    document.getElementById('activeCallState').style.display = 'block';
+function resetStartButton() {
+    document.getElementById('btnStart').disabled = false;
+    document.getElementById('btnStart').innerHTML = '<i class="ti ti-player-play-filled"></i> Start';
+}
+
+function showCustomerData(lead) {
+    document.getElementById('displayPhone').textContent = lead.phone || '---';
+    document.getElementById('displayPhoneMasked').textContent = lead.phone ? lead.phone.replace(/(\d{3})\d+(\d{2})/, '$1*****$2') : '--- ---';
+    document.getElementById('displayCustomerName').textContent = `${lead.first_name || '-'} ${lead.last_name || '-'}`;
     
-    document.getElementById('customerAvatar').textContent = (lead.first_name?lead.first_name[0]:'?') + (lead.last_name?lead.last_name[0]:'');
-    document.getElementById('customerName').textContent = lead.full_name || 'Bilinmiyor';
-    document.getElementById('customerPhone').textContent = lead.phone || '-';
-    document.getElementById('customerEmail').textContent = lead.email || '-';
-    document.getElementById('customerCompany').textContent = lead.company || '-';
+    // Fill form
+    document.getElementById('formName').value = lead.first_name || '';
+    document.getElementById('formNachname').value = lead.last_name || '';
+    document.getElementById('formTelefon').value = lead.phone || '';
+    document.getElementById('formMail').value = lead.email || '';
     
     if (lead.custom_data) {
-        document.getElementById('customerAddress').textContent = lead.custom_data.address || lead.custom_data.strasse || '-';
-        document.getElementById('customerIban').textContent = lead.custom_data.iban ? '****' + lead.custom_data.iban.slice(-4) : '-';
+        document.getElementById('formAnrede').value = lead.custom_data.anrede || '';
+        document.getElementById('formStrasse').value = lead.custom_data.strasse || '';
+        document.getElementById('formHausnr').value = lead.custom_data.hausnummer || '';
+        document.getElementById('formPLZ').value = lead.custom_data.plz || '';
+        document.getElementById('formOrt').value = lead.custom_data.ort || '';
+        document.getElementById('formIBAN').value = lead.custom_data.iban || '';
+        document.getElementById('formBIC').value = lead.custom_data.bic || '';
+        document.getElementById('formKontoinhaber').value = lead.custom_data.kontoinhaber || '';
+        document.getElementById('formBankname').value = lead.custom_data.bankname || '';
     }
-    
-    document.getElementById('btnStartCall').innerHTML = '<i class="ti ti-phone-incoming"></i> Aktif Cagri';
 }
 
 function startCallTimer() {
     callStartTime = new Date();
     timerInterval = setInterval(() => {
         const elapsed = Math.floor((new Date() - callStartTime) / 1000);
-        const mins = Math.floor(elapsed / 60).toString().padStart(2, '0');
+        const hrs = Math.floor(elapsed / 3600).toString().padStart(2, '0');
+        const mins = Math.floor((elapsed % 3600) / 60).toString().padStart(2, '0');
         const secs = (elapsed % 60).toString().padStart(2, '0');
-        document.getElementById('callTimer').textContent = mins + ':' + secs;
+        document.getElementById('callTimer').textContent = `${hrs}:${mins}:${secs}`;
     }, 1000);
-    document.getElementById('callStatus').textContent = 'Gorusme Aktif';
+    document.getElementById('agentStatusBadge').textContent = 'Status: Wahl';
+    document.getElementById('agentStatusBadge').style.borderColor = 'var(--agent-info)';
+    document.getElementById('agentStatusBadge').style.color = 'var(--agent-info)';
 }
 
-function completeCall(disposition) {
-    if (!currentLead) return;
+function togglePause() {
+    if (pauseStartTime) {
+        // End pause
+        clearInterval(pauseInterval);
+        pauseStartTime = null;
+        document.getElementById('agentStatusBadge').textContent = 'Status: Bereit';
+    } else {
+        // Start pause
+        pauseStartTime = new Date();
+        pauseInterval = setInterval(() => {
+            const elapsed = Math.floor((new Date() - pauseStartTime) / 1000);
+            const hrs = Math.floor(elapsed / 3600).toString().padStart(2, '0');
+            const mins = Math.floor((elapsed % 3600) / 60).toString().padStart(2, '0');
+            const secs = (elapsed % 60).toString().padStart(2, '0');
+            document.getElementById('statPause').textContent = `${hrs}:${mins}:${secs}`;
+        }, 1000);
+        document.getElementById('agentStatusBadge').textContent = 'Status: Pause';
+        document.getElementById('agentStatusBadge').style.borderColor = 'var(--agent-warning)';
+        document.getElementById('agentStatusBadge').style.color = 'var(--agent-warning)';
+    }
+}
+
+function openDispositionModal() {
+    document.getElementById('dispositionModal').classList.add('active');
+}
+
+function closeDispositionModal() {
+    document.getElementById('dispositionModal').classList.remove('active');
+}
+
+function switchModalTab(tab) {
+    document.querySelectorAll('.modal-tab').forEach(t => t.classList.remove('active'));
+    document.querySelectorAll('.termin-content').forEach(c => c.classList.remove('active'));
     
-    const notes = document.getElementById('callNotes').value;
+    if (tab === 'beenden') {
+        document.querySelector('.modal-tab:first-child').classList.add('active');
+        document.getElementById('tabBeenden').classList.add('active');
+    } else {
+        document.querySelector('.modal-tab:last-child').classList.add('active');
+        document.getElementById('tabTermin').classList.add('active');
+    }
+}
+
+function selectDisposition(element, disposition) {
+    document.querySelectorAll('.disposition-option').forEach(o => o.classList.remove('selected'));
+    element.classList.add('selected');
+    selectedDisposition = disposition;
+}
+
+function setQuickTermin(minutes) {
+    const now = new Date();
+    now.setMinutes(now.getMinutes() + minutes);
+    document.getElementById('terminDatum').value = now.toISOString().split('T')[0];
+    document.getElementById('terminUhrzeit').value = now.toTimeString().slice(0,5);
+}
+
+function quickDisposition(disposition) {
+    if (!currentLead) {
+        alert('Kein aktiver Anruf!');
+        return;
+    }
     
+    saveDispositionToServer(disposition, '');
+}
+
+function saveDisposition() {
+    if (!currentLead) {
+        alert('Kein aktiver Anruf!');
+        return;
+    }
+    
+    const notes = document.getElementById('modalNotes').value;
+    const terminDatum = document.getElementById('terminDatum').value;
+    const terminUhrzeit = document.getElementById('terminUhrzeit').value;
+    
+    const disposition = selectedDisposition || (terminDatum ? 'callback' : 'unknown');
+    
+    saveDispositionToServer(disposition, notes, terminDatum, terminUhrzeit);
+}
+
+function saveDispositionToServer(disposition, notes, callbackDate, callbackTime) {
     fetch('/api/agent/complete-call', {
         method: 'POST',
         headers: {'Content-Type': 'application/json'},
         body: JSON.stringify({
             lead_id: currentLead.id,
             disposition: disposition,
-            notes: notes
-        })
-    })
-    .then(r => r.json())
-    .then(data => {
-        if (data.success) {
-            resetCallState();
-            updateStats();
-        } else {
-            alert(data.message || 'Hata olustu');
-        }
-    });
-}
-
-function showCallbackModal() {
-    const modal = new bootstrap.Modal(document.getElementById('callbackModal'));
-    const tomorrow = new Date();
-    tomorrow.setDate(tomorrow.getDate() + 1);
-    document.getElementById('callbackDate').value = tomorrow.toISOString().split('T')[0];
-    document.getElementById('callbackTime').value = '10:00';
-    modal.show();
-}
-
-function saveCallback() {
-    if (!currentLead) return;
-    
-    const notes = document.getElementById('callNotes').value;
-    const callbackDate = document.getElementById('callbackDate').value;
-    const callbackTime = document.getElementById('callbackTime').value;
-    
-    fetch('/api/agent/complete-call', {
-        method: 'POST',
-        headers: {'Content-Type': 'application/json'},
-        body: JSON.stringify({
-            lead_id: currentLead.id,
-            disposition: 'callback',
             notes: notes,
             callback_date: callbackDate,
             callback_time: callbackTime
@@ -352,23 +1553,74 @@ function saveCallback() {
     .then(r => r.json())
     .then(data => {
         if (data.success) {
-            bootstrap.Modal.getInstance(document.getElementById('callbackModal')).hide();
+            closeDispositionModal();
             resetCallState();
             updateStats();
+        } else {
+            alert(data.message || 'Fehler beim Speichern');
         }
     });
 }
 
 function resetCallState() {
     currentLead = null;
+    selectedDisposition = null;
     if (timerInterval) clearInterval(timerInterval);
     
-    document.getElementById('noCallState').style.display = 'block';
-    document.getElementById('activeCallState').style.display = 'none';
-    document.getElementById('callTimer').textContent = '00:00';
-    document.getElementById('callNotes').value = '';
-    document.getElementById('btnStartCall').disabled = false;
-    document.getElementById('btnStartCall').innerHTML = '<i class="ti ti-phone-plus"></i> Arama Baslat';
+    document.getElementById('callTimer').textContent = '00:00:00';
+    document.getElementById('displayPhone').textContent = '---';
+    document.getElementById('displayPhoneMasked').textContent = '--- ---';
+    document.getElementById('displayCustomerName').textContent = '- -';
+    document.getElementById('noCallOverlay').style.display = 'flex';
+    document.getElementById('btnStart').style.display = 'flex';
+    document.getElementById('btnEndCall').style.display = 'none';
+    document.getElementById('agentStatusBadge').textContent = 'Status: Bereit';
+    document.getElementById('agentStatusBadge').style.borderColor = 'rgba(0,200,83,0.3)';
+    document.getElementById('agentStatusBadge').style.color = 'var(--agent-success)';
+    
+    // Clear form
+    document.querySelectorAll('.form-column input, .form-column textarea, .form-column select').forEach(el => {
+        if (el.tagName === 'SELECT') el.selectedIndex = 0;
+        else el.value = '';
+    });
+    
+    resetStartButton();
+}
+
+function saveCustomer() {
+    if (!currentLead) return;
+    
+    const customerData = {
+        lead_id: currentLead.id,
+        anrede: document.getElementById('formAnrede').value,
+        first_name: document.getElementById('formName').value,
+        last_name: document.getElementById('formNachname').value,
+        strasse: document.getElementById('formStrasse').value,
+        hausnummer: document.getElementById('formHausnr').value,
+        plz: document.getElementById('formPLZ').value,
+        ort: document.getElementById('formOrt').value,
+        phone: document.getElementById('formTelefon').value,
+        phone2: document.getElementById('formTelefon2').value,
+        email: document.getElementById('formMail').value,
+        iban: document.getElementById('formIBAN').value,
+        bic: document.getElementById('formBIC').value,
+        kontoinhaber: document.getElementById('formKontoinhaber').value,
+        bankname: document.getElementById('formBankname').value,
+        notiz: document.getElementById('formNotiz').value,
+        lotto: [1,2,3,4,5,6,7].map(i => document.getElementById('lotto'+i).value)
+    };
+    
+    fetch('/api/agent/save-customer', {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify(customerData)
+    })
+    .then(r => r.json())
+    .then(data => {
+        if (data.success) {
+            alert('Gespeichert!');
+        }
+    });
 }
 
 function updateStats() {
@@ -376,20 +1628,44 @@ function updateStats() {
         .then(r => r.json())
         .then(data => {
             document.getElementById('statCalls').textContent = data.total_calls || 0;
-            document.getElementById('statSales').textContent = data.total_sales || 0;
-            document.getElementById('statCallbacks').textContent = data.callbacks || 0;
-        });
+            document.getElementById('statQcOk').textContent = data.qc_ok || 0;
+            document.getElementById('statStorno').textContent = data.storno || 0;
+            document.getElementById('statCallback').textContent = data.callbacks || 0;
+            document.getElementById('statTotal').textContent = data.total_sales || 0;
+        })
+        .catch(() => {});
 }
 
-function changeStatus(status) {
-    fetch('/agent/status', {
-        method: 'POST',
-        headers: {'Content-Type': 'application/json'},
-        body: JSON.stringify({status: status})
-    });
+function switchTab(tab) {
+    document.querySelectorAll('.content-tab').forEach(t => t.classList.remove('active'));
+    event.target.classList.add('active');
 }
 
-// Sayfa yuklendiginde istatistikleri guncelle
-document.addEventListener('DOMContentLoaded', updateStats);
+function toggleMute() {
+    // WebRTC mute implementation
+}
+
+function toggleRecord() {
+    // Recording implementation
+}
+
+function manualCall() {
+    const number = document.getElementById('manualNumber').value;
+    if (number) {
+        alert('Anruf zu: ' + number);
+    }
+}
+
+function checkIBAN() {
+    const iban = document.getElementById('ibanCheck').value;
+    if (iban) {
+        // IBAN validation
+        alert('IBAN Prüfung: ' + iban);
+    }
+}
+
+function openCalendar() {
+    // Calendar implementation
+}
 </script>
 {% endblock %}
