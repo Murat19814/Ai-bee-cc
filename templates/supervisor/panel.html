@@ -8,6 +8,14 @@
         <h1 class="page-title">Supervisor Paneli</h1>
         <p class="page-subtitle">Canlı izleme ve takım yönetimi</p>
     </div>
+    <div class="header-actions">
+        <a href="{{ url_for('supervisor_notifications') }}" class="btn btn-primary">
+            <i class="ti ti-bell-ringing"></i> Bildirim Gönder
+        </a>
+        <a href="{{ url_for('supervisor_coaching') }}" class="btn btn-secondary">
+            <i class="ti ti-school"></i> Koçluk
+        </a>
+    </div>
 </div>
 
 <!-- Live Stats -->

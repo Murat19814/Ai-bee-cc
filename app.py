@@ -2521,6 +2521,95 @@ def supervisor_coaching():
     return render_template('supervisor/coaching.html', agents=agents)
 
 
+@app.route('/supervisor/notifications')
+@login_required
+@supervisor_required
+def supervisor_notifications():
+    """Bildirim gönderme sayfası"""
+    agents = User.query.filter_by(tenant_id=current_user.tenant_id, role='agent').all()
+    
+    # Son gönderilen bildirimler
+    recent_notifications = db.session.query(
+        Notification.title,
+        Notification.message,
+        Notification.created_at,
+        db.func.count(Notification.id).label('recipient_count')
+    ).filter(
+        Notification.tenant_id == current_user.tenant_id,
+        Notification.type == 'admin_message'
+    ).group_by(
+        Notification.title,
+        Notification.message,
+        Notification.created_at
+    ).order_by(Notification.created_at.desc()).limit(10).all()
+    
+    return render_template('supervisor/notifications.html', 
+                          agents=agents,
+                          recent_notifications=recent_notifications)
+
+
+@app.route('/api/supervisor/send-notification', methods=['POST'])
+@login_required
+@supervisor_required
+def api_supervisor_send_notification():
+    """Admin/Supervisor bildirim gönder"""
+    try:
+        data = request.get_json()
+        title = data.get('title')
+        message = data.get('message')
+        recipient_type = data.get('recipient_type', 'all')
+        agent_ids = data.get('agent_ids', [])
+        priority = data.get('priority', 'normal')
+        
+        if not title or not message:
+            return jsonify({'success': False, 'error': 'Başlık ve mesaj gerekli'})
+        
+        # Alıcıları belirle
+        if recipient_type == 'all':
+            agents = User.query.filter_by(tenant_id=current_user.tenant_id, role='agent').all()
+        elif recipient_type == 'online':
+            agents = User.query.filter(
+                User.tenant_id == current_user.tenant_id,
+                User.role == 'agent',
+                User.status.in_(['musait', 'mesgul', 'acw'])
+            ).all()
+        else:
+            agents = User.query.filter(
+                User.tenant_id == current_user.tenant_id,
+                User.id.in_(agent_ids)
+            ).all()
+        
+        # Her agent için bildirim oluştur
+        sent_count = 0
+        for agent in agents:
+            notification = Notification(
+                tenant_id=current_user.tenant_id,
+                user_id=agent.id,
+                type='admin_message',
+                title=title,
+                message=message
+            )
+            db.session.add(notification)
+            sent_count += 1
+        
+        db.session.commit()
+        
+        # WebSocket ile anlık bildir (varsa)
+        try:
+            socketio.emit('new_notification', {
+                'title': title,
+                'message': message,
+                'priority': priority
+            }, room=f'tenant_{current_user.tenant_id}')
+        except:
+            pass
+        
+        return jsonify({'success': True, 'sent_count': sent_count})
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({'success': False, 'error': str(e)})
+
+
 # ==================== QA PANEL ROUTES ====================
 
 @app.route('/qa')

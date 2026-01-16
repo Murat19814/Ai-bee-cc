@@ -1,0 +1,457 @@
+{% extends "base.html" %}
+
+{% block title %}Bildirim Gönder - AI BEE CC{% endblock %}
+
+{% block extra_css %}
+<style>
+.notification-page {
+    max-width: 900px;
+    margin: 0 auto;
+}
+
+.send-card {
+    background: var(--card-bg);
+    border-radius: 16px;
+    padding: 2rem;
+    margin-bottom: 2rem;
+    border: 1px solid var(--border-color);
+}
+
+.send-card h3 {
+    color: var(--primary);
+    margin-bottom: 1.5rem;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.form-row {
+    margin-bottom: 1.5rem;
+}
+
+.form-row label {
+    display: block;
+    margin-bottom: 0.5rem;
+    font-weight: 600;
+    color: var(--text-primary);
+}
+
+.form-row input,
+.form-row select,
+.form-row textarea {
+    width: 100%;
+    padding: 0.875rem 1rem;
+    background: var(--input-bg);
+    border: 1px solid var(--border-color);
+    border-radius: 10px;
+    color: var(--text-primary);
+    font-size: 1rem;
+}
+
+.form-row textarea {
+    min-height: 120px;
+    resize: vertical;
+}
+
+.form-row input:focus,
+.form-row select:focus,
+.form-row textarea:focus {
+    outline: none;
+    border-color: var(--primary);
+}
+
+.recipient-options {
+    display: flex;
+    gap: 1rem;
+    flex-wrap: wrap;
+}
+
+.recipient-option {
+    flex: 1;
+    min-width: 150px;
+    padding: 1rem;
+    background: var(--input-bg);
+    border: 2px solid var(--border-color);
+    border-radius: 12px;
+    cursor: pointer;
+    text-align: center;
+    transition: all 0.2s;
+}
+
+.recipient-option:hover {
+    border-color: var(--primary);
+}
+
+.recipient-option.selected {
+    border-color: var(--primary);
+    background: rgba(245, 166, 35, 0.1);
+}
+
+.recipient-option i {
+    font-size: 1.5rem;
+    color: var(--primary);
+    margin-bottom: 0.5rem;
+    display: block;
+}
+
+.recipient-option span {
+    font-weight: 600;
+    color: var(--text-primary);
+}
+
+.agent-select-wrapper {
+    display: none;
+    margin-top: 1rem;
+}
+
+.agent-select-wrapper.active {
+    display: block;
+}
+
+.agent-checkboxes {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    gap: 0.75rem;
+    margin-top: 0.5rem;
+}
+
+.agent-checkbox {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.75rem;
+    background: var(--input-bg);
+    border-radius: 8px;
+    cursor: pointer;
+}
+
+.agent-checkbox input {
+    width: auto;
+}
+
+.agent-checkbox .status-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+}
+
+.agent-checkbox .status-dot.online { background: #22c55e; }
+.agent-checkbox .status-dot.offline { background: #6b7280; }
+
+.priority-options {
+    display: flex;
+    gap: 1rem;
+}
+
+.priority-option {
+    flex: 1;
+    padding: 0.75rem;
+    border: 2px solid var(--border-color);
+    border-radius: 10px;
+    text-align: center;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.priority-option:hover { border-color: var(--primary); }
+.priority-option.selected { border-color: var(--primary); background: rgba(245, 166, 35, 0.1); }
+
+.priority-option.normal { color: #3b82f6; }
+.priority-option.urgent { color: #f59e0b; }
+.priority-option.critical { color: #ef4444; }
+
+.btn-send {
+    background: linear-gradient(135deg, var(--primary) 0%, #E09612 100%);
+    color: #1a1a1a;
+    border: none;
+    padding: 1rem 2.5rem;
+    border-radius: 12px;
+    font-size: 1.1rem;
+    font-weight: 700;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    transition: all 0.3s;
+}
+
+.btn-send:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 10px 30px rgba(245, 166, 35, 0.3);
+}
+
+/* Recent Notifications */
+.recent-list {
+    margin-top: 1rem;
+}
+
+.notif-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    padding: 1rem;
+    background: var(--input-bg);
+    border-radius: 10px;
+    margin-bottom: 0.75rem;
+}
+
+.notif-item .info h5 {
+    color: var(--text-primary);
+    margin-bottom: 0.25rem;
+}
+
+.notif-item .info p {
+    color: var(--text-secondary);
+    font-size: 0.85rem;
+}
+
+.notif-item .meta {
+    text-align: right;
+    font-size: 0.8rem;
+    color: var(--text-secondary);
+}
+
+.notif-item .meta .recipients {
+    color: var(--primary);
+    font-weight: 600;
+}
+
+.success-toast {
+    position: fixed;
+    top: 2rem;
+    right: 2rem;
+    background: #22c55e;
+    color: white;
+    padding: 1rem 1.5rem;
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-weight: 600;
+    transform: translateX(150%);
+    transition: transform 0.3s;
+    z-index: 1000;
+}
+
+.success-toast.show { transform: translateX(0); }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <div>
+        <h1 class="page-title">
+            <i class="ti ti-bell-ringing"></i>
+            Bildirim Gönder
+        </h1>
+        <p class="page-subtitle">Agentlere anlık bildirim gönder</p>
+    </div>
+    <a href="{{ url_for('supervisor_panel') }}" class="btn btn-secondary">
+        <i class="ti ti-arrow-left"></i> Geri
+    </a>
+</div>
+
+<div class="notification-page">
+    <div class="send-card">
+        <h3><i class="ti ti-send"></i> Yeni Bildirim</h3>
+        
+        <form id="notificationForm" onsubmit="sendNotification(event)">
+            <!-- Alıcı Seçimi -->
+            <div class="form-row">
+                <label>Alıcılar</label>
+                <div class="recipient-options">
+                    <div class="recipient-option selected" onclick="selectRecipient('all', this)">
+                        <i class="ti ti-users"></i>
+                        <span>Tüm Agentler</span>
+                    </div>
+                    <div class="recipient-option" onclick="selectRecipient('online', this)">
+                        <i class="ti ti-user-check"></i>
+                        <span>Sadece Aktif</span>
+                    </div>
+                    <div class="recipient-option" onclick="selectRecipient('select', this)">
+                        <i class="ti ti-user-search"></i>
+                        <span>Seçili Agentler</span>
+                    </div>
+                </div>
+                
+                <div class="agent-select-wrapper" id="agentSelectWrapper">
+                    <div class="agent-checkboxes" id="agentCheckboxes">
+                        {% for agent in agents %}
+                        <label class="agent-checkbox">
+                            <input type="checkbox" name="agent_ids" value="{{ agent.id }}">
+                            <span class="status-dot {{ 'online' if agent.status == 'musait' else 'offline' }}"></span>
+                            {{ agent.full_name }}
+                        </label>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Başlık -->
+            <div class="form-row">
+                <label for="title">Başlık *</label>
+                <input type="text" id="title" name="title" placeholder="Bildirim başlığı..." required>
+            </div>
+            
+            <!-- Mesaj -->
+            <div class="form-row">
+                <label for="message">Mesaj *</label>
+                <textarea id="message" name="message" placeholder="Bildirim mesajını yazın..." required></textarea>
+            </div>
+            
+            <!-- Öncelik -->
+            <div class="form-row">
+                <label>Öncelik</label>
+                <div class="priority-options">
+                    <div class="priority-option normal selected" onclick="selectPriority('normal', this)">
+                        <i class="ti ti-info-circle"></i><br>
+                        <span>Normal</span>
+                    </div>
+                    <div class="priority-option urgent" onclick="selectPriority('urgent', this)">
+                        <i class="ti ti-alert-triangle"></i><br>
+                        <span>Acil</span>
+                    </div>
+                    <div class="priority-option critical" onclick="selectPriority('critical', this)">
+                        <i class="ti ti-alert-octagon"></i><br>
+                        <span>Kritik</span>
+                    </div>
+                </div>
+            </div>
+            
+            <input type="hidden" id="recipientType" value="all">
+            <input type="hidden" id="priority" value="normal">
+            
+            <button type="submit" class="btn-send">
+                <i class="ti ti-send"></i>
+                Bildirimi Gönder
+            </button>
+        </form>
+    </div>
+    
+    <!-- Son Gönderilen Bildirimler -->
+    <div class="send-card">
+        <h3><i class="ti ti-history"></i> Son Gönderilen Bildirimler</h3>
+        <div class="recent-list" id="recentList">
+            {% for notif in recent_notifications %}
+            <div class="notif-item">
+                <div class="info">
+                    <h5>{{ notif.title }}</h5>
+                    <p>{{ notif.message[:100] }}{% if notif.message|length > 100 %}...{% endif %}</p>
+                </div>
+                <div class="meta">
+                    <div class="recipients">{{ notif.recipient_count }} kişiye</div>
+                    <div>{{ notif.created_at.strftime('%d.%m %H:%M') }}</div>
+                </div>
+            </div>
+            {% else %}
+            <p style="color: var(--text-secondary); text-align: center; padding: 2rem;">
+                Henüz bildirim gönderilmedi
+            </p>
+            {% endfor %}
+        </div>
+    </div>
+</div>
+
+<!-- Success Toast -->
+<div class="success-toast" id="successToast">
+    <i class="ti ti-check"></i>
+    <span>Bildirim başarıyla gönderildi!</span>
+</div>
+
+<script>
+let selectedRecipient = 'all';
+let selectedPriority = 'normal';
+
+function selectRecipient(type, el) {
+    document.querySelectorAll('.recipient-option').forEach(o => o.classList.remove('selected'));
+    el.classList.add('selected');
+    selectedRecipient = type;
+    document.getElementById('recipientType').value = type;
+    
+    const wrapper = document.getElementById('agentSelectWrapper');
+    wrapper.classList.toggle('active', type === 'select');
+}
+
+function selectPriority(priority, el) {
+    document.querySelectorAll('.priority-option').forEach(o => o.classList.remove('selected'));
+    el.classList.add('selected');
+    selectedPriority = priority;
+    document.getElementById('priority').value = priority;
+}
+
+function sendNotification(e) {
+    e.preventDefault();
+    
+    const title = document.getElementById('title').value;
+    const message = document.getElementById('message').value;
+    
+    let agentIds = [];
+    if (selectedRecipient === 'select') {
+        document.querySelectorAll('input[name="agent_ids"]:checked').forEach(cb => {
+            agentIds.push(parseInt(cb.value));
+        });
+        if (agentIds.length === 0) {
+            alert('Lütfen en az bir agent seçin!');
+            return;
+        }
+    }
+    
+    fetch('/api/supervisor/send-notification', {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({
+            title: title,
+            message: message,
+            recipient_type: selectedRecipient,
+            agent_ids: agentIds,
+            priority: selectedPriority
+        })
+    })
+    .then(r => r.json())
+    .then(data => {
+        if (data.success) {
+            showSuccess();
+            document.getElementById('notificationForm').reset();
+            // Add to recent list
+            addToRecentList(title, message, data.sent_count);
+        } else {
+            alert('Hata: ' + (data.error || 'Bildirim gönderilemedi'));
+        }
+    })
+    .catch(err => {
+        alert('Bağlantı hatası!');
+    });
+}
+
+function showSuccess() {
+    const toast = document.getElementById('successToast');
+    toast.classList.add('show');
+    setTimeout(() => toast.classList.remove('show'), 3000);
+}
+
+function addToRecentList(title, message, count) {
+    const list = document.getElementById('recentList');
+    const now = new Date();
+    const timeStr = now.toLocaleDateString('tr-TR', { day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' });
+    
+    const item = document.createElement('div');
+    item.className = 'notif-item';
+    item.innerHTML = `
+        <div class="info">
+            <h5>${title}</h5>
+            <p>${message.substring(0, 100)}${message.length > 100 ? '...' : ''}</p>
+        </div>
+        <div class="meta">
+            <div class="recipients">${count} kişiye</div>
+            <div>${timeStr}</div>
+        </div>
+    `;
+    
+    // Remove empty message if exists
+    const emptyMsg = list.querySelector('p');
+    if (emptyMsg) emptyMsg.remove();
+    
+    list.insertBefore(item, list.firstChild);
+}
+</script>
+{% endblock %}
