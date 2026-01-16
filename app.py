@@ -3886,68 +3886,8 @@ def provisioning_quota_edit(tenant_id):
 # gunicorn boot failure:
 #   AssertionError: View function mapping is overwriting an existing endpoint function: api_dialer_list_process_stats
 
-@app.route('/api/dialer/lists/<int:list_id>/enqueue', methods=['POST'])
-@login_required
-def api_dialer_list_enqueue(list_id):
-    """Dial list leadlerini kuyruga al (imported -> new)"""
-    dial_list = DialList.query.get_or_404(list_id)
-    
-    updated = Lead.query.filter_by(
-        dial_list_id=list_id, 
-        status='imported'
-    ).update({'status': 'new'})
-    
-    db.session.commit()
-    
-    new_count = Lead.query.filter_by(dial_list_id=list_id, status='new').count()
-    
-    return jsonify({
-        'success': True,
-        'message': f'{updated} kayit kuyruga alindi',
-        'updated': updated,
-        'new_count': new_count
-    })
-
-
-@app.route('/api/dialer/lists/<int:list_id>/stats')
-@login_required
-def api_dialer_list_stats(list_id):
-    """Dial list gercek istatistiklerini getir (demo degil)"""
-    dial_list = DialList.query.get_or_404(list_id)
-    
-    total = Lead.query.filter_by(dial_list_id=list_id).count()
-    new_count = Lead.query.filter_by(dial_list_id=list_id, status='new').count()
-    imported = Lead.query.filter_by(dial_list_id=list_id, status='imported').count()
-    in_progress = Lead.query.filter_by(dial_list_id=list_id, status='in_progress').count()
-    contacted = Lead.query.filter_by(dial_list_id=list_id, status='contacted').count()
-    converted = Lead.query.filter_by(dial_list_id=list_id, status='converted').count()
-    callback = Lead.query.filter_by(dial_list_id=list_id, status='callback').count()
-    no_answer = Lead.query.filter_by(dial_list_id=list_id, status='no_answer').count()
-    closed = Lead.query.filter_by(dial_list_id=list_id, status='closed').count()
-    
-    # Gercek call sayilari
-    from models import Call
-    total_calls = Call.query.filter(Call.lead_id.in_(
-        db.session.query(Lead.id).filter(Lead.dial_list_id == list_id)
-    )).count() if total > 0 else 0
-    
-    return jsonify({
-        'success': True,
-        'list_id': list_id,
-        'list_name': dial_list.name,
-        'total_records': total,
-        'imported': imported,
-        'new': new_count,
-        'in_progress': in_progress,
-        'contacted': contacted,
-        'converted': converted,
-        'callback': callback,
-        'no_answer': no_answer,
-        'closed': closed,
-        'total_calls': total_calls,
-        'contacted_rate': round(contacted / total * 100, 1) if total > 0 else 0,
-        'conversion_rate': round(converted / contacted * 100, 1) if contacted > 0 else 0
-    })
+# NOTE: enqueue + stats endpoints are also defined earlier (admin_required, tenant-scoped).
+# Keeping only the earlier definitions to avoid duplicate endpoint AssertionError.
 
 
 # ============================================
