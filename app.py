@@ -1577,8 +1577,17 @@ def admin_user_new():
     # GET - Form verilerini hazırla
     departments = Department.query.filter_by(tenant_id=current_user.tenant_id, is_active=True).all()
     teams = Team.query.filter_by(tenant_id=current_user.tenant_id, is_active=True).all()
-    projects = Project.query.filter_by(tenant_id=current_user.tenant_id, is_active=True).all()
-    campaigns = Campaign.query.filter_by(tenant_id=current_user.tenant_id, is_active=True).all()
+    # Project/Campaign modellerinde `is_active` yok, `status` kullanılıyor
+    projects_q = Project.query.filter_by(tenant_id=current_user.tenant_id)
+    if hasattr(Project, 'status'):
+        projects_q = projects_q.filter(Project.status != 'archived')
+    projects = projects_q.all()
+
+    campaigns_q = Campaign.query.filter_by(tenant_id=current_user.tenant_id)
+    if hasattr(Campaign, 'status'):
+        # completed olanları gizle (istersen kaldırabiliriz)
+        campaigns_q = campaigns_q.filter(Campaign.status != 'completed')
+    campaigns = campaigns_q.all()
     
     return render_template('admin/user_form.html', 
                           user=None, 
@@ -1652,8 +1661,15 @@ def admin_user_edit(id):
 
     departments = Department.query.filter_by(tenant_id=user.tenant_id, is_active=True).all()
     teams = Team.query.filter_by(tenant_id=user.tenant_id, is_active=True).all()
-    projects = Project.query.filter_by(tenant_id=user.tenant_id, is_active=True).all()
-    campaigns = Campaign.query.filter_by(tenant_id=user.tenant_id, is_active=True).all()
+    projects_q = Project.query.filter_by(tenant_id=user.tenant_id)
+    if hasattr(Project, 'status'):
+        projects_q = projects_q.filter(Project.status != 'archived')
+    projects = projects_q.all()
+
+    campaigns_q = Campaign.query.filter_by(tenant_id=user.tenant_id)
+    if hasattr(Campaign, 'status'):
+        campaigns_q = campaigns_q.filter(Campaign.status != 'completed')
+    campaigns = campaigns_q.all()
 
     user_projects = [pu.project_id for pu in ProjectUser.query.filter_by(user_id=user.id).all()]
     user_campaigns = [cu.campaign_id for cu in CampaignUser.query.filter_by(user_id=user.id).all()]
