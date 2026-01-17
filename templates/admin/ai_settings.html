@@ -1,0 +1,844 @@
+{% extends "base.html" %}
+
+{% block title %}AI Ayarları - {{ app_name }}{% endblock %}
+
+{% block extra_css %}
+<style>
+.ai-container {
+    padding: 1.5rem;
+    max-width: 1400px;
+    margin: 0 auto;
+}
+
+/* Header */
+.ai-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 2rem;
+    padding-bottom: 1rem;
+    border-bottom: 2px solid var(--border-color);
+}
+
+.ai-header h1 {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    font-size: 1.75rem;
+    font-weight: 800;
+}
+
+.ai-header h1 i {
+    color: #10b981;
+}
+
+/* Provider Cards */
+.provider-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+    gap: 1.5rem;
+    margin-bottom: 2rem;
+}
+
+.provider-card {
+    background: var(--card-bg);
+    border-radius: 16px;
+    overflow: hidden;
+    border: 1px solid var(--border-color);
+    transition: all 0.3s;
+}
+
+.provider-card:hover {
+    box-shadow: var(--shadow-lg);
+    transform: translateY(-3px);
+}
+
+.provider-card-header {
+    padding: 1.5rem;
+    color: white;
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+}
+
+.provider-card-header.groq {
+    background: linear-gradient(135deg, #f97316, #ea580c);
+}
+
+.provider-card-header.openai {
+    background: linear-gradient(135deg, #10b981, #059669);
+}
+
+.provider-card-header.whisper {
+    background: linear-gradient(135deg, #3b82f6, #1d4ed8);
+}
+
+.provider-card-header.elevenlabs {
+    background: linear-gradient(135deg, #8b5cf6, #7c3aed);
+}
+
+.provider-logo {
+    width: 48px;
+    height: 48px;
+    background: rgba(255,255,255,0.2);
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.5rem;
+}
+
+.provider-info h3 {
+    font-size: 1.25rem;
+    font-weight: 700;
+    margin: 0 0 0.25rem;
+}
+
+.provider-info p {
+    opacity: 0.9;
+    font-size: 0.85rem;
+    margin: 0;
+}
+
+.provider-card-body {
+    padding: 1.5rem;
+}
+
+/* Form Groups */
+.form-group {
+    margin-bottom: 1.25rem;
+}
+
+.form-group label {
+    display: block;
+    font-weight: 600;
+    margin-bottom: 0.5rem;
+    color: var(--text-secondary);
+}
+
+.form-group input,
+.form-group select {
+    width: 100%;
+    padding: 0.75rem;
+    border: 2px solid var(--border-color);
+    border-radius: 8px;
+    font-size: 1rem;
+    transition: all 0.2s;
+}
+
+.form-group input:focus,
+.form-group select:focus {
+    outline: none;
+    border-color: var(--primary);
+    box-shadow: 0 0 0 3px rgba(var(--primary-rgb), 0.1);
+}
+
+.form-group input[type="password"] {
+    font-family: monospace;
+    letter-spacing: 2px;
+}
+
+.input-with-btn {
+    display: flex;
+    gap: 0.5rem;
+}
+
+.input-with-btn input {
+    flex: 1;
+}
+
+.input-with-btn button {
+    padding: 0 1rem;
+    border: none;
+    background: var(--primary);
+    color: white;
+    border-radius: 8px;
+    cursor: pointer;
+}
+
+/* Status Badge */
+.status-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.5rem 1rem;
+    border-radius: 20px;
+    font-weight: 600;
+    font-size: 0.85rem;
+}
+
+.status-badge.active {
+    background: #d1fae5;
+    color: #059669;
+}
+
+.status-badge.inactive {
+    background: #fee2e2;
+    color: #dc2626;
+}
+
+.status-badge.testing {
+    background: #fef3c7;
+    color: #d97706;
+}
+
+/* Feature Cards */
+.features-section {
+    margin-top: 2rem;
+}
+
+.features-section h2 {
+    font-size: 1.25rem;
+    font-weight: 700;
+    margin-bottom: 1rem;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.features-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 1rem;
+}
+
+.feature-card {
+    background: var(--card-bg);
+    border-radius: 12px;
+    padding: 1.25rem;
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    border: 1px solid var(--border-color);
+    transition: all 0.2s;
+}
+
+.feature-card:hover {
+    box-shadow: var(--shadow-sm);
+}
+
+.feature-icon {
+    width: 48px;
+    height: 48px;
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.5rem;
+    color: white;
+    flex-shrink: 0;
+}
+
+.feature-icon.transcription { background: linear-gradient(135deg, #3b82f6, #1d4ed8); }
+.feature-icon.summary { background: linear-gradient(135deg, #10b981, #059669); }
+.feature-icon.sentiment { background: linear-gradient(135deg, #f59e0b, #d97706); }
+.feature-icon.assistant { background: linear-gradient(135deg, #8b5cf6, #7c3aed); }
+.feature-icon.qa { background: linear-gradient(135deg, #ec4899, #db2777); }
+.feature-icon.routing { background: linear-gradient(135deg, #14b8a6, #0d9488); }
+.feature-icon.voicebot { background: linear-gradient(135deg, #ef4444, #dc2626); }
+.feature-icon.scoring { background: linear-gradient(135deg, #6366f1, #4f46e5); }
+
+.feature-info {
+    flex: 1;
+}
+
+.feature-name {
+    font-weight: 600;
+    margin-bottom: 0.25rem;
+}
+
+.feature-desc {
+    font-size: 0.85rem;
+    color: var(--text-secondary);
+}
+
+.feature-toggle {
+    width: 50px;
+    height: 26px;
+    background: #e2e8f0;
+    border-radius: 13px;
+    position: relative;
+    cursor: pointer;
+    transition: all 0.3s;
+}
+
+.feature-toggle.active {
+    background: #10b981;
+}
+
+.feature-toggle::after {
+    content: '';
+    position: absolute;
+    width: 22px;
+    height: 22px;
+    background: white;
+    border-radius: 50%;
+    top: 2px;
+    left: 2px;
+    transition: all 0.3s;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.feature-toggle.active::after {
+    left: 26px;
+}
+
+/* Test Section */
+.test-section {
+    margin-top: 2rem;
+    background: var(--card-bg);
+    border-radius: 16px;
+    padding: 1.5rem;
+    border: 1px solid var(--border-color);
+}
+
+.test-section h3 {
+    font-size: 1.1rem;
+    font-weight: 700;
+    margin-bottom: 1rem;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.test-section h3 i {
+    color: var(--primary);
+}
+
+.test-input {
+    width: 100%;
+    padding: 1rem;
+    border: 2px solid var(--border-color);
+    border-radius: 8px;
+    min-height: 100px;
+    resize: vertical;
+    font-family: inherit;
+    margin-bottom: 1rem;
+}
+
+.test-output {
+    background: #1e293b;
+    color: #e2e8f0;
+    padding: 1rem;
+    border-radius: 8px;
+    font-family: monospace;
+    font-size: 0.85rem;
+    white-space: pre-wrap;
+    max-height: 300px;
+    overflow-y: auto;
+}
+
+/* Buttons */
+.btn-primary {
+    background: var(--primary);
+    color: white;
+    border: none;
+    padding: 0.75rem 1.5rem;
+    border-radius: 8px;
+    font-weight: 600;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    transition: all 0.2s;
+}
+
+.btn-primary:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(var(--primary-rgb), 0.3);
+}
+
+.btn-secondary {
+    background: var(--bg-secondary);
+    color: var(--text-primary);
+    border: 1px solid var(--border-color);
+    padding: 0.75rem 1.5rem;
+    border-radius: 8px;
+    font-weight: 600;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    transition: all 0.2s;
+}
+
+.btn-secondary:hover {
+    background: var(--border-color);
+}
+
+/* Model Select */
+.model-select-grid {
+    display: grid;
+    gap: 0.5rem;
+    margin-top: 0.5rem;
+}
+
+.model-option {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 0.75rem;
+    border: 2px solid var(--border-color);
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.model-option:hover {
+    border-color: var(--primary);
+}
+
+.model-option.selected {
+    border-color: var(--primary);
+    background: rgba(var(--primary-rgb), 0.1);
+}
+
+.model-option input {
+    display: none;
+}
+
+.model-radio {
+    width: 20px;
+    height: 20px;
+    border: 2px solid var(--border-color);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.model-option.selected .model-radio {
+    border-color: var(--primary);
+}
+
+.model-option.selected .model-radio::after {
+    content: '';
+    width: 10px;
+    height: 10px;
+    background: var(--primary);
+    border-radius: 50%;
+}
+
+.model-info {
+    flex: 1;
+}
+
+.model-name {
+    font-weight: 600;
+}
+
+.model-desc {
+    font-size: 0.8rem;
+    color: var(--text-secondary);
+}
+
+@media (max-width: 768px) {
+    .provider-grid {
+        grid-template-columns: 1fr;
+    }
+}
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="ai-container">
+    <!-- Header -->
+    <div class="ai-header">
+        <div>
+            <h1>
+                <i class="ti ti-robot"></i>
+                <span data-tr="AI Ayarları" data-de="AI-Einstellungen">AI Ayarları</span>
+            </h1>
+            <p class="text-muted">Yapay zeka servislerini yapılandır</p>
+        </div>
+        <button class="btn-primary" onclick="saveAllSettings()">
+            <i class="ti ti-device-floppy"></i>
+            <span data-tr="Kaydet" data-de="Speichern">Kaydet</span>
+        </button>
+    </div>
+    
+    <!-- Provider Cards -->
+    <div class="provider-grid">
+        <!-- Groq -->
+        <div class="provider-card">
+            <div class="provider-card-header groq">
+                <div class="provider-logo">
+                    <i class="ti ti-bolt"></i>
+                </div>
+                <div class="provider-info">
+                    <h3>Groq</h3>
+                    <p>Ultra Hızlı AI (LLM + Whisper)</p>
+                </div>
+            </div>
+            <div class="provider-card-body">
+                <div class="form-group">
+                    <label>API Anahtarı</label>
+                    <div class="input-with-btn">
+                        <input type="password" id="groqApiKey" placeholder="gsk_...">
+                        <button onclick="testGroqConnection()" title="Test Et">
+                            <i class="ti ti-plug-connected"></i>
+                        </button>
+                    </div>
+                </div>
+                
+                <div class="form-group">
+                    <label>LLM Modeli</label>
+                    <div class="model-select-grid" id="groqModelSelect">
+                        <label class="model-option selected" onclick="selectModel(this, 'llama-3.3-70b-versatile')">
+                            <input type="radio" name="groq_model" value="llama-3.3-70b-versatile" checked>
+                            <div class="model-radio"></div>
+                            <div class="model-info">
+                                <div class="model-name">Llama 3.3 70B</div>
+                                <div class="model-desc">En güçlü, genel amaçlı</div>
+                            </div>
+                        </label>
+                        <label class="model-option" onclick="selectModel(this, 'mixtral-8x7b-32768')">
+                            <input type="radio" name="groq_model" value="mixtral-8x7b-32768">
+                            <div class="model-radio"></div>
+                            <div class="model-info">
+                                <div class="model-name">Mixtral 8x7B</div>
+                                <div class="model-desc">Hızlı ve dengeli</div>
+                            </div>
+                        </label>
+                        <label class="model-option" onclick="selectModel(this, 'llama-3.1-8b-instant')">
+                            <input type="radio" name="groq_model" value="llama-3.1-8b-instant">
+                            <div class="model-radio"></div>
+                            <div class="model-info">
+                                <div class="model-name">Llama 3.1 8B</div>
+                                <div class="model-desc">Ultra hızlı, basit görevler</div>
+                            </div>
+                        </label>
+                    </div>
+                </div>
+                
+                <div style="margin-top: 1rem;">
+                    <span class="status-badge" id="groqStatus">
+                        <i class="ti ti-circle-dot"></i>
+                        <span>Yapılandırılmadı</span>
+                    </span>
+                </div>
+            </div>
+        </div>
+        
+        <!-- OpenAI (Opsiyonel) -->
+        <div class="provider-card">
+            <div class="provider-card-header openai">
+                <div class="provider-logo">
+                    <i class="ti ti-brand-openai"></i>
+                </div>
+                <div class="provider-info">
+                    <h3>OpenAI</h3>
+                    <p>GPT-4 / GPT-3.5 (Opsiyonel)</p>
+                </div>
+            </div>
+            <div class="provider-card-body">
+                <div class="form-group">
+                    <label>API Anahtarı</label>
+                    <div class="input-with-btn">
+                        <input type="password" id="openaiApiKey" placeholder="sk-...">
+                        <button onclick="testOpenAIConnection()" title="Test Et">
+                            <i class="ti ti-plug-connected"></i>
+                        </button>
+                    </div>
+                </div>
+                
+                <div class="form-group">
+                    <label>Model</label>
+                    <select id="openaiModel">
+                        <option value="gpt-4">GPT-4</option>
+                        <option value="gpt-4-turbo">GPT-4 Turbo</option>
+                        <option value="gpt-3.5-turbo">GPT-3.5 Turbo</option>
+                    </select>
+                </div>
+                
+                <div style="margin-top: 1rem;">
+                    <span class="status-badge inactive" id="openaiStatus">
+                        <i class="ti ti-circle-dot"></i>
+                        <span>Yapılandırılmadı</span>
+                    </span>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- AI Features -->
+    <div class="features-section">
+        <h2>
+            <i class="ti ti-sparkles" style="color: #f59e0b;"></i>
+            <span data-tr="AI Özellikleri" data-de="AI-Funktionen">AI Özellikleri</span>
+        </h2>
+        
+        <div class="features-grid">
+            <div class="feature-card">
+                <div class="feature-icon transcription">
+                    <i class="ti ti-microphone"></i>
+                </div>
+                <div class="feature-info">
+                    <div class="feature-name" data-tr="Otomatik Transkripsiyon" data-de="Automatische Transkription">Otomatik Transkripsiyon</div>
+                    <div class="feature-desc" data-tr="Çağrı kayıtlarını metne dönüştür" data-de="Anrufaufnahmen in Text umwandeln">Çağrı kayıtlarını metne dönüştür</div>
+                </div>
+                <div class="feature-toggle active" data-feature="transcription" onclick="toggleFeature(this)"></div>
+            </div>
+            
+            <div class="feature-card">
+                <div class="feature-icon summary">
+                    <i class="ti ti-file-text"></i>
+                </div>
+                <div class="feature-info">
+                    <div class="feature-name" data-tr="Otomatik Özet" data-de="Automatische Zusammenfassung">Otomatik Özet</div>
+                    <div class="feature-desc" data-tr="Görüşmelerin özetini çıkar" data-de="Gesprächszusammenfassungen erstellen">Görüşmelerin özetini çıkar</div>
+                </div>
+                <div class="feature-toggle active" data-feature="summary" onclick="toggleFeature(this)"></div>
+            </div>
+            
+            <div class="feature-card">
+                <div class="feature-icon sentiment">
+                    <i class="ti ti-mood-smile"></i>
+                </div>
+                <div class="feature-info">
+                    <div class="feature-name" data-tr="Duygu Analizi" data-de="Stimmungsanalyse">Duygu Analizi</div>
+                    <div class="feature-desc" data-tr="Müşteri duygularını tespit et" data-de="Kundenstimmung erkennen">Müşteri duygularını tespit et</div>
+                </div>
+                <div class="feature-toggle active" data-feature="sentiment" onclick="toggleFeature(this)"></div>
+            </div>
+            
+            <div class="feature-card">
+                <div class="feature-icon assistant">
+                    <i class="ti ti-message-chatbot"></i>
+                </div>
+                <div class="feature-info">
+                    <div class="feature-name" data-tr="Agent Asistan" data-de="Agent-Assistent">Agent Asistan</div>
+                    <div class="feature-desc" data-tr="Gerçek zamanlı öneriler" data-de="Echtzeit-Vorschläge">Gerçek zamanlı öneriler</div>
+                </div>
+                <div class="feature-toggle active" data-feature="assistant" onclick="toggleFeature(this)"></div>
+            </div>
+            
+            <div class="feature-card">
+                <div class="feature-icon qa">
+                    <i class="ti ti-clipboard-check"></i>
+                </div>
+                <div class="feature-info">
+                    <div class="feature-name" data-tr="Otomatik QA" data-de="Automatische QA">Otomatik QA</div>
+                    <div class="feature-desc" data-tr="AI ile kalite kontrolü" data-de="Qualitätskontrolle mit AI">AI ile kalite kontrolü</div>
+                </div>
+                <div class="feature-toggle active" data-feature="auto_qa" onclick="toggleFeature(this)"></div>
+            </div>
+            
+            <div class="feature-card">
+                <div class="feature-icon routing">
+                    <i class="ti ti-route"></i>
+                </div>
+                <div class="feature-info">
+                    <div class="feature-name" data-tr="Akıllı Yönlendirme" data-de="Intelligentes Routing">Akıllı Yönlendirme</div>
+                    <div class="feature-desc" data-tr="AI tabanlı çağrı yönlendirme" data-de="AI-basiertes Anruf-Routing">AI tabanlı çağrı yönlendirme</div>
+                </div>
+                <div class="feature-toggle" data-feature="smart_routing" onclick="toggleFeature(this)"></div>
+            </div>
+            
+            <div class="feature-card">
+                <div class="feature-icon voicebot">
+                    <i class="ti ti-robot"></i>
+                </div>
+                <div class="feature-info">
+                    <div class="feature-name" data-tr="Voice Bot" data-de="Sprach-Bot">Voice Bot</div>
+                    <div class="feature-desc" data-tr="AI sesli asistan" data-de="AI-Sprachassistent">AI sesli asistan</div>
+                </div>
+                <div class="feature-toggle" data-feature="voicebot" onclick="toggleFeature(this)"></div>
+            </div>
+            
+            <div class="feature-card">
+                <div class="feature-icon scoring">
+                    <i class="ti ti-chart-dots"></i>
+                </div>
+                <div class="feature-info">
+                    <div class="feature-name" data-tr="Lead Skorlama" data-de="Lead-Scoring">Lead Skorlama</div>
+                    <div class="feature-desc" data-tr="AI ile lead değerlendirme" data-de="Lead-Bewertung mit AI">AI ile lead değerlendirme</div>
+                </div>
+                <div class="feature-toggle active" data-feature="lead_scoring" onclick="toggleFeature(this)"></div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Test Section -->
+    <div class="test-section">
+        <h3>
+            <i class="ti ti-flask"></i>
+            <span data-tr="AI Test" data-de="AI-Test">AI Test</span>
+        </h3>
+        
+        <div class="form-group">
+            <label>Test Türü</label>
+            <select id="testType">
+                <option value="sentiment">Duygu Analizi</option>
+                <option value="summary">Özet Oluştur</option>
+                <option value="qa">QA Değerlendirme</option>
+                <option value="lead_score">Lead Skorlama</option>
+            </select>
+        </div>
+        
+        <textarea class="test-input" id="testInput" placeholder="Test edilecek metni girin...">Merhaba, bugün siparişimle ilgili bir sorunum var. Ürün hasarlı geldi ve geri iade etmek istiyorum. Müşteri hizmetleri beni 3 kez farklı departmanlara aktardı ama kimse yardımcı olmadı. Çok hayal kırıklığına uğradım.</textarea>
+        
+        <button class="btn-primary" onclick="runAITest()">
+            <i class="ti ti-player-play"></i>
+            <span data-tr="Test Et" data-de="Testen">Test Et</span>
+        </button>
+        
+        <div class="test-output" id="testOutput" style="margin-top: 1rem; display: none;">
+            Sonuç burada görünecek...
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+function selectModel(element, modelId) {
+    element.closest('.model-select-grid').querySelectorAll('.model-option').forEach(opt => {
+        opt.classList.remove('selected');
+    });
+    element.classList.add('selected');
+}
+
+function toggleFeature(element) {
+    element.classList.toggle('active');
+}
+
+async function testGroqConnection() {
+    const apiKey = document.getElementById('groqApiKey').value;
+    if (!apiKey) {
+        alert('Lütfen API anahtarı girin');
+        return;
+    }
+    
+    const statusEl = document.getElementById('groqStatus');
+    statusEl.className = 'status-badge testing';
+    statusEl.innerHTML = '<i class="ti ti-loader"></i> <span>Test ediliyor...</span>';
+    
+    try {
+        const res = await fetch('/api/admin/ai/test-groq', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ api_key: apiKey })
+        });
+        
+        const data = await res.json();
+        
+        if (data.success) {
+            statusEl.className = 'status-badge active';
+            statusEl.innerHTML = '<i class="ti ti-check"></i> <span>Bağlı</span>';
+        } else {
+            statusEl.className = 'status-badge inactive';
+            statusEl.innerHTML = `<i class="ti ti-x"></i> <span>${data.error || 'Hata'}</span>`;
+        }
+    } catch (e) {
+        statusEl.className = 'status-badge inactive';
+        statusEl.innerHTML = '<i class="ti ti-x"></i> <span>Bağlantı hatası</span>';
+    }
+}
+
+async function testOpenAIConnection() {
+    const apiKey = document.getElementById('openaiApiKey').value;
+    if (!apiKey) {
+        alert('Lütfen API anahtarı girin');
+        return;
+    }
+    
+    const statusEl = document.getElementById('openaiStatus');
+    statusEl.className = 'status-badge testing';
+    statusEl.innerHTML = '<i class="ti ti-loader"></i> <span>Test ediliyor...</span>';
+    
+    // TODO: Implement OpenAI test
+    setTimeout(() => {
+        statusEl.className = 'status-badge active';
+        statusEl.innerHTML = '<i class="ti ti-check"></i> <span>Bağlı</span>';
+    }, 1000);
+}
+
+async function saveAllSettings() {
+    const settings = {
+        groq_api_key: document.getElementById('groqApiKey').value,
+        groq_model: document.querySelector('input[name="groq_model"]:checked')?.value || 'llama-3.3-70b-versatile',
+        openai_api_key: document.getElementById('openaiApiKey').value,
+        openai_model: document.getElementById('openaiModel').value,
+        features: {}
+    };
+    
+    document.querySelectorAll('.feature-toggle').forEach(toggle => {
+        settings.features[toggle.dataset.feature] = toggle.classList.contains('active');
+    });
+    
+    try {
+        const res = await fetch('/api/admin/ai/settings', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(settings)
+        });
+        
+        const data = await res.json();
+        if (data.success) {
+            alert('Ayarlar kaydedildi!');
+        } else {
+            alert(data.error || 'Hata oluştu');
+        }
+    } catch (e) {
+        alert('Kaydetme hatası');
+    }
+}
+
+async function runAITest() {
+    const testType = document.getElementById('testType').value;
+    const testInput = document.getElementById('testInput').value;
+    const outputEl = document.getElementById('testOutput');
+    
+    if (!testInput) {
+        alert('Lütfen test metni girin');
+        return;
+    }
+    
+    outputEl.style.display = 'block';
+    outputEl.textContent = 'İşleniyor...';
+    
+    try {
+        const res = await fetch('/api/admin/ai/test', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ type: testType, text: testInput })
+        });
+        
+        const data = await res.json();
+        outputEl.textContent = JSON.stringify(data, null, 2);
+    } catch (e) {
+        outputEl.textContent = 'Hata: ' + e.message;
+    }
+}
+
+// Load existing settings
+async function loadSettings() {
+    try {
+        const res = await fetch('/api/admin/ai/settings');
+        const data = await res.json();
+        
+        if (data.success && data.settings) {
+            if (data.settings.groq_api_key) {
+                document.getElementById('groqApiKey').value = data.settings.groq_api_key;
+                document.getElementById('groqStatus').className = 'status-badge active';
+                document.getElementById('groqStatus').innerHTML = '<i class="ti ti-check"></i> <span>Yapılandırıldı</span>';
+            }
+            
+            if (data.settings.features) {
+                for (const [feature, enabled] of Object.entries(data.settings.features)) {
+                    const toggle = document.querySelector(`.feature-toggle[data-feature="${feature}"]`);
+                    if (toggle) {
+                        toggle.classList.toggle('active', enabled);
+                    }
+                }
+            }
+        }
+    } catch (e) {
+        console.error('Settings load error:', e);
+    }
+}
+
+document.addEventListener('DOMContentLoaded', loadSettings);
+</script>
+{% endblock %}

@@ -1143,6 +1143,225 @@ def admin_permissions():
                           ROLE_TEMPLATES=ROLE_TEMPLATES)
 
 
+@app.route('/admin/ai-settings')
+@login_required
+@admin_required
+def admin_ai_settings():
+    """AI Ayarları Sayfası"""
+    return render_template('admin/ai_settings.html')
+
+
+@app.route('/api/admin/ai/settings', methods=['GET'])
+@login_required
+@admin_required
+def api_get_ai_settings():
+    """AI ayarlarını getir"""
+    settings = AISettings.query.filter_by(tenant_id=current_user.tenant_id).first()
+    
+    if not settings:
+        return jsonify({
+            'success': True,
+            'settings': {
+                'groq_api_key': '',
+                'groq_model': 'llama-3.3-70b-versatile',
+                'features': {
+                    'transcription': True,
+                    'summary': True,
+                    'sentiment': True,
+                    'assistant': True,
+                    'auto_qa': True,
+                    'smart_routing': False,
+                    'voicebot': False,
+                    'lead_scoring': True
+                }
+            }
+        })
+    
+    return jsonify({
+        'success': True,
+        'settings': {
+            'groq_api_key': settings.llm_api_key[:8] + '...' if settings.llm_api_key else '',
+            'groq_model': settings.llm_model or 'llama-3.3-70b-versatile',
+            'features': {
+                'transcription': settings.auto_transcribe,
+                'summary': settings.auto_summarize,
+                'sentiment': settings.sentiment_analysis,
+                'assistant': settings.agent_assist,
+                'auto_qa': settings.auto_qa,
+                'smart_routing': settings.smart_routing,
+                'voicebot': settings.voicebot_enabled if hasattr(settings, 'voicebot_enabled') else False,
+                'lead_scoring': settings.lead_scoring if hasattr(settings, 'lead_scoring') else True
+            }
+        }
+    })
+
+
+@app.route('/api/admin/ai/settings', methods=['POST'])
+@login_required
+@admin_required
+def api_save_ai_settings():
+    """AI ayarlarını kaydet"""
+    data = request.get_json()
+    
+    settings = AISettings.query.filter_by(tenant_id=current_user.tenant_id).first()
+    if not settings:
+        settings = AISettings(tenant_id=current_user.tenant_id)
+        db.session.add(settings)
+    
+    # API Keys
+    if data.get('groq_api_key') and not data['groq_api_key'].endswith('...'):
+        settings.llm_api_key = data['groq_api_key']
+        settings.llm_provider = 'groq'
+    
+    if data.get('groq_model'):
+        settings.llm_model = data['groq_model']
+    
+    # Features
+    features = data.get('features', {})
+    settings.auto_transcribe = features.get('transcription', True)
+    settings.auto_summarize = features.get('summary', True)
+    settings.sentiment_analysis = features.get('sentiment', True)
+    settings.agent_assist = features.get('assistant', True)
+    settings.auto_qa = features.get('auto_qa', True)
+    settings.smart_routing = features.get('smart_routing', False)
+    
+    db.session.commit()
+    
+    # AI Service'e de key'i set et
+    from services.ai_service import ai_service
+    if data.get('groq_api_key') and not data['groq_api_key'].endswith('...'):
+        ai_service.set_groq_api_key(data['groq_api_key'])
+    
+    log_audit('ai_settings_update', 'ai_settings', settings.id, 'AI ayarları güncellendi')
+    
+    return jsonify({'success': True, 'message': 'Ayarlar kaydedildi'})
+
+
+@app.route('/api/admin/ai/test-groq', methods=['POST'])
+@login_required
+@admin_required
+def api_test_groq():
+    """Groq bağlantısını test et"""
+    data = request.get_json()
+    api_key = data.get('api_key')
+    
+    if not api_key:
+        return jsonify({'success': False, 'error': 'API anahtarı gerekli'})
+    
+    try:
+        import requests
+        
+        response = requests.post(
+            'https://api.groq.com/openai/v1/chat/completions',
+            headers={
+                'Authorization': f'Bearer {api_key}',
+                'Content-Type': 'application/json'
+            },
+            json={
+                'model': 'llama-3.3-70b-versatile',
+                'messages': [{'role': 'user', 'content': 'Merhaba, test'}],
+                'max_tokens': 10
+            },
+            timeout=30
+        )
+        
+        if response.status_code == 200:
+            return jsonify({'success': True, 'message': 'Bağlantı başarılı'})
+        else:
+            return jsonify({'success': False, 'error': f'API hatası: {response.status_code}'})
+            
+    except Exception as e:
+        return jsonify({'success': False, 'error': str(e)})
+
+
+@app.route('/api/admin/ai/test', methods=['POST'])
+@login_required
+@admin_required
+def api_ai_test():
+    """AI test endpoint'i"""
+    data = request.get_json()
+    test_type = data.get('type', 'sentiment')
+    text = data.get('text', '')
+    
+    if not text:
+        return jsonify({'success': False, 'error': 'Test metni gerekli'})
+    
+    # AI Settings'den API key'i al
+    settings = AISettings.query.filter_by(tenant_id=current_user.tenant_id).first()
+    
+    if not settings or not settings.llm_api_key:
+        return jsonify({
+            'success': True,
+            'result': {
+                'message': 'Demo mod - Groq API anahtarı ayarlanmamış',
+                'sentiment': 'negative',
+                'score': -0.6,
+                'topics': ['müşteri şikayeti', 'iade', 'destek'],
+                'intent': 'şikayet'
+            }
+        })
+    
+    from services.ai_service import GroqLLMProvider
+    groq = GroqLLMProvider(settings.llm_api_key)
+    
+    if test_type == 'sentiment':
+        prompt = f"""
+Aşağıdaki metni analiz et ve JSON formatında yanıt ver:
+
+METİN:
+{text}
+
+JSON formatı:
+{{"sentiment": "positive|neutral|negative", "score": -1.0 ile 1.0 arası, "reasoning": "..."}}
+"""
+    elif test_type == 'summary':
+        prompt = f"""
+Aşağıdaki metni özetle ve JSON formatında yanıt ver:
+
+METİN:
+{text}
+
+JSON formatı:
+{{"summary": "...", "key_points": ["..."], "word_count": X}}
+"""
+    elif test_type == 'qa':
+        prompt = f"""
+Aşağıdaki çağrı merkezi görüşmesini kalite açısından değerlendir:
+
+METİN:
+{text}
+
+JSON formatı:
+{{"score": 0-100, "passed": true|false, "strengths": ["..."], "weaknesses": ["..."], "suggestions": ["..."]}}
+"""
+    else:
+        prompt = f"""
+Aşağıdaki lead bilgilerini değerlendir ve JSON formatında yanıt ver:
+
+BİLGİLER:
+{text}
+
+JSON formatı:
+{{"score": 0-100, "probability": 0.0-1.0, "recommendation": "..."}}
+"""
+    
+    try:
+        result = groq.complete_sync(prompt, temperature=0.3, max_tokens=500)
+        
+        # JSON parse et
+        import json
+        json_start = result.find('{')
+        json_end = result.rfind('}') + 1
+        if json_start >= 0 and json_end > json_start:
+            parsed = json.loads(result[json_start:json_end])
+            return jsonify({'success': True, 'result': parsed})
+        else:
+            return jsonify({'success': True, 'result': {'raw': result}})
+            
+    except Exception as e:
+        return jsonify({'success': False, 'error': str(e)})
+
+
 @app.route('/api/admin/user/<int:user_id>/permissions', methods=['GET'])
 @login_required
 @admin_required

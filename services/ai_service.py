@@ -76,14 +76,27 @@ class AIService:
     
     def _load_providers(self):
         """AI sağlayıcılarını yükle"""
-        # Whisper STT
+        # Whisper STT (lokal)
         self.stt_providers['whisper'] = WhisperSTTProvider()
         
-        # OpenAI
+        # Groq Whisper STT (API - Hızlı)
+        self.stt_providers['groq'] = GroqWhisperProvider()
+        
+        # OpenAI LLM
         self.llm_providers['openai'] = OpenAILLMProvider()
+        
+        # Groq LLM (Varsayılan - Hızlı ve Güçlü)
+        self.llm_providers['groq'] = GroqLLMProvider()
         
         # ElevenLabs TTS
         self.tts_providers['elevenlabs'] = ElevenLabsTTSProvider()
+    
+    def set_groq_api_key(self, api_key: str):
+        """Groq API key'i güncelle"""
+        if 'groq' in self.llm_providers:
+            self.llm_providers['groq'].set_api_key(api_key)
+        if 'groq' in self.stt_providers:
+            self.stt_providers['groq'].set_api_key(api_key)
     
     # ==========================================
     # STT - Speech to Text
@@ -805,6 +818,339 @@ class OpenAILLMProvider:
             })
 
 
+class GroqLLMProvider:
+    """Groq LLM Provider - Hızlı ve Güçlü"""
+    
+    MODELS = {
+        'llama-3.3-70b-versatile': {'name': 'Llama 3.3 70B', 'max_tokens': 32768},
+        'llama-3.1-70b-versatile': {'name': 'Llama 3.1 70B', 'max_tokens': 32768},
+        'llama-3.1-8b-instant': {'name': 'Llama 3.1 8B (Hızlı)', 'max_tokens': 8192},
+        'mixtral-8x7b-32768': {'name': 'Mixtral 8x7B', 'max_tokens': 32768},
+        'gemma2-9b-it': {'name': 'Gemma 2 9B', 'max_tokens': 8192},
+    }
+    
+    def __init__(self, api_key: str = None):
+        self.api_key = api_key or os.getenv('GROQ_API_KEY')
+        self.base_url = "https://api.groq.com/openai/v1"
+        self.default_model = "llama-3.3-70b-versatile"
+    
+    def set_api_key(self, api_key: str):
+        """API key'i güncelle"""
+        self.api_key = api_key
+    
+    async def complete(
+        self,
+        prompt: str,
+        temperature: float = 0.3,
+        max_tokens: int = 2000,
+        model: str = None
+    ) -> str:
+        """Groq completion - OpenAI uyumlu API"""
+        
+        if not self.api_key:
+            return self._mock_response(prompt)
+        
+        model = model or self.default_model
+        
+        try:
+            import httpx
+            
+            async with httpx.AsyncClient(timeout=60.0) as client:
+                response = await client.post(
+                    f"{self.base_url}/chat/completions",
+                    headers={
+                        "Authorization": f"Bearer {self.api_key}",
+                        "Content-Type": "application/json"
+                    },
+                    json={
+                        "model": model,
+                        "messages": [
+                            {
+                                "role": "system", 
+                                "content": "Sen bir çağrı merkezi AI asistanısın. Türkçe ve Almanca dillerinde yanıt verebilirsin. Her zaman JSON formatında yanıt ver."
+                            },
+                            {"role": "user", "content": prompt}
+                        ],
+                        "temperature": temperature,
+                        "max_tokens": max_tokens
+                    }
+                )
+                
+                if response.status_code == 200:
+                    data = response.json()
+                    return data['choices'][0]['message']['content']
+                else:
+                    error_msg = response.text
+                    return f"[Groq API Hatası: {response.status_code} - {error_msg}]"
+                    
+        except ImportError:
+            return self._mock_response(prompt)
+        except Exception as e:
+            return f"[Groq Hatası: {str(e)}]"
+    
+    def complete_sync(
+        self,
+        prompt: str,
+        temperature: float = 0.3,
+        max_tokens: int = 2000,
+        model: str = None
+    ) -> str:
+        """Senkron completion"""
+        
+        if not self.api_key:
+            return self._mock_response(prompt)
+        
+        model = model or self.default_model
+        
+        try:
+            import requests
+            
+            response = requests.post(
+                f"{self.base_url}/chat/completions",
+                headers={
+                    "Authorization": f"Bearer {self.api_key}",
+                    "Content-Type": "application/json"
+                },
+                json={
+                    "model": model,
+                    "messages": [
+                        {
+                            "role": "system", 
+                            "content": "Sen bir çağrı merkezi AI asistanısın. Türkçe ve Almanca dillerinde yanıt verebilirsin. Her zaman JSON formatında yanıt ver."
+                        },
+                        {"role": "user", "content": prompt}
+                    ],
+                    "temperature": temperature,
+                    "max_tokens": max_tokens
+                },
+                timeout=60
+            )
+            
+            if response.status_code == 200:
+                data = response.json()
+                return data['choices'][0]['message']['content']
+            else:
+                return f"[Groq API Hatası: {response.status_code}]"
+                
+        except Exception as e:
+            return f"[Groq Hatası: {str(e)}]"
+    
+    def _mock_response(self, prompt: str) -> str:
+        """API key yokken mock yanıt"""
+        if "analiz" in prompt.lower():
+            return json.dumps({
+                "summary": "Demo özet - Groq API anahtarı gerekli",
+                "sentiment": "neutral",
+                "sentiment_score": 0,
+                "topics": ["demo"],
+                "keywords": ["test"],
+                "intent": "unknown",
+                "issues": [],
+                "next_action": "follow_up",
+                "crm_suggestions": {}
+            }, ensure_ascii=False)
+        elif "qa" in prompt.lower() or "değerlendir" in prompt.lower():
+            return json.dumps({
+                "criteria_scores": [],
+                "total_score": 75,
+                "max_possible": 100,
+                "percentage": 75,
+                "passed": True,
+                "strengths": ["Demo"],
+                "weaknesses": [],
+                "violations": [],
+                "coaching_suggestions": []
+            }, ensure_ascii=False)
+        elif "skor" in prompt.lower() or "lead" in prompt.lower():
+            return json.dumps({
+                "overall_score": 65,
+                "conversion_probability": 0.65,
+                "best_time_to_call": {"day": "weekday", "hour": 10},
+                "recommended_approach": "Standard yaklaşım",
+                "scoring_factors": []
+            }, ensure_ascii=False)
+        elif "öneri" in prompt.lower() or "suggestion" in prompt.lower():
+            return json.dumps({
+                "suggestion_type": "script",
+                "suggestion_text": "Demo öneri - Groq API anahtarı gerekli",
+                "confidence": 0.5,
+                "context": "Demo mod"
+            }, ensure_ascii=False)
+        else:
+            return json.dumps({
+                "message": "Demo yanıt - Groq API anahtarı gerekli"
+            }, ensure_ascii=False)
+
+
+class GroqWhisperProvider:
+    """Groq Whisper STT Provider - Çok Hızlı Transkripsiyon"""
+    
+    def __init__(self, api_key: str = None):
+        self.api_key = api_key or os.getenv('GROQ_API_KEY')
+        self.base_url = "https://api.groq.com/openai/v1"
+        self.model = "whisper-large-v3-turbo"
+    
+    def set_api_key(self, api_key: str):
+        """API key'i güncelle"""
+        self.api_key = api_key
+    
+    async def transcribe(
+        self,
+        audio_path: str,
+        language: str = "tr",
+        model_name: str = None
+    ) -> TranscriptionResult:
+        """Groq Whisper ile transkripsiyon - Çok Hızlı"""
+        
+        if not self.api_key:
+            return TranscriptionResult(
+                text="[Groq API anahtarı gerekli]",
+                segments=[],
+                confidence=0,
+                language=language,
+                duration=0
+            )
+        
+        try:
+            import httpx
+            
+            async with httpx.AsyncClient(timeout=120.0) as client:
+                with open(audio_path, 'rb') as audio_file:
+                    files = {
+                        'file': (os.path.basename(audio_path), audio_file, 'audio/wav'),
+                    }
+                    data = {
+                        'model': model_name or self.model,
+                        'language': language,
+                        'response_format': 'verbose_json',
+                        'timestamp_granularities[]': 'segment'
+                    }
+                    
+                    response = await client.post(
+                        f"{self.base_url}/audio/transcriptions",
+                        headers={
+                            "Authorization": f"Bearer {self.api_key}"
+                        },
+                        files=files,
+                        data=data
+                    )
+                    
+                    if response.status_code == 200:
+                        result = response.json()
+                        
+                        segments = []
+                        for seg in result.get('segments', []):
+                            segments.append({
+                                "start": seg.get('start', 0),
+                                "end": seg.get('end', 0),
+                                "text": seg.get('text', ''),
+                                "speaker": "unknown"
+                            })
+                        
+                        return TranscriptionResult(
+                            text=result.get('text', ''),
+                            segments=segments,
+                            confidence=0.95,
+                            language=result.get('language', language),
+                            duration=result.get('duration', 0),
+                            word_timestamps=result.get('words')
+                        )
+                    else:
+                        return TranscriptionResult(
+                            text=f"[Groq Whisper Hatası: {response.status_code}]",
+                            segments=[],
+                            confidence=0,
+                            language=language,
+                            duration=0
+                        )
+                        
+        except Exception as e:
+            return TranscriptionResult(
+                text=f"[Transkripsiyon hatası: {str(e)}]",
+                segments=[],
+                confidence=0,
+                language=language,
+                duration=0
+            )
+    
+    def transcribe_sync(
+        self,
+        audio_path: str,
+        language: str = "tr",
+        model_name: str = None
+    ) -> TranscriptionResult:
+        """Senkron transkripsiyon"""
+        
+        if not self.api_key:
+            return TranscriptionResult(
+                text="[Groq API anahtarı gerekli]",
+                segments=[],
+                confidence=0,
+                language=language,
+                duration=0
+            )
+        
+        try:
+            import requests
+            
+            with open(audio_path, 'rb') as audio_file:
+                files = {
+                    'file': (os.path.basename(audio_path), audio_file, 'audio/wav'),
+                }
+                data = {
+                    'model': model_name or self.model,
+                    'language': language,
+                    'response_format': 'verbose_json'
+                }
+                
+                response = requests.post(
+                    f"{self.base_url}/audio/transcriptions",
+                    headers={
+                        "Authorization": f"Bearer {self.api_key}"
+                    },
+                    files=files,
+                    data=data,
+                    timeout=120
+                )
+                
+                if response.status_code == 200:
+                    result = response.json()
+                    
+                    segments = []
+                    for seg in result.get('segments', []):
+                        segments.append({
+                            "start": seg.get('start', 0),
+                            "end": seg.get('end', 0),
+                            "text": seg.get('text', ''),
+                            "speaker": "unknown"
+                        })
+                    
+                    return TranscriptionResult(
+                        text=result.get('text', ''),
+                        segments=segments,
+                        confidence=0.95,
+                        language=result.get('language', language),
+                        duration=result.get('duration', 0)
+                    )
+                else:
+                    return TranscriptionResult(
+                        text=f"[Groq Whisper Hatası: {response.status_code}]",
+                        segments=[],
+                        confidence=0,
+                        language=language,
+                        duration=0
+                    )
+                    
+        except Exception as e:
+            return TranscriptionResult(
+                text=f"[Transkripsiyon hatası: {str(e)}]",
+                segments=[],
+                confidence=0,
+                language=language,
+                duration=0
+            )
+
+
 class ElevenLabsTTSProvider:
     """ElevenLabs TTS Provider"""
     
@@ -852,6 +1198,10 @@ class ElevenLabsTTSProvider:
 
 # Singleton instance
 ai_service = AIService()
+
+# Groq provider'ları da ekle
+groq_llm = GroqLLMProvider()
+groq_whisper = GroqWhisperProvider()
 
 
 
