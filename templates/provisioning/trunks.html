@@ -6,7 +6,7 @@
 <div class="page-header">
     <h1><i class="ti ti-network" style="color: var(--primary-color);"></i> <span data-tr="Trunk Tahsis Yönetimi" data-de="Trunk-Zuweisung Verwaltung">Trunk Tahsis Yönetimi</span></h1>
     <div class="page-actions">
-        <button class="btn btn-primary" onclick="window.openAddAllocationModal()" {% if not trunks or not tenants %}disabled style="opacity:.6;cursor:not-allowed"{% endif %}>
+        <button class="btn btn-primary" onclick="window.openAddAllocationModal()">
             <i class="ti ti-plus"></i> <span data-tr="Tahsis Ekle" data-de="Zuweisung hinzufügen">Tahsis Ekle</span>
         </button>
     </div>
@@ -442,7 +442,14 @@
 
 .btn-primary {
     background: linear-gradient(135deg, var(--primary-color), #ffc107);
-    color: white;
+    /* Amber/yellow primary needs dark text for readability */
+    color: #111;
+    font-weight: 600;
+}
+
+.btn-primary i,
+.btn-primary span {
+    color: #111;
 }
 
 .btn-outline {
@@ -460,6 +467,15 @@ window.onload = function() {
 };
 
 window.openAddAllocationModal = function() {
+    // Eğer trunk/tenant yoksa modal yerine net uyarı göster
+    var tenantSelect = document.getElementById('allocTenant');
+    var trunkSelect = document.getElementById('allocTrunk');
+    var hasTenant = tenantSelect && tenantSelect.options && tenantSelect.options.length > 1;
+    var hasTrunk = trunkSelect && trunkSelect.options && trunkSelect.options.length > 1;
+    if(!hasTenant || !hasTrunk) {
+        showNotification('Önce VoIP → Trunks sayfasından SIP trunk ekleyin ve aktif tenant olduğundan emin olun.', 'info');
+        return;
+    }
     document.getElementById('allocationForm').reset();
     document.getElementById('allocationModal').classList.add('active');
 };
