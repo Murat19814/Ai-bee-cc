@@ -1249,26 +1249,23 @@ def api_test_groq():
         return jsonify({'success': False, 'error': 'API anahtarı gerekli'})
     
     try:
-        import requests
+        # Groq SDK kullan - eventlet ile uyumlu
+        from groq import Groq
         
-        response = requests.post(
-            'https://api.groq.com/openai/v1/chat/completions',
-            headers={
-                'Authorization': f'Bearer {api_key}',
-                'Content-Type': 'application/json'
-            },
-            json={
-                'model': 'llama-3.3-70b-versatile',
-                'messages': [{'role': 'user', 'content': 'Merhaba, test'}],
-                'max_tokens': 10
-            },
-            timeout=30
+        client = Groq(api_key=api_key)
+        
+        chat_completion = client.chat.completions.create(
+            messages=[{"role": "user", "content": "Merhaba, test"}],
+            model="llama-3.3-70b-versatile",
+            max_tokens=10
         )
         
-        if response.status_code == 200:
-            return jsonify({'success': True, 'message': 'Bağlantı başarılı'})
-        else:
-            return jsonify({'success': False, 'error': f'API hatası: {response.status_code}'})
+        model_used = chat_completion.model
+        return jsonify({
+            'success': True, 
+            'message': 'Bağlantı başarılı',
+            'model': model_used
+        })
             
     except Exception as e:
         return jsonify({'success': False, 'error': str(e)})
