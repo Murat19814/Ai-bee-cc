@@ -6,7 +6,7 @@
 <div class="page-header">
     <h1><i class="ti ti-network" style="color: var(--primary-color);"></i> <span data-tr="Trunk Tahsis Yönetimi" data-de="Trunk-Zuweisung Verwaltung">Trunk Tahsis Yönetimi</span></h1>
     <div class="page-actions">
-        <button class="btn btn-primary" onclick="window.openAddAllocationModal()">
+        <button class="btn btn-primary" onclick="window.openAddAllocationModal()" {% if not trunks or not tenants %}disabled style="opacity:.6;cursor:not-allowed"{% endif %}>
             <i class="ti ti-plus"></i> <span data-tr="Tahsis Ekle" data-de="Zuweisung hinzufügen">Tahsis Ekle</span>
         </button>
     </div>
@@ -35,71 +35,12 @@
             </div>
             {% endfor %}
         {% else %}
-            <!-- Demo Data -->
-            <div class="trunk-card">
+            <div class="trunk-card" style="grid-column: 1 / -1;">
                 <div class="trunk-header">
-                    <span class="trunk-name">Sipgate Primary</span>
-                    <span class="trunk-status status-active" data-tr="Aktif" data-de="Aktiv">Aktif</span>
+                    <span class="trunk-name" data-tr="Henüz trunk yok" data-de="Noch keine Trunks">Henüz trunk yok</span>
                 </div>
                 <div class="trunk-capacity">
-                    <div class="capacity-bar">
-                        <div class="capacity-fill" style="width: 65%"></div>
-                    </div>
-                    <span>65 / 100 <span data-tr="kanal" data-de="Kanäle">kanal</span></span>
-                </div>
-                <div class="trunk-stats">
-                    <div class="trunk-stat">
-                        <i class="ti ti-users"></i>
-                        <span>3 <span data-tr="tenant" data-de="Mandanten">tenant</span></span>
-                    </div>
-                    <div class="trunk-stat">
-                        <i class="ti ti-phone-call"></i>
-                        <span>42 <span data-tr="aktif" data-de="aktiv">aktif</span></span>
-                    </div>
-                </div>
-            </div>
-            <div class="trunk-card">
-                <div class="trunk-header">
-                    <span class="trunk-name">Placetel Business</span>
-                    <span class="trunk-status status-active" data-tr="Aktif" data-de="Aktiv">Aktif</span>
-                </div>
-                <div class="trunk-capacity">
-                    <div class="capacity-bar">
-                        <div class="capacity-fill" style="width: 40%"></div>
-                    </div>
-                    <span>20 / 50 <span data-tr="kanal" data-de="Kanäle">kanal</span></span>
-                </div>
-                <div class="trunk-stats">
-                    <div class="trunk-stat">
-                        <i class="ti ti-users"></i>
-                        <span>2 <span data-tr="tenant" data-de="Mandanten">tenant</span></span>
-                    </div>
-                    <div class="trunk-stat">
-                        <i class="ti ti-phone-call"></i>
-                        <span>15 <span data-tr="aktif" data-de="aktiv">aktif</span></span>
-                    </div>
-                </div>
-            </div>
-            <div class="trunk-card">
-                <div class="trunk-header">
-                    <span class="trunk-name">Easybell Standard</span>
-                    <span class="trunk-status status-active" data-tr="Aktif" data-de="Aktiv">Aktif</span>
-                </div>
-                <div class="trunk-capacity">
-                    <div class="capacity-bar">
-                        <div class="capacity-fill" style="width: 25%"></div>
-                    </div>
-                    <span>15 / 60 <span data-tr="kanal" data-de="Kanäle">kanal</span></span>
-                </div>
-                <div class="trunk-stats">
-                    <div class="trunk-stat">
-                        <i class="ti ti-users"></i>
-                        <span>1 <span data-tr="tenant" data-de="Mandanten">tenant</span></span>
-                    </div>
-                    <div class="trunk-stat">
-                        <i class="ti ti-phone-call"></i>
-                        <span>8 <span data-tr="aktif" data-de="aktiv">aktif</span></span>
-                    </div>
+                    <span data-tr="Önce gerçek SIP trunk ekleyin (VoIP → Trunks)." data-de="Bitte zuerst echte SIP-Trunks anlegen (VoIP → Trunks).">Önce gerçek SIP trunk ekleyin (VoIP → Trunks).</span>
                 </div>
             </div>
         {% endif %}
@@ -143,11 +84,7 @@
                         </span>
                     </td>
                     <td><span class="priority-badge">P{{ alloc.priority }}</span></td>
-                    <td>
-                        <div class="usage-bar">
-                            <div class="usage-fill" style="width: 50%"></div>
-                        </div>
-                    </td>
+                    <td><span class="usage-text">—</span></td>
                     <td class="action-cell">
                         <button class="btn btn-icon" onclick="window.editAllocation({{ alloc.id }})" title="Düzenle"><i class="ti ti-edit"></i></button>
                         <button class="btn btn-icon btn-danger" onclick="window.deleteAllocation({{ alloc.id }})" title="Sil"><i class="ti ti-trash"></i></button>
@@ -155,105 +92,10 @@
                 </tr>
                 {% endfor %}
             {% else %}
-                <!-- Demo Data -->
                 <tr>
-                    <td>
-                        <div class="tenant-cell">
-                            <strong>AI Bee CC</strong>
-                            <span class="tenant-code">MAIN</span>
-                        </div>
-                    </td>
-                    <td>Sipgate Primary</td>
-                    <td><strong>30</strong> <span data-tr="kanal" data-de="Kanäle">kanal</span></td>
-                    <td><span class="badge badge-both" data-tr="Her İki Yön" data-de="Beide Richtungen">Her İki Yön</span></td>
-                    <td><span class="priority-badge">P1</span></td>
-                    <td>
-                        <div class="usage-bar"><div class="usage-fill" style="width: 73%"></div></div>
-                        <span class="usage-text">22/30</span>
-                    </td>
-                    <td class="action-cell">
-                        <button class="btn btn-icon" onclick="window.editAllocation(1)" title="Düzenle"><i class="ti ti-edit"></i></button>
-                        <button class="btn btn-icon btn-danger" onclick="window.deleteAllocation(1)" title="Sil"><i class="ti ti-trash"></i></button>
-                    </td>
-                </tr>
-                <tr>
-                    <td>
-                        <div class="tenant-cell">
-                            <strong>CallCenter Pro</strong>
-                            <span class="tenant-code">CCP</span>
-                        </div>
-                    </td>
-                    <td>Sipgate Primary</td>
-                    <td><strong>20</strong> <span data-tr="kanal" data-de="Kanäle">kanal</span></td>
-                    <td><span class="badge badge-outbound" data-tr="Sadece Giden" data-de="Nur Ausgehend">Sadece Giden</span></td>
-                    <td><span class="priority-badge">P2</span></td>
-                    <td>
-                        <div class="usage-bar"><div class="usage-fill" style="width: 55%"></div></div>
-                        <span class="usage-text">11/20</span>
-                    </td>
-                    <td class="action-cell">
-                        <button class="btn btn-icon" onclick="window.editAllocation(2)" title="Düzenle"><i class="ti ti-edit"></i></button>
-                        <button class="btn btn-icon btn-danger" onclick="window.deleteAllocation(2)" title="Sil"><i class="ti ti-trash"></i></button>
-                    </td>
-                </tr>
-                <tr>
-                    <td>
-                        <div class="tenant-cell">
-                            <strong>Support GmbH</strong>
-                            <span class="tenant-code">SUP</span>
-                        </div>
-                    </td>
-                    <td>Placetel Business</td>
-                    <td><strong>15</strong> <span data-tr="kanal" data-de="Kanäle">kanal</span></td>
-                    <td><span class="badge badge-inbound" data-tr="Sadece Gelen" data-de="Nur Eingehend">Sadece Gelen</span></td>
-                    <td><span class="priority-badge">P1</span></td>
-                    <td>
-                        <div class="usage-bar"><div class="usage-fill" style="width: 40%"></div></div>
-                        <span class="usage-text">6/15</span>
-                    </td>
-                    <td class="action-cell">
-                        <button class="btn btn-icon" onclick="window.editAllocation(3)" title="Düzenle"><i class="ti ti-edit"></i></button>
-                        <button class="btn btn-icon btn-danger" onclick="window.deleteAllocation(3)" title="Sil"><i class="ti ti-trash"></i></button>
-                    </td>
-                </tr>
-                <tr>
-                    <td>
-                        <div class="tenant-cell">
-                            <strong>AI Bee CC</strong>
-                            <span class="tenant-code">MAIN</span>
-                        </div>
-                    </td>
-                    <td>Placetel Business</td>
-                    <td><strong>5</strong> <span data-tr="kanal" data-de="Kanäle">kanal</span></td>
-                    <td><span class="badge badge-inbound" data-tr="Sadece Gelen" data-de="Nur Eingehend">Sadece Gelen</span></td>
-                    <td><span class="priority-badge">P3</span></td>
-                    <td>
-                        <div class="usage-bar"><div class="usage-fill" style="width: 80%"></div></div>
-                        <span class="usage-text">4/5</span>
-                    </td>
-                    <td class="action-cell">
-                        <button class="btn btn-icon" onclick="window.editAllocation(4)" title="Düzenle"><i class="ti ti-edit"></i></button>
-                        <button class="btn btn-icon btn-danger" onclick="window.deleteAllocation(4)" title="Sil"><i class="ti ti-trash"></i></button>
-                    </td>
-                </tr>
-                <tr>
-                    <td>
-                        <div class="tenant-cell">
-                            <strong>Bee Life CC</strong>
-                            <span class="tenant-code">TEL</span>
-                        </div>
-                    </td>
-                    <td>Easybell Standard</td>
-                    <td><strong>15</strong> <span data-tr="kanal" data-de="Kanäle">kanal</span></td>
-                    <td><span class="badge badge-both" data-tr="Her İki Yön" data-de="Beide Richtungen">Her İki Yön</span></td>
-                    <td><span class="priority-badge">P1</span></td>
-                    <td>
-                        <div class="usage-bar"><div class="usage-fill" style="width: 53%"></div></div>
-                        <span class="usage-text">8/15</span>
-                    </td>
-                    <td class="action-cell">
-                        <button class="btn btn-icon" onclick="window.editAllocation(5)" title="Düzenle"><i class="ti ti-edit"></i></button>
-                        <button class="btn btn-icon btn-danger" onclick="window.deleteAllocation(5)" title="Sil"><i class="ti ti-trash"></i></button>
+                    <td colspan="7" class="text-center" style="padding: 2rem; color: var(--text-secondary);">
+                        <i class="ti ti-info-circle"></i>
+                        <span data-tr="Henüz trunk tahsisi yok." data-de="Noch keine Trunk-Zuweisungen.">Henüz trunk tahsisi yok.</span>
                     </td>
                 </tr>
             {% endif %}
@@ -274,19 +116,18 @@
                     <label data-tr="Tenant *" data-de="Mandant *">Tenant *</label>
                     <select id="allocTenant" class="form-select" required>
                         <option value="">Seçin...</option>
-                        <option value="1">AI Bee CC</option>
-                        <option value="2">CallCenter Pro</option>
-                        <option value="3">Support GmbH</option>
-                        <option value="4">Bee Life CC</option>
+                        {% for t in tenants %}
+                        <option value="{{ t.id }}">{{ t.name }} ({{ t.code }})</option>
+                        {% endfor %}
                     </select>
                 </div>
                 <div class="form-group">
                     <label data-tr="Trunk *" data-de="Trunk *">Trunk *</label>
                     <select id="allocTrunk" class="form-select" required>
                         <option value="">Seçin...</option>
-                        <option value="1">Sipgate Primary (35 müsait)</option>
-                        <option value="2">Placetel Business (30 müsait)</option>
-                        <option value="3">Easybell Standard (45 müsait)</option>
+                        {% for trunk in trunks %}
+                        <option value="{{ trunk.id }}">{{ trunk.name }} ({{ trunk.max_channels }} kanal)</option>
+                        {% endfor %}
                     </select>
                 </div>
                 <div class="form-row">
@@ -631,14 +472,39 @@ window.saveAllocation = function() {
     var tenant = document.getElementById('allocTenant').value;
     var trunk = document.getElementById('allocTrunk').value;
     var channels = document.getElementById('allocChannels').value;
+    var priority = document.getElementById('allocPriority').value;
+    var direction = document.getElementById('allocDirection').value;
     
     if(!tenant || !trunk || !channels) {
         showNotification('Lütfen tüm zorunlu alanları doldurun!', 'error');
         return;
     }
-    
-    showNotification('Tahsis başarıyla kaydedildi!', 'success');
-    window.closeModal('allocationModal');
+
+    fetch('/api/provisioning/trunk-allocations', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'same-origin',
+        body: JSON.stringify({
+            tenant_id: parseInt(tenant, 10),
+            trunk_id: parseInt(trunk, 10),
+            allocated_channels: parseInt(channels, 10),
+            priority: parseInt(priority || '1', 10),
+            direction: direction || 'both'
+        })
+    })
+    .then(r => r.json())
+    .then(data => {
+        if(data && data.success) {
+            showNotification('Tahsis başarıyla kaydedildi!', 'success');
+            window.closeModal('allocationModal');
+            window.location.reload();
+        } else {
+            showNotification('Hata: ' + (data.error || 'Kaydedilemedi'), 'error');
+        }
+    })
+    .catch(err => {
+        showNotification('Bağlantı hatası: ' + err.message, 'error');
+    });
 };
 
 window.editAllocation = function(id) {
@@ -647,7 +513,20 @@ window.editAllocation = function(id) {
 
 window.deleteAllocation = function(id) {
     if(confirm('Bu tahsisi silmek istediğinizden emin misiniz?')) {
-        showNotification('Tahsis silindi!', 'success');
+        fetch('/api/provisioning/trunk-allocations/' + id, {
+            method: 'DELETE',
+            credentials: 'same-origin'
+        })
+        .then(r => r.json())
+        .then(data => {
+            if(data && data.success) {
+                showNotification('Tahsis silindi!', 'success');
+                window.location.reload();
+            } else {
+                showNotification('Hata: ' + (data.error || 'Silinemedi'), 'error');
+            }
+        })
+        .catch(err => showNotification('Bağlantı hatası: ' + err.message, 'error'));
     }
 };
 

@@ -4774,6 +4774,58 @@ def provisioning_trunks():
                           tenants=tenants)
 
 
+@app.route('/api/provisioning/trunk-allocations', methods=['POST'])
+@login_required
+@super_admin_required
+def api_provisioning_trunk_allocations_create():
+    """Tenant trunk tahsisi oluştur (demo kaldırıldı: gerçek DB kaydı)"""
+    data = request.get_json() or {}
+    tenant_id = data.get('tenant_id')
+    trunk_id = data.get('trunk_id')
+    allocated_channels = data.get('allocated_channels')
+    priority = data.get('priority', 1)
+    direction = data.get('direction', 'both')
+
+    if not tenant_id or not trunk_id or not allocated_channels:
+        return jsonify({'success': False, 'error': 'tenant_id, trunk_id ve allocated_channels zorunludur'}), 400
+
+    try:
+        tenant = Tenant.query.get_or_404(int(tenant_id))
+        trunk = SIPTrunk.query.get_or_404(int(trunk_id))
+
+        alloc = TrunkAllocation(
+            tenant_id=tenant.id,
+            trunk_id=trunk.id,
+            allocated_channels=int(allocated_channels),
+            priority=int(priority or 1),
+            direction=direction
+        )
+        db.session.add(alloc)
+        db.session.commit()
+
+        log_audit('create', 'trunk_allocation', alloc.id, f'Trunk tahsis: tenant={tenant.code} trunk={trunk.name} ch={alloc.allocated_channels}')
+        return jsonify({'success': True, 'id': alloc.id})
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({'success': False, 'error': str(e)}), 500
+
+
+@app.route('/api/provisioning/trunk-allocations/<int:allocation_id>', methods=['DELETE'])
+@login_required
+@super_admin_required
+def api_provisioning_trunk_allocations_delete(allocation_id):
+    """Tenant trunk tahsisi sil"""
+    alloc = TrunkAllocation.query.get_or_404(allocation_id)
+    try:
+        db.session.delete(alloc)
+        db.session.commit()
+        log_audit('delete', 'trunk_allocation', allocation_id, 'Trunk tahsis silindi')
+        return jsonify({'success': True})
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({'success': False, 'error': str(e)}), 500
+
+
 @app.route('/provisioning/quotas')
 @login_required
 @super_admin_required
