@@ -90,6 +90,66 @@
                         <small class="form-hint">AI tahminleri için minimum güven skoru (0-1)</small>
                     </div>
                 </div>
+                
+                <!-- API Keys Section -->
+                <div class="api-keys-section">
+                    <h4 style="color: var(--primary); margin: 2rem 0 1rem;">
+                        <i class="ti ti-key"></i> API Anahtarları
+                    </h4>
+                    <div class="form-grid">
+                        <div class="form-group">
+                            <label>🚀 Groq API Key (Önerilen)</label>
+                            <div class="input-group">
+                                <input type="password" name="groq_api_key" id="groq_api_key" class="form-control"
+                                       value="{{ ai_settings.groq_api_key | default('') }}"
+                                       placeholder="gsk_...">
+                                <button type="button" class="btn btn-outline" onclick="togglePassword('groq_api_key')">
+                                    <i class="ti ti-eye"></i>
+                                </button>
+                                <button type="button" class="btn btn-success" onclick="testGroqAPI()">
+                                    <i class="ti ti-check"></i> Test
+                                </button>
+                            </div>
+                            <small class="form-hint">console.groq.com'dan ücretsiz alın</small>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label>OpenAI API Key</label>
+                            <div class="input-group">
+                                <input type="password" name="openai_api_key" id="openai_api_key" class="form-control"
+                                       value="{{ ai_settings.openai_api_key | default('') }}"
+                                       placeholder="sk-...">
+                                <button type="button" class="btn btn-outline" onclick="togglePassword('openai_api_key')">
+                                    <i class="ti ti-eye"></i>
+                                </button>
+                            </div>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label>ElevenLabs API Key (TTS)</label>
+                            <div class="input-group">
+                                <input type="password" name="elevenlabs_api_key" id="elevenlabs_api_key" class="form-control"
+                                       value="{{ ai_settings.elevenlabs_api_key | default('') }}"
+                                       placeholder="Ses sentezi için">
+                                <button type="button" class="btn btn-outline" onclick="togglePassword('elevenlabs_api_key')">
+                                    <i class="ti ti-eye"></i>
+                                </button>
+                            </div>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label>Anthropic API Key</label>
+                            <div class="input-group">
+                                <input type="password" name="anthropic_api_key" id="anthropic_api_key" class="form-control"
+                                       value="{{ ai_settings.anthropic_api_key | default('') }}"
+                                       placeholder="sk-ant-...">
+                                <button type="button" class="btn btn-outline" onclick="togglePassword('anthropic_api_key')">
+                                    <i class="ti ti-eye"></i>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
             </div>
         </div>
     </div>
@@ -104,22 +164,26 @@
                 <div class="form-grid">
                     <div class="form-group">
                         <label>STT Sağlayıcı</label>
-                        <select name="stt_provider" class="form-control">
+                        <select name="stt_provider" class="form-control" id="sttProvider" onchange="updateSTTModels()">
+                            <option value="groq" {{ 'selected' if ai_settings.stt_provider == 'groq' else '' }}>🚀 Groq Whisper (Önerilen)</option>
                             <option value="whisper" {{ 'selected' if ai_settings.stt_provider == 'whisper' else '' }}>OpenAI Whisper</option>
                             <option value="google" {{ 'selected' if ai_settings.stt_provider == 'google' else '' }}>Google Speech-to-Text</option>
                             <option value="azure" {{ 'selected' if ai_settings.stt_provider == 'azure' else '' }}>Azure Speech</option>
                             <option value="deepgram" {{ 'selected' if ai_settings.stt_provider == 'deepgram' else '' }}>Deepgram</option>
                         </select>
+                        <small class="form-hint text-success" id="groqSTTNote">Groq: 50x hızlı, ücretsiz API</small>
                     </div>
                     
                     <div class="form-group">
-                        <label>Whisper Modeli</label>
-                        <select name="stt_model" class="form-control">
-                            <option value="tiny" {{ 'selected' if ai_settings.stt_model == 'tiny' else '' }}>Tiny (Hızlı)</option>
-                            <option value="base" {{ 'selected' if ai_settings.stt_model == 'base' else '' }}>Base (Dengeli)</option>
-                            <option value="small" {{ 'selected' if ai_settings.stt_model == 'small' else '' }}>Small</option>
-                            <option value="medium" {{ 'selected' if ai_settings.stt_model == 'medium' else '' }}>Medium</option>
-                            <option value="large" {{ 'selected' if ai_settings.stt_model == 'large' else '' }}>Large (En İyi)</option>
+                        <label>STT Modeli</label>
+                        <select name="stt_model" class="form-control" id="sttModel">
+                            <!-- Groq Models -->
+                            <option value="whisper-large-v3" {{ 'selected' if ai_settings.stt_model == 'whisper-large-v3' else '' }}>Whisper Large v3 (Groq - Önerilen)</option>
+                            <option value="whisper-large-v3-turbo" {{ 'selected' if ai_settings.stt_model == 'whisper-large-v3-turbo' else '' }}>Whisper Large v3 Turbo (Groq)</option>
+                            <option value="distil-whisper-large-v3-en" {{ 'selected' if ai_settings.stt_model == 'distil-whisper-large-v3-en' else '' }}>Distil Whisper Large v3 EN</option>
+                            <!-- OpenAI Models -->
+                            <option value="whisper-1" {{ 'selected' if ai_settings.stt_model == 'whisper-1' else '' }}>Whisper-1 (OpenAI)</option>
+                            <option value="large" {{ 'selected' if ai_settings.stt_model == 'large' else '' }}>Whisper Large (OpenAI)</option>
                         </select>
                     </div>
                     
@@ -195,21 +259,30 @@
                 <div class="form-grid">
                     <div class="form-group">
                         <label>LLM Sağlayıcı</label>
-                        <select name="llm_provider" class="form-control">
+                        <select name="llm_provider" class="form-control" id="llmProvider" onchange="updateLLMModels()">
+                            <option value="groq" {{ 'selected' if ai_settings.llm_provider == 'groq' else '' }}>🚀 Groq (Önerilen - Çok Hızlı)</option>
                             <option value="openai" {{ 'selected' if ai_settings.llm_provider == 'openai' else '' }}>OpenAI</option>
                             <option value="anthropic" {{ 'selected' if ai_settings.llm_provider == 'anthropic' else '' }}>Anthropic Claude</option>
                             <option value="azure" {{ 'selected' if ai_settings.llm_provider == 'azure' else '' }}>Azure OpenAI</option>
                         </select>
+                        <small class="form-hint text-success" id="groqLLMNote">Groq: 500+ token/sn, ücretsiz API</small>
                     </div>
                     
                     <div class="form-group">
                         <label>Model</label>
-                        <select name="llm_model" class="form-control">
-                            <option value="gpt-4" {{ 'selected' if ai_settings.llm_model == 'gpt-4' else '' }}>GPT-4</option>
-                            <option value="gpt-4-turbo" {{ 'selected' if ai_settings.llm_model == 'gpt-4-turbo' else '' }}>GPT-4 Turbo</option>
-                            <option value="gpt-3.5-turbo" {{ 'selected' if ai_settings.llm_model == 'gpt-3.5-turbo' else '' }}>GPT-3.5 Turbo</option>
-                            <option value="claude-3-opus" {{ 'selected' if ai_settings.llm_model == 'claude-3-opus' else '' }}>Claude 3 Opus</option>
-                            <option value="claude-3-sonnet" {{ 'selected' if ai_settings.llm_model == 'claude-3-sonnet' else '' }}>Claude 3 Sonnet</option>
+                        <select name="llm_model" class="form-control" id="llmModel">
+                            <!-- Groq Models -->
+                            <option value="llama-3.3-70b-versatile" {{ 'selected' if ai_settings.llm_model == 'llama-3.3-70b-versatile' else '' }}>🦙 Llama 3.3 70B (Groq - Önerilen)</option>
+                            <option value="llama-3.1-8b-instant" {{ 'selected' if ai_settings.llm_model == 'llama-3.1-8b-instant' else '' }}>⚡ Llama 3.1 8B Instant (Groq)</option>
+                            <option value="mixtral-8x7b-32768" {{ 'selected' if ai_settings.llm_model == 'mixtral-8x7b-32768' else '' }}>🎯 Mixtral 8x7B (Groq)</option>
+                            <option value="gemma2-9b-it" {{ 'selected' if ai_settings.llm_model == 'gemma2-9b-it' else '' }}>💎 Gemma 2 9B (Groq)</option>
+                            <!-- OpenAI Models -->
+                            <option value="gpt-4" {{ 'selected' if ai_settings.llm_model == 'gpt-4' else '' }}>GPT-4 (OpenAI)</option>
+                            <option value="gpt-4-turbo" {{ 'selected' if ai_settings.llm_model == 'gpt-4-turbo' else '' }}>GPT-4 Turbo (OpenAI)</option>
+                            <option value="gpt-3.5-turbo" {{ 'selected' if ai_settings.llm_model == 'gpt-3.5-turbo' else '' }}>GPT-3.5 Turbo (OpenAI)</option>
+                            <!-- Anthropic Models -->
+                            <option value="claude-3-opus" {{ 'selected' if ai_settings.llm_model == 'claude-3-opus' else '' }}>Claude 3 Opus (Anthropic)</option>
+                            <option value="claude-3-sonnet" {{ 'selected' if ai_settings.llm_model == 'claude-3-sonnet' else '' }}>Claude 3 Sonnet (Anthropic)</option>
                         </select>
                     </div>
                     
@@ -860,12 +933,102 @@ document.addEventListener('DOMContentLoaded', function() {
             document.getElementById('tab-' + tabId).classList.add('active');
         });
     });
+    
+    // Initialize provider-based UI
+    updateSTTModels();
+    updateLLMModels();
 });
 
 function selectPackage(packageId) {
     if (confirm('Bu pakete geçmek istediğinize emin misiniz?')) {
         window.location.href = '/ai/packages/' + packageId + '/select';
     }
+}
+
+// Toggle password visibility
+function togglePassword(fieldId) {
+    const field = document.getElementById(fieldId);
+    field.type = field.type === 'password' ? 'text' : 'password';
+}
+
+// Test Groq API Key
+async function testGroqAPI() {
+    const apiKey = document.getElementById('groq_api_key').value;
+    if (!apiKey) {
+        showNotification('Lütfen önce Groq API Key girin', 'warning');
+        return;
+    }
+    
+    const btn = event.target;
+    btn.disabled = true;
+    btn.innerHTML = '<i class="ti ti-loader"></i> Test...';
+    
+    try {
+        const response = await fetch('/api/admin/ai/test-groq', {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({api_key: apiKey})
+        });
+        
+        const data = await response.json();
+        if (data.success) {
+            showNotification('✅ Groq API bağlantısı başarılı! Model: ' + data.model, 'success');
+        } else {
+            showNotification('❌ Hata: ' + data.error, 'error');
+        }
+    } catch (err) {
+        showNotification('❌ Bağlantı hatası: ' + err.message, 'error');
+    }
+    
+    btn.disabled = false;
+    btn.innerHTML = '<i class="ti ti-check"></i> Test';
+}
+
+// Update STT models based on provider
+function updateSTTModels() {
+    const provider = document.getElementById('sttProvider')?.value;
+    const noteEl = document.getElementById('groqSTTNote');
+    
+    if (noteEl) {
+        noteEl.style.display = provider === 'groq' ? 'block' : 'none';
+    }
+}
+
+// Update LLM models based on provider
+function updateLLMModels() {
+    const provider = document.getElementById('llmProvider')?.value;
+    const noteEl = document.getElementById('groqLLMNote');
+    
+    if (noteEl) {
+        noteEl.style.display = provider === 'groq' ? 'block' : 'none';
+    }
+}
+
+function showNotification(message, type = 'info') {
+    const notif = document.createElement('div');
+    notif.className = `notification notification-${type}`;
+    notif.innerHTML = message;
+    notif.style.cssText = `
+        position: fixed;
+        top: 20px;
+        right: 20px;
+        padding: 1rem 1.5rem;
+        border-radius: 12px;
+        z-index: 10000;
+        animation: slideIn 0.3s ease;
+        max-width: 400px;
+        box-shadow: 0 8px 24px rgba(0,0,0,0.2);
+    `;
+    
+    if (type === 'success') notif.style.background = 'linear-gradient(135deg, #10B981, #059669)';
+    else if (type === 'error') notif.style.background = 'linear-gradient(135deg, #EF4444, #DC2626)';
+    else if (type === 'warning') notif.style.background = 'linear-gradient(135deg, #F59E0B, #D97706)';
+    else notif.style.background = 'linear-gradient(135deg, #3B82F6, #2563EB)';
+    
+    notif.style.color = 'white';
+    document.body.appendChild(notif);
+    
+    setTimeout(() => notif.remove(), 5000);
 }
 </script>
 {% endblock %}

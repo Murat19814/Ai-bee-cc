@@ -21,6 +21,7 @@
                 <div class="form-group">
                     <label class="form-label">STT Sağlayıcı</label>
                     <select name="stt_provider" class="form-control">
+                        <option value="groq" {{ 'selected' if settings and settings.stt_provider == 'groq' else '' }}>🚀 Groq Whisper (Önerilen)</option>
                         <option value="whisper" {{ 'selected' if settings and settings.stt_provider == 'whisper' else '' }}>OpenAI Whisper</option>
                         <option value="google" {{ 'selected' if settings and settings.stt_provider == 'google' else '' }}>Google Speech</option>
                         <option value="azure" {{ 'selected' if settings and settings.stt_provider == 'azure' else '' }}>Azure Speech</option>
@@ -30,11 +31,36 @@
                 <div class="form-group">
                     <label class="form-label">Model</label>
                     <select name="stt_model" class="form-control">
-                        <option value="tiny" {{ 'selected' if settings and settings.stt_model == 'tiny' else '' }}>Tiny (Hızlı)</option>
-                        <option value="base" {{ 'selected' if settings and settings.stt_model == 'base' else '' }}>Base (Dengeli)</option>
-                        <option value="small" {{ 'selected' if settings and settings.stt_model == 'small' else '' }}>Small</option>
-                        <option value="medium" {{ 'selected' if settings and settings.stt_model == 'medium' else '' }}>Medium</option>
-                        <option value="large" {{ 'selected' if settings and settings.stt_model == 'large' else '' }}>Large (En Doğru)</option>
+                        <option value="whisper-large-v3" {{ 'selected' if settings and settings.stt_model == 'whisper-large-v3' else '' }}>Whisper Large v3 (Groq)</option>
+                        <option value="whisper-large-v3-turbo" {{ 'selected' if settings and settings.stt_model == 'whisper-large-v3-turbo' else '' }}>Whisper Large v3 Turbo</option>
+                        <option value="whisper-1" {{ 'selected' if settings and settings.stt_model == 'whisper-1' else '' }}>Whisper-1 (OpenAI)</option>
+                        <option value="large" {{ 'selected' if settings and settings.stt_model == 'large' else '' }}>Large (OpenAI)</option>
+                    </select>
+                </div>
+            </div>
+            
+            <hr style="border-color: var(--border-color); margin: 2rem 0;">
+            
+            <h3 style="color: var(--primary); margin-bottom: 1.5rem;">
+                <i class="ti ti-brain"></i> Dil Modeli (LLM)
+            </h3>
+            
+            <div class="grid grid-cols-2">
+                <div class="form-group">
+                    <label class="form-label">LLM Sağlayıcı</label>
+                    <select name="llm_provider" class="form-control">
+                        <option value="groq" {{ 'selected' if settings and settings.llm_provider == 'groq' else '' }}>🚀 Groq (Önerilen)</option>
+                        <option value="openai" {{ 'selected' if settings and settings.llm_provider == 'openai' else '' }}>OpenAI</option>
+                        <option value="anthropic" {{ 'selected' if settings and settings.llm_provider == 'anthropic' else '' }}>Anthropic</option>
+                    </select>
+                </div>
+                
+                <div class="form-group">
+                    <label class="form-label">LLM Model</label>
+                    <select name="llm_model" class="form-control">
+                        <option value="llama-3.3-70b-versatile" {{ 'selected' if settings and settings.llm_model == 'llama-3.3-70b-versatile' else '' }}>🦙 Llama 3.3 70B (Groq)</option>
+                        <option value="mixtral-8x7b-32768" {{ 'selected' if settings and settings.llm_model == 'mixtral-8x7b-32768' else '' }}>🎯 Mixtral 8x7B (Groq)</option>
+                        <option value="gpt-4" {{ 'selected' if settings and settings.llm_model == 'gpt-4' else '' }}>GPT-4 (OpenAI)</option>
                     </select>
                 </div>
             </div>

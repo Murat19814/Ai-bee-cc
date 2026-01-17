@@ -3881,6 +3881,43 @@ def ai_voice_bot_sessions():
     return render_template('ai/voice_bot_sessions.html', sessions=sessions)
 
 
+# Voice Bot API Endpoints
+@app.route('/api/voice-bots/<int:bot_id>')
+@login_required
+@admin_required
+def api_voice_bot_get(bot_id):
+    """Tek bir voice bot bilgisi"""
+    bot = AIVoiceBot.query.get_or_404(bot_id)
+    return jsonify({
+        'id': bot.id,
+        'name': bot.name,
+        'description': bot.description,
+        'language': bot.language,
+        'voice_id': bot.voice_id,
+        'voice_name': bot.voice_name,
+        'speed': bot.speed,
+        'greeting_message': bot.greeting_message,
+        'fallback_message': bot.fallback_message,
+        'transfer_message': bot.transfer_message,
+        'goodbye_message': bot.goodbye_message,
+        'max_turns': bot.max_turns,
+        'transfer_on_frustration': bot.transfer_on_frustration,
+        'is_active': bot.is_active
+    })
+
+
+@app.route('/api/voice-bots/<int:bot_id>/toggle', methods=['POST'])
+@login_required
+@admin_required
+def api_voice_bot_toggle(bot_id):
+    """Voice bot aktif/pasif yap"""
+    bot = AIVoiceBot.query.get_or_404(bot_id)
+    data = request.get_json()
+    bot.is_active = data.get('is_active', not bot.is_active)
+    db.session.commit()
+    return jsonify({'success': True, 'is_active': bot.is_active})
+
+
 @app.route('/ai/packages')
 @login_required
 @admin_required
