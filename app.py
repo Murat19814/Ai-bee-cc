@@ -1237,6 +1237,46 @@ def api_save_ai_settings():
     return jsonify({'success': True, 'message': 'Ayarlar kaydedildi'})
 
 
+@app.route('/api/admin/ai/save-api-keys', methods=['POST'])
+@login_required
+@admin_required
+def api_save_api_keys():
+    """API anahtarlarını kaydet"""
+    data = request.get_json()
+    tenant_id = get_tenant_id_for_ai()
+    
+    try:
+        settings = AISettings.query.filter_by(tenant_id=tenant_id).first()
+        if not settings:
+            settings = AISettings(tenant_id=tenant_id)
+            db.session.add(settings)
+        
+        # Groq API Key
+        if data.get('groq_api_key') and not data['groq_api_key'].endswith('...'):
+            settings.llm_api_key = data['groq_api_key']
+            settings.llm_provider = 'groq'
+            settings.stt_provider = 'groq'
+        
+        # OpenAI API Key
+        if data.get('openai_api_key') and not data['openai_api_key'].endswith('...'):
+            settings.openai_api_key = data['openai_api_key']
+        
+        # ElevenLabs API Key
+        if data.get('elevenlabs_api_key') and not data['elevenlabs_api_key'].endswith('...'):
+            settings.tts_api_key = data['elevenlabs_api_key']
+        
+        # Anthropic API Key
+        if data.get('anthropic_api_key') and not data['anthropic_api_key'].endswith('...'):
+            settings.anthropic_api_key = data['anthropic_api_key']
+        
+        db.session.commit()
+        return jsonify({'success': True, 'message': 'API anahtarları kaydedildi'})
+        
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({'success': False, 'error': str(e)})
+
+
 @app.route('/api/admin/ai/test-groq', methods=['POST'])
 @login_required
 @admin_required
