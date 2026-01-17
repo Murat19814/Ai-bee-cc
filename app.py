@@ -388,6 +388,18 @@ def qc_listener_panel():
     return render_template('qc/listener_panel.html', agents=agents)
 
 
+@app.route('/qc/history')
+@login_required
+def qc_call_history():
+    """Çağrı Geçmişi Sayfası"""
+    if current_user.role not in ['qc_listener', 'supervisor', 'admin', 'super_admin']:
+        flash('Bu sayfaya erişim yetkiniz yok.', 'danger')
+        return redirect(url_for('dashboard'))
+    
+    agents = User.query.filter_by(role='agent', is_active=True).order_by(User.full_name).all()
+    return render_template('qc/call_history.html', agents=agents)
+
+
 # ==================== QC LISTENER API ====================
 
 def _qc_allowed():
@@ -403,6 +415,7 @@ def api_qc_recordings():
 
     filt = (request.args.get('filter') or 'pending').lower()
     agent_id = request.args.get('agent_id', '').strip()
+    disposition_filter = request.args.get('disposition', '').strip()
     date_start = request.args.get('date_start', '').strip()
     date_end = request.args.get('date_end', '').strip()
     sort_by = request.args.get('sort', 'date_desc').strip()
@@ -430,6 +443,27 @@ def api_qc_recordings():
             q = q.filter(Call.agent_id == int(agent_id))
         except ValueError:
             pass
+
+    # Filter by disposition
+    if disposition_filter:
+        disposition_map = {
+            'sale': ['sale', 'verkauf', 'satış'],
+            'qc_ok': ['qc_ok', 'passed'],
+            'qc_termin': ['qc_termin', 'termin_qc'],
+            'termin': ['termin', 'appointment', 'randevu'],
+            'callback': ['callback', 'rückruf', 'geri_arama'],
+            'keine_interesse': ['keine_interesse', 'not_interested', 'ilgilenmiyor'],
+            'hartz4': ['hartz4', 'hartz_4', 'arbeitslos'],
+            'blacklist': ['blacklist', 'kara_liste', 'blocked'],
+            'falsche_nummer': ['falsche_nummer', 'wrong_number', 'yanlis_numara'],
+            'anrufbeantworter': ['anrufbeantworter', 'voicemail', 'telesekreter'],
+            'nicht_erreicht': ['nicht_erreicht', 'no_answer', 'ulasilamadi'],
+            'storno': ['storno', 'cancelled', 'iptal']
+        }
+        if disposition_filter in disposition_map:
+            from sqlalchemy import or_, func
+            conditions = [func.lower(Call.disposition).like(f'%{d}%') for d in disposition_map[disposition_filter]]
+            q = q.filter(or_(*conditions))
 
     # Filter by date range
     if date_start:
@@ -570,6 +604,129 @@ def api_qc_recording_detail(call_id):
             }
         }
     })
+
+
+@app.route('/api/qc/call-history')
+@login_required
+def api_qc_call_history():
+    """Çağrı Geçmişi API - Tüm çağrılar (recording olsun olmasın)"""
+    if not _qc_allowed():
+        abort(403)
+
+    agent_id = request.args.get('agent_id', '').strip()
+    disposition_filter = request.args.get('disposition', '').strip()
+    qc_status_filter = request.args.get('qc_status', '').strip()
+    date_start = request.args.get('date_start', '').strip()
+    date_end = request.args.get('date_end', '').strip()
+    sort_by = request.args.get('sort', 'date_desc').strip()
+
+    q = Call.query.filter(Call.tenant_id == current_user.tenant_id)
+
+    # Filter by agent
+    if agent_id:
+        try:
+            q = q.filter(Call.agent_id == int(agent_id))
+        except ValueError:
+            pass
+
+    # Filter by QC status
+    if qc_status_filter:
+        if qc_status_filter == 'pending':
+            q = q.filter((Call.qa_status.is_(None)) | (Call.qa_status == '') | (Call.qa_status == 'pending'))
+        elif qc_status_filter == 'ok':
+            q = q.filter(Call.qa_status == 'passed')
+        elif qc_status_filter == 'termin':
+            q = q.filter(Call.qa_status == 'termin')
+        elif qc_status_filter == 'storno':
+            q = q.filter(Call.qa_status == 'storno')
+
+    # Filter by disposition
+    if disposition_filter:
+        disposition_map = {
+            'sale': ['sale', 'verkauf', 'satış'],
+            'qc_ok': ['qc_ok', 'passed'],
+            'qc_termin': ['qc_termin', 'termin_qc'],
+            'termin': ['termin', 'appointment', 'randevu'],
+            'callback': ['callback', 'rückruf', 'geri_arama'],
+            'keine_interesse': ['keine_interesse', 'not_interested', 'ilgilenmiyor'],
+            'hartz4': ['hartz4', 'hartz_4', 'arbeitslos'],
+            'blacklist': ['blacklist', 'kara_liste', 'blocked'],
+            'falsche_nummer': ['falsche_nummer', 'wrong_number', 'yanlis_numara'],
+            'anrufbeantworter': ['anrufbeantworter', 'voicemail', 'telesekreter'],
+            'nicht_erreicht': ['nicht_erreicht', 'no_answer', 'ulasilamadi'],
+            'storno': ['storno', 'cancelled', 'iptal']
+        }
+        if disposition_filter in disposition_map:
+            from sqlalchemy import or_, func
+            conditions = [func.lower(Call.disposition).like(f'%{d}%') for d in disposition_map[disposition_filter]]
+            q = q.filter(or_(*conditions))
+
+    # Filter by date range
+    if date_start:
+        try:
+            from datetime import datetime as dt
+            start_date = dt.strptime(date_start, '%Y-%m-%d')
+            q = q.filter(Call.started_at >= start_date)
+        except ValueError:
+            pass
+
+    if date_end:
+        try:
+            from datetime import datetime as dt, timedelta
+            end_date = dt.strptime(date_end, '%Y-%m-%d') + timedelta(days=1)
+            q = q.filter(Call.started_at < end_date)
+        except ValueError:
+            pass
+
+    # Sorting
+    if sort_by == 'date_asc':
+        q = q.order_by(Call.started_at.asc())
+    elif sort_by == 'duration_desc':
+        q = q.order_by(Call.talk_duration.desc().nullslast())
+    elif sort_by == 'duration_asc':
+        q = q.order_by(Call.talk_duration.asc().nullsfirst())
+    else:
+        q = q.order_by(Call.started_at.desc())
+
+    calls = q.limit(500).all()
+
+    call_list = []
+    stats = {'total': 0, 'sale': 0, 'termin': 0, 'callback': 0, 'other': 0}
+
+    for c in calls:
+        customer = Customer.query.get(c.customer_id) if c.customer_id else None
+        lead = Lead.query.get(c.lead_id) if c.lead_id else None
+        agent = User.query.get(c.agent_id) if c.agent_id else None
+
+        cust_name = (customer.full_name if customer else None) or (
+            (f"{lead.first_name or ''} {lead.last_name or ''}".strip()) if lead else ''
+        ) or '-'
+
+        started = c.started_at or c.created_at
+        disp = (c.disposition or '').lower()
+
+        # Stats
+        stats['total'] += 1
+        if 'sale' in disp or 'verkauf' in disp:
+            stats['sale'] += 1
+        elif 'termin' in disp:
+            stats['termin'] += 1
+        elif 'callback' in disp or 'rückruf' in disp:
+            stats['callback'] += 1
+        else:
+            stats['other'] += 1
+
+        call_list.append({
+            'id': c.id,
+            'customer': cust_name,
+            'agent': agent.full_name if agent else '-',
+            'disposition': c.disposition or '',
+            'qa_status': c.qa_status or 'pending',
+            'time': started.isoformat() if started else None,
+            'duration_sec': int(c.talk_duration or c.total_duration or 0),
+        })
+
+    return jsonify({'success': True, 'calls': call_list, 'stats': stats})
 
 
 @app.route('/api/qc/recordings/<int:call_id>/evaluate', methods=['POST'])

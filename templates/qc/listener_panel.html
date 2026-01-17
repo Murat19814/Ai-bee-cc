@@ -256,7 +256,7 @@
     border-radius: 12px;
     padding: 0.5rem;
     min-width: 180px;
-    z-index: 1000;
+    z-index: 99999;
     display: none;
     box-shadow: 0 20px 40px rgba(0,0,0,0.4);
 }
@@ -976,6 +976,12 @@
                 </div>
             </div>
             
+            <!-- Nav Links -->
+            <a href="{{ url_for('qc_call_history') }}" class="qc-status-btn" style="text-decoration: none;">
+                <i class="ti ti-history"></i>
+                <span>Çağrı Geçmişi</span>
+            </a>
+            
             <!-- User Info -->
             <div class="qc-user-info">
                 <div class="qc-user-avatar">
@@ -1033,6 +1039,25 @@
                     {% for agent in agents %}
                     <option value="{{ agent.id }}">{{ agent.full_name }}</option>
                     {% endfor %}
+                </select>
+            </div>
+            
+            <div class="qc-filter-group">
+                <label class="qc-filter-label">Sonuç / Disposition</label>
+                <select class="qc-filter-select" id="filterDisposition">
+                    <option value="">Tümü</option>
+                    <option value="sale">✅ Satış (Sale)</option>
+                    <option value="qc_ok">✅ QC OK</option>
+                    <option value="qc_termin">📞 QC Termin</option>
+                    <option value="termin">📅 Termin</option>
+                    <option value="callback">🔄 Callback</option>
+                    <option value="keine_interesse">❌ Keine Interesse</option>
+                    <option value="hartz4">⚠️ Hartz4</option>
+                    <option value="blacklist">🚫 Blacklist</option>
+                    <option value="falsche_nummer">📵 Falsche Nummer</option>
+                    <option value="anrufbeantworter">📼 Anrufbeantworter</option>
+                    <option value="nicht_erreicht">📴 Nicht Erreicht</option>
+                    <option value="storno">🔴 Storno</option>
                 </select>
             </div>
             
@@ -1332,6 +1357,7 @@ function applyFilters() {
 
 function resetFilters() {
     document.getElementById('filterAgent').value = '';
+    document.getElementById('filterDisposition').value = '';
     document.getElementById('filterDateStart').value = '';
     document.getElementById('filterDateEnd').value = '';
     document.getElementById('filterSort').value = 'date_desc';
@@ -1344,6 +1370,7 @@ function resetFilters() {
 // ==================== RECORDING FUNCTIONS ====================
 async function loadRecordings() {
     const agentId = document.getElementById('filterAgent').value;
+    const disposition = document.getElementById('filterDisposition').value;
     const dateStart = document.getElementById('filterDateStart').value;
     const dateEnd = document.getElementById('filterDateEnd').value;
     const sort = document.getElementById('filterSort').value;
@@ -1351,6 +1378,7 @@ async function loadRecordings() {
     const params = new URLSearchParams({
         filter: currentFilter,
         agent_id: agentId,
+        disposition: disposition,
         date_start: dateStart,
         date_end: dateEnd,
         sort: sort

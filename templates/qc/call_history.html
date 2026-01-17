@@ -1,0 +1,944 @@
+{% extends "base.html" %}
+
+{% block title %}Çağrı Geçmişi - {{ app_name }}{% endblock %}
+
+{% block extra_css %}
+<style>
+:root {
+    --hist-primary: #6366f1;
+    --hist-primary-dark: #4f46e5;
+    --hist-secondary: #10b981;
+    --hist-warning: #f59e0b;
+    --hist-danger: #ef4444;
+    --hist-bg: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f0f23 100%);
+    --hist-card: rgba(30, 41, 59, 0.9);
+}
+
+.history-container {
+    min-height: 100vh;
+    background: var(--hist-bg);
+    padding: 1.5rem;
+}
+
+/* Header */
+.history-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 2rem;
+    padding: 1.5rem 2rem;
+    background: var(--hist-card);
+    border-radius: 20px;
+    backdrop-filter: blur(20px);
+    border: 1px solid rgba(255,255,255,0.1);
+}
+
+.history-header-left {
+    display: flex;
+    align-items: center;
+    gap: 1.5rem;
+}
+
+.history-logo {
+    width: 56px;
+    height: 56px;
+    background: linear-gradient(135deg, var(--hist-primary), #8b5cf6);
+    border-radius: 16px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.75rem;
+    color: white;
+}
+
+.history-title h1 {
+    font-size: 1.75rem;
+    font-weight: 800;
+    color: white;
+    margin: 0;
+}
+
+.history-title p {
+    color: rgba(255,255,255,0.6);
+    margin: 0.25rem 0 0;
+}
+
+.history-nav {
+    display: flex;
+    gap: 1rem;
+}
+
+.history-nav-btn {
+    padding: 0.75rem 1.5rem;
+    background: rgba(255,255,255,0.05);
+    border: 1px solid rgba(255,255,255,0.1);
+    border-radius: 12px;
+    color: white;
+    text-decoration: none;
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    transition: all 0.3s;
+}
+
+.history-nav-btn:hover {
+    background: rgba(255,255,255,0.1);
+    color: white;
+}
+
+.history-nav-btn.active {
+    background: var(--hist-primary);
+    border-color: var(--hist-primary);
+}
+
+/* Filter Panel */
+.history-filter-panel {
+    background: var(--hist-card);
+    border-radius: 16px;
+    padding: 1.5rem;
+    margin-bottom: 2rem;
+    border: 1px solid rgba(255,255,255,0.1);
+}
+
+.history-filter-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1rem;
+    align-items: flex-end;
+}
+
+.history-filter-group {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.history-filter-label {
+    font-size: 0.75rem;
+    color: rgba(255,255,255,0.6);
+    text-transform: uppercase;
+    letter-spacing: 1px;
+}
+
+.history-filter-select, .history-filter-input {
+    padding: 0.75rem 1rem;
+    background: rgba(255,255,255,0.05);
+    border: 1px solid rgba(255,255,255,0.15);
+    border-radius: 10px;
+    color: white;
+    font-size: 0.9rem;
+    min-width: 180px;
+}
+
+.history-filter-select:focus, .history-filter-input:focus {
+    outline: none;
+    border-color: var(--hist-primary);
+}
+
+.history-filter-select option {
+    background: #1e293b;
+    color: white;
+}
+
+.history-filter-btn {
+    padding: 0.75rem 1.5rem;
+    background: linear-gradient(135deg, var(--hist-primary), var(--hist-primary-dark));
+    border: none;
+    border-radius: 10px;
+    color: white;
+    font-weight: 600;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    transition: all 0.3s;
+}
+
+.history-filter-btn:hover {
+    transform: translateY(-2px);
+}
+
+.history-filter-btn.secondary {
+    background: rgba(255,255,255,0.1);
+}
+
+/* Stats Row */
+.history-stats {
+    display: grid;
+    grid-template-columns: repeat(5, 1fr);
+    gap: 1rem;
+    margin-bottom: 2rem;
+}
+
+.history-stat-card {
+    background: var(--hist-card);
+    border-radius: 16px;
+    padding: 1.25rem;
+    text-align: center;
+    border: 1px solid rgba(255,255,255,0.1);
+    border-top: 4px solid var(--stat-color);
+}
+
+.history-stat-card.total { --stat-color: #3b82f6; }
+.history-stat-card.sale { --stat-color: #10b981; }
+.history-stat-card.termin { --stat-color: #8b5cf6; }
+.history-stat-card.callback { --stat-color: #f59e0b; }
+.history-stat-card.other { --stat-color: #6b7280; }
+
+.history-stat-value {
+    font-size: 2rem;
+    font-weight: 800;
+    color: white;
+}
+
+.history-stat-label {
+    color: rgba(255,255,255,0.6);
+    font-size: 0.85rem;
+    margin-top: 0.25rem;
+}
+
+/* Content Grid */
+.history-content-grid {
+    display: grid;
+    grid-template-columns: 1fr 450px;
+    gap: 1.5rem;
+}
+
+/* Call List */
+.history-list-panel {
+    background: var(--hist-card);
+    border-radius: 20px;
+    border: 1px solid rgba(255,255,255,0.1);
+    overflow: hidden;
+}
+
+.history-list-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 1.25rem 1.5rem;
+    background: linear-gradient(135deg, var(--hist-primary), #8b5cf6);
+}
+
+.history-list-title {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    color: white;
+    font-weight: 700;
+    font-size: 1.1rem;
+}
+
+.history-list-body {
+    max-height: 600px;
+    overflow-y: auto;
+}
+
+.history-call-item {
+    padding: 1.25rem 1.5rem;
+    border-bottom: 1px solid rgba(255,255,255,0.05);
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.history-call-item:hover {
+    background: rgba(255,255,255,0.03);
+}
+
+.history-call-item.active {
+    background: rgba(99, 102, 241, 0.1);
+    border-left: 4px solid var(--hist-primary);
+}
+
+.history-call-top {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 0.75rem;
+}
+
+.history-call-id {
+    font-weight: 700;
+    color: white;
+}
+
+.history-call-badge {
+    padding: 0.3rem 0.75rem;
+    border-radius: 20px;
+    font-size: 0.7rem;
+    font-weight: 700;
+    text-transform: uppercase;
+}
+
+.history-call-badge.sale { background: rgba(16, 185, 129, 0.2); color: #10b981; }
+.history-call-badge.termin { background: rgba(139, 92, 246, 0.2); color: #8b5cf6; }
+.history-call-badge.callback { background: rgba(245, 158, 11, 0.2); color: #f59e0b; }
+.history-call-badge.keine_interesse { background: rgba(239, 68, 68, 0.2); color: #ef4444; }
+.history-call-badge.other { background: rgba(107, 114, 128, 0.2); color: #9ca3af; }
+
+.history-call-details {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 1rem;
+}
+
+.history-call-detail {
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+}
+
+.history-call-detail-label {
+    font-size: 0.7rem;
+    color: rgba(255,255,255,0.5);
+    text-transform: uppercase;
+}
+
+.history-call-detail-value {
+    font-size: 0.85rem;
+    color: rgba(255,255,255,0.9);
+    font-weight: 500;
+}
+
+.history-call-detail-value.duration {
+    font-family: 'JetBrains Mono', monospace;
+    color: var(--hist-secondary);
+    font-weight: 700;
+}
+
+/* Detail Panel */
+.history-detail-panel {
+    background: var(--hist-card);
+    border-radius: 20px;
+    border: 1px solid rgba(255,255,255,0.1);
+    overflow: hidden;
+    position: sticky;
+    top: 1rem;
+}
+
+.history-detail-header {
+    padding: 1.5rem;
+    background: linear-gradient(135deg, #667eea, #764ba2);
+}
+
+.history-customer-name {
+    font-size: 1.5rem;
+    font-weight: 800;
+    color: white;
+    margin-bottom: 0.25rem;
+}
+
+.history-customer-phone {
+    color: rgba(255,255,255,0.8);
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.history-detail-body {
+    padding: 1.5rem;
+}
+
+/* Agent Card */
+.history-agent-card {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    padding: 1rem;
+    background: rgba(255,255,255,0.05);
+    border-radius: 12px;
+    margin-bottom: 1.5rem;
+    border: 1px solid rgba(255,255,255,0.1);
+}
+
+.history-agent-avatar {
+    width: 48px;
+    height: 48px;
+    border-radius: 12px;
+    background: linear-gradient(135deg, var(--hist-warning), #d97706);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-weight: 700;
+    font-size: 1.1rem;
+}
+
+.history-agent-name {
+    color: white;
+    font-weight: 600;
+}
+
+.history-agent-team {
+    color: rgba(255,255,255,0.6);
+    font-size: 0.85rem;
+}
+
+/* Info Grid */
+.history-info-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 1rem;
+    margin-bottom: 1.5rem;
+}
+
+.history-info-item {
+    background: rgba(255,255,255,0.03);
+    padding: 1rem;
+    border-radius: 12px;
+    border: 1px solid rgba(255,255,255,0.05);
+}
+
+.history-info-label {
+    font-size: 0.75rem;
+    color: rgba(255,255,255,0.5);
+    margin-bottom: 0.25rem;
+    text-transform: uppercase;
+}
+
+.history-info-value {
+    font-weight: 600;
+    color: white;
+}
+
+.history-info-value.duration {
+    font-family: 'JetBrains Mono', monospace;
+    color: var(--hist-secondary);
+    font-size: 1.1rem;
+}
+
+/* Audio Section */
+.history-audio-section {
+    margin-bottom: 1rem;
+}
+
+.history-audio-title {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    color: white;
+    font-weight: 700;
+    margin-bottom: 1rem;
+}
+
+.history-audio-title i {
+    color: var(--hist-secondary);
+}
+
+.history-audio-card {
+    background: rgba(255,255,255,0.03);
+    border-radius: 12px;
+    padding: 1rem;
+    margin-bottom: 0.75rem;
+    border: 1px solid rgba(255,255,255,0.05);
+}
+
+.history-audio-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 0.75rem;
+}
+
+.history-audio-type {
+    font-weight: 600;
+    font-size: 0.85rem;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.history-audio-type.system { color: #3b82f6; }
+.history-audio-type.agent { color: #8b5cf6; }
+
+.history-audio-duration {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.85rem;
+    color: rgba(255,255,255,0.6);
+}
+
+.history-audio-card audio {
+    width: 100%;
+    height: 40px;
+    border-radius: 8px;
+}
+
+/* QC Status Badge */
+.history-qc-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.5rem 1rem;
+    border-radius: 8px;
+    font-weight: 600;
+    font-size: 0.85rem;
+    margin-top: 1rem;
+}
+
+.history-qc-badge.ok { background: rgba(16, 185, 129, 0.2); color: #10b981; }
+.history-qc-badge.termin { background: rgba(139, 92, 246, 0.2); color: #8b5cf6; }
+.history-qc-badge.storno { background: rgba(239, 68, 68, 0.2); color: #ef4444; }
+.history-qc-badge.pending { background: rgba(245, 158, 11, 0.2); color: #f59e0b; }
+
+/* Empty State */
+.history-empty-state {
+    text-align: center;
+    padding: 4rem 2rem;
+    color: rgba(255,255,255,0.5);
+}
+
+.history-empty-state i {
+    font-size: 4rem;
+    opacity: 0.3;
+    margin-bottom: 1rem;
+}
+
+.history-empty-state h3 {
+    color: white;
+    margin-bottom: 0.5rem;
+}
+
+/* Scrollbar */
+.history-list-body::-webkit-scrollbar {
+    width: 6px;
+}
+
+.history-list-body::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+.history-list-body::-webkit-scrollbar-thumb {
+    background: rgba(255,255,255,0.2);
+    border-radius: 3px;
+}
+
+@media (max-width: 1200px) {
+    .history-content-grid {
+        grid-template-columns: 1fr;
+    }
+    
+    .history-stats {
+        grid-template-columns: repeat(3, 1fr);
+    }
+}
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="history-container">
+    <!-- Header -->
+    <div class="history-header">
+        <div class="history-header-left">
+            <div class="history-logo">
+                <i class="ti ti-history"></i>
+            </div>
+            <div class="history-title">
+                <h1>Çağrı Geçmişi</h1>
+                <p>Tüm geçmiş çağrıları dinle ve incele</p>
+            </div>
+        </div>
+        
+        <div class="history-nav">
+            <a href="{{ url_for('qc_listener_panel') }}" class="history-nav-btn">
+                <i class="ti ti-headphones"></i> QC Paneli
+            </a>
+            <a href="#" class="history-nav-btn active">
+                <i class="ti ti-history"></i> Çağrı Geçmişi
+            </a>
+        </div>
+    </div>
+    
+    <!-- Filter Panel -->
+    <div class="history-filter-panel">
+        <div class="history-filter-row">
+            <div class="history-filter-group">
+                <label class="history-filter-label">Agent</label>
+                <select class="history-filter-select" id="filterAgent">
+                    <option value="">Tüm Agentler</option>
+                    {% for agent in agents %}
+                    <option value="{{ agent.id }}">{{ agent.full_name }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            
+            <div class="history-filter-group">
+                <label class="history-filter-label">Sonuç / Disposition</label>
+                <select class="history-filter-select" id="filterDisposition">
+                    <option value="">Tümü</option>
+                    <option value="sale">✅ Satış (Sale)</option>
+                    <option value="qc_ok">✅ QC OK</option>
+                    <option value="qc_termin">📞 QC Termin</option>
+                    <option value="termin">📅 Termin</option>
+                    <option value="callback">🔄 Callback</option>
+                    <option value="keine_interesse">❌ Keine Interesse</option>
+                    <option value="hartz4">⚠️ Hartz4</option>
+                    <option value="blacklist">🚫 Blacklist</option>
+                    <option value="falsche_nummer">📵 Falsche Nummer</option>
+                    <option value="anrufbeantworter">📼 Anrufbeantworter</option>
+                    <option value="nicht_erreicht">📴 Nicht Erreicht</option>
+                    <option value="storno">🔴 Storno</option>
+                </select>
+            </div>
+            
+            <div class="history-filter-group">
+                <label class="history-filter-label">QC Durumu</label>
+                <select class="history-filter-select" id="filterQcStatus">
+                    <option value="">Tümü</option>
+                    <option value="pending">⏳ Bekleyen</option>
+                    <option value="ok">✅ QC OK</option>
+                    <option value="termin">📞 QC Termin</option>
+                    <option value="storno">🔴 Storno</option>
+                </select>
+            </div>
+            
+            <div class="history-filter-group">
+                <label class="history-filter-label">Başlangıç</label>
+                <input type="date" class="history-filter-input" id="filterDateStart">
+            </div>
+            
+            <div class="history-filter-group">
+                <label class="history-filter-label">Bitiş</label>
+                <input type="date" class="history-filter-input" id="filterDateEnd">
+            </div>
+            
+            <div class="history-filter-group">
+                <label class="history-filter-label">Sıralama</label>
+                <select class="history-filter-select" id="filterSort">
+                    <option value="date_desc">Tarih ↓</option>
+                    <option value="date_asc">Tarih ↑</option>
+                    <option value="duration_desc">Süre ↓</option>
+                    <option value="duration_asc">Süre ↑</option>
+                </select>
+            </div>
+            
+            <button class="history-filter-btn" onclick="applyFilters()">
+                <i class="ti ti-filter"></i> Filtrele
+            </button>
+            
+            <button class="history-filter-btn secondary" onclick="resetFilters()">
+                <i class="ti ti-refresh"></i>
+            </button>
+        </div>
+    </div>
+    
+    <!-- Stats -->
+    <div class="history-stats">
+        <div class="history-stat-card total">
+            <div class="history-stat-value" id="statTotal">0</div>
+            <div class="history-stat-label">Toplam Çağrı</div>
+        </div>
+        <div class="history-stat-card sale">
+            <div class="history-stat-value" id="statSale">0</div>
+            <div class="history-stat-label">Satış</div>
+        </div>
+        <div class="history-stat-card termin">
+            <div class="history-stat-value" id="statTermin">0</div>
+            <div class="history-stat-label">Termin</div>
+        </div>
+        <div class="history-stat-card callback">
+            <div class="history-stat-value" id="statCallback">0</div>
+            <div class="history-stat-label">Callback</div>
+        </div>
+        <div class="history-stat-card other">
+            <div class="history-stat-value" id="statOther">0</div>
+            <div class="history-stat-label">Diğer</div>
+        </div>
+    </div>
+    
+    <!-- Content Grid -->
+    <div class="history-content-grid">
+        <!-- Call List -->
+        <div class="history-list-panel">
+            <div class="history-list-header">
+                <div class="history-list-title">
+                    <i class="ti ti-list"></i>
+                    <span>Çağrı Listesi</span>
+                    <span id="callCount" style="opacity: 0.7; font-weight: 400; font-size: 0.9rem;">(0)</span>
+                </div>
+            </div>
+            
+            <div class="history-list-body" id="callList">
+                <div class="history-empty-state">
+                    <i class="ti ti-phone-off"></i>
+                    <h3>Çağrı bulunamadı</h3>
+                    <p>Filtreleri değiştirerek arama yapın</p>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Detail Panel -->
+        <div class="history-detail-panel" id="detailPanel" style="display: none;">
+            <div class="history-detail-header">
+                <div class="history-customer-name" id="customerName">-</div>
+                <div class="history-customer-phone">
+                    <i class="ti ti-phone"></i>
+                    <span id="customerPhone">-</span>
+                </div>
+            </div>
+            
+            <div class="history-detail-body">
+                <!-- Agent Card -->
+                <div class="history-agent-card">
+                    <div class="history-agent-avatar" id="agentInitials">-</div>
+                    <div>
+                        <div class="history-agent-name" id="agentName">-</div>
+                        <div class="history-agent-team" id="agentTeam">-</div>
+                    </div>
+                </div>
+                
+                <!-- Info Grid -->
+                <div class="history-info-grid">
+                    <div class="history-info-item">
+                        <div class="history-info-label">Tarih / Saat</div>
+                        <div class="history-info-value" id="callDate">-</div>
+                    </div>
+                    <div class="history-info-item">
+                        <div class="history-info-label">Süre</div>
+                        <div class="history-info-value duration" id="callDuration">00:00:00</div>
+                    </div>
+                    <div class="history-info-item">
+                        <div class="history-info-label">Sonuç</div>
+                        <div class="history-info-value" id="callResult">-</div>
+                    </div>
+                    <div class="history-info-item">
+                        <div class="history-info-label">Proje</div>
+                        <div class="history-info-value" id="projectName">-</div>
+                    </div>
+                </div>
+                
+                <!-- QC Status -->
+                <div id="qcStatusContainer"></div>
+                
+                <!-- Audio Section -->
+                <div class="history-audio-section">
+                    <div class="history-audio-title">
+                        <i class="ti ti-volume"></i>
+                        <span>Ses Kayıtları</span>
+                    </div>
+                    
+                    <div class="history-audio-card">
+                        <div class="history-audio-header">
+                            <span class="history-audio-type system">
+                                <i class="ti ti-phone"></i> System Recording
+                            </span>
+                            <span class="history-audio-duration" id="systemDuration">00:00:00</span>
+                        </div>
+                        <audio id="audioSystem" controls></audio>
+                    </div>
+                    
+                    <div class="history-audio-card">
+                        <div class="history-audio-header">
+                            <span class="history-audio-type agent">
+                                <i class="ti ti-microphone"></i> Agent Recording
+                            </span>
+                            <span class="history-audio-duration" id="agentDuration">00:00:00</span>
+                        </div>
+                        <audio id="audioAgent" controls></audio>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Empty Detail State -->
+        <div class="history-detail-panel" id="emptyDetail">
+            <div class="history-empty-state">
+                <i class="ti ti-click"></i>
+                <h3>Çağrı Seçin</h3>
+                <p>Dinlemek için soldaki listeden bir çağrı seçin</p>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+let currentCallId = null;
+
+function fmtDuration(sec) {
+    sec = parseInt(sec || 0, 10);
+    const h = String(Math.floor(sec / 3600)).padStart(2, '0');
+    const m = String(Math.floor((sec % 3600) / 60)).padStart(2, '0');
+    const s = String(sec % 60).padStart(2, '0');
+    return `${h}:${m}:${s}`;
+}
+
+function fmtDate(iso) {
+    if (!iso) return '-';
+    const d = new Date(iso);
+    return d.toLocaleString('tr-TR', { 
+        day: '2-digit', month: '2-digit', year: 'numeric', 
+        hour: '2-digit', minute: '2-digit', second: '2-digit'
+    });
+}
+
+function getDispositionBadgeClass(disp) {
+    if (!disp) return 'other';
+    disp = disp.toLowerCase();
+    if (disp.includes('sale') || disp.includes('verkauf') || disp.includes('satış')) return 'sale';
+    if (disp.includes('termin') || disp.includes('appointment')) return 'termin';
+    if (disp.includes('callback') || disp.includes('rückruf')) return 'callback';
+    if (disp.includes('keine') || disp.includes('interest') || disp.includes('blacklist') || disp.includes('storno')) return 'keine_interesse';
+    return 'other';
+}
+
+async function loadCalls() {
+    const params = new URLSearchParams({
+        filter: 'all',
+        agent_id: document.getElementById('filterAgent').value,
+        disposition: document.getElementById('filterDisposition').value,
+        qc_status: document.getElementById('filterQcStatus').value,
+        date_start: document.getElementById('filterDateStart').value,
+        date_end: document.getElementById('filterDateEnd').value,
+        sort: document.getElementById('filterSort').value
+    });
+    
+    try {
+        const res = await fetch(`/api/qc/call-history?${params}`);
+        const data = await res.json();
+        
+        if (!data.success) return;
+        
+        renderCallList(data.calls || []);
+        updateStats(data.stats || {});
+    } catch (e) {
+        console.error('Error:', e);
+    }
+}
+
+function renderCallList(calls) {
+    const container = document.getElementById('callList');
+    document.getElementById('callCount').textContent = `(${calls.length})`;
+    
+    if (!calls.length) {
+        container.innerHTML = `
+            <div class="history-empty-state">
+                <i class="ti ti-phone-off"></i>
+                <h3>Çağrı bulunamadı</h3>
+                <p>Filtreleri değiştirerek arama yapın</p>
+            </div>`;
+        return;
+    }
+    
+    container.innerHTML = calls.map(call => `
+        <div class="history-call-item ${call.id == currentCallId ? 'active' : ''}" 
+             data-id="${call.id}" onclick="selectCall(${call.id})">
+            <div class="history-call-top">
+                <span class="history-call-id">#${call.id}</span>
+                <span class="history-call-badge ${getDispositionBadgeClass(call.disposition)}">
+                    ${(call.disposition || 'N/A').toUpperCase()}
+                </span>
+            </div>
+            <div class="history-call-details">
+                <div class="history-call-detail">
+                    <div class="history-call-detail-label">Müşteri</div>
+                    <div class="history-call-detail-value">${call.customer || '-'}</div>
+                </div>
+                <div class="history-call-detail">
+                    <div class="history-call-detail-label">Agent</div>
+                    <div class="history-call-detail-value">${call.agent || '-'}</div>
+                </div>
+                <div class="history-call-detail">
+                    <div class="history-call-detail-label">Tarih</div>
+                    <div class="history-call-detail-value">${fmtDate(call.time)}</div>
+                </div>
+                <div class="history-call-detail">
+                    <div class="history-call-detail-label">Süre</div>
+                    <div class="history-call-detail-value duration">${fmtDuration(call.duration_sec)}</div>
+                </div>
+            </div>
+        </div>
+    `).join('');
+}
+
+function updateStats(stats) {
+    document.getElementById('statTotal').textContent = stats.total || 0;
+    document.getElementById('statSale').textContent = stats.sale || 0;
+    document.getElementById('statTermin').textContent = stats.termin || 0;
+    document.getElementById('statCallback').textContent = stats.callback || 0;
+    document.getElementById('statOther').textContent = stats.other || 0;
+}
+
+async function selectCall(callId) {
+    currentCallId = callId;
+    
+    document.querySelectorAll('.history-call-item').forEach(item => {
+        item.classList.toggle('active', item.dataset.id == callId);
+    });
+    
+    document.getElementById('emptyDetail').style.display = 'none';
+    document.getElementById('detailPanel').style.display = 'block';
+    
+    try {
+        const res = await fetch(`/api/qc/recordings/${callId}`);
+        const data = await res.json();
+        
+        if (!data.success) return;
+        
+        document.getElementById('customerName').textContent = data.customer?.name || '-';
+        document.getElementById('customerPhone').textContent = data.customer?.phone || '-';
+        
+        const agentName = data.agent?.name || '-';
+        document.getElementById('agentInitials').textContent = agentName.split(' ').map(x => x[0]).slice(0,2).join('').toUpperCase();
+        document.getElementById('agentName').textContent = agentName;
+        document.getElementById('agentTeam').textContent = data.context?.campaign || '-';
+        
+        document.getElementById('callDate').textContent = fmtDate(data.call?.started_at);
+        document.getElementById('callDuration').textContent = fmtDuration(data.call?.duration_sec);
+        document.getElementById('callResult').textContent = (data.call?.disposition || '-').toUpperCase();
+        document.getElementById('projectName').textContent = data.context?.project || '-';
+        
+        // QC Status
+        const qcStatus = data.call?.qa_status || 'pending';
+        const qcContainer = document.getElementById('qcStatusContainer');
+        const qcLabels = { pending: 'Bekleyen', passed: 'QC OK', termin: 'QC Termin', storno: 'Storno' };
+        const qcClass = qcStatus === 'passed' ? 'ok' : qcStatus;
+        qcContainer.innerHTML = `
+            <div class="history-qc-badge ${qcClass}">
+                <i class="ti ti-${qcStatus === 'passed' ? 'check' : qcStatus === 'pending' ? 'clock' : qcStatus === 'termin' ? 'phone-call' : 'x'}"></i>
+                QC: ${qcLabels[qcStatus] || qcStatus}
+            </div>`;
+        
+        // Audio
+        const sysRec = data.recordings?.system;
+        const agRec = data.recordings?.agent;
+        
+        document.getElementById('systemDuration').textContent = fmtDuration(sysRec?.duration_sec || data.call?.duration_sec);
+        document.getElementById('agentDuration').textContent = fmtDuration(agRec?.duration_sec || 0);
+        
+        document.getElementById('audioSystem').src = sysRec?.url || '';
+        document.getElementById('audioAgent').src = agRec?.url || '';
+        
+    } catch (e) {
+        console.error('Error:', e);
+    }
+}
+
+function applyFilters() {
+    loadCalls();
+}
+
+function resetFilters() {
+    document.getElementById('filterAgent').value = '';
+    document.getElementById('filterDisposition').value = '';
+    document.getElementById('filterQcStatus').value = '';
+    document.getElementById('filterDateStart').value = '';
+    document.getElementById('filterDateEnd').value = '';
+    document.getElementById('filterSort').value = 'date_desc';
+    loadCalls();
+}
+
+// Initialize
+document.addEventListener('DOMContentLoaded', function() {
+    const today = new Date();
+    const lastWeek = new Date(today);
+    lastWeek.setDate(lastWeek.getDate() - 7);
+    
+    document.getElementById('filterDateEnd').value = today.toISOString().split('T')[0];
+    document.getElementById('filterDateStart').value = lastWeek.toISOString().split('T')[0];
+    
+    loadCalls();
+});
+</script>
+{% endblock %}
