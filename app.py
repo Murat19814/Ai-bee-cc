@@ -4858,6 +4858,58 @@ def api_provisioning_cli_test(cli_id):
     return jsonify({'success': True, 'message': f'CLI ok: {cli.number}'})
 
 
+@app.route('/api/provisioning/clis/cleanup-demo', methods=['POST'])
+@login_required
+@super_admin_required
+def api_provisioning_clis_cleanup_demo():
+    """DB'deki demo CLI kayıtlarını sil (Berlin/München vb.)"""
+    demo_descriptions = {
+        'Berlin Ana Hat',
+        'Berlin Hat 2',
+        'München Ana Hat',
+        'München Hat 2',
+        'Hamburg Ana Hat',
+        'Köln Hat',
+        'Frankfurt Hat',
+        'Wien Hat',
+    }
+    demo_numbers = {
+        '+49 30 12345601',
+        '+49 30 12345602',
+        '+49 89 98765401',
+        '+49 89 98765402',
+        '+49 40 55512301',
+        '+49 221 78901201',
+        '+49 69 45678901',
+        '+43 1 23456701',
+    }
+
+    try:
+        q = CLIPool.query.filter(
+            (CLIPool.description.in_(list(demo_descriptions))) |
+            (CLIPool.number.in_(list(demo_numbers)))
+        )
+        demo_clis = q.all()
+        ids = [c.id for c in demo_clis]
+        if not ids:
+            return jsonify({'success': True, 'deleted': 0})
+
+        # Önce assignment kayıtlarını temizle
+        TenantCLIAssignment.query.filter(TenantCLIAssignment.cli_id.in_(ids)).delete(synchronize_session=False)
+
+        deleted = 0
+        for c in demo_clis:
+            db.session.delete(c)
+            deleted += 1
+
+        db.session.commit()
+        log_audit('cleanup', 'cli_pool', None, f'Demo CLI temizlendi: {deleted} kayıt')
+        return jsonify({'success': True, 'deleted': deleted})
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({'success': False, 'error': str(e)}), 500
+
+
 @app.route('/provisioning/trunks')
 @login_required
 @super_admin_required

@@ -9,6 +9,11 @@
         <button class="btn btn-primary" onclick="window.openAddCLIModal()">
             <i class="ti ti-plus"></i> <span data-tr="CLI Ekle" data-de="CLI hinzufügen">CLI Ekle</span>
         </button>
+        {% if current_user.is_super_admin %}
+        <button class="btn btn-outline" onclick="window.cleanupDemoCLIs()">
+            <i class="ti ti-broom"></i> <span data-tr="Demo CLIs Sil" data-de="Demo-CLIs löschen">Demo CLIs Sil</span>
+        </button>
+        {% endif %}
     </div>
 </div>
 
@@ -643,6 +648,24 @@ window.deleteCLI = function(id) {
         })
         .catch(err => showNotification('Bağlantı hatası: ' + err.message, 'error'));
     }
+};
+
+window.cleanupDemoCLIs = function() {
+    if(!confirm('Demo CLI kayıtlarını silmek istiyor musunuz? (Berlin/München/Köln vb.)')) return;
+    fetch('/api/provisioning/clis/cleanup-demo', {
+        method: 'POST',
+        credentials: 'same-origin'
+    })
+    .then(r => r.json())
+    .then(data => {
+        if(data && data.success) {
+            showNotification('Demo CLIs silindi: ' + (data.deleted || 0), 'success');
+            window.location.reload();
+        } else {
+            showNotification('Hata: ' + (data.error || 'Silinemedi'), 'error');
+        }
+    })
+    .catch(err => showNotification('Bağlantı hatası: ' + err.message, 'error'));
 };
 
 window.openRotationSettings = function() {
