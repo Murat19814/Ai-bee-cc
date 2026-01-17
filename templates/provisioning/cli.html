@@ -515,7 +515,14 @@
 .btn-sm { padding: 0.375rem 0.75rem; font-size: 0.85rem; }
 .btn-primary {
     background: linear-gradient(135deg, var(--primary-color), #ffc107);
-    color: white;
+    /* Amber/yellow primary needs dark text for readability */
+    color: #111;
+    font-weight: 600;
+}
+
+.btn-primary i,
+.btn-primary span {
+    color: #111;
 }
 
 .btn-outline {
