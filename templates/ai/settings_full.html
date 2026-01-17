@@ -149,10 +149,10 @@
                     
                     <!-- API Key Buttons -->
                     <div class="api-keys-actions" style="margin-top: 1.5rem; display: flex; gap: 1rem; flex-wrap: wrap;">
-                        <button type="button" class="btn btn-primary" onclick="saveAPIKeys()">
+                        <button type="button" class="btn btn-primary" onclick="saveAPIKeys(this)">
                             <i class="ti ti-device-floppy"></i> API Anahtarlarını Kaydet
                         </button>
-                        <button type="button" class="btn btn-success" onclick="testGroqAPI()" id="testGroqBtn">
+                        <button type="button" class="btn btn-success" onclick="testGroqAPI(this)" id="testGroqBtn">
                             <i class="ti ti-plug"></i> Groq Bağlantısını Test Et
                         </button>
                         <span id="groqTestStatus" style="display: flex; align-items: center; gap: 0.5rem;"></span>
@@ -959,9 +959,18 @@ function togglePassword(fieldId) {
     field.type = field.type === 'password' ? 'text' : 'password';
 }
 
+async function parseJsonOrThrow(response) {
+    const contentType = response.headers.get('content-type') || '';
+    if (contentType.includes('application/json')) {
+        return await response.json();
+    }
+    const text = await response.text();
+    const snippet = (text || '').slice(0, 300).replace(/\s+/g, ' ').trim();
+    throw new Error(`Non-JSON response (HTTP ${response.status}). Snippet: ${snippet || '(empty)'}`);
+}
+
 // Save API Keys
-async function saveAPIKeys() {
-    const btn = event.target;
+async function saveAPIKeys(btn) {
     btn.disabled = true;
     btn.innerHTML = '<i class="ti ti-loader ti-spin"></i> Kaydediliyor...';
     
@@ -976,10 +985,11 @@ async function saveAPIKeys() {
         const response = await fetch('/api/admin/ai/save-api-keys', {
             method: 'POST',
             headers: {'Content-Type': 'application/json'},
+            credentials: 'same-origin',
             body: JSON.stringify(data)
         });
         
-        const result = await response.json();
+        const result = await parseJsonOrThrow(response);
         if (result.success) {
             showNotification('✅ API Anahtarları kaydedildi!', 'success');
         } else {
@@ -994,14 +1004,13 @@ async function saveAPIKeys() {
 }
 
 // Test Groq API Key
-async function testGroqAPI() {
+async function testGroqAPI(btn) {
     const apiKey = document.getElementById('groq_api_key').value;
     if (!apiKey) {
         showNotification('Lütfen önce Groq API Key girin ve kaydedin', 'warning');
         return;
     }
     
-    const btn = document.getElementById('testGroqBtn');
     const statusEl = document.getElementById('groqTestStatus');
     btn.disabled = true;
     btn.innerHTML = '<i class="ti ti-loader ti-spin"></i> Test ediliyor...';
@@ -1011,10 +1020,11 @@ async function testGroqAPI() {
         const response = await fetch('/api/admin/ai/test-groq', {
             method: 'POST',
             headers: {'Content-Type': 'application/json'},
+            credentials: 'same-origin',
             body: JSON.stringify({api_key: apiKey})
         });
         
-        const data = await response.json();
+        const data = await parseJsonOrThrow(response);
         if (data.success) {
             showNotification('✅ Groq API bağlantısı başarılı! Model: ' + data.model, 'success');
             statusEl.innerHTML = '<span style="color: #10B981;"><i class="ti ti-check"></i> Bağlı</span>';
