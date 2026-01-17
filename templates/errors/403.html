@@ -2,7 +2,7 @@
 
 {% block title %}Erişim Engellendi - AI BEE CC{% endblock %}
 
-{% block auth_content %}
+{% block content %}
 <div class="auth-card" style="text-align: center;">
     <div class="error-icon" style="font-size: 4rem; color: var(--danger); margin-bottom: 1rem;">
         <i class="ti ti-lock"></i>
@@ -14,6 +14,10 @@
         <i class="ti ti-arrow-left"></i> Dashboard'a Dön
     </a>
 </div>
+{% endblock %}
+
+{% block auth_content %}
+{{ self.content() }}
 {% endblock %}
 
 

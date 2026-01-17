@@ -2,7 +2,7 @@
 
 {% block title %}Sayfa Bulunamadı - {{ app_name }}{% endblock %}
 
-{% block auth_content %}
+{% block content %}
 <div class="auth-card text-center">
     <div class="auth-logo" style="background: linear-gradient(135deg, var(--danger), var(--accent-orange));">
         <i class="ti ti-error-404"></i>
@@ -15,6 +15,10 @@
         Ana Sayfaya Dön
     </a>
 </div>
+{% endblock %}
+
+{% block auth_content %}
+{{ self.content() }}
 {% endblock %}
 
 

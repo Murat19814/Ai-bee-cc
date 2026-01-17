@@ -1495,10 +1495,26 @@ def api_set_user_role(user_id):
 
 @app.route('/admin/users/new', methods=['GET', 'POST'])
 @login_required
-@admin_required
+@supervisor_required
 def admin_user_new():
     """Yeni kullanıcı oluştur - Detaylı form"""
     if request.method == 'POST':
+        # Rol yetkisi kontrolü (güvenlik)
+        requested_role = request.form.get('role')
+        allowed_roles = []
+        if current_user.is_super_admin or current_user.role == 'super_admin':
+            allowed_roles = ['super_admin', 'admin', 'supervisor', 'qc_listener', 'agent']
+        elif current_user.role == 'admin':
+            allowed_roles = ['admin', 'supervisor', 'qc_listener', 'agent']
+        elif current_user.role == 'supervisor':
+            allowed_roles = ['qc_listener', 'agent']
+        else:
+            allowed_roles = []
+
+        if requested_role not in allowed_roles:
+            flash('Bu kullanıcı rolünü oluşturma yetkiniz yok.', 'danger')
+            abort(403)
+
         # Kullanıcı oluştur
         user = User(
             tenant_id=current_user.tenant_id,
@@ -1511,7 +1527,7 @@ def admin_user_new():
             german_last_name=request.form.get('german_last_name'),
             german_full_name=f"{request.form.get('german_first_name', '')} {request.form.get('german_last_name', '')}".strip() or None,
             phone=request.form.get('phone'),
-            role=request.form.get('role'),
+            role=requested_role,
             extension=request.form.get('extension'),
             department_id=request.form.get('department_id') or None,
             team_id=request.form.get('team_id') or None,
@@ -1521,7 +1537,7 @@ def admin_user_new():
         user.set_password(request.form.get('password'))
         
         # Super admin kontrolü
-        if request.form.get('role') == 'super_admin' and current_user.is_super_admin:
+        if requested_role == 'super_admin' and current_user.is_super_admin:
             user.is_super_admin = True
         
         db.session.add(user)
