@@ -690,7 +690,14 @@
 
 .btn-primary {
     background: linear-gradient(135deg, var(--primary-color), #ffc107);
-    color: white;
+    /* Yellow background needs dark text for readability */
+    color: #111;
+    font-weight: 600;
+}
+
+.btn-primary i,
+.btn-primary span {
+    color: #111;
 }
 
 .btn-outline {
