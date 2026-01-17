@@ -13,6 +13,11 @@ from flask_cors import CORS
 from werkzeug.security import generate_password_hash
 
 from config import config
+from permissions import (
+    PERMISSIONS, ROLE_TEMPLATES, 
+    init_permission_helpers, permission_required, role_required,
+    user_has_permission, get_user_permissions, get_role_permissions
+)
 from models import (
     db, init_db, 
     # Core
@@ -74,6 +79,9 @@ login_manager.login_message_category = 'warning'
 
 # Veritabanını başlat
 init_db(app)
+
+# Yetki sistemini başlat
+init_permission_helpers(app)
 
 # Minimal schema auto-upgrade for new QC fields (safe for SQLite/Postgres)
 def ensure_db_schema():
@@ -1117,6 +1125,116 @@ def admin_users():
         selected_tenant_id = current_user.tenant_id
 
     return render_template('admin/users.html', users=users, tenants=tenants, selected_tenant_id=selected_tenant_id)
+
+
+@app.route('/admin/permissions')
+@login_required
+@admin_required
+def admin_permissions():
+    """Yetki Yönetimi Sayfası"""
+    if current_user.is_super_admin:
+        users = User.query.order_by(User.full_name).all()
+    else:
+        users = User.query.filter_by(tenant_id=current_user.tenant_id).order_by(User.full_name).all()
+    
+    return render_template('admin/permissions.html', 
+                          users=users, 
+                          PERMISSIONS=PERMISSIONS, 
+                          ROLE_TEMPLATES=ROLE_TEMPLATES)
+
+
+@app.route('/api/admin/user/<int:user_id>/permissions', methods=['GET'])
+@login_required
+@admin_required
+def api_get_user_permissions(user_id):
+    """Kullanıcının yetkilerini getir"""
+    user = User.query.get_or_404(user_id)
+    
+    # Yetki kontrolü
+    if not current_user.is_super_admin and user.tenant_id != current_user.tenant_id:
+        return jsonify({'success': False, 'error': 'Yetkiniz yok'}), 403
+    
+    # Kullanıcının tüm yetkilerini al
+    perms = get_user_permissions(user)
+    
+    return jsonify({
+        'success': True,
+        'user_id': user.id,
+        'role': user.role,
+        'permissions': perms,
+        'custom_permissions': user.custom_permissions if hasattr(user, 'custom_permissions') and user.custom_permissions else []
+    })
+
+
+@app.route('/api/admin/user/<int:user_id>/permissions', methods=['POST'])
+@login_required
+@admin_required
+def api_set_user_permissions(user_id):
+    """Kullanıcının yetkilerini ayarla"""
+    user = User.query.get_or_404(user_id)
+    
+    # Yetki kontrolü
+    if not current_user.is_super_admin and user.tenant_id != current_user.tenant_id:
+        return jsonify({'success': False, 'error': 'Yetkiniz yok'}), 403
+    
+    # Super admin değiştirilemez
+    if user.is_super_admin and not current_user.is_super_admin:
+        return jsonify({'success': False, 'error': 'Super Admin yetkileri değiştirilemez'}), 403
+    
+    data = request.get_json()
+    permissions = data.get('permissions', [])
+    
+    # Rol yetkilerini al (bunlar varsayılan)
+    role_perms = set(get_role_permissions(user.role))
+    
+    # Özel yetkiler = seçilen yetkiler - rol yetkileri
+    custom_perms = [p for p in permissions if p not in role_perms]
+    
+    # Kullanıcıya custom_permissions kaydet
+    user.custom_permissions = custom_perms
+    db.session.commit()
+    
+    log_audit('permission_update', 'user', user.id, f'Kullanıcı yetkileri güncellendi: {len(permissions)} yetki')
+    
+    return jsonify({'success': True, 'message': 'Yetkiler kaydedildi'})
+
+
+@app.route('/api/admin/user/<int:user_id>/role', methods=['POST'])
+@login_required
+@admin_required
+def api_set_user_role(user_id):
+    """Kullanıcının rolünü değiştir"""
+    user = User.query.get_or_404(user_id)
+    
+    # Yetki kontrolü
+    if not current_user.is_super_admin and user.tenant_id != current_user.tenant_id:
+        return jsonify({'success': False, 'error': 'Yetkiniz yok'}), 403
+    
+    # Super admin değiştirilemez
+    if user.is_super_admin and not current_user.is_super_admin:
+        return jsonify({'success': False, 'error': 'Super Admin rolü değiştirilemez'}), 403
+    
+    data = request.get_json()
+    new_role = data.get('role')
+    
+    if new_role not in ROLE_TEMPLATES:
+        return jsonify({'success': False, 'error': 'Geçersiz rol'}), 400
+    
+    # Super admin sadece super admin tarafından atanabilir
+    if new_role == 'super_admin' and not current_user.is_super_admin:
+        return jsonify({'success': False, 'error': 'Super Admin rolü sadece Super Admin tarafından atanabilir'}), 403
+    
+    old_role = user.role
+    user.role = new_role
+    
+    # is_super_admin flag'ini güncelle
+    user.is_super_admin = (new_role == 'super_admin')
+    
+    db.session.commit()
+    
+    log_audit('role_change', 'user', user.id, f'Rol değiştirildi: {old_role} -> {new_role}')
+    
+    return jsonify({'success': True, 'message': f'Rol {new_role} olarak değiştirildi'})
 
 
 @app.route('/admin/users/new', methods=['GET', 'POST'])

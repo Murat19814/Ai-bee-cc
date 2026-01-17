@@ -228,6 +228,7 @@ class User(UserMixin, db.Model):
     # Rol ve Yetki
     role = db.Column(db.String(20), default='agent')  # super_admin, admin, supervisor, agent, qa, analyst, client
     is_super_admin = db.Column(db.Boolean, default=False)  # Platform süper admin
+    custom_permissions = db.Column(db.JSON, default=[])  # Rol dışı özel yetkiler
     
     # Organizasyon
     department_id = db.Column(db.Integer, db.ForeignKey('departments.id'))
