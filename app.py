@@ -4757,7 +4757,105 @@ def provisioning_cli():
     """CLI Havuzu Yönetimi"""
     clis = CLIPool.query.all()
     tenants = Tenant.query.filter_by(status='active').all()
-    return render_template('provisioning/cli.html', clis=clis, tenants=tenants)
+    # Basit (demo olmayan) görünüm değerleri
+    return render_template(
+        'provisioning/cli.html',
+        clis=clis,
+        tenants=tenants,
+        rotation_mode_label='Round Robin',
+        calls_per_cli=5,
+        spam_check_enabled=True
+    )
+
+
+@app.route('/api/provisioning/clis', methods=['POST'])
+@login_required
+@super_admin_required
+def api_provisioning_clis_create():
+    """CLI oluştur (DB)"""
+    data = request.get_json() or {}
+    number = (data.get('number') or '').strip()
+    if not number:
+        return jsonify({'success': False, 'error': 'number zorunlu'}), 400
+
+    try:
+        cli = CLIPool(
+            number=number,
+            description=(data.get('description') or '').strip() or None,
+            owner_type=data.get('owner_type') or 'platform',
+            tenant_id=data.get('tenant_id'),
+            is_shared=bool(data.get('is_shared')),
+            rotation_priority=int(data.get('rotation_priority') or 1),
+            status='active',
+        )
+        db.session.add(cli)
+        db.session.commit()
+        log_audit('create', 'cli_pool', cli.id, f'CLI oluşturuldu: {cli.number}')
+        return jsonify({'success': True, 'id': cli.id})
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({'success': False, 'error': str(e)}), 500
+
+
+@app.route('/api/provisioning/clis/<int:cli_id>', methods=['GET', 'PUT', 'DELETE'])
+@login_required
+@super_admin_required
+def api_provisioning_cli_item(cli_id):
+    """CLI getir/güncelle/sil"""
+    cli = CLIPool.query.get_or_404(cli_id)
+
+    if request.method == 'GET':
+        return jsonify({'success': True, 'cli': {
+            'id': cli.id,
+            'number': cli.number,
+            'description': cli.description,
+            'owner_type': cli.owner_type,
+            'tenant_id': cli.tenant_id,
+            'is_shared': cli.is_shared,
+            'rotation_priority': cli.rotation_priority,
+            'status': cli.status,
+            'spam_score': cli.spam_score
+        }})
+
+    if request.method == 'PUT':
+        data = request.get_json() or {}
+        number = (data.get('number') or '').strip()
+        if not number:
+            return jsonify({'success': False, 'error': 'number zorunlu'}), 400
+        try:
+            cli.number = number
+            cli.description = (data.get('description') or '').strip() or None
+            cli.owner_type = data.get('owner_type') or cli.owner_type
+            cli.tenant_id = data.get('tenant_id')
+            cli.is_shared = bool(data.get('is_shared'))
+            cli.rotation_priority = int(data.get('rotation_priority') or cli.rotation_priority or 1)
+            db.session.commit()
+            log_audit('update', 'cli_pool', cli.id, f'CLI güncellendi: {cli.number}')
+            return jsonify({'success': True})
+        except Exception as e:
+            db.session.rollback()
+            return jsonify({'success': False, 'error': str(e)}), 500
+
+    # DELETE
+    try:
+        number = cli.number
+        db.session.delete(cli)
+        db.session.commit()
+        log_audit('delete', 'cli_pool', cli_id, f'CLI silindi: {number}')
+        return jsonify({'success': True})
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({'success': False, 'error': str(e)}), 500
+
+
+@app.route('/api/provisioning/clis/<int:cli_id>/test', methods=['POST'])
+@login_required
+@super_admin_required
+def api_provisioning_cli_test(cli_id):
+    """CLI test (şimdilik basit kontrol)"""
+    cli = CLIPool.query.get_or_404(cli_id)
+    # Gerçek sistemde sağlayıcı API / spam-check entegrasyonu yapılır
+    return jsonify({'success': True, 'message': f'CLI ok: {cli.number}'})
 
 
 @app.route('/provisioning/trunks')

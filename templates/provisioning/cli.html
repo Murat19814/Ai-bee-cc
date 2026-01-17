@@ -19,7 +19,7 @@
             <i class="ti ti-phone"></i>
         </div>
         <div class="summary-content">
-            <span class="summary-value">{{ clis|length if clis else 12 }}</span>
+            <span class="summary-value">{{ clis|length if clis else 0 }}</span>
             <span class="summary-label" data-tr="Toplam CLI" data-de="Gesamt CLI">Toplam CLI</span>
         </div>
     </div>
@@ -28,7 +28,7 @@
             <i class="ti ti-check"></i>
         </div>
         <div class="summary-content">
-            <span class="summary-value">{{ clis|selectattr('status', 'equalto', 'active')|list|length if clis else 10 }}</span>
+            <span class="summary-value">{{ clis|selectattr('status', 'equalto', 'active')|list|length if clis else 0 }}</span>
             <span class="summary-label" data-tr="Aktif" data-de="Aktiv">Aktif</span>
         </div>
     </div>
@@ -37,7 +37,7 @@
             <i class="ti ti-share"></i>
         </div>
         <div class="summary-content">
-            <span class="summary-value">{{ clis|selectattr('is_shared', 'equalto', true)|list|length if clis else 4 }}</span>
+            <span class="summary-value">{{ clis|selectattr('is_shared', 'equalto', true)|list|length if clis else 0 }}</span>
             <span class="summary-label" data-tr="Paylaşımlı" data-de="Geteilt">Paylaşımlı</span>
         </div>
     </div>
@@ -46,7 +46,13 @@
             <i class="ti ti-alert-triangle"></i>
         </div>
         <div class="summary-content">
-            <span class="summary-value">2</span>
+            <span class="summary-value">
+                {% if clis %}
+                    {{ clis|selectattr('status','equalto','spam_flagged')|list|length }}
+                {% else %}
+                    0
+                {% endif %}
+            </span>
             <span class="summary-label" data-tr="Spam Uyarısı" data-de="Spam-Warnung">Spam Uyarısı</span>
         </div>
     </div>
@@ -63,15 +69,19 @@
     <div class="rotation-info">
         <div class="rotation-stat">
             <span class="stat-label" data-tr="Rotasyon Modu:" data-de="Rotationsmodus:">Rotasyon Modu:</span>
-            <span class="stat-value">Round Robin</span>
+            <span class="stat-value">{{ rotation_mode_label or 'Round Robin' }}</span>
         </div>
         <div class="rotation-stat">
             <span class="stat-label" data-tr="Çağrı Başına:" data-de="Pro Anruf:">Çağrı Başına:</span>
-            <span class="stat-value">5 <span data-tr="arama" data-de="Anrufe">arama</span></span>
+            <span class="stat-value">{{ calls_per_cli or 5 }} <span data-tr="arama" data-de="Anrufe">arama</span></span>
         </div>
         <div class="rotation-stat">
             <span class="stat-label" data-tr="Spam Kontrolü:" data-de="Spam-Kontrolle:">Spam Kontrolü:</span>
+            {% if spam_check_enabled %}
             <span class="stat-value status-active" data-tr="Aktif" data-de="Aktiv">Aktif</span>
+            {% else %}
+            <span class="stat-value" style="color:#9e9e9e" data-tr="Pasif" data-de="Inaktiv">Pasif</span>
+            {% endif %}
         </div>
     </div>
 </div>
@@ -135,165 +145,10 @@
                 </tr>
                 {% endfor %}
             {% else %}
-                <!-- Demo Data -->
                 <tr>
-                    <td><input type="checkbox" name="cli_ids[]" value="1"></td>
-                    <td><strong class="cli-number">+49 30 12345601</strong></td>
-                    <td>Berlin Ana Hat</td>
-                    <td><span class="badge badge-primary">Platform</span></td>
-                    <td><i class="ti ti-check text-success"></i></td>
-                    <td><span class="badge badge-outline">P1</span></td>
-                    <td>
-                        <div class="spam-score">
-                            <div class="spam-bar"><div class="spam-fill" style="width: 15%"></div></div>
-                            <span>15</span>
-                        </div>
-                    </td>
-                    <td><span class="status-badge status-active" data-tr="Aktif" data-de="Aktiv">Aktif</span></td>
-                    <td class="action-cell">
-                        <button class="btn btn-icon" onclick="window.editCLI(1)" title="Düzenle"><i class="ti ti-edit"></i></button>
-                        <button class="btn btn-icon" onclick="window.testCLI(1)" title="Test"><i class="ti ti-phone-call"></i></button>
-                        <button class="btn btn-icon btn-danger" onclick="window.deleteCLI(1)" title="Sil"><i class="ti ti-trash"></i></button>
-                    </td>
-                </tr>
-                <tr>
-                    <td><input type="checkbox" name="cli_ids[]" value="2"></td>
-                    <td><strong class="cli-number">+49 30 12345602</strong></td>
-                    <td>Berlin Hat 2</td>
-                    <td><span class="badge badge-primary">Platform</span></td>
-                    <td><i class="ti ti-check text-success"></i></td>
-                    <td><span class="badge badge-outline">P2</span></td>
-                    <td>
-                        <div class="spam-score">
-                            <div class="spam-bar"><div class="spam-fill" style="width: 22%"></div></div>
-                            <span>22</span>
-                        </div>
-                    </td>
-                    <td><span class="status-badge status-active" data-tr="Aktif" data-de="Aktiv">Aktif</span></td>
-                    <td class="action-cell">
-                        <button class="btn btn-icon" onclick="window.editCLI(2)" title="Düzenle"><i class="ti ti-edit"></i></button>
-                        <button class="btn btn-icon" onclick="window.testCLI(2)" title="Test"><i class="ti ti-phone-call"></i></button>
-                        <button class="btn btn-icon btn-danger" onclick="window.deleteCLI(2)" title="Sil"><i class="ti ti-trash"></i></button>
-                    </td>
-                </tr>
-                <tr>
-                    <td><input type="checkbox" name="cli_ids[]" value="3"></td>
-                    <td><strong class="cli-number">+49 89 98765401</strong></td>
-                    <td>München Ana Hat</td>
-                    <td><span class="badge">AI Bee CC</span></td>
-                    <td><i class="ti ti-x text-muted"></i></td>
-                    <td><span class="badge badge-outline">P1</span></td>
-                    <td>
-                        <div class="spam-score">
-                            <div class="spam-bar"><div class="spam-fill" style="width: 8%"></div></div>
-                            <span>8</span>
-                        </div>
-                    </td>
-                    <td><span class="status-badge status-active" data-tr="Aktif" data-de="Aktiv">Aktif</span></td>
-                    <td class="action-cell">
-                        <button class="btn btn-icon" onclick="window.editCLI(3)" title="Düzenle"><i class="ti ti-edit"></i></button>
-                        <button class="btn btn-icon" onclick="window.testCLI(3)" title="Test"><i class="ti ti-phone-call"></i></button>
-                        <button class="btn btn-icon btn-danger" onclick="window.deleteCLI(3)" title="Sil"><i class="ti ti-trash"></i></button>
-                    </td>
-                </tr>
-                <tr>
-                    <td><input type="checkbox" name="cli_ids[]" value="4"></td>
-                    <td><strong class="cli-number">+49 89 98765402</strong></td>
-                    <td>München Hat 2</td>
-                    <td><span class="badge">AI Bee CC</span></td>
-                    <td><i class="ti ti-x text-muted"></i></td>
-                    <td><span class="badge badge-outline">P2</span></td>
-                    <td>
-                        <div class="spam-score">
-                            <div class="spam-bar"><div class="spam-fill spam-warning" style="width: 45%"></div></div>
-                            <span>45</span>
-                        </div>
-                    </td>
-                    <td><span class="status-badge status-active" data-tr="Aktif" data-de="Aktiv">Aktif</span></td>
-                    <td class="action-cell">
-                        <button class="btn btn-icon" onclick="window.editCLI(4)" title="Düzenle"><i class="ti ti-edit"></i></button>
-                        <button class="btn btn-icon" onclick="window.testCLI(4)" title="Test"><i class="ti ti-phone-call"></i></button>
-                        <button class="btn btn-icon btn-danger" onclick="window.deleteCLI(4)" title="Sil"><i class="ti ti-trash"></i></button>
-                    </td>
-                </tr>
-                <tr>
-                    <td><input type="checkbox" name="cli_ids[]" value="5"></td>
-                    <td><strong class="cli-number">+49 40 55512301</strong></td>
-                    <td>Hamburg Ana Hat</td>
-                    <td><span class="badge">CallCenter Pro</span></td>
-                    <td><i class="ti ti-check text-success"></i></td>
-                    <td><span class="badge badge-outline">P1</span></td>
-                    <td>
-                        <div class="spam-score">
-                            <div class="spam-bar"><div class="spam-fill" style="width: 12%"></div></div>
-                            <span>12</span>
-                        </div>
-                    </td>
-                    <td><span class="status-badge status-active" data-tr="Aktif" data-de="Aktiv">Aktif</span></td>
-                    <td class="action-cell">
-                        <button class="btn btn-icon" onclick="window.editCLI(5)" title="Düzenle"><i class="ti ti-edit"></i></button>
-                        <button class="btn btn-icon" onclick="window.testCLI(5)" title="Test"><i class="ti ti-phone-call"></i></button>
-                        <button class="btn btn-icon btn-danger" onclick="window.deleteCLI(5)" title="Sil"><i class="ti ti-trash"></i></button>
-                    </td>
-                </tr>
-                <tr>
-                    <td><input type="checkbox" name="cli_ids[]" value="6"></td>
-                    <td><strong class="cli-number">+49 221 78901201</strong></td>
-                    <td>Köln Hat</td>
-                    <td><span class="badge badge-primary">Platform</span></td>
-                    <td><i class="ti ti-check text-success"></i></td>
-                    <td><span class="badge badge-outline">P3</span></td>
-                    <td>
-                        <div class="spam-score">
-                            <div class="spam-bar"><div class="spam-fill spam-danger" style="width: 78%"></div></div>
-                            <span>78</span>
-                        </div>
-                    </td>
-                    <td><span class="status-badge status-spam_flagged" data-tr="Spam" data-de="Spam">Spam</span></td>
-                    <td class="action-cell">
-                        <button class="btn btn-icon" onclick="window.editCLI(6)" title="Düzenle"><i class="ti ti-edit"></i></button>
-                        <button class="btn btn-icon" onclick="window.testCLI(6)" title="Test"><i class="ti ti-phone-call"></i></button>
-                        <button class="btn btn-icon btn-danger" onclick="window.deleteCLI(6)" title="Sil"><i class="ti ti-trash"></i></button>
-                    </td>
-                </tr>
-                <tr>
-                    <td><input type="checkbox" name="cli_ids[]" value="7"></td>
-                    <td><strong class="cli-number">+49 69 45678901</strong></td>
-                    <td>Frankfurt Hat</td>
-                    <td><span class="badge badge-primary">Platform</span></td>
-                    <td><i class="ti ti-check text-success"></i></td>
-                    <td><span class="badge badge-outline">P2</span></td>
-                    <td>
-                        <div class="spam-score">
-                            <div class="spam-bar"><div class="spam-fill" style="width: 25%"></div></div>
-                            <span>25</span>
-                        </div>
-                    </td>
-                    <td><span class="status-badge status-active" data-tr="Aktif" data-de="Aktiv">Aktif</span></td>
-                    <td class="action-cell">
-                        <button class="btn btn-icon" onclick="window.editCLI(7)" title="Düzenle"><i class="ti ti-edit"></i></button>
-                        <button class="btn btn-icon" onclick="window.testCLI(7)" title="Test"><i class="ti ti-phone-call"></i></button>
-                        <button class="btn btn-icon btn-danger" onclick="window.deleteCLI(7)" title="Sil"><i class="ti ti-trash"></i></button>
-                    </td>
-                </tr>
-                <tr>
-                    <td><input type="checkbox" name="cli_ids[]" value="8"></td>
-                    <td><strong class="cli-number">+43 1 23456701</strong></td>
-                    <td>Wien Hat</td>
-                    <td><span class="badge">Support GmbH</span></td>
-                    <td><i class="ti ti-x text-muted"></i></td>
-                    <td><span class="badge badge-outline">P1</span></td>
-                    <td>
-                        <div class="spam-score">
-                            <div class="spam-bar"><div class="spam-fill" style="width: 5%"></div></div>
-                            <span>5</span>
-                        </div>
-                    </td>
-                    <td><span class="status-badge status-active" data-tr="Aktif" data-de="Aktiv">Aktif</span></td>
-                    <td class="action-cell">
-                        <button class="btn btn-icon" onclick="window.editCLI(8)" title="Düzenle"><i class="ti ti-edit"></i></button>
-                        <button class="btn btn-icon" onclick="window.testCLI(8)" title="Test"><i class="ti ti-phone-call"></i></button>
-                        <button class="btn btn-icon btn-danger" onclick="window.deleteCLI(8)" title="Sil"><i class="ti ti-trash"></i></button>
+                    <td colspan="9" class="text-center" style="padding: 2rem; color: var(--text-secondary);">
+                        <i class="ti ti-info-circle"></i>
+                        <span data-tr="Henüz CLI yok." data-de="Noch keine CLI vorhanden.">Henüz CLI yok.</span>
                     </td>
                 </tr>
             {% endif %}
@@ -310,6 +165,7 @@
         </div>
         <div class="modal-body">
             <form id="cliForm">
+                <input type="hidden" id="cliId">
                 <div class="form-group">
                     <label data-tr="Numara *" data-de="Nummer *">Numara *</label>
                     <input type="text" id="cliNumber" class="form-input" placeholder="+49 30 12345600" required>
@@ -323,9 +179,9 @@
                         <label data-tr="Sahip" data-de="Besitzer">Sahip</label>
                         <select id="cliOwner" class="form-select">
                             <option value="platform">Platform</option>
-                            <option value="1">AI Bee CC</option>
-                            <option value="2">CallCenter Pro</option>
-                            <option value="3">Support GmbH</option>
+                            {% for t in tenants %}
+                            <option value="{{ t.id }}">{{ t.name }} ({{ t.code }})</option>
+                            {% endfor %}
                         </select>
                     </div>
                     <div class="form-group">
@@ -682,28 +538,110 @@ window.closeModal = function(id) {
 
 window.saveCLI = function() {
     var number = document.getElementById('cliNumber').value;
+    var description = document.getElementById('cliDescription').value;
+    var owner = document.getElementById('cliOwner').value;
+    var priority = document.getElementById('cliPriority').value;
+    var shared = document.getElementById('cliShared').checked;
+    var cliId = document.getElementById('cliId').value;
+
     if(!number) {
         showNotification('Lütfen numara girin!', 'error');
         return;
     }
-    showNotification('CLI başarıyla kaydedildi!', 'success');
-    window.closeModal('cliModal');
+
+    var payload = {
+        number: number,
+        description: description,
+        rotation_priority: parseInt(priority || '1', 10),
+        is_shared: shared
+    };
+    if(owner === 'platform') {
+        payload.owner_type = 'platform';
+        payload.tenant_id = null;
+    } else {
+        payload.owner_type = 'tenant';
+        payload.tenant_id = parseInt(owner, 10);
+    }
+
+    var url = '/api/provisioning/clis';
+    var method = 'POST';
+    if(cliId) {
+        url = '/api/provisioning/clis/' + cliId;
+        method = 'PUT';
+    }
+
+    fetch(url, {
+        method: method,
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'same-origin',
+        body: JSON.stringify(payload)
+    })
+    .then(r => r.json())
+    .then(data => {
+        if(data && data.success) {
+            showNotification('CLI başarıyla kaydedildi!', 'success');
+            window.closeModal('cliModal');
+            window.location.reload();
+        } else {
+            showNotification('Hata: ' + (data.error || 'Kaydedilemedi'), 'error');
+        }
+    })
+    .catch(err => showNotification('Bağlantı hatası: ' + err.message, 'error'));
 };
 
 window.editCLI = function(id) {
-    document.getElementById('cliModal').classList.add('active');
+    fetch('/api/provisioning/clis/' + id, { credentials: 'same-origin' })
+    .then(r => r.json())
+    .then(data => {
+        if(!data || !data.success) {
+            showNotification('Hata: ' + (data.error || 'Yüklenemedi'), 'error');
+            return;
+        }
+        var cli = data.cli;
+        document.getElementById('cliId').value = cli.id;
+        document.getElementById('cliNumber').value = cli.number || '';
+        document.getElementById('cliDescription').value = cli.description || '';
+        document.getElementById('cliPriority').value = String(cli.rotation_priority || 1);
+        document.getElementById('cliShared').checked = !!cli.is_shared;
+        document.getElementById('cliOwner').value = (cli.owner_type === 'tenant' && cli.tenant_id) ? String(cli.tenant_id) : 'platform';
+        document.getElementById('cliModal').classList.add('active');
+    })
+    .catch(err => showNotification('Bağlantı hatası: ' + err.message, 'error'));
 };
 
 window.testCLI = function(id) {
     showNotification('CLI test ediliyor...', 'info');
-    setTimeout(function() {
-        showNotification('CLI test başarılı!', 'success');
-    }, 2000);
+    fetch('/api/provisioning/clis/' + id + '/test', {
+        method: 'POST',
+        credentials: 'same-origin'
+    })
+    .then(r => r.json())
+    .then(data => {
+        if(data && data.success) {
+            showNotification('CLI test başarılı!', 'success');
+        } else {
+            showNotification('Hata: ' + (data.error || 'Test başarısız'), 'error');
+        }
+    })
+    .catch(err => showNotification('Bağlantı hatası: ' + err.message, 'error'));
 };
 
 window.deleteCLI = function(id) {
     if(confirm('Bu CLI\'ı silmek istediğinizden emin misiniz?')) {
-        showNotification('CLI silindi!', 'success');
+        fetch('/api/provisioning/clis/' + id, {
+            method: 'DELETE',
+            credentials: 'same-origin'
+        })
+        .then(r => r.json())
+        .then(data => {
+            if(data && data.success) {
+                showNotification('CLI silindi!', 'success');
+                window.location.reload();
+            } else {
+                showNotification('Hata: ' + (data.error || 'Silinemedi'), 'error');
+            }
+        })
+        .catch(err => showNotification('Bağlantı hatası: ' + err.message, 'error'));
     }
 };
 
